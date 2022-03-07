@@ -4,7 +4,7 @@ class Sandbox : public proton::Application
 {
 public:
 
-	bool OnGameStart() override 
+	bool OnStart() override 
 	{
 		LOG_OK("Hello from SandBox :)");
 		return true;

@@ -17,7 +17,7 @@ namespace proton {
 	{
 		Logger::init();
 		LOG("Application started");
-		if (OnGameStart()) {
+		if (OnStart()) {
 			while (true) {
 
 			}
