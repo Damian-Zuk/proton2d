@@ -59,11 +59,17 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PROTON_PLATFORM_WINDOWS;PROTON_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)proton2d\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\$(ProjectName).dll $(SolutionDir)sandbox</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -73,6 +79,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>PROTON_PLATFORM_WINDOWS;PROTON_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)proton2d\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,15 +89,26 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\$(ProjectName).dll $(SolutionDir)sandbox</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Proton2D.h" />
+    <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\proton\Application.h" />
-    <ClInclude Include="src\proton\Core.h" />
+    <ClInclude Include="src\proton\Core\Core.h" />
+    <ClInclude Include="src\proton\Core\KeyCodes.h" />
     <ClInclude Include="src\proton\EntryPoint.h" />
+    <ClInclude Include="src\proton\Events\Event.h" />
+    <ClInclude Include="src\proton\Events\KeyEvents.h" />
+    <ClInclude Include="src\proton\Events\WindowEvents.h" />
+    <ClInclude Include="src\proton\Logger.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\pch.cpp" />
     <ClCompile Include="src\proton\Application.cpp" />
+    <ClCompile Include="src\proton\Logger.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

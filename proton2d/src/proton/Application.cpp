@@ -1,18 +1,27 @@
+#include "pch.h"
 #include "Application.h"
+#include "Logger.h"
 #include <iostream>
 
 namespace proton {
+
 	Application::Application()
 	{
 	}
+
 	Application::~Application()
 	{
 	}
+
 	void Application::Start()
 	{
-		std::cout << "started" << std::endl;
-		while (true) {
+		Logger::init();
+		LOG("Application started");
+		if (OnGameStart()) {
+			while (true) {
 
+			}
 		}
 	}
+
 }

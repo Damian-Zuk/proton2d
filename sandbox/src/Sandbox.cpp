@@ -3,13 +3,13 @@
 class Sandbox : public proton::Application
 {
 public:
-	Sandbox() {
 
+	bool OnGameStart() override 
+	{
+		LOG_OK("Hello from SandBox :)");
+		return true;
 	}
 
-	~Sandbox() {
-
-	}
 };
 
 proton::Application* proton::CreateApplication() {

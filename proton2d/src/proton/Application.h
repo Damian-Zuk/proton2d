@@ -1,5 +1,5 @@
 #pragma once
-#include "Core.h"
+#include "Core/Core.h"
 
 namespace proton {
 
@@ -9,6 +9,8 @@ namespace proton {
 		Application();
 		~Application();
 		void Start();
+	protected:
+		virtual bool OnStart() = 0;
 	};
 
 	Application* CreateApplication();
