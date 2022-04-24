@@ -12,8 +12,10 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["GLFW"] = "vendor/GLFW/include"
-include "/vendor/GLFW"
+IncludeDir["glad"] = "vendor/glad/include"
 
+include "/vendor/GLFW"
+include "/vendor/glad"
 
 project "proton2d"
 	location "proton2d"
@@ -35,11 +37,13 @@ project "proton2d"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{IncludeDir.GLFW}"
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.glad}"
 	}
 
 	links
 	{
+		"glad",
 		"GLFW",
 		"opengl32.lib"
 	}
@@ -52,7 +56,8 @@ project "proton2d"
 		defines
 		{
 			"PROTON_PLATFORM_WINDOWS",
-			"PROTON_BUILD_DLL"
+			"PROTON_BUILD_DLL",
+			"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands

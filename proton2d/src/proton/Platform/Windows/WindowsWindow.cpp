@@ -4,11 +4,7 @@
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"
 
-//#include "Proton/Core/Input.h"
-//
-//#include "Proton/Renderer/Renderer.h"
-//
-//#include "Proton/Platform/OpenGL/OpenGLContext.h"
+#include "glad/glad.h"
 
 namespace proton {
 
@@ -40,24 +36,17 @@ namespace proton {
 		if (s_GLFWWindowCount == 0)
 		{
 			int success = glfwInit();
-			//HZ_CORE_ASSERT(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
 		{
-//			HZ_PROFILE_SCOPE("glfwCreateWindow");
-//#if defined(HZ_DEBUG)
-//			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-//				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-//#endif
 			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 			++s_GLFWWindowCount;
 		}
 
-		//m_Context = GraphicsContext::Create(m_Window);
-		//m_Context->Init();
-
-		glfwMakeContextCurrent(m_Window); // zamist graphics context (do zmiany potem)
+		// Context
+		glfwMakeContextCurrent(m_Window);
+		gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		setVSync(true);
 
