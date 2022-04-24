@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Core.h"
+#include "Core/Window.h"
 
 namespace proton {
 
@@ -8,10 +9,16 @@ namespace proton {
 	public:
 		Application();
 		~Application();
-		void Start();
+		void run();
+	
 	protected:
-		virtual bool OnStart() = 0;
+		virtual bool onCreate() = 0;
+		void onEvent(Event& event);
+
+	private:
+		bool m_IsRunning = true;
+		Window* m_Window;
 	};
 
-	Application* CreateApplication();
+	Application* createApp(); // entry point (main function)
 }

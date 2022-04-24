@@ -4,7 +4,7 @@ class Sandbox : public proton::Application
 {
 public:
 
-	bool OnStart() override 
+	bool onCreate() override
 	{
 		LOG_OK("Hello from SandBox :)");
 		return true;
@@ -12,6 +12,6 @@ public:
 
 };
 
-proton::Application* proton::CreateApplication() {
+proton::Application* proton::createApp() {
 	return new Sandbox();
 }
