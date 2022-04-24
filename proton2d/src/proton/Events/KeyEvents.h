@@ -5,6 +5,7 @@
 
 namespace proton {
 
+	// Virtual class for key events
 	class KeyEvent : public Event
 	{
 	public:
@@ -16,13 +17,13 @@ namespace proton {
 		KeyCode m_KeyCode;
 	};
 
-
+	// Key pressed
 	class KeyPressedEvent : public KeyEvent {
 	public:
 		KeyPressedEvent(const KeyCode keycode, const uint16_t repeatCount)
 			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
-		uint16_t GetRepeatCount() const { return m_RepeatCount; }
+		uint16_t getRepeatCount() const { return m_RepeatCount; }
 
 		std::string toString() const override
 		{
@@ -34,6 +35,40 @@ namespace proton {
 		EVENT_CLASS_TYPE(KeyPressed)
 	private:
 		uint16_t m_RepeatCount;
+	};
+
+	// Key released
+	class KeyReleasedEvent : public KeyEvent
+	{
+	public:
+		KeyReleasedEvent(const KeyCode keycode)
+			: KeyEvent(keycode) {}
+
+		std::string toString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyReleasedEvent: " << m_KeyCode;
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(KeyReleased)
+	};
+
+	// Key Typed
+	class KeyTypedEvent : public KeyEvent
+	{
+	public:
+		KeyTypedEvent(const KeyCode keycode)
+			: KeyEvent(keycode) {}
+
+		std::string toString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyTypedEvent: " << m_KeyCode;
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(KeyTyped)
 	};
 
 }

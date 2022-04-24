@@ -4,7 +4,7 @@
 namespace proton {
 
 	enum class EventType {
-		WindowClosed, WindowFocused, WindowLostFocus,
+		WindowResized, WindowClosed, WindowFocused, WindowLostFocus,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
@@ -22,8 +22,10 @@ namespace proton {
 	};
 
 
-#define EVENT_CLASS_TYPE(type)	EventType getEventType()	const override { return EventType::type; } \
-								std::string getEventName()	const override { return #type; }
+#define EVENT_CLASS_TYPE(type)	static EventType getStaticType()			{ return EventType::type; } \
+								EventType getEventType()	const override	{ return getStaticType(); } \
+								std::string getEventName()	const override	{ return #type; }
+								
 
 
 	class EventDispatcher
@@ -34,7 +36,8 @@ namespace proton {
 
 		template<typename T, typename F>
 		void dispatch(const F& function) {
-			m_Event.m_Handled |= function(static_cast<T&>(m_Event));
+			if (m_Event.getEventType() == T::getStaticType())
+				m_Event.m_Handled |= function(static_cast<T&>(m_Event));
 		}
 
 	private:
