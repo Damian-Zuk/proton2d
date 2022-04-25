@@ -10,8 +10,14 @@
     <Filter Include="proton\Events">
       <UniqueIdentifier>{EB909F6C-5751-1BA3-208C-64208C0B607F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="proton\ImGui">
+      <UniqueIdentifier>{515576A6-3DB8-054B-E63D-3E01D27FD1CD}</UniqueIdentifier>
+    </Filter>
     <Filter Include="proton\Platform">
       <UniqueIdentifier>{1B7FE52E-870A-53F3-901B-D6E7FC25AFF3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="proton\Platform\OpenGL">
+      <UniqueIdentifier>{EFBB2E51-DBB5-57A3-C422-EEB3B0BBBD0F}</UniqueIdentifier>
     </Filter>
     <Filter Include="proton\Platform\Windows">
       <UniqueIdentifier>{551422CF-C14B-6A66-CA55-CE89360C915F}</UniqueIdentifier>
@@ -27,6 +33,12 @@
       <Filter>proton\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\proton\Core\KeyCodes.h">
+      <Filter>proton\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\proton\Core\Layer.h">
+      <Filter>proton\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\proton\Core\LayerStack.h">
       <Filter>proton\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\proton\Core\Types.h">
@@ -50,8 +62,14 @@
     <ClInclude Include="src\proton\Events\WindowEvents.h">
       <Filter>proton\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\proton\ImGui\ImGuiLayer.h">
+      <Filter>proton\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="src\proton\Logger.h">
       <Filter>proton</Filter>
+    </ClInclude>
+    <ClInclude Include="src\proton\Platform\OpenGL\imgui_impl_opengl3.h">
+      <Filter>proton\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\proton\Platform\Windows\WindowsWindow.h">
       <Filter>proton\Platform\Windows</Filter>
@@ -62,11 +80,23 @@
     <ClCompile Include="src\proton\Application.cpp">
       <Filter>proton</Filter>
     </ClCompile>
+    <ClCompile Include="src\proton\Core\Layer.cpp">
+      <Filter>proton\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\proton\Core\LayerStack.cpp">
+      <Filter>proton\Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\proton\Core\Window.cpp">
       <Filter>proton\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\proton\ImGui\ImGuiLayer.cpp">
+      <Filter>proton\ImGui</Filter>
+    </ClCompile>
     <ClCompile Include="src\proton\Logger.cpp">
       <Filter>proton</Filter>
+    </ClCompile>
+    <ClCompile Include="src\proton\Platform\OpenGL\imgui_impl_opengl3.cpp">
+      <Filter>proton\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\proton\Platform\Windows\WindowsWindow.cpp">
       <Filter>proton\Platform\Windows</Filter>

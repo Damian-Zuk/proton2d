@@ -13,9 +13,11 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "vendor/GLFW/include"
 IncludeDir["glad"] = "vendor/glad/include"
+IncludeDir["ImGui"] = "vendor/imgui"
 
-include "/vendor/GLFW"
-include "/vendor/glad"
+include "vendor/GLFW"
+include "vendor/glad"
+include "vendor/imgui"
 
 project "proton2d"
 	location "proton2d"
@@ -38,13 +40,15 @@ project "proton2d"
 	{
 		"%{prj.name}/src",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.glad}"
+		"%{IncludeDir.glad}",
+		"%{IncludeDir.ImGui}"
 	}
 
 	links
 	{
 		"glad",
 		"GLFW",
+		"ImGui",
 		"opengl32.lib"
 	}
 

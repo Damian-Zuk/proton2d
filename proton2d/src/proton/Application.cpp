@@ -4,14 +4,17 @@
 #include "Events/WindowEvents.h"
 
 #include <iostream>
-#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 namespace proton {
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
+	Application* Application::s_Instance = nullptr;
+
 	Application::Application()
 	{
+		s_Instance = this;
 		m_Window = Window::create();
 		m_Window->setEventCallback(BIND_EVENT_FN(Application::onEvent));
 	}
@@ -29,11 +32,29 @@ namespace proton {
 		// Game loop
 		if (onCreate()) {
 			while (m_IsRunning) {
-				glClearColor(1, 0, 1, 1);
-				glClear(GL_COLOR_BUFFER_BIT);
+
+				float time = (float)glfwGetTime();
+				float timestep = time - m_LastFrameTime;
+				m_LastFrameTime = time;
+
+				for (Layer* layer : m_LayerStack)
+					layer->onUpdate(timestep);
+
 				m_Window->onUpdate();
 			}
 		}
+	}
+
+	void Application::pushLayer(Layer* layer)
+	{
+		m_LayerStack.pushLayer(layer);
+		layer->onAttach();
+	}
+
+	void Application::pushOverlay(Layer* layer)
+	{
+		m_LayerStack.pushOverlay(layer);
+		layer->onAttach();
 	}
 
 	void Application::onEvent(Event& event)
