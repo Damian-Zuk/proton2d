@@ -1,5 +1,6 @@
 #pragma once
 #include "proton/Core/Layer.h"
+#include "proton/Events/MouseEvents.h"
 
 namespace proton {
 	class PROTON_API ImGuiLayer : public Layer
@@ -12,6 +13,11 @@ namespace proton {
 		void onDetach();
 		void onUpdate(float timestep);
 		void onEvent(Event& event);
+	private:
+		bool onMouseMoveEvent(MouseMovedEvent& e);
+		bool onMouseButtonPressedEvent(MouseButtonPressedEvent& e);
+		bool onMouseButtonReleasedEvent(MouseButtonReleasedEvent& e);
+		bool onMouseScrolledEvent(MouseScrolledEvent& e);
 	};
 }
 

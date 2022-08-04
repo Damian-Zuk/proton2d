@@ -27,7 +27,6 @@ namespace proton {
 								std::string getEventName()	const override	{ return #type; }
 								
 
-
 	class EventDispatcher
 	{
 

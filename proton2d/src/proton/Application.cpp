@@ -8,8 +8,6 @@
 
 namespace proton {
 
-#define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
-
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
@@ -66,6 +64,9 @@ namespace proton {
 			m_IsRunning = false;
 			return true;
 		});
+
+		for (Layer* layer : m_LayerStack)
+			layer->onEvent(event);
 	}
 
 }
