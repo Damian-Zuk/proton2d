@@ -23,6 +23,7 @@ project "proton2d"
 	location "proton2d"
 	kind "SharedLib"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
@@ -54,7 +55,6 @@ project "proton2d"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "on"
 		systemversion "latest"
 
 		defines
@@ -72,13 +72,11 @@ project "proton2d"
 	filter "configurations:Debug"
 		defines "PROTON_DEBUG"
 		symbols "On"
-		buildoptions "/MDd"
         runtime "Debug"
 
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
 		optimize "On"
-		buildoptions "/MD"
         runtime "Release"
 
 
@@ -86,6 +84,7 @@ project "sandbox"
 	location "sandbox"
 	kind "ConsoleApp"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
@@ -108,7 +107,6 @@ project "sandbox"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "on"
 		systemversion "latest"
 
 		defines
@@ -119,11 +117,9 @@ project "sandbox"
 	filter "configurations:Debug"
 		defines "PROTON_DEBUG"
 		symbols "On"
-		buildoptions "/MDd"
         runtime "Debug"
 
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
 		optimize "On"
-		buildoptions "/MD"
         runtime "Release"
