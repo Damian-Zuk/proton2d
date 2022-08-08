@@ -10,7 +10,7 @@
 
 namespace proton {
 
-	class PROTON_API Logger
+	class Logger
 	{
 	public:
 		template<typename ... TArgs>

@@ -15,15 +15,18 @@ IncludeDir["GLFW"] = "vendor/GLFW/include"
 IncludeDir["glad"] = "vendor/glad/include"
 IncludeDir["ImGui"] = "vendor/imgui"
 
-include "vendor/GLFW"
-include "vendor/glad"
-include "vendor/imgui"
+group "Dependencies"
+	include "vendor/GLFW"
+	include "vendor/glad"
+	include "vendor/imgui"
+group ""
 
 project "proton2d"
 	location "proton2d"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
@@ -53,8 +56,12 @@ project "proton2d"
 		"opengl32.lib"
 	}
 
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
@@ -66,25 +73,24 @@ project "proton2d"
 
 		postbuildcommands
 		{
-			("{COPY} \"%{cfg.buildtarget.relpath}\" \"../bin/" .. outputdir .. "/sandbox\"")
+			"{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/sandbox/\""
 		}
 
 	filter "configurations:Debug"
 		defines "PROTON_DEBUG"
-		symbols "On"
-        runtime "Debug"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
-		optimize "On"
-        runtime "Release"
+		optimize "on"
 
 
 project "sandbox"
 	location "sandbox"
 	kind "ConsoleApp"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
@@ -106,7 +112,6 @@ project "sandbox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
@@ -116,10 +121,10 @@ project "sandbox"
 
 	filter "configurations:Debug"
 		defines "PROTON_DEBUG"
-		symbols "On"
-        runtime "Debug"
+		runtime "Debug"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
-		optimize "On"
-        runtime "Release"
+		runtime "Release"
+		optimize "on"

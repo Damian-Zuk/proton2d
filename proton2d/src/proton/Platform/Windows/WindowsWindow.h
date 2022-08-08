@@ -6,7 +6,7 @@
 
 namespace proton {
 
-	class PROTON_API WindowsWindow : public Window
+	class WindowsWindow : public Window
 	{
 	public:
 		WindowsWindow(const WindowProps& props);

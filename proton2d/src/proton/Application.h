@@ -6,7 +6,7 @@
 
 namespace proton {
 
-	class PROTON_API Application
+	class Application
 	{
 	public:
 		Application();

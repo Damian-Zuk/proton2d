@@ -6,7 +6,7 @@
 
 namespace proton {
 
-	class PROTON_API LayerStack
+	class LayerStack
 	{
 	public:
 		LayerStack() = default;

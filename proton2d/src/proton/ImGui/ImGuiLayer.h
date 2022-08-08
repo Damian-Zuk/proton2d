@@ -3,7 +3,7 @@
 #include "proton/Events/MouseEvents.h"
 
 namespace proton {
-	class PROTON_API ImGuiLayer : public Layer
+	class ImGuiLayer : public Layer
 	{
 	public:
 		ImGuiLayer();

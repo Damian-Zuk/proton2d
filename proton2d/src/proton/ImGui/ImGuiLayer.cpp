@@ -34,7 +34,7 @@ namespace proton {
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		Window& win = Application::get().getWindow();
-		io.DisplaySize = ImVec2(win.getWidth(), win.getHeight());
+		io.DisplaySize = ImVec2((float)win.getWidth(), (float)win.getHeight());
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
