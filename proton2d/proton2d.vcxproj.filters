@@ -74,6 +74,12 @@
     <ClInclude Include="src\proton\Platform\Windows\WindowsWindow.h">
       <Filter>proton\Platform\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="src\proton\Core\Input.h">
+      <Filter>proton\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\proton\Platform\Windows\WindowsInput.h">
+      <Filter>proton\Platform\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -99,6 +105,9 @@
       <Filter>proton\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\proton\Platform\Windows\WindowsWindow.cpp">
+      <Filter>proton\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\proton\Platform\Windows\WindowsInput.cpp">
       <Filter>proton\Platform\Windows</Filter>
     </ClCompile>
   </ItemGroup>

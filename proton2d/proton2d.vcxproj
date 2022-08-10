@@ -107,6 +107,7 @@
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\proton\Application.h" />
     <ClInclude Include="src\proton\Core\Core.h" />
+    <ClInclude Include="src\proton\Core\Input.h" />
     <ClInclude Include="src\proton\Core\KeyCodes.h" />
     <ClInclude Include="src\proton\Core\Layer.h" />
     <ClInclude Include="src\proton\Core\LayerStack.h" />
@@ -120,6 +121,7 @@
     <ClInclude Include="src\proton\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\proton\Logger.h" />
     <ClInclude Include="src\proton\Platform\OpenGL\imgui_impl_opengl3.h" />
+    <ClInclude Include="src\proton\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\proton\Platform\Windows\WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +135,7 @@
     <ClCompile Include="src\proton\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\proton\Logger.cpp" />
     <ClCompile Include="src\proton\Platform\OpenGL\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\proton\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\proton\Platform\Windows\WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
