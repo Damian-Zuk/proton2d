@@ -13,6 +13,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["GLFW"] = "vendor/GLFW/include"
 IncludeDir["glad"] = "vendor/glad/include"
+IncludeDir["glm"] = "vendor/glm"
 IncludeDir["ImGui"] = "vendor/imgui"
 
 group "Dependencies"
@@ -45,6 +46,7 @@ project "proton2d"
 		"%{prj.name}/src",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.glad}",
+		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}"
 	}
 
@@ -103,7 +105,8 @@ project "sandbox"
 
 	includedirs
 	{
-		"proton2d/src"
+		"proton2d/src",
+		"%{IncludeDir.glm}"
 	}
 
 	links
