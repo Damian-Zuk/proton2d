@@ -1,5 +1,7 @@
 #include <Proton2D.h>
 
+using namespace proton;
+
 class MainLayer : public proton::Layer {
 public:
 
@@ -8,7 +10,12 @@ public:
 
 	void onAttach() {}
 	void onDetach() {}
-	void onUpdate(float timestep) {}
+	void onUpdate(float timestep) {
+		if (Input::isKeyPressed(Key::F)) {
+			LOG_INFO("F WAS PRESSED");
+		}
+	}
+	
 	void onEvent(proton::Event& event) {}
 };
 
@@ -20,7 +27,6 @@ public:
 	{
 		LOG_OK("Hello from SandBox :)");
 		pushLayer(new MainLayer());
-		pushOverlay(new proton::ImGuiLayer());
 		return true;
 	}
 

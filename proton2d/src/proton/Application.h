@@ -3,6 +3,7 @@
 #include "Core/Window.h"
 #include "Core/Layer.h"
 #include "Core/LayerStack.h"
+#include "ImGui/ImGuiLayer.h"
 
 namespace proton {
 
@@ -28,6 +29,7 @@ namespace proton {
 		float m_LastFrameTime = 0.0f;
 		Window* m_Window;
 		LayerStack m_LayerStack;
+		ImGuiLayer* m_ImGuiLayer;
 	};
 
 	Application* createApp(); // entry point (main function)

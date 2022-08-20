@@ -14,6 +14,7 @@ namespace proton {
 		virtual void onDetach() {}
 		virtual void onUpdate(float timestep) {}
 		virtual void onEvent(Event& event) {}
+		virtual void onImGuiRender() {}
 
 		const std::string& getName() const { return m_DebugName; }
 	protected:

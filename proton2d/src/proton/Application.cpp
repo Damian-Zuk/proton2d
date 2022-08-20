@@ -11,10 +11,12 @@ namespace proton {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
+		: m_ImGuiLayer(new ImGuiLayer())
 	{
 		s_Instance = this;
 		m_Window = Window::create();
 		m_Window->setEventCallback(BIND_EVENT_FN(Application::onEvent));
+		pushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -37,6 +39,11 @@ namespace proton {
 
 				for (Layer* layer : m_LayerStack)
 					layer->onUpdate(timestep);
+
+				m_ImGuiLayer->Begin();
+				for (Layer* layer : m_LayerStack)
+					layer->onImGuiRender();
+				m_ImGuiLayer->End();
 
 				m_Window->onUpdate();
 			}
