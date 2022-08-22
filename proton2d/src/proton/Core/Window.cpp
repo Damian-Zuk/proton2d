@@ -7,10 +7,10 @@
 
 namespace proton {
 
-	Window* Window::create(const WindowProps& props) 
+	Unique<Window> Window::create(const WindowProps& props) 
 	{
 #ifdef PROTON_PLATFORM_WINDOWS
-		return new WindowsWindow(props);
+		return createUnique<WindowsWindow>(props);
 #else
 		return nullptr;
 #endif 

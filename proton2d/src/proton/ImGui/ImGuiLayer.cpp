@@ -41,8 +41,7 @@ namespace proton {
 
 	void ImGuiLayer::onImGuiRender()
 	{
-		static bool show = true;
-		ImGui::ShowDemoWindow(&show);
+
 	}
 
 	void ImGuiLayer::Begin()

@@ -40,7 +40,7 @@ namespace proton {
 
 		virtual void* getNativeWindow() const = 0;
 
-		static Window* create(const WindowProps& props = WindowProps());
+		static Unique<Window> create(const WindowProps& props = WindowProps());
 	};
 
 }

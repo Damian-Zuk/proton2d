@@ -27,7 +27,7 @@ namespace proton {
 		static Application* s_Instance;
 		bool m_IsRunning = true;
 		float m_LastFrameTime = 0.0f;
-		Window* m_Window;
+		Unique<Window> m_Window;
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
 	};

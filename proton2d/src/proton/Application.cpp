@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "Logger.h"
 #include "Events/WindowEvents.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -21,7 +22,6 @@ namespace proton {
 
 	Application::~Application()
 	{
-		delete m_Window;
 	}
 
 	void Application::run()

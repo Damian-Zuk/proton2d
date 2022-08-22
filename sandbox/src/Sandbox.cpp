@@ -1,4 +1,5 @@
 #include <Proton2D.h>
+#include <imgui/imgui.h>
 
 using namespace proton;
 
@@ -8,9 +9,17 @@ public:
 	MainLayer() : Layer("MainLayer") {}
 	~MainLayer() {}
 
-	void onAttach() {}
-	void onDetach() {}
-	void onUpdate(float timestep) {
+	virtual void onAttach() override {}
+	virtual void onDetach() override {}
+
+	virtual void onImGuiRender() override
+	{
+		static bool show = true;
+		ImGui::ShowDemoWindow(&show);
+	}
+	
+	virtual void onUpdate(float timestep) override 
+	{
 		if (Input::isKeyPressed(Key::F)) {
 			LOG_INFO("F WAS PRESSED");
 		}

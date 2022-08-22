@@ -106,6 +106,7 @@ project "sandbox"
 	includedirs
 	{
 		"proton2d/src",
+		"vendor",
 		"%{IncludeDir.glm}"
 	}
 
