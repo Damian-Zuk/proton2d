@@ -8,7 +8,11 @@
 #error Unsuportted platform!
 #endif
 
-#define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
+#ifndef PROTON_DEBUG
+#define NDEBUG
+#endif
+
+#define BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
 
 namespace proton 
 {
@@ -19,14 +23,15 @@ namespace proton
 	using Unique = std::unique_ptr<T>;
 
 	template <typename T, class... Types>
-	constexpr Shared<T> createShared(Types&&... args)
+	constexpr Shared<T> CreateShared(Types&&... args)
 	{
 		return std::make_shared<T>(std::forward<Types>(args)...);
 	}
 
 	template <typename T, class... Types>
-	constexpr Unique<T> createUnique(Types&&... args)
+	constexpr Unique<T> CreateUnique(Types&&... args)
 	{
 		return std::make_unique<T>(std::forward<Types>(args)...);
 	}
+
 }

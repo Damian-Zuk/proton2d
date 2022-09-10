@@ -14,7 +14,7 @@ namespace proton {
 		float getX() const { return m_MouseX; }
 		float getY() const { return m_MouseY; }
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "MouseMovedEvent: " << m_MouseX << ", " << m_MouseY;
@@ -30,21 +30,21 @@ namespace proton {
 	{
 	public:
 		MouseScrolledEvent(const float xOffset, const float yOffset)
-			: m_XOffset(xOffset), m_YOffset(yOffset) {}
+			: m_xOffset(xOffset), m_yOffset(yOffset) {}
 
-		float getXOffset() const { return m_XOffset; }
-		float getYOffset() const { return m_YOffset; }
+		float GetXOffset() const { return m_xOffset; }
+		float GetYOffset() const { return m_yOffset; }
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseScrolledEvent: " << getXOffset() << ", " << getYOffset();
+			ss << "MouseScrolledEvent: " << GetXOffset() << ", " << GetYOffset();
 			return ss.str();
 		}
 
 		EVENT_CLASS_TYPE(MouseScrolled)
 	private:
-		float m_XOffset, m_YOffset;
+		float m_xOffset, m_yOffset;
 	};
 
 	class MouseButtonEvent : public Event
@@ -65,7 +65,7 @@ namespace proton {
 		MouseButtonPressedEvent(const MouseCode button)
 			: MouseButtonEvent(button) {}
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "MouseButtonPressedEvent: " << m_Button;
@@ -81,7 +81,7 @@ namespace proton {
 		MouseButtonReleasedEvent(const MouseCode button)
 			: MouseButtonEvent(button) {}
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "MouseButtonReleasedEvent: " << m_Button;

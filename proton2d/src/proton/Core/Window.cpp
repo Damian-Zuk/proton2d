@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Window.h"
+#include "proton/Core/Window.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 #include "proton/Platform/Windows/WindowsWindow.h"
@@ -7,13 +7,13 @@
 
 namespace proton {
 
-	Unique<Window> Window::create(const WindowProps& props) 
+	Unique<Window> Window::Create(const WindowProps& props) 
 	{
-#ifdef PROTON_PLATFORM_WINDOWS
-		return createUnique<WindowsWindow>(props);
-#else
+	#ifdef PROTON_PLATFORM_WINDOWS
+		return CreateUnique<WindowsWindow>(props);
+	#else
 		return nullptr;
-#endif 
+	#endif 
 	}
 
 }

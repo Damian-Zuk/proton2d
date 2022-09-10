@@ -10,10 +10,10 @@ namespace proton {
 		WindowResizedEvent(unsigned int width, unsigned int height)
 			: m_Width(width), m_Height(height) {}
 
-		unsigned int getWidth() const { return m_Width; }
-		unsigned int getHeight() const { return m_Height; }
+		unsigned int GetWidth() const { return m_Width; }
+		unsigned int GetHeight() const { return m_Height; }
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "WindowResizedEvent: " << m_Width << ", " << m_Height;

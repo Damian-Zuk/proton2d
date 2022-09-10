@@ -2,11 +2,11 @@
 
 #ifdef PROTON_PLATFORM_WINDOWS
 
-extern proton::Application* proton::createApp();
+extern proton::Application* proton::CreateApp();
 
 int main(int argc, char** argv) {
-	auto app = proton::createApp();
-	app->run();
+	auto app = proton::CreateApp();
+	app->Run();
 	delete app;
 }
 

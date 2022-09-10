@@ -9,9 +9,9 @@ namespace proton {
 		ImGuiLayer();
 		~ImGuiLayer();
 
-		void onAttach() override;
-		void onDetach() override;
-		void onImGuiRender() override;
+		void OnAttach() override;
+		void OnDetach() override;
+		void OnImGuiRender() override;
 
 		void Begin();
 		void End();

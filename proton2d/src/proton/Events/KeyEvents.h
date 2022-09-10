@@ -9,7 +9,7 @@ namespace proton {
 	class KeyEvent : public Event
 	{
 	public:
-		KeyCode getKeyCode() const { return m_KeyCode; }
+		KeyCode GetKeyCode() const { return m_KeyCode; }
 
 	protected:
 		KeyEvent(const KeyCode keycode) : m_KeyCode(keycode) {}
@@ -23,9 +23,9 @@ namespace proton {
 		KeyPressedEvent(const KeyCode keycode, const uint16_t repeatCount)
 			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
-		uint16_t getRepeatCount() const { return m_RepeatCount; }
+		uint16_t GetRepeatCount() const { return m_RepeatCount; }
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyPressedEvent: " << m_KeyCode << " (" << m_RepeatCount << " repeats)";
@@ -44,7 +44,7 @@ namespace proton {
 		KeyReleasedEvent(const KeyCode keycode)
 			: KeyEvent(keycode) {}
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyReleasedEvent: " << m_KeyCode;
@@ -61,7 +61,7 @@ namespace proton {
 		KeyTypedEvent(const KeyCode keycode)
 			: KeyEvent(keycode) {}
 
-		std::string toString() const override
+		std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyTypedEvent: " << m_KeyCode;

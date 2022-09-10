@@ -17,15 +17,15 @@ namespace proton {
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
 	{
-		init(props);
+		Init(props);
 	}
 
 	WindowsWindow::~WindowsWindow()
 	{
-		shutdown();
+		Shutdown();
 	}
 
-	void WindowsWindow::init(const WindowProps& props)
+	void WindowsWindow::Init(const WindowProps& props)
 	{
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
@@ -48,7 +48,10 @@ namespace proton {
 		glfwMakeContextCurrent(m_Window);
 		gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		setVSync(true);
+		SetVSync(true);
+
+		LOG_INFO("OpenGL version:", glGetString(GL_VERSION));
+		LOG_INFO("Renderer:", glGetString(GL_RENDERER));
 
 		// GLFW event callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -141,7 +144,7 @@ namespace proton {
 			});
 	}
 
-	void WindowsWindow::shutdown()
+	void WindowsWindow::Shutdown()
 	{
 		glfwDestroyWindow(m_Window);
 		--s_GLFWWindowCount;
@@ -152,16 +155,13 @@ namespace proton {
 		LOG_INFO("GLFW window destroyed")
 	}
 
-	void WindowsWindow::onUpdate()
+	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//m_Context->SwapBuffers();
 	}
 
-	void WindowsWindow::setVSync(bool enabled)
+	void WindowsWindow::SetVSync(bool enabled)
 	{
 		if (enabled)
 			glfwSwapInterval(1);
@@ -171,7 +171,7 @@ namespace proton {
 		m_Data.VSync = enabled;
 	}
 
-	bool WindowsWindow::isVSync() const
+	bool WindowsWindow::IsVSync() const
 	{
 		return m_Data.VSync;
 	}

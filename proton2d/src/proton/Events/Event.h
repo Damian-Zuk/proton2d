@@ -13,18 +13,18 @@ namespace proton {
 	class Event 
 	{
 	public:
-		virtual EventType getEventType()	const = 0;
-		virtual std::string getEventName()	const = 0;
-		virtual std::string toString()		const { return getEventName(); }
+		virtual EventType GetEventType()	const = 0;
+		virtual std::string GetEventName()	const = 0;
+		virtual std::string ToString()		const { return GetEventName(); }
 
 	public:
 		bool m_Handled = false;
 	};
 
 
-#define EVENT_CLASS_TYPE(type)	static EventType getStaticType()			{ return EventType::type; } \
-								EventType getEventType()	const override	{ return getStaticType(); } \
-								std::string getEventName()	const override	{ return #type; }
+#define EVENT_CLASS_TYPE(type)	static EventType GetStaticType()			{ return EventType::type; } \
+								EventType GetEventType()	const override	{ return GetStaticType(); } \
+								std::string GetEventName()	const override	{ return #type; }
 								
 
 	class EventDispatcher
@@ -34,8 +34,8 @@ namespace proton {
 		EventDispatcher(Event& event) : m_Event(event) {}
 
 		template<typename T, typename F>
-		void dispatch(const F& function) {
-			if (m_Event.getEventType() == T::getStaticType())
+		void Dispatch(const F& function) {
+			if (m_Event.GetEventType() == T::GetStaticType())
 				m_Event.m_Handled |= function(static_cast<T&>(m_Event));
 		}
 
@@ -45,6 +45,6 @@ namespace proton {
 
 	inline std::ostream& operator<<(std::ostream& os, const Event& e)
 	{
-		return os << e.toString();
+		return os << e.ToString();
 	}
 }
