@@ -15,6 +15,7 @@ IncludeDir["GLFW"] = "vendor/GLFW/include"
 IncludeDir["glad"] = "vendor/glad/include"
 IncludeDir["glm"] = "vendor/glm"
 IncludeDir["ImGui"] = "vendor/imgui"
+IncludeDir["stb"] = "vendor/stb"
 
 group "Dependencies"
 	include "vendor/GLFW"
@@ -38,7 +39,9 @@ project "proton2d"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"vendor/stb/**.h",
+		"vendor/stb/**.cpp"
 	}
 
 	includedirs
@@ -47,7 +50,8 @@ project "proton2d"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.stb}"
 	}
 
 	links
