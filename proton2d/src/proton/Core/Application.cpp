@@ -27,6 +27,7 @@ namespace proton {
 	void Application::Run()
 	{
 		Logger::init();
+		Renderer::Init();
 
 		if (OnCreate()) 
 		{
