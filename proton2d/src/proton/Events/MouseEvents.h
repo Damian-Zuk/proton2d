@@ -1,18 +1,20 @@
 #pragma once
 
-#include "Proton/Events/Event.h"
-#include "Proton/Core/KeyCodes.h"
+#include "proton/Events/Event.h"
+#include "proton/Core/KeyCodes.h"
 
 namespace proton {
 
 	class MouseMovedEvent : public Event
 	{
 	public:
+		EVENT_CLASS_TYPE(MouseMoved)
+
 		MouseMovedEvent(const float x, const float y)
 			: m_MouseX(x), m_MouseY(y) {}
 
-		float getX() const { return m_MouseX; }
-		float getY() const { return m_MouseY; }
+		float GetX() const { return m_MouseX; }
+		float GetY() const { return m_MouseY; }
 
 		std::string ToString() const override
 		{
@@ -21,14 +23,16 @@ namespace proton {
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseMoved)
 	private:
 		float m_MouseX, m_MouseY;
 	};
 
+
 	class MouseScrolledEvent : public Event
 	{
 	public:
+		EVENT_CLASS_TYPE(MouseScrolled)
+
 		MouseScrolledEvent(const float xOffset, const float yOffset)
 			: m_xOffset(xOffset), m_yOffset(yOffset) {}
 
@@ -42,11 +46,12 @@ namespace proton {
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseScrolled)
 	private:
 		float m_xOffset, m_yOffset;
 	};
 
+
+	// Virtual class for mouse buttons events
 	class MouseButtonEvent : public Event
 	{
 	public:
@@ -59,9 +64,12 @@ namespace proton {
 		MouseCode m_Button;
 	};
 
+
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
+		EVENT_CLASS_TYPE(MouseButtonPressed)
+
 		MouseButtonPressedEvent(const MouseCode button)
 			: MouseButtonEvent(button) {}
 
@@ -71,13 +79,14 @@ namespace proton {
 			ss << "MouseButtonPressedEvent: " << m_Button;
 			return ss.str();
 		}
-
-		EVENT_CLASS_TYPE(MouseButtonPressed)
 	};
+
 
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
+		EVENT_CLASS_TYPE(MouseButtonReleased)
+
 		MouseButtonReleasedEvent(const MouseCode button)
 			: MouseButtonEvent(button) {}
 
@@ -87,8 +96,6 @@ namespace proton {
 			ss << "MouseButtonReleasedEvent: " << m_Button;
 			return ss.str();
 		}
-
-		EVENT_CLASS_TYPE(MouseButtonReleased)
 	};
 
 }

@@ -70,10 +70,21 @@ namespace proton {
 		EventDispatcher dispatcher(event);
 
 		dispatcher.Dispatch<WindowClosedEvent>([&](WindowClosedEvent& e) -> bool {
-
+			
 			m_IsRunning = false;
-
 			return true;
+		});
+
+		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& e) -> bool {
+			
+			uint32_t width = e.GetWidth(), height = e.GetHeight();
+			if (width && height)
+			{
+				m_WindowMinimized = false;
+				Renderer::SetViewport(0, 0, width, height);
+			}
+			else m_WindowMinimized = true;
+			return false;
 		});
 
 		for (Layer* layer : m_LayerStack)

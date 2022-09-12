@@ -16,7 +16,7 @@ namespace proton {
 		static void EndScene();
 		static void Flush();
 
-		// Base draw quad functions (color and white texture)
+		// Base Draw Quad functions (color and texture)
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color);
 		static void DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f));
 

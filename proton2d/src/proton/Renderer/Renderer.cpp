@@ -56,14 +56,14 @@ namespace proton {
 		Renderer::Statistics Stats;
 	} data;
 
-	void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id,unsigned severity, int length, const char* message, const void* userParam)
+	void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char* message, const void* userParam)
 	{
 		switch (severity)
 		{
-		case GL_DEBUG_SEVERITY_HIGH:          LOG_ERROR(message); return;
-		case GL_DEBUG_SEVERITY_MEDIUM:        LOG_ERROR(message); return;
-		case GL_DEBUG_SEVERITY_LOW:           LOG_WARN(message); return;
-		case GL_DEBUG_SEVERITY_NOTIFICATION:  LOG_INFO(message); return;
+		case GL_DEBUG_SEVERITY_HIGH:          LOG_ERROR("[OpenGL Critical Error]", message); return;
+		case GL_DEBUG_SEVERITY_MEDIUM:        LOG_ERROR("[OpenGL Error]", message); return;
+		case GL_DEBUG_SEVERITY_LOW:           LOG_WARN("[OpenGL Warning]", message); return;
+		case GL_DEBUG_SEVERITY_NOTIFICATION:  LOG_INFO("[OpenGL Info]", message); return;
 		}
 	}
 
@@ -85,13 +85,13 @@ namespace proton {
 
 		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true);
 		data.QuadShader          = CreateShared<Shader>("assets/shaders/Quad2D.glsl");
-		data.CameraUniformBuffer = CreateShared<UniformBuffer>(sizeof(glm::mat4), 0);
+		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
 	}
 
 	void Renderer::InitQuadVertexArray()
 	{
 		data.QuadVertexArray  = CreateShared<VertexArray>();
-		data.QuadVertexBuffer = CreateShared<VertexBuffer>((size_t)data.MaxVertices * sizeof(QuadVertex));
+		data.QuadVertexBuffer = CreateShared<VertexBuffer>((uint32_t)(data.MaxVertices * sizeof(QuadVertex)));
 
 		data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "Position"      },

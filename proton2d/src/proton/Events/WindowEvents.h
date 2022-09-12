@@ -1,12 +1,14 @@
 #pragma once
 
-#include "Event.h"
+#include "proton/Events/Event.h"
 
 namespace proton {
 
 	class WindowResizedEvent : public Event
 	{
 	public:
+		EVENT_CLASS_TYPE(WindowResized)
+
 		WindowResizedEvent(unsigned int width, unsigned int height)
 			: m_Width(width), m_Height(height) {}
 
@@ -20,7 +22,6 @@ namespace proton {
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(WindowResized)
 	private:
 		unsigned int m_Width, m_Height;
 	};
