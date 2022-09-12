@@ -5,7 +5,7 @@ using namespace proton;
 class MainLayer : public proton::Layer {
 public:
 
-	MainLayer() : Layer("MainLayer"), m_CameraController(16.0f / 9.0f) {}	
+	MainLayer() : Layer("MainLayer"), m_CameraController() {}	
 	~MainLayer() {}
 
 	virtual void OnAttach() override 
@@ -27,7 +27,7 @@ public:
 	
 	virtual void OnUpdate(float ts) override 
 	{
-		m_CameraController.Update(ts);
+		m_CameraController.OnUpdate(ts);
 
 		static auto speed = glm::vec2(0.15f, 0.23f);
 		static auto pos = glm::vec2(0.0f, 0.0f);
@@ -48,8 +48,8 @@ public:
 		{
 			for (float x = -0.8f; x < 0.8f; x += 0.09f)
 			{
-				float r = std::min(std::max((x / (2.0f) + 0.6f) - colorMod / 3.0f, 0.0f), 1.0f);
-				float b = std::min(std::max((y / (2.0f) + 0.6f) + colorMod / 5.0f, 0.0f), 1.0f);
+				float r = std::min(std::max((x / (2.0f) + 0.6f) - colorMod / 2.0f, 0.0f), 1.0f);
+				float b = std::min(std::max((y / (2.0f) + 0.6f) + colorMod / 10.0f, 0.0f), 1.0f);
 				Renderer::DrawQuad({ x, y, 0.1f }, { 0.07f, 0.07f }, { r, colorMod, b, 1.0f });
 			}
 		}
@@ -58,7 +58,7 @@ public:
 		Renderer::EndScene();
 	}
 	
-	void OnEvent(proton::Event& event) 
+	void OnEvent(Event& event) 
 	{
 		m_CameraController.OnEvent(event);
 	}
@@ -76,6 +76,7 @@ public:
 	bool OnCreate() override
 	{
 		LOG_OK("Hello from SandBox :)");
+		//GetWindow().SetVSync(false);
 		PushLayer(new MainLayer());
 		return true;
 	}

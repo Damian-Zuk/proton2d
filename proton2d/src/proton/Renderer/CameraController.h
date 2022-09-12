@@ -7,10 +7,10 @@ namespace proton {
 
 	class CameraController {
 	public:
-		CameraController(float aspectRatio);
+		CameraController();
 		virtual ~CameraController();
 
-		void Update(float ts);
+		void OnUpdate(float ts);
 		void OnEvent(Event& e);
 
 		Camera& GetCamera() { return m_Camera; }
@@ -20,6 +20,7 @@ namespace proton {
 		float m_AspectRatio;
 		Camera m_Camera;
 		glm::vec2 m_CameraSpeed = glm::vec2(0.7f);
-		float m_CameraZoomSpeed = 0.12f;
+		float m_ZoomLevelTarget = 1.0f;
+		float m_CameraZoomSpeed = 0.10f;
 	};
 }
