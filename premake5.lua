@@ -16,6 +16,7 @@ IncludeDir["glad"] = "vendor/glad/include"
 IncludeDir["glm"] = "vendor/glm"
 IncludeDir["ImGui"] = "vendor/imgui"
 IncludeDir["stb"] = "vendor/stb"
+IncludeDir["entt"] = "vendor/entt/src"
 
 group "Dependencies"
 	include "vendor/GLFW"
@@ -51,7 +52,8 @@ project "proton2d"
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.stb}"
+		"%{IncludeDir.stb}",
+		"%{IncludeDir.entt}"
 	}
 
 	links
@@ -111,7 +113,8 @@ project "sandbox"
 	{
 		"proton2d/src",
 		"vendor",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}"
 	}
 
 	links

@@ -1,6 +1,13 @@
 #include <Proton2D.h>
 
+#include <entt/entt.hpp>
+
 using namespace proton;
+
+struct TransformComponent 
+{
+	glm::mat4 Transform;
+};
 
 class MainLayer : public proton::Layer {
 public:
@@ -11,6 +18,8 @@ public:
 	virtual void OnAttach() override 
 	{
 		m_PlayerTexture = CreateShared<Texture>("assets/Player.png");
+		m_TestEntity = m_Registry.create();
+		m_Registry.emplace<TransformComponent>(m_TestEntity);
 	}
 
 	virtual void OnDetach() override {}
@@ -66,6 +75,8 @@ public:
 private:
 	CameraController m_CameraController;
 	Shared<Texture> m_PlayerTexture;
+	entt::registry m_Registry;
+	entt::entity m_TestEntity = entt::null;
 };
 
 
