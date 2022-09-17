@@ -1,7 +1,6 @@
 #pragma once
 
 #include "proton/Core/Application.h"
-#include "proton/EntryPoint.h"
 #include "proton/Core/Logger.h"
 
 #include "proton/Core/Input.h"
@@ -17,5 +16,8 @@
 
 #include "proton/Renderer/Renderer.h"
 #include "proton/Renderer/CameraController.h"
+
+#include "proton/Entity/Entity.h"
+#include "proton/Entity/Components.h"
 
 #include <imgui/imgui.h>
