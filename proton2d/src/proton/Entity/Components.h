@@ -1,4 +1,6 @@
 #pragma once
+#include "proton/Renderer/Texture.h"
+#include "proton/Renderer/Camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,6 +30,13 @@ namespace proton {
 
 	struct SpriteComponent
 	{
+		Shared<Texture> Texture = nullptr;
 		glm::vec4 Color{ 1.0f };
+		float TilingFactor = 1.0f;
+	};
+
+	struct CameraComponent
+	{
+		Shared<Camera> Camera; // TODO: Przerobic kamere aby korzystala z komponentu Transform 
 	};
 }

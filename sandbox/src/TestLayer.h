@@ -13,6 +13,8 @@ public:
 	virtual void OnUpdate(float ts) override;
 	virtual void OnEvent(proton::Event& event);
 private:
+	proton::Shared<proton::Texture> m_PlayerTexture;
 	proton::Shared<proton::Scene> m_MainScene;
+	proton::CameraController m_CameraController;
 	proton::Entity m_Player;
 };

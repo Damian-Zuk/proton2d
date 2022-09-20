@@ -4,6 +4,7 @@
 #include "proton/Core/Layer.h"
 #include "proton/Core/LayerStack.h"
 #include "proton/ImGui/ImGuiLayer.h"
+#include "proton/Editor/EditorOverlay.h"
 
 namespace proton {
 
@@ -19,6 +20,8 @@ namespace proton {
 
 		static inline Application& Get() { return *s_Instance; }
 		inline Window& GetWindow() { return *m_Window; }
+
+		void SetEditorActiveScene(const Shared<Scene> scene); // temp
 	protected:
 		virtual bool OnCreate() = 0;
 		void OnEvent(Event& event);
@@ -31,6 +34,7 @@ namespace proton {
 		Unique<Window> m_Window;
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
+		EditorOverlay* m_EditorOverlay;
 	};
 
 	Application* CreateApp(); // entry point (main function)

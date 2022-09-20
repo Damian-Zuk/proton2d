@@ -21,7 +21,7 @@ namespace proton {
 			return m_Scene->m_Registry.get<T>(m_Handle);
 		}
 
-		template <typename T, typename ...Types>
+		template <typename T, typename... Types>
 		T& AddComponent(Types&& ...args) const 
 		{
 			assert(!HasComponent<T>() && "Entity already have component!");
@@ -38,9 +38,12 @@ namespace proton {
 		template <typename T>
 		bool HasComponent() const 
 		{
-			//assert(!m_Scene.expired() && "Scene no longer exists!");
 			return m_Scene->m_Registry.any_of<T>(m_Handle);
 		}
+
+		operator uint32_t() const { return (uint32_t)m_Handle; }
+		bool operator==(const Entity& other) const { return other.m_Handle == m_Handle; }
+		bool operator!=(const Entity& other) const { return other.m_Handle != m_Handle; }
 
 	private:
 		Scene* m_Scene = nullptr;

@@ -12,17 +12,27 @@ namespace proton {
 	{
 	public:
 		friend class Entity;
+		friend class EditorOverlay;
 
-		Scene();
+		Scene(const std::string& name = "Unnamed Scene" );
 		~Scene();
 
-		Entity CreateEntity(const std::string& name);
+		Entity CreateEntity(const std::string& name = "Unnamed Entity");
 
 		void OnUpdate(float ts);
+		
+		void SetPrimaryCamera(Entity& cameraEntity);
+		void SetPrimaryCamera(Shared<Camera> camera);
+		Shared<Camera> GetSceneCamera() { return m_PrimaryCamera.lock(); }
+	
+	private:
+		void RenderScene(Camera& camera);
 
 	private:
+		std::string m_SceneName;
 		entt::registry m_Registry;
-		Camera m_Camera;
+		std::weak_ptr<Camera> m_PrimaryCamera;
+		Camera m_DefaultCamera;
 	};
 
 }

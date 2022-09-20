@@ -7,7 +7,7 @@ namespace proton {
 	class Camera
 	{
 	public:
-		Camera(float aspectRatio, const glm::vec2& position = glm::vec2(0.0f));
+		Camera(const glm::vec2& position = glm::vec2(0.0f), float aspectRatio = -1.0f);
 		virtual ~Camera() = default;
 
 		void Move(const glm::vec2& offset);

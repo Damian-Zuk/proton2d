@@ -1,14 +1,20 @@
 #pragma once
 #include "pch.h"
 #include "proton/Renderer/Camera.h"
+#include "proton/Core/Application.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace proton {
 
-	Camera::Camera(float aspectRatio, const glm::vec2& position)
-		: m_Position({ position.x, position.y, 0.0f }), m_AspectRatio(aspectRatio)
+	Camera::Camera(const glm::vec2& position, float aspectRatio)
+		: m_Position({ position.x, position.y, 0.0f })
 	{
+		if (aspectRatio < 0.0f)
+			m_AspectRatio = Application::Get().GetWindow().GetAspectRatio();
+		else
+			m_AspectRatio = aspectRatio;
+
 		CalculateViewProjection();
 	}
 

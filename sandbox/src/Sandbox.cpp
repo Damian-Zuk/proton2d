@@ -3,7 +3,7 @@
 #include <proton/EntryPoint.h>
 #include <entt/entt.hpp>
 
-using namespace proton;
+/*using namespace proton;
 
 class MainLayer : public proton::Layer {
 public:
@@ -22,7 +22,7 @@ public:
 	{
 		auto stats = Renderer::GetStats();
 		ImGui::Begin("Debug info");
-		ImGui::Text("Zoom Level: %f", m_CameraController.GetCamera().GetZoomLevel());
+		ImGui::Text("Zoom Level: %f", m_CameraController.GetCamera()->GetZoomLevel());
 		ImGui::Text("Quads: %i", stats.QuadCount);
 		ImGui::Text("Draw calls: %i", stats.DrawCalls);
 		ImGui::End();
@@ -45,7 +45,7 @@ public:
 		
 		Renderer::ResetStats();
 		Renderer::Clear({ 0.1f, 0.12f, 0.16f, 1.0f });
-		Renderer::BeginScene(m_CameraController.GetCamera());
+		Renderer::BeginScene(*m_CameraController.GetCamera());
 		
 		for (float y = -0.8f; y < 0.8f; y += 0.09f)
 		{
@@ -69,7 +69,7 @@ public:
 private:
 	CameraController m_CameraController;
 	Shared<Texture> m_PlayerTexture;
-};
+};*/
 
 class Sandbox : public proton::Application
 {

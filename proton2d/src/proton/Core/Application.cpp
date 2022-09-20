@@ -4,7 +4,6 @@
 #include "proton/Events/WindowEvents.h"
 #include "proton/Renderer/Renderer.h"
 
-#include <iostream>
 #include <GLFW/glfw3.h>
 
 namespace proton {
@@ -12,12 +11,13 @@ namespace proton {
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
-		: m_ImGuiLayer(new ImGuiLayer())
+		: m_ImGuiLayer(new ImGuiLayer()), m_EditorOverlay(new EditorOverlay())
 	{
 		s_Instance = this;
 		m_Window = Window::Create();
 		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
 		PushOverlay(m_ImGuiLayer);
+		PushOverlay(m_EditorOverlay);
 	}
 
 	Application::~Application()
@@ -63,6 +63,11 @@ namespace proton {
 	{
 		m_LayerStack.PushOverlay(layer);
 		layer->OnAttach();
+	}
+
+	void Application::SetEditorActiveScene(const Shared<Scene> scene)
+	{
+		m_EditorOverlay->SetActiveScene(scene);
 	}
 
 	void Application::OnEvent(Event& event)
