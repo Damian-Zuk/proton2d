@@ -24,7 +24,7 @@ namespace proton {
 
 	void EditorOverlay::OnImGuiRender()
 	{
-		ImGui::Begin("Scene Entity Nodes");
+		ImGui::Begin("Scene");
 
 		if (m_ActiveScene)
 		{
@@ -33,16 +33,14 @@ namespace proton {
 				Entity entity{ m_ActiveScene.get(), id};
 
 				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
-				if (m_SelectedEntity == entity)
+				if (m_Inspector.m_SelectedEntity == entity)
 					flags |= ImGuiTreeNodeFlags_Selected;
 
-				auto& tag = entity.GetComponent<TagComponent>().Tag;
-				bool expanded = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+				bool expanded = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, 
+					flags, entity.GetComponent<TagComponent>().Tag.c_str());
 				
 				if (ImGui::IsItemClicked())
-				{
-					m_SelectedEntity = entity;
-				}
+					m_Inspector.m_SelectedEntity = entity;
 
 				if (expanded)
 				{
@@ -53,11 +51,14 @@ namespace proton {
 		}
 
 		ImGui::End();
+
+		m_Inspector.OnImGuiRender();
 	}
 
 	void EditorOverlay::SetActiveScene(const Shared<Scene>& scene)
 	{
 		m_ActiveScene = scene;
+		m_Inspector.m_ActiveScene = scene;
 	}
 
 }

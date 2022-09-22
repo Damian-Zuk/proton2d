@@ -1,6 +1,7 @@
 #pragma once
 #include "proton/Core/Layer.h"
 #include "proton/Entity/Entity.h"
+#include "proton/Editor/Inspector.h"
 
 namespace proton {
 
@@ -17,6 +18,7 @@ namespace proton {
 
 		void SetActiveScene(const Shared<Scene>& scene);
 	private:
+		Inspector m_Inspector;
 		Shared<Scene> m_ActiveScene;
 		Entity m_SelectedEntity;
 	};

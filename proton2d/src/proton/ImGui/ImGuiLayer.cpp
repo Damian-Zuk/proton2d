@@ -30,6 +30,9 @@ namespace proton {
 		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
+
+		ImFont* robotoFont = io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
+		io.Fonts->Build();
 	}
 
 	void ImGuiLayer::OnDetach()

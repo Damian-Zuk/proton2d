@@ -42,6 +42,7 @@ namespace proton {
 		}
 
 		operator uint32_t() const { return (uint32_t)m_Handle; }
+		operator bool() const { return m_Handle != entt::null; }
 		bool operator==(const Entity& other) const { return other.m_Handle == m_Handle; }
 		bool operator!=(const Entity& other) const { return other.m_Handle != m_Handle; }
 
