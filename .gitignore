@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# VS project and solution files not needed (can be generated)
+*.vcxproj
+*.vcxproj.filters
+*.sln
+
 # User-specific files
 *.rsuser
 *.suo
