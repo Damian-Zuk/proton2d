@@ -41,8 +41,8 @@ namespace proton {
 		for (auto entity : renderable)
 		{
 			auto [transform, sprite] = renderable.get<TransformComponent, SpriteComponent>(entity);
-			if (sprite.Texture)
-				Renderer::DrawQuad(transform, sprite.Texture, sprite.TilingFactor, sprite.Color);
+			if (sprite.Sprite)
+				Renderer::DrawQuad(transform, sprite.Sprite, sprite.TilingFactor, sprite.Color);
 			else
 				Renderer::DrawQuad(transform, sprite.Color);
 		}

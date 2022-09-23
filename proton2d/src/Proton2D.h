@@ -12,6 +12,7 @@
 #include "proton/Events/WindowEvents.h"
 
 #include "proton/Graphics/Renderer.h"
+#include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/CameraController.h"
 
 #include "proton/Entity/Entity.h"

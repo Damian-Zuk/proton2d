@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proton/Graphics/Texture.h"
+#include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/Camera.h"
 
 #include <glm/glm.hpp>
@@ -31,7 +31,7 @@ namespace proton {
 
 	struct SpriteComponent
 	{
-		Shared<Texture> Texture = nullptr;
+		Shared<proton::Sprite> Sprite = nullptr;
 		glm::vec4 Color{ 1.0f };
 		float TilingFactor = 1.0f;
 	};

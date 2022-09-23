@@ -1,7 +1,10 @@
 #pragma once
+
 #include <Proton2D.h>
 
-class TestLayer : public proton::Layer
+using namespace proton;
+
+class TestLayer : public Layer
 {
 public:
 	TestLayer();
@@ -11,10 +14,11 @@ public:
 	virtual void OnDetach() override;
 
 	virtual void OnUpdate(float ts) override;
-	virtual void OnEvent(proton::Event& event);
+	virtual void OnEvent(Event& event);
 private:
-	proton::Shared<proton::Texture> m_PlayerTexture;
-	proton::Shared<proton::Scene> m_MainScene;
-	proton::CameraController m_CameraController;
-	proton::Entity m_Player;
+	Shared<Scene> m_MainScene;
+	CameraController m_CameraController;
+	Shared<SpriteSheet> m_PlayerSpriteSheet;
+	Shared<Sprite> m_PlayerSprite;
+	Entity m_Player;
 };

@@ -17,13 +17,6 @@ namespace proton {
 		{ -0.5f,  0.5f, 0.0f, 1.0f }
 	};
 
-	constexpr static glm::vec2 TextureCoords[] = {
-		{ 0.0f, 0.0f },
-		{ 1.0f, 0.0f },
-		{ 1.0f, 1.0f },
-		{ 0.0f, 1.0f }
-	};
-
 	struct QuadVertex
 	{
 		glm::vec3 Position;
@@ -170,6 +163,13 @@ namespace proton {
 		if (data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
 
+		constexpr glm::vec2 textureCoords[] = {
+			{ 0.0f, 0.0f },
+			{ 1.0f, 0.0f },
+			{ 1.0f, 1.0f },
+			{ 0.0f, 1.0f }
+		};
+
 		constexpr uint16_t QuadVertexCount = 4;
 		for (uint16_t i = 0; i < QuadVertexCount; i++)
 		{
@@ -177,14 +177,14 @@ namespace proton {
 			data.QuadVertexBufferPtr->Color = color;
 			data.QuadVertexBufferPtr->TextureIndex = 0.0f;
 			data.QuadVertexBufferPtr->TilingFactor = 1.0f;
-			data.QuadVertexBufferPtr->TextureCoords = TextureCoords[i];
+			data.QuadVertexBufferPtr->TextureCoords = textureCoords[i];
 			data.QuadVertexBufferPtr++;
 		}
 
 		data.QuadIndexCount += 6;
 	}
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, float tilingFactor, const glm::vec4& tintColor)
 	{
 		if (data.QuadIndexCount >= RendererData::MaxIndices)
 			NextBatch();
@@ -192,7 +192,7 @@ namespace proton {
 		uint32_t textureIndex = 0;
 		for (uint32_t i = 1; i < data.TextureSlotIndex; i++)
 		{
-			if (*data.TextureSlots[i] == *texture)
+			if (*data.TextureSlots[i] == *sprite->GetTexture())
 			{
 				textureIndex = i;
 				break;
@@ -205,9 +205,11 @@ namespace proton {
 				NextBatch();
 
 			textureIndex = data.TextureSlotIndex;
-			data.TextureSlots[data.TextureSlotIndex] = texture;
+			data.TextureSlots[data.TextureSlotIndex] = sprite->GetTexture();
 			data.TextureSlotIndex++;
 		}
+
+		auto& textureCoords = sprite->GetTextureCoords();
 
 		constexpr uint16_t QuadVertexCount = 4;
 		for (uint16_t i = 0; i < QuadVertexCount; i++)
@@ -215,66 +217,12 @@ namespace proton {
 			data.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
 			data.QuadVertexBufferPtr->Color = tintColor;
 			data.QuadVertexBufferPtr->TextureIndex = static_cast<float>(textureIndex);
-			data.QuadVertexBufferPtr->TextureCoords = TextureCoords[i];
+			data.QuadVertexBufferPtr->TextureCoords = { textureCoords[i][0], textureCoords[i][1] };
 			data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			data.QuadVertexBufferPtr++;
 		}
 
 		data.QuadIndexCount += 6;
-	}
-
-	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, color);
-	}
-
-	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, color);
-	}
-
-	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Shared<Texture>& texture, float tilingFactor, const glm::vec4& tintColor)
-	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tilingFactor, tintColor);
-	}
-
-	void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Shared<Texture>& texture, float tilingFactor, const glm::vec4& tintColor)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, texture, tilingFactor, tintColor);
-	}
-
-	void Renderer::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
-	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
-	}
-
-	void Renderer::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, color);
-	}
-
-	void Renderer::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Shared<Texture>& texture, float tilingFactor, const glm::vec4& tintColor)
-	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, tintColor);
-	}
-
-	void Renderer::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Shared<Texture>& texture, float tilingFactor, const glm::vec4& tintColor)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, texture, tilingFactor, tintColor);
 	}
 
 	void Renderer::Clear(glm::vec4 color)

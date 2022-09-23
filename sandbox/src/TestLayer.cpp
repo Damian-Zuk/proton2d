@@ -17,14 +17,16 @@ void TestLayer::OnAttach()
 	m_MainScene->SetPrimaryCamera(m_CameraController.GetCamera());
 	Application::Get().SetEditorActiveScene(m_MainScene);
 
-	m_PlayerTexture = CreateShared<Texture>("assets/Player.png");
+	auto playerSpriteSheetTexture = CreateShared<Texture>("assets/adventurer-v1.5-Sheet.png");
+	m_PlayerSpriteSheet = CreateShared<SpriteSheet>(playerSpriteSheetTexture, 50, 37);
+	m_PlayerSprite = CreateShared<Sprite>(m_PlayerSpriteSheet, 0, 15);
 	
 	m_Player = m_MainScene->CreateEntity("Player");
 	{
 		auto& transform = m_Player.GetComponent<TransformComponent>();
 		auto& sprite = m_Player.AddComponent<SpriteComponent>();
 		transform.Scale = { 0.5f, 0.5f };
-		sprite.Texture = m_PlayerTexture;
+		sprite.Sprite = m_PlayerSprite;
 	}
 
 	auto& redSquare = m_MainScene->CreateEntity("Red Square");
