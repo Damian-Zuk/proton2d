@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Renderer/CameraController.h"
+#include "proton/Graphics/CameraController.h"
 #include "proton/Core/Input.h"
 #include "proton/Events/MouseEvents.h"
 #include "proton/Core/Application.h"

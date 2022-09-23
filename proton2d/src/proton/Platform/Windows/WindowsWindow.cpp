@@ -15,23 +15,13 @@ namespace proton {
 		LOG_ERROR("GLFW Error", error, ':', description);
 	}
 
-	WindowsWindow::WindowsWindow(const WindowProps& props)
+	WindowsWindow::WindowsWindow(const std::string& title, uint32_t width, uint32_t height)
 	{
-		Init(props);
-	}
+		m_Data.Title = title;
+		m_Data.Width = width;
+		m_Data.Height = height;
 
-	WindowsWindow::~WindowsWindow()
-	{
-		Shutdown();
-	}
-
-	void WindowsWindow::Init(const WindowProps& props)
-	{
-		m_Data.Title = props.Title;
-		m_Data.Width = props.Width;
-		m_Data.Height = props.Height;
-
-		LOG_INFO("Creating window", props.Title, "(", props.Width, props.Height, ")");
+		LOG_INFO("Creating window", title, "(", width, height, ")");
 
 		if (s_GLFWWindowCount == 0)
 		{
@@ -40,7 +30,7 @@ namespace proton {
 		}
 
 		{
-			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+			m_Window = glfwCreateWindow((int)width, (int)height, m_Data.Title.c_str(), nullptr, nullptr);
 			++s_GLFWWindowCount;
 		}
 
@@ -142,6 +132,11 @@ namespace proton {
 				MouseMovedEvent event((float)xPos, (float)yPos);
 				data.EventCallback(event);
 			});
+	}
+
+	WindowsWindow::~WindowsWindow()
+	{
+		Shutdown();
 	}
 
 	void WindowsWindow::Shutdown()

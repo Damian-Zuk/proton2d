@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "proton/Entity/Scene.h"
 #include "proton/Entity/Entity.h"
-#include "proton/Renderer/Renderer.h"
+#include "proton/Graphics/Renderer.h"
 #include "proton/Core/Application.h"
 
 namespace proton {
@@ -27,10 +27,10 @@ namespace proton {
 
 	void Scene::OnUpdate(float ts)
 	{
-		if (m_PrimaryCamera.expired())
+		if (!m_PrimaryCamera)
 			RenderScene(m_DefaultCamera);
 		else
-			RenderScene(*m_PrimaryCamera.lock());
+			RenderScene(*m_PrimaryCamera);
 	}
 
 	void Scene::RenderScene(Camera& camera)

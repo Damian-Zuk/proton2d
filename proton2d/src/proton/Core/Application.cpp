@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "proton/Core/Application.h"
 #include "proton/Core/Logger.h"
+#include "proton/Platform/Windows/WindowsWindow.h"
 #include "proton/Events/WindowEvents.h"
-#include "proton/Renderer/Renderer.h"
+#include "proton/Graphics/Renderer.h"
 
 #include <GLFW/glfw3.h>
 
@@ -10,18 +11,20 @@ namespace proton {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application()
-		: m_ImGuiLayer(new ImGuiLayer()), m_EditorOverlay(new EditorOverlay())
+	Application::Application(const std::string& appName)
+		: m_AppName(appName), m_EditorOverlay(new EditorOverlay())
 	{
 		s_Instance = this;
-		m_Window = Window::Create();
-		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
-		PushOverlay(m_ImGuiLayer);
-		PushOverlay(m_EditorOverlay);
-	}
 
-	Application::~Application()
-	{
+		constexpr uint32_t windowWidth = 1600;
+		constexpr uint32_t windowHeight = 900;
+
+	#ifdef PROTON_PLATFORM_WINDOWS
+		m_Window = CreateUnique<WindowsWindow>(appName, 1600, 900);
+	#endif
+
+		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
+		PushOverlay(m_EditorOverlay);
 	}
 
 	void Application::Run()
@@ -39,14 +42,16 @@ namespace proton {
 
 				if (!m_WindowMinimized) 
 				{
-					for (Layer* layer : m_LayerStack)
+					for (Layer* layer : m_AppLayers)
 						layer->OnUpdate(timestep);
 				}
 
-				m_ImGuiLayer->Begin();
-				for (Layer* layer : m_LayerStack)
+			#ifndef PROTON_DIST
+				m_EditorOverlay->BeginImGuiRender();
+				for (Layer* layer : m_AppLayers)
 					layer->OnImGuiRender();
-				m_ImGuiLayer->End();
+				m_EditorOverlay->EndImGuiRender();
+			#endif
 
 				m_Window->OnUpdate();
 			}
@@ -55,13 +60,13 @@ namespace proton {
 
 	void Application::PushLayer(Layer* layer)
 	{
-		m_LayerStack.PushLayer(layer);
+		m_AppLayers.insert(m_AppLayers.begin(), layer);
 		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* layer)
 	{
-		m_LayerStack.PushOverlay(layer);
+		m_AppLayers.emplace_back(layer);
 		layer->OnAttach();
 	}
 
@@ -92,7 +97,7 @@ namespace proton {
 			return false;
 		});
 
-		for (Layer* layer : m_LayerStack)
+		for (Layer* layer : m_AppLayers)
 			layer->OnEvent(event);
 	}
 

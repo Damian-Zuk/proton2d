@@ -72,16 +72,20 @@ namespace proton {
 	{
 		T& component = m_SelectedEntity.GetComponent<T>();
 
-		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen  | ImGuiTreeNodeFlags_SpanAvailWidth
+		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 		
+
 		bool expanded = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 
 		if (expanded)
 		{
+			ImGui::Dummy(ImVec2(0.0f, 3.0f));
 			drawFunc(component);
 			ImGui::TreePop();
 		}
+
+		ImGui::Dummy(ImVec2(0.0f, 3.0f));
 	}
 
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "proton/Renderer/Texture.h"
-#include "proton/Renderer/Camera.h"
-#include "proton/Renderer/VertexArray.h"
+#include "proton/Graphics/Texture.h"
+#include "proton/Graphics/Camera.h"
+#include "proton/Graphics/VertexArray.h"
 
 namespace proton {
 
@@ -36,17 +36,8 @@ namespace proton {
 		static void Clear(glm::vec4 color);
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		
-		struct Statistics
-		{
-			uint32_t DrawCalls = 0;
-			uint32_t QuadCount = 0;
-		};
-		static void ResetStats();
-		static Statistics GetStats();
-
 	private:
 		static void InitQuadVertexArray();
-		static void DrawIndexed(const Shared<VertexArray>& vertexArray, uint32_t indexCount = 0);
 
 		static void StartBatch();
 		static void NextBatch();

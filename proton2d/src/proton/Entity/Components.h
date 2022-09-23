@@ -1,6 +1,7 @@
 #pragma once
-#include "proton/Renderer/Texture.h"
-#include "proton/Renderer/Camera.h"
+
+#include "proton/Graphics/Texture.h"
+#include "proton/Graphics/Camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

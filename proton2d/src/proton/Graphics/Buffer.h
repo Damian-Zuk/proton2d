@@ -116,7 +116,7 @@ namespace proton {
 		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
 
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_OpenGL_ID;
 		BufferLayout m_Layout;
 	};
 
@@ -132,7 +132,7 @@ namespace proton {
 		virtual uint32_t GetCount() const { return m_Count; }
 
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_OpenGL_ID;
 		uint32_t m_Count;
 	};
 

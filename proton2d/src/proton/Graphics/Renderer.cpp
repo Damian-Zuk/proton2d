@@ -1,8 +1,8 @@
 #include "pch.h"
-#include "proton/Renderer/Renderer.h"
-#include "proton/Renderer/VertexArray.h"
-#include "proton/Renderer/Shader.h"
-#include "proton/Renderer/UniformBuffer.h"
+#include "proton/Graphics/Renderer.h"
+#include "proton/Graphics/VertexArray.h"
+#include "proton/Graphics/Shader.h"
+#include "proton/Graphics/UniformBuffer.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -52,8 +52,6 @@ namespace proton {
 		uint32_t TextureSlotIndex = 1;
 		
 		Shared<UniformBuffer> CameraUniformBuffer;
-		
-		Renderer::Statistics Stats;
 	} data;
 
 	void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char* message, const void* userParam)
@@ -156,8 +154,8 @@ namespace proton {
 				data.TextureSlots[i]->Bind(i);
 
 			data.QuadShader->Bind();
-			DrawIndexed(data.QuadVertexArray, data.QuadIndexCount);
-			data.Stats.DrawCalls++;
+			data.QuadVertexArray->Bind();
+			glDrawElements(GL_TRIANGLES, data.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
 		}
 	}
 
@@ -184,7 +182,6 @@ namespace proton {
 		}
 
 		data.QuadIndexCount += 6;
-		data.Stats.QuadCount++;
 	}
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture, float tilingFactor, const glm::vec4& tintColor)
@@ -224,7 +221,6 @@ namespace proton {
 		}
 
 		data.QuadIndexCount += 6;
-		data.Stats.QuadCount++;
 	}
 
 	void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -290,24 +286,6 @@ namespace proton {
 	void Renderer::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		glViewport(x, y, width, height);
-	}
-
-	void Renderer::DrawIndexed(const Shared<VertexArray>& vertexArray, uint32_t indexCount)
-	{
-		vertexArray->Bind();
-		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-	}
-
-	void Renderer::ResetStats()
-	{
-		data.Stats.DrawCalls = 0;
-		data.Stats.QuadCount = 0;
-	}
-
-	Renderer::Statistics Renderer::GetStats()
-	{
-		return data.Stats;
 	}
 
 }

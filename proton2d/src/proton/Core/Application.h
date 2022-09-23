@@ -1,9 +1,8 @@
 #pragma once
+
 #include "proton/Core/Core.h"
 #include "proton/Core/Window.h"
 #include "proton/Core/Layer.h"
-#include "proton/Core/LayerStack.h"
-#include "proton/ImGui/ImGuiLayer.h"
 #include "proton/Editor/EditorOverlay.h"
 
 namespace proton {
@@ -11,17 +10,18 @@ namespace proton {
 	class Application
 	{
 	public:
-		Application();
-		~Application();
+		Application(const std::string& appName);
+		~Application() = default;
 		void Run();
 		
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 
-		static inline Application& Get() { return *s_Instance; }
-		inline Window& GetWindow() { return *m_Window; }
+		static Application& Get() { return *s_Instance; }
+		Window& GetWindow() { return *m_Window; }
 
 		void SetEditorActiveScene(const Shared<Scene> scene); // temp
+
 	protected:
 		virtual bool OnCreate() = 0;
 		void OnEvent(Event& event);
@@ -31,11 +31,10 @@ namespace proton {
 		bool m_IsRunning = true;
 		bool m_WindowMinimized = false;
 		float m_LastFrameTime = 0.0f;
+		std::string m_AppName;
 		Unique<Window> m_Window;
-		LayerStack m_LayerStack;
-		ImGuiLayer* m_ImGuiLayer;
+		std::vector<Layer*> m_AppLayers;
 		EditorOverlay* m_EditorOverlay;
 	};
 
-	Application* CreateApp(); // entry point (main function)
 }

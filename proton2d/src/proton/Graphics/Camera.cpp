@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "proton/Renderer/Camera.h"
+#include "proton/Graphics/Camera.h"
 #include "proton/Core/Application.h"
 
 #include <glm/gtc/matrix_transform.hpp>

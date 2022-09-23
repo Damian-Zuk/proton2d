@@ -1,4 +1,5 @@
 #pragma once
+
 #include <glm/glm.hpp>
 #include <unordered_map>
 
@@ -30,7 +31,7 @@ namespace proton {
 		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
 	
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_OpenGL_ID;
 		std::string m_Name;
 	};
 

@@ -1,6 +1,7 @@
 #pragma once
+
 #include "proton/Core/Core.h"
-#include "proton/Renderer/Camera.h"
+#include "proton/Graphics/Camera.h"
 #include "proton/Events/Event.h"
 
 namespace proton {
