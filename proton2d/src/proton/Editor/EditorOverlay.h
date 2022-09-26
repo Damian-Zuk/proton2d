@@ -8,7 +8,6 @@ namespace proton {
 	class EditorOverlay : Layer
 	{
 	public:
-		EditorOverlay();
 		virtual ~EditorOverlay() = default;
 
 		virtual void OnAttach() override;

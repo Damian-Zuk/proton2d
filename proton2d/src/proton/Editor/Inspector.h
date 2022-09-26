@@ -8,13 +8,11 @@ namespace proton {
 	class Inspector
 	{
 	public:
-		Inspector() = default;
-
 		void OnImGuiRender();
 
 	private:
 		template<typename T>
-		void DrawComponentUI(const std::string& name, std::function<void(T&)> drawContentFunction);
+		void DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction);
 
 	private:
 		Shared<Scene> m_ActiveScene;

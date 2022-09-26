@@ -3,8 +3,6 @@
 #include "proton/Core/Core.h"
 #include "proton/Events/Event.h"
 
-#include <sstream>
-
 namespace proton {
 
 	// Interface representing a desktop system based Window

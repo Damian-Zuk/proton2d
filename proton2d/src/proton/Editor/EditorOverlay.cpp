@@ -11,11 +11,6 @@
 
 namespace proton {
 
-	EditorOverlay::EditorOverlay()
-		: Layer("EditorOverlay")
-	{
-	}
-
 	void EditorOverlay::OnAttach()
 	{
 		ImGui::CreateContext();

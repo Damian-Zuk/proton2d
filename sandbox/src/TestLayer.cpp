@@ -2,15 +2,6 @@
 
 using namespace proton;
 
-TestLayer::TestLayer()
-	: Layer("Testing layer")
-{
-}
-
-TestLayer::~TestLayer()
-{
-}
-
 void TestLayer::OnAttach()
 {
 	m_MainScene = CreateShared<Scene>();

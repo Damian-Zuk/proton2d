@@ -7,8 +7,6 @@ namespace proton {
 	class AssetsManager
 	{
 	public:
-		AssetsManager();
-
 		static AssetsManager& Get();
 
 		bool TextureExists(const std::string& keyPath);
@@ -23,7 +21,6 @@ namespace proton {
 		Shared<SpriteSheet> GetSpriteSheet(const std::string& keyPath); 
 
 	private:
-		static AssetsManager* s_Instance;
 		std::unordered_map<std::string, Shared<Texture>> m_Textures;
 		std::unordered_map<std::string, Shared<SpriteSheet>> m_SpriteSheets;
 	};

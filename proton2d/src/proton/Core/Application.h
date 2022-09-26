@@ -3,7 +3,6 @@
 #include "proton/Core/Core.h"
 #include "proton/Core/Window.h"
 #include "proton/Core/Layer.h"
-#include "proton/Assets/AssetsManager.h"
 #include "proton/Editor/EditorOverlay.h"
 
 namespace proton {
@@ -12,30 +11,32 @@ namespace proton {
 	{
 	public:
 		Application(const std::string& appName);
-		~Application() = default;
+		virtual ~Application();
+
+		static Application& Get() { return *s_Instance; }
+		Window& GetWindow() { return *m_Window; }
+		
 		void Run();
 		
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 
-		static Application& Get() { return *s_Instance; }
-		Window& GetWindow() { return *m_Window; }
-
-		void SetEditorActiveScene(const Shared<Scene> scene); // temp
+		void SetEditorActiveScene(const Shared<Scene>& scene);
 
 	protected:
-		virtual bool OnCreate() = 0;
+		virtual bool OnCreate() = 0; // To be defined by user
 		void OnEvent(Event& event);
 
 	private:
 		static Application* s_Instance;
+
 		bool m_IsRunning = true;
 		bool m_WindowMinimized = false;
 		float m_LastFrameTime = 0.0f;
 		std::string m_AppName;
-		Unique<Window> m_Window;
+		
 		std::vector<Layer*> m_AppLayers;
-		AssetsManager m_AssetsManager;
+		Unique<Window> m_Window;
 		EditorOverlay* m_EditorOverlay;
 	};
 

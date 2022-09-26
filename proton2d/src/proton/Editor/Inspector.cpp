@@ -72,65 +72,67 @@ namespace proton {
 				{
 					DrawComponentUI<SpriteComponent>("Sprite", [&](auto& component)
 					{
-						auto& sprite = component.Sprite;
+						Shared<Sprite>& sprite = component.Sprite;
+						std::string& textureSource = m_SpriteComponentTextureSource;
 						
 						// If component has sprite assigned then store it's path
-						if (sprite && !m_SpriteComponentTextureSource.size())
-							m_SpriteComponentTextureSource = sprite->GetTexture()->GetPath();
+						if (sprite && !textureSource.size())
+							textureSource = sprite->GetTexture()->GetPath();
 
 						// Texutre source input
 						char buffer[256];
-						strcpy_s(buffer, sizeof(buffer), m_SpriteComponentTextureSource.c_str());
+						strcpy_s(buffer, sizeof(buffer), textureSource.c_str());
 						ImGui::Text("Texture source:");
 						ImGui::Dummy(ImVec2(0.0f, 3.0f));
 						ImGui::PushItemWidth(280.0f);
 						ImGui::InputText("##Texture_Source", buffer, sizeof(buffer));
 						ImGui::PopItemWidth();
-						m_SpriteComponentTextureSource = buffer;
+						textureSource = buffer;
 
 						// Set texture source button
 						if (ImGui::Button("Set texture", ImVec2(135.0f, 25.0f)))
 						{
-							if (m_SpriteComponentTextureSource.size())
+							if (textureSource.size())
 							{
-								std::string filepath(buffer);
-								if (AssetsManager::Get().SpriteSheetExists(filepath))
+								if (AssetsManager::Get().SpriteSheetExists(textureSource))
 								{
 									// If sprite sheet exists then use it
-									auto& spriteSheet = AssetsManager::Get().GetSpriteSheet(filepath);
+									auto& spriteSheet = AssetsManager::Get().GetSpriteSheet(textureSource);
 									sprite = CreateShared<Sprite>(spriteSheet);
 								}
 								else
 								{
 									// Otherwise use full texture
-									auto& texture = AssetsManager::Get().GetTexture(filepath);
+									auto& texture = AssetsManager::Get().GetTexture(textureSource);
 									if (texture)
 										sprite = CreateShared<Sprite>(texture);
 								}
-								m_SpriteComponentTextureSource.clear();
+								textureSource.clear();
 							}
 						}
 
-						ImGui::SameLine();
-						if (ImGui::Button("Remove texture", ImVec2(136.0f, 25.0f)) && sprite)
+						if (sprite)
 						{
-							sprite.reset();
-							m_SpriteComponentTextureSource.clear();
+							ImGui::SameLine();
+							if (ImGui::Button("Remove texture", ImVec2(136.0f, 25.0f)) && sprite)
+							{
+								sprite.reset();
+								textureSource.clear();
+							}
 						}
 
 						// Check if texture is spritesheet
-						auto& spriteSheet = sprite->m_SpriteSheet;
-						if (sprite && spriteSheet)
+						if (sprite && sprite->m_SpriteSheet)
 						{
 							int tileX = (int)sprite->m_PosX, tileY = (int)sprite->m_PosY;
-							auto& [maxX, maxY] = spriteSheet->GetMaxTilesCount();
+							auto& [maxX, maxY] = sprite->m_SpriteSheet->GetMaxTilesCount();
 
-							ImGui::Dummy(ImVec2(0.0f, 10.0f));
+							ImGui::Dummy(ImVec2(0.0f, 8.0f));
 							ImGui::Text("Spritesheet tile coords:");
 							ImGui::Dummy(ImVec2(0.0f, 4.0f));
 							ImGui::Columns(2);
-							ImGui::SetColumnWidth(0, 75.0f);
-							ImGui::Text("Tile X");
+							ImGui::SetColumnWidth(0, 35.0f);
+							ImGui::Text("X");
 							ImGui::NextColumn();
 
 							// Tile coords X position field
@@ -139,22 +141,24 @@ namespace proton {
 
 							ImGui::Columns(1);
 							ImGui::Columns(2);
-							ImGui::SetColumnWidth(0, 75.0f);
-							ImGui::Text("Tile Y");
+							ImGui::SetColumnWidth(0, 35.0f);
+							ImGui::Text("Y");
 							ImGui::NextColumn();
 								
 							// Tile coords Y position field
 							if (ImGui::InputInt("##TPY", &tileY, 1, 1) && tileY != sprite->m_PosY)
-								sprite->SetTile(sprite->m_PosX, (uint32_t)((tileY + maxY) % maxY));
+								sprite->SetTile(0, (uint32_t)((tileY + maxY) % maxY));
 
 							ImGui::Columns(1);
 						}
 
 						// Draw color control
-						ImGui::Dummy(ImVec2(0.0f, 10.0f));
+						ImGui::Dummy(ImVec2(0.0f, 8.0f));
 						ImGui::Text("Tint color:");
-						ImGui::SameLine();
-						ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color));
+						ImGui::Dummy(ImVec2(0.0f, 3.0f));
+						ImGui::PushItemWidth(260.0f);
+						ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
+						ImGui::PopItemWidth();
 					});
 				}
 			}
@@ -163,7 +167,7 @@ namespace proton {
 	}
 
 	template<typename T>
-	void Inspector::DrawComponentUI(const std::string& name, std::function<void(T&)> drawContentFunction)
+	void Inspector::DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction)
 	{
 		T& component = m_SelectedEntity.GetComponent<T>();
 

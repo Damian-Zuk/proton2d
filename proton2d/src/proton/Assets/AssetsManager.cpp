@@ -3,16 +3,10 @@
 
 namespace proton {
 
-	AssetsManager* AssetsManager::s_Instance = nullptr;
-
-	AssetsManager::AssetsManager()
-	{
-		s_Instance = this;
-	}
-
 	AssetsManager& AssetsManager::Get()
 	{
-		return *s_Instance;
+		static AssetsManager instance;
+		return instance;
 	}
 
 	Shared<Texture> AssetsManager::LoadTexture(const std::string& filepath)
