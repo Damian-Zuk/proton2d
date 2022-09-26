@@ -9,7 +9,6 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
-
 namespace proton {
 
 	EditorOverlay::EditorOverlay()
@@ -22,16 +21,14 @@ namespace proton {
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		auto& io = ImGui::GetIO();
+		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_ViewportsEnable;
+		
+		io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
 
 		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
-
-		ImFont* robotoFont = io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
-		io.Fonts->Build();
 	}
 
 	void EditorOverlay::OnDetach()
@@ -58,8 +55,12 @@ namespace proton {
 				bool expanded = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, 
 					flags, entity.GetComponent<TagComponent>().Tag.c_str());
 				
-				if (ImGui::IsItemClicked())
+				if (ImGui::IsItemClicked()) 
+				{
 					m_Inspector.m_SelectedEntity = entity;
+					// Reset inspector fields
+					m_Inspector.m_SpriteComponentTextureSource.clear();
+				}
 
 				if (expanded)
 				{
@@ -89,19 +90,19 @@ namespace proton {
 
 	void EditorOverlay::EndImGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		Window& win = Application::Get().GetWindow();
-		io.DisplaySize = ImVec2((float)win.GetWidth(), (float)win.GetHeight());
+		auto& io = ImGui::GetIO();
+		auto& window = Application::Get().GetWindow();
+		io.DisplaySize = ImVec2((float)window.GetWidth(), (float)window.GetHeight());
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			GLFWwindow* current_context = glfwGetCurrentContext();
+			auto backupContext = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(current_context);
+			glfwMakeContextCurrent(backupContext);
 		}
 	}
 

@@ -17,9 +17,9 @@ void TestLayer::OnAttach()
 	m_MainScene->SetPrimaryCamera(m_CameraController.GetCamera());
 	Application::Get().SetEditorActiveScene(m_MainScene);
 
-	auto playerSpriteSheetTexture = CreateShared<Texture>("assets/adventurer-v1.5-Sheet.png");
-	m_PlayerSpriteSheet = CreateShared<SpriteSheet>(playerSpriteSheetTexture, 50, 37);
-	m_PlayerSprite = CreateShared<Sprite>(m_PlayerSpriteSheet, 0, 15);
+	AssetsManager::Get().LoadSpriteSheet("skeleton-sheet.png", 150, 150);
+	m_PlayerSpriteSheet = AssetsManager::Get().LoadSpriteSheet("adventurer-v1.5-Sheet.png", 50, 37);
+	m_PlayerSprite = CreateShared<Sprite>(m_PlayerSpriteSheet, 0, 10);
 	
 	m_Player = m_MainScene->CreateEntity("Player");
 	{

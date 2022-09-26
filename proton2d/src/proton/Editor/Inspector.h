@@ -14,11 +14,13 @@ namespace proton {
 
 	private:
 		template<typename T>
-		void DrawComponentUI(const std::string& name, void(*drawFunc)(T& component));
+		void DrawComponentUI(const std::string& name, std::function<void(T&)> drawContentFunction);
 
 	private:
 		Shared<Scene> m_ActiveScene;
 		Entity m_SelectedEntity;
+
+		std::string m_SpriteComponentTextureSource; // for imgui input text field
 
 		friend class EditorOverlay;
 	};

@@ -199,7 +199,7 @@ namespace proton {
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == 0)
 		{
 			if (data.TextureSlotIndex >= RendererData::MaxTextureSlots)
 				NextBatch();
@@ -217,7 +217,7 @@ namespace proton {
 			data.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
 			data.QuadVertexBufferPtr->Color = tintColor;
 			data.QuadVertexBufferPtr->TextureIndex = static_cast<float>(textureIndex);
-			data.QuadVertexBufferPtr->TextureCoords = { textureCoords[i][0], textureCoords[i][1] };
+			data.QuadVertexBufferPtr->TextureCoords = textureCoords[i];
 			data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			data.QuadVertexBufferPtr++;
 		}

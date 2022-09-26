@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#define PROTON_ASSETS_DIR "assets/"
+
 #ifdef PROTON_PLATFORM_WINDOWS
 
 #else

@@ -3,6 +3,7 @@
 #include "proton/Core/Core.h"
 #include "proton/Core/Window.h"
 #include "proton/Core/Layer.h"
+#include "proton/Assets/AssetsManager.h"
 #include "proton/Editor/EditorOverlay.h"
 
 namespace proton {
@@ -34,6 +35,7 @@ namespace proton {
 		std::string m_AppName;
 		Unique<Window> m_Window;
 		std::vector<Layer*> m_AppLayers;
+		AssetsManager m_AssetsManager;
 		EditorOverlay* m_EditorOverlay;
 	};
 

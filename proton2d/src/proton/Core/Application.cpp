@@ -20,7 +20,7 @@ namespace proton {
 		constexpr uint32_t windowHeight = 900;
 
 	#ifdef PROTON_PLATFORM_WINDOWS
-		m_Window = CreateUnique<WindowsWindow>(appName, 1600, 900);
+		m_Window = CreateUnique<WindowsWindow>(appName, windowWidth, windowHeight);
 	#endif
 
 		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
