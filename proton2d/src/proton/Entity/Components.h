@@ -17,7 +17,7 @@ namespace proton {
 	{
 		glm::vec3 Position { 0.0f, 0.0f, 0.0f };
 		float Rotation { 0.0f };
-		glm::vec2 Scale { 1.0f, 1.0f };
+		glm::vec2 Scale { 0.25f, 0.25f };
 
 		glm::mat4 GetTransform()
 		{
@@ -36,8 +36,31 @@ namespace proton {
 		float TilingFactor = 1.0f;
 	};
 
+	// Forward declaration
+	class EntityScript;
+
+	struct ScriptComponent
+	{
+		std::unordered_map<std::string, EntityScript*> ScriptInstances;
+		std::unordered_map<std::string, std::function<void()>> CreateInstanceFunctions;
+
+		template<typename T>
+		void BindScript(const std::string& scriptName)
+		{
+			if (CreateInstanceFunctions.find(scriptName) == CreateInstanceFunctions.end())
+			{
+				CreateInstanceFunctions[scriptName] = [&, scriptName]()
+				{
+					ScriptInstances[scriptName] = new T();
+				};
+			}
+			else
+				LOG_WARN("Tried to bound script", scriptName, "to entity which already has this script!");
+		}
+	};
+
 	struct CameraComponent
 	{
-		Shared<Camera> Camera; // TODO: Przerobic kamere aby korzystala z komponentu Transform 
+		Shared<Camera> Camera;
 	};
 }

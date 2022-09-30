@@ -8,8 +8,8 @@ namespace proton {
 
 	class CameraController {
 	public:
-		CameraController(Shared<Camera> camera = CreateShared<Camera>());
-		virtual ~CameraController();
+		CameraController(const Shared<Camera>& camera = CreateShared<Camera>());
+		virtual ~CameraController() = default;
 
 		void OnUpdate(float ts);
 		void OnEvent(Event& e);

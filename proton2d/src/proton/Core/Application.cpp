@@ -3,6 +3,7 @@
 #include "proton/Core/Input.h"
 #include "proton/Events/WindowEvents.h"
 #include "proton/Graphics/Renderer.h"
+#include "proton/Entity/ScriptManager.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "proton/Platform/Windows/WindowsWindow.h"
@@ -42,6 +43,7 @@ namespace proton {
 	{
 		Logger::init();
 		Renderer::Init();
+		ScriptManager::Init();
 
 		if (OnCreate()) 
 		{

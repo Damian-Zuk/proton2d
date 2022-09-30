@@ -3,6 +3,7 @@
 #include "proton/Entity/Entity.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Core/Application.h"
+#include "proton/Entity/EntityScript.h"
 
 namespace proton {
 
@@ -15,8 +16,16 @@ namespace proton {
 
 	Scene::~Scene()
 	{
+		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent)
+		{
+			for (auto& [scriptName, script] : scriptComponent.ScriptInstances)
+			{
+				delete script;
+				script = nullptr;
+			}
+		});
 	}
-
+	 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = Entity{ this, m_Registry.create() };
@@ -25,8 +34,31 @@ namespace proton {
 		return entity;
 	}
 
+	void Scene::DestroyEntity(entt::entity entity)
+	{
+		m_Registry.destroy(entity);
+	}
+
 	void Scene::OnUpdate(float ts)
 	{
+		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent) 
+		{
+			if (scriptComponent.ScriptInstances.size() != scriptComponent.CreateInstanceFunctions.size())
+			{
+				for (auto& [scriptName, createInstance] : scriptComponent.CreateInstanceFunctions)
+				{
+					createInstance();
+					scriptComponent.ScriptInstances[scriptName]->m_Entity = Entity{ this, entity };
+					scriptComponent.ScriptInstances[scriptName]->OnCreate();
+				}
+			}
+
+			for (auto& [scriptName, script] : scriptComponent.ScriptInstances)
+			{
+				script->OnUpdate(ts);
+			}
+		});
+
 		if (!m_PrimaryCamera)
 			RenderScene(m_DefaultCamera);
 		else

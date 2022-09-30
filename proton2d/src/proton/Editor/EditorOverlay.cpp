@@ -35,10 +35,18 @@ namespace proton {
 
 	void EditorOverlay::OnImGuiRender()
 	{
+		ImGui::ShowDemoWindow(); // Demo window for reference
 		ImGui::Begin("Scene Entities");
 
 		if (m_ActiveScene)
 		{
+			ImGui::Dummy({0.0f, 1.0f});
+			if (ImGui::Button("Create new entity", {340.0f, 25.0f}))
+			{
+				m_ActiveScene->CreateEntity();
+			}
+			ImGui::Dummy({0.0f, 1.0f});
+
 			m_ActiveScene->m_Registry.each([&](auto id)
 			{
 				Entity entity{ m_ActiveScene.get(), id};
@@ -50,6 +58,7 @@ namespace proton {
 				bool expanded = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, 
 					flags, entity.GetComponent<TagComponent>().Tag.c_str());
 				
+				// On select entity in scene entities panel
 				if (ImGui::IsItemClicked()) 
 				{
 					m_Inspector.m_SelectedEntity = entity;
@@ -63,6 +72,7 @@ namespace proton {
 				}
 
 			});
+
 		}
 
 		ImGui::End();

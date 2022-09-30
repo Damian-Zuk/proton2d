@@ -15,5 +15,7 @@
 
 #include "proton/Entity/Entity.h"
 #include "proton/Entity/Components.h"
+#include "proton/Entity/EntityScript.h"
+#include "proton/Entity/ScriptManager.h"
 
 #include <imgui/imgui.h>

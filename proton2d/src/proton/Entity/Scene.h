@@ -1,4 +1,5 @@
 #pragma once
+
 #include "proton/Entity/Components.h"
 #include "proton/Graphics/Camera.h"
 
@@ -11,13 +12,12 @@ namespace proton {
 	class Scene
 	{
 	public:
-		friend class Entity;
-		friend class EditorOverlay;
-
 		Scene(const std::string& name = "Unnamed Scene" );
 		~Scene();
 
 		Entity CreateEntity(const std::string& name = "Unnamed Entity");
+
+		void DestroyEntity(entt::entity entity);
 
 		void OnUpdate(float ts);
 		
@@ -33,6 +33,9 @@ namespace proton {
 		entt::registry m_Registry;
 		Shared<Camera> m_PrimaryCamera;
 		Camera m_DefaultCamera;
+
+		friend class Entity;
+		friend class EditorOverlay;
 	};
 
 }

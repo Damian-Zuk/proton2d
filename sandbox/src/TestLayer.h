@@ -16,7 +16,5 @@ public:
 private:
 	Shared<Scene> m_MainScene;
 	CameraController m_CameraController;
-	Shared<SpriteSheet> m_PlayerSpriteSheet;
-	Shared<Sprite> m_PlayerSprite;
 	Entity m_Player;
 };

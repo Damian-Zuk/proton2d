@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "proton/Editor/Inspector.h"
 #include "proton/Assets/AssetsManager.h"
+#include "proton/Entity/ScriptManager.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -14,6 +15,54 @@ namespace proton {
 			ImGui::Begin("Inspector");
 			if (m_SelectedEntity)
 			{
+				//
+				// 
+	
+				if (ImGui::Button("Add component", { 165.0f, 25.0f }))
+				{
+					ImGui::OpenPopup("add_component_popup");
+				}
+
+				if (ImGui::BeginPopup("add_component_popup"))
+				{
+
+					if (!m_SelectedEntity.HasComponent<TransformComponent>())
+					{
+						if (ImGui::Selectable("Transform component"))
+							m_SelectedEntity.AddComponent<TransformComponent>();
+					}
+
+					if (!m_SelectedEntity.HasComponent<SpriteComponent>())
+					{
+						if (ImGui::Selectable("Sprite component"))
+							m_SelectedEntity.AddComponent<SpriteComponent>();
+					}
+
+					if (ImGui::BeginMenu("Script component"))
+					{
+						for (auto& [scriptName, scriptAddFunc] : ScriptManager::s_Instance->m_RegisteredScripts)
+						{
+							if (ImGui::MenuItem(scriptName.c_str()))
+							{
+								scriptAddFunc(m_SelectedEntity);
+							}
+						}
+						ImGui::EndMenu();
+					}
+
+					ImGui::EndPopup();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Remove entity", { 165.0f, 25.0f }))
+				{
+					m_SelectedEntity.Destroy();
+				}
+
+				ImGui::Dummy({ 0.0f, 5.0f });
+				ImGui::Text("Attached components:");
+				ImGui::Dummy({ 0.0f, 5.0f });
+
 				if (m_SelectedEntity.HasComponent<TagComponent>())
 				{
 					DrawComponentUI<TagComponent>("Tag", [](auto& component)
@@ -62,7 +111,7 @@ namespace proton {
 						ImGui::Text("Rotation");;
 						ImGui::NextColumn();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##R", &component.Rotation, 0.1f, 0.0f, 0.0f, "%.2f");
+						ImGui::DragFloat("##R", &component.Rotation, 0.2f, 0.0f, 0.0f, "%.2f");
 
 						ImGui::Columns(1);
 					});
@@ -83,14 +132,14 @@ namespace proton {
 						char buffer[256];
 						strcpy_s(buffer, sizeof(buffer), textureSource.c_str());
 						ImGui::Text("Texture source:");
-						ImGui::Dummy(ImVec2(0.0f, 3.0f));
+						ImGui::Dummy({ 0.0f, 3.0f });
 						ImGui::PushItemWidth(280.0f);
 						ImGui::InputText("##Texture_Source", buffer, sizeof(buffer));
 						ImGui::PopItemWidth();
 						textureSource = buffer;
 
 						// Set texture source button
-						if (ImGui::Button("Set texture", ImVec2(135.0f, 25.0f)))
+						if (ImGui::Button("Set texture", { 135.0f, 25.0f }))
 						{
 							if (textureSource.size())
 							{
@@ -127,16 +176,16 @@ namespace proton {
 							int tileX = (int)sprite->m_PosX, tileY = (int)sprite->m_PosY;
 							auto& [maxX, maxY] = sprite->m_SpriteSheet->GetMaxTilesCount();
 
-							ImGui::Dummy(ImVec2(0.0f, 8.0f));
-							ImGui::Text("Spritesheet tile coords:");
-							ImGui::Dummy(ImVec2(0.0f, 4.0f));
+							ImGui::Dummy({ 0.0f, 8.0f });
+							ImGui::Text("Spritesheet tile coordinates:");
+							ImGui::Dummy({ 0.0f, 4.0f });
 							ImGui::Columns(2);
 							ImGui::SetColumnWidth(0, 35.0f);
 							ImGui::Text("X");
 							ImGui::NextColumn();
 
 							// Tile coords X position field
-							if (ImGui::InputInt("##TPX", &tileX, 1, 1) && tileX != sprite->m_PosX)
+							if (ImGui::InputInt("##Tile_Pos_X", &tileX, 1, 1) && tileX != sprite->m_PosX)
 								sprite->SetTile((uint32_t)((tileX + maxX) % maxX), sprite->m_PosY);
 
 							ImGui::Columns(1);
@@ -146,19 +195,28 @@ namespace proton {
 							ImGui::NextColumn();
 								
 							// Tile coords Y position field
-							if (ImGui::InputInt("##TPY", &tileY, 1, 1) && tileY != sprite->m_PosY)
+							if (ImGui::InputInt("##Tile_Pos_Y", &tileY, 1, 1) && tileY != sprite->m_PosY)
 								sprite->SetTile(0, (uint32_t)((tileY + maxY) % maxY));
 
 							ImGui::Columns(1);
 						}
 
 						// Draw color control
-						ImGui::Dummy(ImVec2(0.0f, 8.0f));
+						ImGui::Dummy({ 0.0f, 8.0f });
 						ImGui::Text("Tint color:");
-						ImGui::Dummy(ImVec2(0.0f, 3.0f));
+						ImGui::Dummy({ 0.0f, 3.0f });
 						ImGui::PushItemWidth(260.0f);
 						ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
 						ImGui::PopItemWidth();
+					});
+				}
+
+				if (m_SelectedEntity.HasComponent<ScriptComponent>())
+				{
+					DrawComponentUI<ScriptComponent>("Script", [&](auto& component)
+					{
+						for (auto& [scriptClassName, script] : component.ScriptInstances)
+							ImGui::Text(scriptClassName.c_str());
 					});
 				}
 			}
@@ -178,12 +236,12 @@ namespace proton {
 
 		if (expanded)
 		{
-			ImGui::Dummy(ImVec2(0.0f, 3.0f));
+			ImGui::Dummy({ 0.0f, 3.0f });
 			drawContentFunction(component);
 			ImGui::TreePop();
 		}
 
-		ImGui::Dummy(ImVec2(0.0f, 3.0f));
+		ImGui::Dummy({ 0.0f, 3.0f });
 	}
 
 }
