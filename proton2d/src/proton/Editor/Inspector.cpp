@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "proton/Editor/Inspector.h"
 #include "proton/Assets/AssetsManager.h"
-#include "proton/Entity/ScriptManager.h"
+#include "proton/Entity/ScriptLoader.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,36 +15,35 @@ namespace proton {
 			ImGui::Begin("Inspector");
 			if (m_SelectedEntity)
 			{
-				//
-				// 
-	
+				////////////////////////////
+				// Add component
+				////////////////////////////
+
 				if (ImGui::Button("Add component", { 165.0f, 25.0f }))
-				{
 					ImGui::OpenPopup("add_component_popup");
-				}
 
 				if (ImGui::BeginPopup("add_component_popup"))
 				{
-
 					if (!m_SelectedEntity.HasComponent<TransformComponent>())
 					{
-						if (ImGui::Selectable("Transform component"))
+						if (ImGui::MenuItem("Transform component"))
 							m_SelectedEntity.AddComponent<TransformComponent>();
 					}
 
 					if (!m_SelectedEntity.HasComponent<SpriteComponent>())
 					{
-						if (ImGui::Selectable("Sprite component"))
+						if (ImGui::MenuItem("Sprite component"))
 							m_SelectedEntity.AddComponent<SpriteComponent>();
 					}
 
 					if (ImGui::BeginMenu("Script component"))
 					{
-						for (auto& [scriptName, scriptAddFunc] : ScriptManager::s_Instance->m_RegisteredScripts)
+						for (auto& [scriptName, addScriptFunction] 
+							: ScriptLoader::s_Instance->m_AddScriptFunctions)
 						{
 							if (ImGui::MenuItem(scriptName.c_str()))
 							{
-								scriptAddFunc(m_SelectedEntity);
+								addScriptFunction(m_SelectedEntity);
 							}
 						}
 						ImGui::EndMenu();
@@ -53,16 +52,25 @@ namespace proton {
 					ImGui::EndPopup();
 				}
 
+				////////////////////////////
+				// Destroy entity
+				////////////////////////////
+
 				ImGui::SameLine();
-				if (ImGui::Button("Remove entity", { 165.0f, 25.0f }))
+				if (ImGui::Button("Destroy entity", { 165.0f, 25.0f }))
 				{
 					m_SelectedEntity.Destroy();
 				}
+
+				////////////////////////////
+				// Entity components
+				////////////////////////////
 
 				ImGui::Dummy({ 0.0f, 5.0f });
 				ImGui::Text("Attached components:");
 				ImGui::Dummy({ 0.0f, 5.0f });
 
+				// Tag Component UI
 				if (m_SelectedEntity.HasComponent<TagComponent>())
 				{
 					DrawComponentUI<TagComponent>("Tag", [](auto& component)
@@ -74,6 +82,7 @@ namespace proton {
 					});
 				}
 
+				// Transform Component UI
 				if (m_SelectedEntity.HasComponent<TransformComponent>())
 				{
 					DrawComponentUI<TransformComponent>("Transform", [](auto& component)
@@ -117,6 +126,7 @@ namespace proton {
 					});
 				}
 
+				// Sprite Component UI
 				if (m_SelectedEntity.HasComponent<SpriteComponent>())
 				{
 					DrawComponentUI<SpriteComponent>("Sprite", [&](auto& component)
@@ -160,6 +170,7 @@ namespace proton {
 							}
 						}
 
+						// Remove trxture
 						if (sprite)
 						{
 							ImGui::SameLine();
@@ -211,12 +222,13 @@ namespace proton {
 					});
 				}
 
+				// Script Component UI
 				if (m_SelectedEntity.HasComponent<ScriptComponent>())
 				{
 					DrawComponentUI<ScriptComponent>("Script", [&](auto& component)
 					{
-						for (auto& [scriptClassName, script] : component.ScriptInstances)
-							ImGui::Text(scriptClassName.c_str());
+						for (auto& [scriptName, scriptData] : component.Scripts)
+							ImGui::Text(scriptName.c_str());
 					});
 				}
 			}
@@ -232,13 +244,25 @@ namespace proton {
 		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 		
-		bool expanded = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 
-		if (expanded)
+		bool removeComponent = false;
+		if (!std::is_same<T, TagComponent>::value && !std::is_same<T, TransformComponent>::value)
+		{
+			ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
+			removeComponent = ImGui::Button(("Remove##" + name).c_str());
+		}
+
+		if (opened)
 		{
 			ImGui::Dummy({ 0.0f, 3.0f });
 			drawContentFunction(component);
 			ImGui::TreePop();
+		}
+
+		if (removeComponent)
+		{
+			m_SelectedEntity.RemoveComponent<T>();
 		}
 
 		ImGui::Dummy({ 0.0f, 3.0f });

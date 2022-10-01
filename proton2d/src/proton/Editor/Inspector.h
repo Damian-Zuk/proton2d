@@ -18,7 +18,7 @@ namespace proton {
 		Shared<Scene> m_ActiveScene;
 		Entity m_SelectedEntity;
 
-		std::string m_SpriteComponentTextureSource; // for imgui input text field
+		std::string m_SpriteComponentTextureSource;
 
 		friend class EditorOverlay;
 	};

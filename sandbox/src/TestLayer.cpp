@@ -1,48 +1,13 @@
 #include "TestLayer.h"
+#include "Scripts/PlayerRunRight.h"
+#include "Scripts/MoveUp.h"
 
 using namespace proton;
 
-// Script for testing
-class RunningScript : public EntityScript
-{
-public:
-	virtual void OnCreate() override
-	{
-		GetComponent<SpriteComponent>().Sprite->SetTile(0, 1);
-	}
-
-	virtual void OnUpdate(float ts) override
-	{
-		auto& transform = GetComponent<TransformComponent>();
-		transform.Position.x += 0.1f * ts;
-
-
-		m_SpriteChangeTime -= ts;
-		if (m_SpriteChangeTime < 0.0f)
-		{
-			m_SpriteChangeTime = 0.07f;
-			GetComponent<SpriteComponent>().Sprite->NextTile();
-		}
-	}
-private:
-	float m_SpriteChangeTime = 0.07f;
-};
-
-// Script for testing
-class MovingUpScript : public EntityScript
-{
-public:
-	virtual void OnUpdate(float ts) override
-	{
-		auto& transform = GetComponent<TransformComponent>();
-		transform.Position.y += 0.05f * ts;
-	}
-};
-
 void TestLayer::OnAttach()
 {
-	REGISTER_SCRIPT(RunningScript);
-	REGISTER_SCRIPT(MovingUpScript);
+	LOAD_SCRIPT(PlayerRunRight);
+	LOAD_SCRIPT(MoveUp);
 
 	m_MainScene = CreateShared<Scene>();
 	m_MainScene->SetPrimaryCamera(m_CameraController.GetCamera());

@@ -1,5 +1,3 @@
-#include <Proton2D.h>
-
 #include "TestLayer.h"
 
 class Sandbox : public proton::Application

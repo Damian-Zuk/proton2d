@@ -18,11 +18,8 @@ namespace proton {
 	{
 		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent)
 		{
-			for (auto& [scriptName, script] : scriptComponent.ScriptInstances)
-			{
-				delete script;
-				script = nullptr;
-			}
+			for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
+				scriptData.DestroyInstanceFunction();
 		});
 	}
 	 
@@ -43,19 +40,16 @@ namespace proton {
 	{
 		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent) 
 		{
-			if (scriptComponent.ScriptInstances.size() != scriptComponent.CreateInstanceFunctions.size())
+			for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
 			{
-				for (auto& [scriptName, createInstance] : scriptComponent.CreateInstanceFunctions)
+				if (!scriptData.ScriptInstance)
 				{
-					createInstance();
-					scriptComponent.ScriptInstances[scriptName]->m_Entity = Entity{ this, entity };
-					scriptComponent.ScriptInstances[scriptName]->OnCreate();
+					scriptData.CreateInstanceFunction();
+					scriptData.ScriptInstance->m_Entity = Entity{ this, entity };
+					scriptData.ScriptInstance->OnCreate();
 				}
-			}
 
-			for (auto& [scriptName, script] : scriptComponent.ScriptInstances)
-			{
-				script->OnUpdate(ts);
+				scriptData.ScriptInstance->OnUpdate(ts);
 			}
 		});
 
@@ -68,8 +62,10 @@ namespace proton {
 	void Scene::RenderScene(Camera& camera)
 	{
 		auto renderable = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
+
 		Renderer::Clear(s_ClearColor);
 		Renderer::BeginScene(camera);
+
 		for (auto entity : renderable)
 		{
 			auto [transform, sprite] = renderable.get<TransformComponent, SpriteComponent>(entity);
@@ -78,6 +74,7 @@ namespace proton {
 			else
 				Renderer::DrawQuad(transform, sprite.Color);
 		}
+
 		Renderer::EndScene();
 	}
 

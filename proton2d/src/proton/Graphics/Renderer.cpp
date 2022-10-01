@@ -47,7 +47,7 @@ namespace proton {
 		Shared<UniformBuffer> CameraUniformBuffer;
 	} data;
 
-	void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char* message, const void* userParam)
+	static void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char* message, const void* userParam)
 	{
 		switch (severity)
 		{

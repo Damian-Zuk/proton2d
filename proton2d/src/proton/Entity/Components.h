@@ -41,21 +41,35 @@ namespace proton {
 
 	struct ScriptComponent
 	{
-		std::unordered_map<std::string, EntityScript*> ScriptInstances;
-		std::unordered_map<std::string, std::function<void()>> CreateInstanceFunctions;
+		struct ScriptData
+		{
+			EntityScript* ScriptInstance = nullptr;
+			std::function<void()> CreateInstanceFunction;
+			std::function<void()> DestroyInstanceFunction;
+		};
+
+		std::unordered_map<std::string, ScriptData> Scripts;
 
 		template<typename T>
-		void BindScript(const std::string& scriptName)
+		void Bind(const std::string& scriptName)
 		{
-			if (CreateInstanceFunctions.find(scriptName) == CreateInstanceFunctions.end())
+			if (Scripts.find(scriptName) == Scripts.end())
 			{
-				CreateInstanceFunctions[scriptName] = [&, scriptName]()
+				ScriptData& script = Scripts[scriptName];
+
+				script.CreateInstanceFunction = [&, scriptName]()
 				{
-					ScriptInstances[scriptName] = new T();
+					script.ScriptInstance = new T();
+				};
+
+				script.DestroyInstanceFunction = [&, scriptName]()
+				{
+					delete script.ScriptInstance;
+					script.ScriptInstance = nullptr;
 				};
 			}
 			else
-				LOG_WARN("Tried to bound script", scriptName, "to entity which already has this script!");
+				LOG_WARN("Tried to bound script", scriptName, "to entity which already have this script!");
 		}
 	};
 
