@@ -2,14 +2,25 @@
 
 #include "proton/Core/Core.h"
 
+// Forward declaration
 typedef unsigned int GLenum;
 
 namespace proton {
 
+	enum class TextureFilterMode
+	{
+		Nearest, Linear
+	};
+
+	enum class TextureWrapMode
+	{
+		Repeat, ClampToBorder, ClampToEdge
+	};
+
 	class Texture
 	{
 	public:
-		Texture(uint32_t width, uint32_t height, bool fillData = false);
+		Texture(uint32_t width, uint32_t height, bool fillDataWhitePixels = false);
 		Texture(const std::string& path);
 		virtual ~Texture();
 
@@ -22,18 +33,28 @@ namespace proton {
 		void SetData(void* data, size_t size);
 		bool IsLoaded() const { return m_IsLoaded; }
 
+		TextureFilterMode GetFilterMode() const { return m_FilterMode; }
+		std::pair< TextureWrapMode, TextureWrapMode> GetWrapMode() const { return { m_WrapModeX, m_WrapModeY }; }
+
+		void SetFilterMode(TextureFilterMode mode);
+		void SetWrapMode(TextureWrapMode mode);
+		void SetWrapMode(TextureWrapMode x_mode, TextureWrapMode y_mode);
+
 		bool operator==(const Texture& other) const
 		{
 			return m_OpenGL_ID == other.GetOpenGL_ID();
 		}
 
 	private:
-		std::string m_Path;
 		bool m_IsLoaded = false;
-		uint32_t m_Width, m_Height;
-		uint32_t m_OpenGL_ID;
-		GLenum m_InternalFormat;
-		GLenum m_DataFormat;
+		std::string m_Path;
+		uint32_t m_Width = 0, m_Height = 0;
+		uint32_t m_OpenGL_ID = 0;
+		GLenum m_InternalFormat = 0;
+		GLenum m_DataFormat = 0;
+		TextureFilterMode m_FilterMode;
+		TextureWrapMode m_WrapModeX;
+		TextureWrapMode m_WrapModeY;
 	};
 
 }

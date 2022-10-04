@@ -6,23 +6,19 @@
 
 namespace proton {
 
-	Texture::Texture(uint32_t width, uint32_t height, bool fillData)
-		: m_Width(width), m_Height(height)
+	Texture::Texture(uint32_t width, uint32_t height, bool fillDataWhitePixels)
+		: m_Width(width), m_Height(height),
+		m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)
 	{
-		m_InternalFormat = GL_RGBA8;
-		m_DataFormat = GL_RGBA;
-
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_OpenGL_ID);
 		glTextureStorage2D(m_OpenGL_ID, 1, m_InternalFormat, m_Width, m_Height);
 
-		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		SetFilterMode(TextureFilterMode::Nearest);
+		SetWrapMode(TextureWrapMode::Repeat);
 
-		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		if (fillData) 
+		if (fillDataWhitePixels)
 		{
+			// Set texture data to full white texture
 			size_t pixels = (size_t)width * (size_t)height;
 			uint32_t* data = new uint32_t[pixels];
 			memset(data, 0xffffffff, pixels * sizeof(uint32_t));
@@ -60,11 +56,8 @@ namespace proton {
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_OpenGL_ID);
 			glTextureStorage2D(m_OpenGL_ID, 1, m_InternalFormat, m_Width, m_Height);
 
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			SetFilterMode(TextureFilterMode::Nearest);
+			SetWrapMode(TextureWrapMode::Repeat);
 
 			glTextureSubImage2D(m_OpenGL_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 
@@ -82,6 +75,46 @@ namespace proton {
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
 		assert(size == m_Width * m_Height * bpp && "Data must be entire texture!");
 		glTextureSubImage2D(m_OpenGL_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	}
+
+	void Texture::SetFilterMode(TextureFilterMode mode)
+	{
+		m_FilterMode = mode;
+		if (mode == TextureFilterMode::Nearest)
+		{
+			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		}
+		else if (mode == TextureFilterMode::Linear)
+		{
+			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+	}
+
+	static GLenum ProtonWrapModeToOpenGL(TextureWrapMode mode)
+	{
+		switch (mode)
+		{
+			case TextureWrapMode::Repeat:        return GL_REPEAT;
+			case TextureWrapMode::ClampToBorder: return GL_CLAMP_TO_BORDER;
+			case TextureWrapMode::ClampToEdge:   return GL_CLAMP_TO_EDGE;
+		}
+		return GL_REPEAT;
+	}
+
+	void Texture::SetWrapMode(TextureWrapMode mode)
+	{
+		SetWrapMode(mode, mode);
+	}
+
+	void Texture::SetWrapMode(TextureWrapMode xMode, TextureWrapMode yMode)
+	{
+		m_WrapModeX = xMode; m_WrapModeY = yMode;
+		GLenum sWrap = ProtonWrapModeToOpenGL(xMode);
+		GLenum tWrap = ProtonWrapModeToOpenGL(yMode);
+		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_S, sWrap);
+		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_T, tWrap);
 	}
 
 	void Texture::Bind(uint32_t slot) const

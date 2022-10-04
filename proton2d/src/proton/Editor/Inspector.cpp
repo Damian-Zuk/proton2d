@@ -170,14 +170,41 @@ namespace proton {
 							}
 						}
 
-						// Remove trxture
 						if (sprite)
 						{
+							// Remove trxture
 							ImGui::SameLine();
 							if (ImGui::Button("Remove texture", ImVec2(136.0f, 25.0f)) && sprite)
 							{
 								sprite.reset();
 								textureSource.clear();
+							}
+							ImGui::Dummy({ 0.0f, 10.0f });
+
+							// Texture filter mode
+							uint32_t filterMode = (uint32_t)sprite->GetTexture()->GetFilterMode();
+							const char* filterModes[] = { "Nearest", "Linear" };
+							assert(filterMode < 2 && "Unexpected filter mode!");
+
+							ImGui::Text("Filter mode:"); ImGui::SameLine();
+							if (ImGui::BeginCombo("##Texture_Filter", filterModes[filterMode]))
+							{
+								for (uint32_t i = 0; i < 2; i++)
+								{
+									const bool isSelected = (filterMode == i);
+									if (ImGui::Selectable(filterModes[i], isSelected))
+									{
+										if (filterMode != i)
+										{
+											sprite->GetTexture()->SetFilterMode((TextureFilterMode)i);
+											filterMode = i;
+										}
+									}
+
+									if (isSelected)
+										ImGui::SetItemDefaultFocus();
+								}
+								ImGui::EndCombo();
 							}
 						}
 
