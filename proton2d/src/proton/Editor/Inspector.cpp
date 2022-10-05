@@ -170,9 +170,9 @@ namespace proton {
 							}
 						}
 
+						// Remove texture button
 						if (sprite)
 						{
-							// Remove trxture
 							ImGui::SameLine();
 							if (ImGui::Button("Remove texture", ImVec2(136.0f, 25.0f)) && sprite)
 							{
@@ -180,32 +180,6 @@ namespace proton {
 								textureSource.clear();
 							}
 							ImGui::Dummy({ 0.0f, 10.0f });
-
-							// Texture filter mode
-							uint32_t filterMode = (uint32_t)sprite->GetTexture()->GetFilterMode();
-							const char* filterModes[] = { "Nearest", "Linear" };
-							assert(filterMode < 2 && "Unexpected filter mode!");
-
-							ImGui::Text("Filter mode:"); ImGui::SameLine();
-							if (ImGui::BeginCombo("##Texture_Filter", filterModes[filterMode]))
-							{
-								for (uint32_t i = 0; i < 2; i++)
-								{
-									const bool isSelected = (filterMode == i);
-									if (ImGui::Selectable(filterModes[i], isSelected))
-									{
-										if (filterMode != i)
-										{
-											sprite->GetTexture()->SetFilterMode((TextureFilterMode)i);
-											filterMode = i;
-										}
-									}
-
-									if (isSelected)
-										ImGui::SetItemDefaultFocus();
-								}
-								ImGui::EndCombo();
-							}
 						}
 
 						// Check if texture is spritesheet
@@ -246,6 +220,75 @@ namespace proton {
 						ImGui::PushItemWidth(260.0f);
 						ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
 						ImGui::PopItemWidth();
+
+						// More texture proporties
+						if (sprite)
+						{
+							ImGui::Dummy({ 0.0f, 10.0f });
+							if (ImGui::TreeNode("More texture proporties"))
+							{
+								ImGui::Dummy({ 0.0f, 6.0f });
+
+								// Texture filter mode
+								uint32_t filterMode = (uint32_t)sprite->GetTexture()->GetFilterMode();
+								const char* filterModes[] = { "Nearest", "Linear" };
+								assert(filterMode < 2 && "Unexpected filter mode!");
+
+								ImGui::Text("Filter mode:"); ImGui::SameLine();
+								if (ImGui::BeginCombo("##Texture_Filter", filterModes[filterMode]))
+								{
+									for (uint32_t i = 0; i < 2; i++)
+									{
+										const bool isSelected = (filterMode == i);
+										if (ImGui::Selectable(filterModes[i], isSelected))
+										{
+											if (filterMode != i)
+											{
+												sprite->GetTexture()->SetFilterMode((TextureFilterMode)i);
+												filterMode = i;
+											}
+										}
+
+										if (isSelected)
+											ImGui::SetItemDefaultFocus();
+									}
+									ImGui::EndCombo();
+								}
+
+								// Texture wrapping mode
+								uint32_t wrapMode = (uint32_t)(sprite->GetTexture()->GetWrapMode().first);
+								const char* wrapModes[] = { "Repeat", "Clamp to border", "Clamp to edge" };
+								assert(wrapMode < 3 && "Unexpected wrap mode!");
+
+								ImGui::Text("Wrap mode:"); ImGui::SameLine();
+								if (ImGui::BeginCombo("##Texture_Wrap", wrapModes[wrapMode]))
+								{
+									for (uint32_t i = 0; i < 3; i++)
+									{
+										const bool isSelected = (wrapMode == i);
+										if (ImGui::Selectable(wrapModes[i], isSelected))
+										{
+											if (wrapMode != i)
+											{
+												sprite->GetTexture()->SetWrapMode((TextureWrapMode)i);
+												wrapMode = i;
+											}
+										}
+
+										if (isSelected)
+											ImGui::SetItemDefaultFocus();
+									}
+									ImGui::EndCombo();
+								}
+								ImGui::Dummy({ 0.0f, 3.0f });
+
+								// Tiling factor
+								ImGui::Text("Tiling factor:"); ImGui::SameLine();
+								ImGui::InputFloat("##Tiling_Factor", &component.TilingFactor, 1.0f, 1.0f);
+
+								ImGui::TreePop();
+							}
+						}
 					});
 				}
 
