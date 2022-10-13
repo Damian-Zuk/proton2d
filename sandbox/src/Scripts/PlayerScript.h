@@ -4,7 +4,7 @@
 
 using namespace proton;
 
-class PlayerRunRight: public EntityScript
+class PlayerScript: public EntityScript
 {
 public:
 	virtual void OnCreate() override
@@ -15,7 +15,7 @@ public:
 	virtual void OnUpdate(float ts) override
 	{
 		auto& transform = GetComponent<TransformComponent>();
-		transform.Position.x += 0.1f * ts;
+		transform.Position.x += 0.15f * ts;
 
 		m_SpriteChangeTime -= ts;
 		if (m_SpriteChangeTime < 0.0f)

@@ -24,6 +24,9 @@ namespace proton {
 		void SetPrimaryCamera(Entity& cameraEntity);
 		void SetPrimaryCamera(Shared<Camera> camera);
 		Shared<Camera> GetSceneCamera() { return m_PrimaryCamera; }
+
+		size_t GetEntitiesCount() const { return m_Registry.size(); }
+		size_t GetScriptedEntitiesCount() const { return m_Registry.view<ScriptComponent>().size(); }
 	
 	private:
 		void RenderScene(Camera& camera);

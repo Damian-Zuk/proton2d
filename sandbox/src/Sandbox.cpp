@@ -7,6 +7,7 @@ public:
 
 	bool OnCreate() override
 	{
+		proton::Application::GetWindow().SetVSync(false);
 		PushLayer(new TestLayer());
 		return true;
 	}
@@ -14,7 +15,6 @@ public:
 
 int main(int argc, char** argv) 
 {
-	auto app = new Sandbox("Proton Engine");
-	app->Run();
-	delete app;
+	Sandbox app("Proton Engine");
+	app.Run();
 }

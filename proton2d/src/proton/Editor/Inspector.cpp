@@ -188,7 +188,6 @@ namespace proton {
 							int tileX = (int)sprite->m_PosX, tileY = (int)sprite->m_PosY;
 							auto& [maxX, maxY] = sprite->m_SpriteSheet->GetMaxTilesCount();
 
-							ImGui::Dummy({ 0.0f, 8.0f });
 							ImGui::Text("Spritesheet tile coordinates:");
 							ImGui::Dummy({ 0.0f, 4.0f });
 							ImGui::Columns(2);
@@ -211,10 +210,10 @@ namespace proton {
 								sprite->SetTile(0, (uint32_t)((tileY + maxY) % maxY));
 
 							ImGui::Columns(1);
+							ImGui::Dummy({ 0.0f, 10.0f });
 						}
 
 						// Draw color control
-						ImGui::Dummy({ 0.0f, 8.0f });
 						ImGui::Text("Tint color:");
 						ImGui::Dummy({ 0.0f, 3.0f });
 						ImGui::PushItemWidth(260.0f);

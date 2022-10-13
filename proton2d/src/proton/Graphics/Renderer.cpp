@@ -10,13 +10,6 @@
 
 namespace proton {
 
-	constexpr static glm::vec4 QuadVertexPositions[] = {
-		{ -0.5f, -0.5f, 0.0f, 1.0f },
-		{  0.5f, -0.5f, 0.0f, 1.0f },
-		{  0.5f,  0.5f, 0.0f, 1.0f },
-		{ -0.5f,  0.5f, 0.0f, 1.0f }
-	};
-
 	struct QuadVertex
 	{
 		glm::vec3 Position;
@@ -28,9 +21,9 @@ namespace proton {
 
 	static struct RendererData
 	{
-		static const uint32_t MaxQuads = 20000;
-		static const uint32_t MaxVertices = MaxQuads * 4;
-		static const uint32_t MaxIndices = MaxQuads * 6;
+		uint32_t MaxQuads = 20000;
+		uint32_t MaxVertices = MaxQuads * 4;
+		uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32;
 
 		Shared<VertexArray> QuadVertexArray;
@@ -45,6 +38,8 @@ namespace proton {
 		uint32_t TextureSlotIndex = 1;
 		
 		Shared<UniformBuffer> CameraUniformBuffer;
+
+		uint32_t OpenGLDrawCalls = 0;
 	} data;
 
 	static void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned severity, int length, const char* message, const void* userParam)
@@ -121,6 +116,7 @@ namespace proton {
 	void Renderer::BeginScene(const Camera& camera)
 	{
 		data.CameraUniformBuffer->SetData(&camera.GetViewProjection(), sizeof(glm::mat4));
+		data.OpenGLDrawCalls = 0;
 		StartBatch();
 	}
 
@@ -149,6 +145,7 @@ namespace proton {
 			data.QuadShader->Bind();
 			data.QuadVertexArray->Bind();
 			glDrawElements(GL_TRIANGLES, data.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
+			data.OpenGLDrawCalls++;
 		}
 	}
 
@@ -158,9 +155,16 @@ namespace proton {
 		StartBatch();
 	}
 
+	constexpr static glm::vec4 QuadVertexPositions[] = {
+		{ -0.5f, -0.5f, 0.0f, 1.0f },
+		{  0.5f, -0.5f, 0.0f, 1.0f },
+		{  0.5f,  0.5f, 0.0f, 1.0f },
+		{ -0.5f,  0.5f, 0.0f, 1.0f }
+	};
+
 	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
 	{
-		if (data.QuadIndexCount >= RendererData::MaxIndices)
+		if (data.QuadIndexCount >= data.MaxIndices)
 			NextBatch();
 
 		constexpr glm::vec2 textureCoords[] = {
@@ -186,7 +190,7 @@ namespace proton {
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, float tilingFactor, const glm::vec4& tintColor)
 	{
-		if (data.QuadIndexCount >= RendererData::MaxIndices)
+		if (data.QuadIndexCount >= data.MaxIndices)
 			NextBatch();
 
 		uint32_t textureIndex = 0;
@@ -234,6 +238,18 @@ namespace proton {
 	void Renderer::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		glViewport(x, y, width, height);
+	}
+
+	void Renderer::SetMaxQuadsCount(uint32_t count)
+	{
+		data.MaxQuads = count;
+		data.MaxVertices = data.MaxQuads * 4;
+		data.MaxIndices = data.MaxQuads * 6;
+	}
+
+	uint32_t Renderer::GetDrawCallsCount()
+	{
+		return data.OpenGLDrawCalls;
 	}
 
 }

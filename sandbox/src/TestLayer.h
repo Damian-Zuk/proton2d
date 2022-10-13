@@ -13,6 +13,8 @@ public:
 	virtual void OnUpdate(float ts) override;
 	virtual void OnEvent(Event& event);
 
+	void SpawnPlatform(glm::vec3 pos, uint32_t widthTiles, uint32_t heightTiles);
+
 private:
 	Shared<Scene> m_MainScene;
 	CameraController m_CameraController;

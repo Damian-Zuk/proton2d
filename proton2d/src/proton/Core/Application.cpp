@@ -10,6 +10,8 @@
 	#include "proton/Platform/Windows/WindowsInput.h"
 #endif
 
+#include <chrono>
+
 namespace proton {
 
 	Application* Application::s_Instance = nullptr;
@@ -47,19 +49,22 @@ namespace proton {
 
 		if (OnCreate()) 
 		{
+			using Clock = std::chrono::high_resolution_clock;
+
 			while (m_IsRunning) 
 			{
-				float time = (float)glfwGetTime();
-				float timestep = time - m_LastFrameTime;
-				m_LastFrameTime = time;
+				auto startFrameTime = Clock::now();
 
 				if (!m_WindowMinimized) 
 				{
 					for (Layer* layer : m_AppLayers)
-						layer->OnUpdate(timestep);
+						layer->OnUpdate(m_LastFrameTime);
 				}
 
 			#ifndef PROTON_DISTRIBUTION
+				// Update and render editor
+				m_EditorOverlay->m_DebugInfo.m_FrameTime = m_LastFrameTime;
+
 				m_EditorOverlay->BeginImGuiRender();
 
 				for (Layer* layer : m_AppLayers)
@@ -69,6 +74,9 @@ namespace proton {
 			#endif
 
 				m_Window->OnUpdate();
+				
+				auto end = Clock::now();
+				m_LastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(end - startFrameTime).count() / 1000000.0f;
 			}
 		}
 	}

@@ -36,8 +36,11 @@ namespace proton {
 	void EditorOverlay::OnImGuiRender()
 	{
 		ImGui::ShowDemoWindow(); // Demo window for reference
-		ImGui::Begin("Scene Entities");
 
+		//************************************
+		//   Entity Hierarchy 
+		//************************************
+		ImGui::Begin("Entity Hierarchy");
 		if (m_ActiveScene)
 		{
 			ImGui::Dummy({0.0f, 1.0f});
@@ -72,12 +75,17 @@ namespace proton {
 				}
 
 			});
-
 		}
-
 		ImGui::End();
 
+		//************************************
+		//   Other panels
+		//************************************
+		m_DebugInfo.m_EntitiesCount = m_ActiveScene->GetEntitiesCount();
+		m_DebugInfo.m_ScriptedEntitiesCount = m_ActiveScene->GetScriptedEntitiesCount();
+
 		m_Inspector.OnImGuiRender();
+		m_DebugInfo.OnImGuiRender();
 	}
 
 	void EditorOverlay::SetActiveScene(const Shared<Scene>& scene)

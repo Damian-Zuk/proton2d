@@ -2,6 +2,7 @@
 #include "proton/Core/Layer.h"
 #include "proton/Entity/Entity.h"
 #include "proton/Editor/Inspector.h"
+#include "proton/Editor/DebugInfo.h"
 
 namespace proton {
 
@@ -22,6 +23,8 @@ namespace proton {
 
 	private:
 		Inspector m_Inspector;
+		DebugInfo m_DebugInfo;
+
 		Shared<Scene> m_ActiveScene;
 		Entity m_SelectedEntity;
 
