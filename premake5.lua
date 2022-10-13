@@ -5,7 +5,8 @@ workspace "Proton2D"
 	configurations
 	{
 		"Debug",
-		"Release"
+		"Release",
+		"Distribution"
 	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -75,7 +76,6 @@ project "proton2d"
 		defines
 		{
 			"PROTON_PLATFORM_WINDOWS",
-			"PROTON_BUILD_DLL",
 			"GLFW_INCLUDE_NONE"
 		}
 
@@ -90,6 +90,11 @@ project "proton2d"
 
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
+		optimize "on"
+
+	filter "configurations:Distribution"
+		defines "PROTON_DISTRIBUTION"
+		runtime "Release"
 		optimize "on"
 
 
@@ -137,5 +142,10 @@ project "sandbox"
 
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Distribution"
+		defines "PROTON_DISTRIBUTION"
 		runtime "Release"
 		optimize "on"
