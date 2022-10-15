@@ -14,6 +14,8 @@ namespace proton {
 		template<typename T>
 		void DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction);
 
+		void SetSelectionContext(Entity entity);
+
 	private:
 		Shared<Scene> m_ActiveScene;
 		Entity m_SelectedEntity;

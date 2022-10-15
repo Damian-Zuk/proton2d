@@ -21,6 +21,8 @@ namespace proton {
 		void BeginImGuiRender();
 		void EndImGuiRender();
 
+		void DrawEntityTreeNode(Entity entity);
+
 	private:
 		Inspector m_Inspector;
 		DebugInfo m_DebugInfo;

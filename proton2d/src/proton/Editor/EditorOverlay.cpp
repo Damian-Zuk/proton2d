@@ -2,6 +2,7 @@
 #include "proton/Editor/EditorOverlay.h"
 #include "proton/Core/Application.h"
 #include "proton/Core/Window.h"
+#include "proton/Entity/Components.h"
 
 #include "proton/Editor/ImGui/imgui_impl_opengl3.h"
 #include "proton/Editor/ImGui/imgui_impl_glfw.h"
@@ -53,27 +54,10 @@ namespace proton {
 			m_ActiveScene->m_Registry.each([&](auto id)
 			{
 				Entity entity{ m_ActiveScene.get(), id};
+				auto& relationship = entity.GetComponent<RelationshipComponent>();
 
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
-				if (m_Inspector.m_SelectedEntity == entity)
-					flags |= ImGuiTreeNodeFlags_Selected;
-
-				bool expanded = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, 
-					flags, entity.GetComponent<TagComponent>().Tag.c_str());
-				
-				// On select entity in scene entities panel
-				if (ImGui::IsItemClicked()) 
-				{
-					m_Inspector.m_SelectedEntity = entity;
-					// Reset inspector fields
-					m_Inspector.m_SpriteComponentTextureSource.clear();
-				}
-
-				if (expanded)
-				{
-					ImGui::TreePop();
-				}
-
+				if (relationship.Parent == entt::null)
+					DrawEntityTreeNode(entity);
 			});
 		}
 		ImGui::End();
@@ -86,6 +70,39 @@ namespace proton {
 
 		m_Inspector.OnImGuiRender();
 		m_DebugInfo.OnImGuiRender();
+	}
+
+	void EditorOverlay::DrawEntityTreeNode(Entity entity)
+	{
+		auto& relationship = entity.GetComponent<RelationshipComponent>();
+		
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
+		
+		if (m_Inspector.m_SelectedEntity == entity)
+			flags |= ImGuiTreeNodeFlags_Selected;
+
+		if (relationship.First == entt::null)
+			flags |= ImGuiTreeNodeFlags_Leaf;
+
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetComponent<TagComponent>().Tag.c_str());
+
+		if (ImGui::IsItemClicked())
+			m_Inspector.SetSelectionContext(entity);
+
+		if (opened)
+		{
+			if (relationship.ChildrenCount)
+			{
+				auto current = relationship.First;
+				for (uint32_t i = 0; i < relationship.ChildrenCount; i++)
+				{
+					Entity e{ m_ActiveScene.get(), current };
+					DrawEntityTreeNode(e);
+					current = e.GetComponent<RelationshipComponent>().Next;
+				}
+			}
+			ImGui::TreePop();
+		}
 	}
 
 	void EditorOverlay::SetActiveScene(const Shared<Scene>& scene)

@@ -3,6 +3,8 @@
 #include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/Camera.h"
 
+#include <entt/entity/entity.hpp>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -68,9 +70,17 @@ namespace proton {
 					script.ScriptInstance = nullptr;
 				};
 			}
-			else
-				LOG_WARN("Tried to bound script", scriptName, "to entity which already have this script!");
 		}
+	};
+
+	struct RelationshipComponent
+	{
+		std::uint32_t ChildrenCount = 0;
+		entt::entity First  { entt::null };
+		entt::entity Last   { entt::null };
+		entt::entity Prev   { entt::null };
+		entt::entity Next   { entt::null };
+		entt::entity Parent { entt::null };
 	};
 
 	struct CameraComponent

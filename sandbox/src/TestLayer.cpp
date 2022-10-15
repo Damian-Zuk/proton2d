@@ -23,15 +23,6 @@ void TestLayer::OnAttach()
 	SpawnPlatform({ 0, -0.75f, 0.1f }, 24, 8);
 	SpawnPlatform({ 2.2f, 0, 0.1f }, 30, 10);
 
-	m_Player = m_MainScene->CreateEntity("Player");
-	{
-		auto& transform    = m_Player.GetComponent<TransformComponent>();
-		transform.Position = { -0.5f, 0.0f, -0.1f };
-		transform.Scale    = { 1.5f, 1.0f };
-		auto& sprite       = m_Player.AddComponent<SpriteComponent>();
-		sprite.Sprite      = CreateShared<Sprite>(playerSpriteSheet, 0, 0);
-	}
-
 	auto box = m_MainScene->CreateEntity("Box");
 	{
 		auto& transform    = box.GetComponent<TransformComponent>();
@@ -39,6 +30,15 @@ void TestLayer::OnAttach()
 		transform.Scale    = { 0.2f, 0.2f };
 		auto& sprite       = box.AddComponent<SpriteComponent>();
 		sprite.Sprite      = CreateShared<Sprite>(AssetsManager::Get().GetTexture("box.png"));
+	}
+
+	m_Player = m_MainScene->CreateEntity("Player");
+	{
+		auto& transform    = m_Player.GetComponent<TransformComponent>();
+		transform.Position = { -0.5f, 0.0f, -0.1f };
+		transform.Scale    = { 1.5f, 1.0f };
+		auto& sprite       = m_Player.AddComponent<SpriteComponent>();
+		sprite.Sprite      = CreateShared<Sprite>(playerSpriteSheet, 0, 0);
 	}
 }
 
@@ -57,8 +57,10 @@ void TestLayer::OnEvent(proton::Event& event)
 	m_CameraController.OnEvent(event);
 }
 
+// TODO: create SpriteGridFlexBlock in engine
 void TestLayer::SpawnPlatform(glm::vec3 pos, uint32_t widthTiles, uint32_t heightTiles)
 {
+	auto platform = m_MainScene->CreateEntity("Platform");
 	auto levelSheet = AssetsManager::Get().LoadSpriteSheet("level-build-1.png", 32, 32);
 
 	for (uint32_t y = 1; y <= heightTiles; y++)
@@ -88,6 +90,7 @@ void TestLayer::SpawnPlatform(glm::vec3 pos, uint32_t widthTiles, uint32_t heigh
 			transform.Position += glm::vec3{ x * scale.x, y * scale.y, 0.1f };
 			auto& sprite = tile.AddComponent<SpriteComponent>();
 			sprite.Sprite = CreateShared<Sprite>(levelSheet, tileX, tileY);
+			platform.AddChildEntity(tile);
 		}
 
 	}

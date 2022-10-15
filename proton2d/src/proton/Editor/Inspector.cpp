@@ -2,6 +2,7 @@
 #include "proton/Editor/Inspector.h"
 #include "proton/Assets/AssetsManager.h"
 #include "proton/Entity/ScriptLoader.h"
+#include "proton/Entity/Components.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -335,6 +336,12 @@ namespace proton {
 		}
 
 		ImGui::Dummy({ 0.0f, 3.0f });
+	}
+
+	void Inspector::SetSelectionContext(Entity entity)
+	{
+		m_SelectedEntity = entity;
+		m_SpriteComponentTextureSource.clear();
 	}
 
 }

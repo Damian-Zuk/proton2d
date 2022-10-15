@@ -1,6 +1,7 @@
 #pragma once
 
 #include "proton/Core/Core.h"
+#include "proton/Entity/Components.h"
 #include "proton/Entity/Scene.h"
 
 namespace proton {
@@ -68,10 +69,66 @@ namespace proton {
 			return true;
 		}
 
-		void Destroy()
+		void Destroy(bool skipParentRelationsCheck = false)
 		{
+			auto& r = GetComponent<RelationshipComponent>();
+
+			if (!skipParentRelationsCheck && r.Parent != entt::null)
+			{
+				// Update relationship linked list
+				Entity parent{ m_Scene, r.Parent };
+				Entity prev{ m_Scene, r.Prev };
+				Entity next{ m_Scene, r.Next };
+
+				auto& parentReletions = parent.GetComponent<RelationshipComponent>();
+				parentReletions.ChildrenCount--;
+
+				if (prev)
+					prev.GetComponent<RelationshipComponent>().Next = next.m_Handle;
+				else
+					parentReletions.First = r.Next;
+
+				if (next)
+					next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
+				else
+					parentReletions.Last = r.Prev;
+			}
+			
+			if (r.First != entt::null)
+			{
+				// Destroy child entities
+				auto current = r.First;
+				for (uint32_t i = 0; i < r.ChildrenCount; i++)
+				{
+					Entity e = { m_Scene, current };
+					auto next = e.GetComponent<RelationshipComponent>().Next;
+					e.Destroy(true);
+					current = next;
+				}
+			}
+
 			m_Scene->m_Registry.destroy(m_Handle);
 			m_Handle = entt::null;
+		}
+
+		void AddChildEntity(Entity& child)
+		{
+			auto& parentComponent = GetComponent<RelationshipComponent>();
+			auto& childComponent = child.GetComponent<RelationshipComponent>();
+
+			childComponent.Parent = m_Handle;
+
+			if (parentComponent.ChildrenCount)
+			{
+				childComponent.Prev = parentComponent.Last;
+				Entity lastEntity = { m_Scene, parentComponent.Last };
+				lastEntity.GetComponent<RelationshipComponent>().Next = child.m_Handle;
+			}
+			else
+				parentComponent.First = child.m_Handle;
+
+			parentComponent.Last = child.m_Handle;
+			parentComponent.ChildrenCount++;
 		}
 
 		operator uint32_t() const { return (uint32_t)m_Handle; }

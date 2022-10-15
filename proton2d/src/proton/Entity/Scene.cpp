@@ -28,6 +28,7 @@ namespace proton {
 		Entity entity = Entity{ this, m_Registry.create() };
 		entity.AddComponent<TagComponent>().Tag = name;
 		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<RelationshipComponent>();
 		return entity;
 	}
 
@@ -86,6 +87,11 @@ namespace proton {
 	void Scene::SetPrimaryCamera(Shared<Camera> camera)
 	{
 		m_PrimaryCamera = camera;
+	}
+
+	size_t Scene::GetScriptedEntitiesCount() const
+	{
+		return m_Registry.view<ScriptComponent>().size();
 	}
 
 }
