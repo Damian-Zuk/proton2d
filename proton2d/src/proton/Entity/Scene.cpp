@@ -62,18 +62,26 @@ namespace proton {
 
 	void Scene::RenderScene(Camera& camera)
 	{
-		auto renderable = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
+		auto renderable = m_Registry.group<TransformComponent>(entt::get<SpriteComponent, RelationshipComponent>);
 
 		Renderer::Clear(s_ClearColor);
 		Renderer::BeginScene(camera);
 
 		for (auto entity : renderable)
 		{
-			auto [transform, sprite] = renderable.get<TransformComponent, SpriteComponent>(entity);
+			auto [transform, sprite, relation] = renderable.get<TransformComponent, SpriteComponent, RelationshipComponent>(entity);
+			
+			glm::mat4 _transform = transform;
+			if (relation.Parent != entt::null)
+			{
+				auto parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
+				_transform = glm::translate(_transform, parentTransform.Position);
+			}
+
 			if (sprite.Sprite)
-				Renderer::DrawQuad(transform, sprite.Sprite, sprite.TilingFactor, sprite.Color);
+				Renderer::DrawQuad(_transform, sprite.Sprite, sprite.TilingFactor, sprite.Color);
 			else
-				Renderer::DrawQuad(transform, sprite.Color);
+				Renderer::DrawQuad(_transform, sprite.Color);
 		}
 
 		Renderer::EndScene();

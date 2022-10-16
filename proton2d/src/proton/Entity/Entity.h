@@ -69,16 +69,16 @@ namespace proton {
 			return true;
 		}
 
-		void Destroy(bool skipParentRelationsCheck = false)
+		void Destroy()
 		{
-			auto& r = GetComponent<RelationshipComponent>();
+			auto& rc = GetComponent<RelationshipComponent>();
 
-			if (!skipParentRelationsCheck && r.Parent != entt::null)
+			if (rc.Parent != entt::null)
 			{
 				// Update relationship linked list
-				Entity parent{ m_Scene, r.Parent };
-				Entity prev{ m_Scene, r.Prev };
-				Entity next{ m_Scene, r.Next };
+				Entity parent{ m_Scene, rc.Parent };
+				Entity prev{ m_Scene, rc.Prev };
+				Entity next{ m_Scene, rc.Next };
 
 				auto& parentReletions = parent.GetComponent<RelationshipComponent>();
 				parentReletions.ChildrenCount--;
@@ -86,23 +86,23 @@ namespace proton {
 				if (prev)
 					prev.GetComponent<RelationshipComponent>().Next = next.m_Handle;
 				else
-					parentReletions.First = r.Next;
+					parentReletions.First = rc.Next;
 
 				if (next)
 					next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
 				else
-					parentReletions.Last = r.Prev;
+					parentReletions.Last = rc.Prev;
 			}
 			
-			if (r.First != entt::null)
+			if (rc.First != entt::null)
 			{
 				// Destroy child entities
-				auto current = r.First;
-				for (uint32_t i = 0; i < r.ChildrenCount; i++)
+				auto current = rc.First;
+				for (uint32_t i = 0; i < rc.ChildrenCount; i++)
 				{
 					Entity e = { m_Scene, current };
 					auto next = e.GetComponent<RelationshipComponent>().Next;
-					e.Destroy(true);
+					m_Scene->m_Registry.destroy(current);
 					current = next;
 				}
 			}

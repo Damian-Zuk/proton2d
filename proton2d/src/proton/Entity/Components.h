@@ -55,21 +55,18 @@ namespace proton {
 		template<typename T>
 		void Bind(const std::string& scriptName)
 		{
-			if (Scripts.find(scriptName) == Scripts.end())
+			ScriptData& script = Scripts[scriptName];
+
+			script.CreateInstanceFunction = [&, scriptName]()
 			{
-				ScriptData& script = Scripts[scriptName];
+				script.ScriptInstance = new T();
+			};
 
-				script.CreateInstanceFunction = [&, scriptName]()
-				{
-					script.ScriptInstance = new T();
-				};
-
-				script.DestroyInstanceFunction = [&, scriptName]()
-				{
-					delete script.ScriptInstance;
-					script.ScriptInstance = nullptr;
-				};
-			}
+			script.DestroyInstanceFunction = [&, scriptName]()
+			{
+				delete script.ScriptInstance;
+				script.ScriptInstance = nullptr;
+			};
 		}
 	};
 
