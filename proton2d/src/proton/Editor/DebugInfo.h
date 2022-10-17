@@ -10,6 +10,7 @@ namespace proton {
 	private:
 		float m_FrameTime = 0.0f;
 		float m_FrameTimeDisplay = 0.0f;
+		float m_AvgFrameTime = 0.0f;
 		
 		uint32_t m_FrameCount = 0;
 		float m_FPS = 0.0f;
@@ -21,7 +22,7 @@ namespace proton {
 		float m_FrameTimeHistory[s_FrameTimePlotValuesCount] = {};
 		uint32_t m_FrameTimeValuesOffset = 0;
 
-		uint32_t m_RendererMaxQuads = 20000;
+		uint32_t m_RendererMaxQuads = 10000;
 
 		float m_RefreshStatsTimer = 0.0f;
 

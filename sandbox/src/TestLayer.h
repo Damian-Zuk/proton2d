@@ -8,7 +8,6 @@ class TestLayer : public Layer
 {
 public:
 	virtual void OnAttach() override;
-	virtual void OnDetach() override;
 
 	virtual void OnUpdate(float ts) override;
 	virtual void OnEvent(Event& event);
@@ -19,4 +18,5 @@ private:
 	Shared<Scene> m_MainScene;
 	CameraController m_CameraController;
 	Entity m_Player;
+	Entity m_Level;
 };

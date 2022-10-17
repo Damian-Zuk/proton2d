@@ -14,6 +14,8 @@ namespace proton {
 		Scene(const std::string& name = "Unnamed Scene");
 		~Scene();
 
+		float m_Val = 0.0f;
+
 		Entity CreateEntity(const std::string& name = "Unnamed Entity");
 
 		void DestroyEntity(entt::entity entity);
@@ -28,7 +30,9 @@ namespace proton {
 		size_t GetScriptedEntitiesCount() const;
 	
 	private:
-		void RenderScene(Camera& camera);
+		void RenderScene(const Camera& camera);
+
+		glm::mat4 GetEntityWorldTransform(glm::mat4 transform, entt::entity parent);
 
 	private:
 		std::string m_SceneName;

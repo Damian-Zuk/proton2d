@@ -16,22 +16,23 @@ namespace proton {
 
 	void CameraController::OnUpdate(float ts)
 	{
+		float zoomLevel = m_Camera->GetZoomLevel();
+
 		if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
 		{
 			if (Input::IsKeyPressed(Key::W)) 
-				m_Camera->Move({ 0.0f, m_CameraSpeed.y * m_AspectRatio * ts });
+				m_Camera->Move({ 0.0f, m_CameraSpeed.y * m_AspectRatio * ts * zoomLevel });
 
 			if (Input::IsKeyPressed(Key::A)) 
-				m_Camera->Move({ -m_CameraSpeed.x * ts, 0.0f });
+				m_Camera->Move({ -m_CameraSpeed.x * ts * zoomLevel, 0.0f });
 
 			if (Input::IsKeyPressed(Key::S)) 
-				m_Camera->Move({ 0.0f, -m_CameraSpeed.y * m_AspectRatio * ts });
+				m_Camera->Move({ 0.0f, -m_CameraSpeed.y * m_AspectRatio * ts * zoomLevel });
 
 			if (Input::IsKeyPressed(Key::D)) 
-				m_Camera->Move({ m_CameraSpeed.x * ts, 0.0f });
+				m_Camera->Move({ m_CameraSpeed.x * ts * zoomLevel, 0.0f });
 		}
 
-		float zoomLevel = m_Camera->GetZoomLevel();
 		float zoomTargetDiff = glm::abs(m_ZoomLevelTarget - zoomLevel);
 		float zoomOffset = glm::max(glm::round(zoomTargetDiff * ts * 10000.0f) / 1000.0f, 0.001f);
 

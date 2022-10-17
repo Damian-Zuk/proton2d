@@ -20,6 +20,19 @@ namespace proton {
 			m_FPS = m_FrameCount ? (m_FrameCount - 1) / (s_StatsRefreshInterval - m_RefreshStatsTimer) : 0.0f;
 			m_FrameCount = 0;
 
+			float sum = 0.0f; int total = 0;
+			for (uint32_t i = 0; i < s_FrameTimePlotValuesCount; i++)
+			{
+				if (m_FrameTimeHistory[i] != 0.0f)
+				{
+					sum += m_FrameTimeHistory[i];
+					total++;
+				}
+			}
+
+			if (total)
+				m_AvgFrameTime = sum / (float)total;
+
 			m_RefreshStatsTimer = s_StatsRefreshInterval;
 		}
 		else
@@ -32,7 +45,7 @@ namespace proton {
 		for (uint32_t i = 0; i < s_FrameTimePlotValuesCount; i++)
 			max = m_FrameTimeHistory[i] > max ? m_FrameTimeHistory[i] : max;
 
-		ImGui::Text("\nmax (s):\n%f", max);
+		ImGui::Text(" max (s):\n%f\n avg (s):\n%f", max, m_AvgFrameTime);
 		ImGui::SameLine();
 		ImGui::PlotLines("##Frame_Time", m_FrameTimeHistory, s_FrameTimePlotValuesCount, m_FrameTimeValuesOffset, NULL, 0.0f, glm::max(max * 1.1f, 1.0f / 60.0f), ImVec2(0, 80));
 		ImGui::Dummy({ 0.0f, 2.0f });

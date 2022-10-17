@@ -12,6 +12,7 @@ namespace proton {
 	Scene::Scene(const std::string& name)
 		: m_SceneName(name)
 	{
+		Renderer::SetClearColor(s_ClearColor);
 	}
 
 	Scene::~Scene()
@@ -46,8 +47,15 @@ namespace proton {
 				if (!scriptData.ScriptInstance)
 				{
 					scriptData.CreateInstanceFunction();
-					scriptData.ScriptInstance->m_Entity = Entity{ this, entity };
-					scriptData.ScriptInstance->OnCreate();
+					if (scriptData.ScriptInstance)
+					{
+						scriptData.ScriptInstance->m_Entity = Entity{ this, entity };
+						scriptData.ScriptInstance->OnCreate();
+					}
+					else
+					{
+						assert(false && "Script instantiation failed!");
+					}
 				}
 
 				scriptData.ScriptInstance->OnUpdate(ts);
@@ -60,31 +68,47 @@ namespace proton {
 			RenderScene(*m_PrimaryCamera);
 	}
 
-	void Scene::RenderScene(Camera& camera)
+	void Scene::RenderScene(const Camera& camera)
 	{
 		auto renderable = m_Registry.group<TransformComponent>(entt::get<SpriteComponent, RelationshipComponent>);
 
-		Renderer::Clear(s_ClearColor);
+		Renderer::Clear();
 		Renderer::BeginScene(camera);
 
 		for (auto entity : renderable)
 		{
-			auto [transform, sprite, relation] = renderable.get<TransformComponent, SpriteComponent, RelationshipComponent>(entity);
+			auto [transform, sprite, relationship] = renderable.get<TransformComponent, SpriteComponent, RelationshipComponent>(entity);
+
+			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
 			
-			glm::mat4 _transform = transform;
-			if (relation.Parent != entt::null)
-			{
-				auto parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
-				_transform = glm::translate(_transform, parentTransform.Position);
-			}
+			if (relationship.Parent != entt::null)
+				transformMatrix = GetEntityWorldTransform(transformMatrix, relationship.Parent);
+
+			transformMatrix *= glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
+				* glm::scale(glm::mat4(1.0f), { transform.Scale.x, transform.Scale.y, 1.0f });
 
 			if (sprite.Sprite)
-				Renderer::DrawQuad(_transform, sprite.Sprite, sprite.TilingFactor, sprite.Color);
+				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color);
 			else
-				Renderer::DrawQuad(_transform, sprite.Color);
+				Renderer::DrawQuad(transformMatrix, sprite.Color);
 		}
 
 		Renderer::EndScene();
+	}
+
+	glm::mat4 Scene::GetEntityWorldTransform(glm::mat4 localTransform, entt::entity parent)
+	{
+		auto [parentTransform, parentRelationship] = m_Registry.get<TransformComponent, RelationshipComponent>(parent);
+
+		if (parentRelationship.Parent != entt::null)
+			localTransform = GetEntityWorldTransform(localTransform, parentRelationship.Parent);
+
+		return localTransform
+			* glm::translate(glm::mat4(1.0f), parentTransform.Position)
+			* inverse(localTransform)
+			* glm::rotate(glm::mat4(1.0f), glm::radians(parentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
+			* glm::scale(glm::mat4(1.0f), { parentTransform.Scale.x, parentTransform.Scale.y, 1.0f })
+			* localTransform;
 	}
 
 	void Scene::SetPrimaryCamera(Entity& cameraEntity)

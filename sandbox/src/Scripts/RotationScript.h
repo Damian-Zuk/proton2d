@@ -4,7 +4,7 @@
 
 using namespace proton;
 
-class RotateScript : public EntityScript
+class RotationScript : public EntityScript
 {
 public:
 	virtual void OnUpdate(float ts) override

@@ -16,12 +16,11 @@ namespace proton {
 		glm::vec4 Color;
 		glm::vec2 TextureCoords;
 		float TextureIndex;
-		float TilingFactor;
 	};
 
 	static struct RendererData
 	{
-		uint32_t MaxQuads = 20000;
+		uint32_t MaxQuads = 10000;
 		uint32_t MaxVertices = MaxQuads * 4;
 		uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32;
@@ -55,12 +54,12 @@ namespace proton {
 
 	void Renderer::Init()
 	{
-	#ifdef PROTON_DEBUG
+#	ifdef PROTON_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(OpenGLMessageCallback, nullptr);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
-	#endif
+#	endif
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -69,43 +68,38 @@ namespace proton {
 
 		InitQuadVertexArray();
 
-		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true);
+		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true); // white texture
 		data.QuadShader          = CreateShared<Shader>("assets/shaders/Quad2D.glsl");
 		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
 	}
 
 	void Renderer::InitQuadVertexArray()
 	{
-		data.QuadVertexArray  = CreateShared<VertexArray>();
+		// Create vertex buffer
 		data.QuadVertexBuffer = CreateShared<VertexBuffer>((uint32_t)(data.MaxVertices * sizeof(QuadVertex)));
-
 		data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "Position"      },
 			{ ShaderDataType::Float4, "Color"         },
 			{ ShaderDataType::Float2, "TextureCoords" },
-			{ ShaderDataType::Float,  "TextureIndex"  },
-			{ ShaderDataType::Float,  "TilingFactor"  }
+			{ ShaderDataType::Float,  "TextureIndex"  }
 		});
-
-		data.QuadVertexArray->AddVertexBuffer(data.QuadVertexBuffer);
 		data.QuadVertexBufferBase = new QuadVertex[data.MaxVertices];
 
-		uint32_t* quadIndices = new uint32_t[data.MaxIndices];
-		uint32_t offset = 0;
+		// Create index buffer
+		uint32_t* indicies = new uint32_t[data.MaxIndices];
 
-		for (uint32_t i = 0; i < data.MaxIndices; i += 6)
+		for (uint32_t i = 0; i < data.MaxIndices; i++)
 		{
-			quadIndices[i + 0] = offset + 0;
-			quadIndices[i + 1] = offset + 1;
-			quadIndices[i + 2] = offset + 2;
-			quadIndices[i + 3] = offset + 2;
-			quadIndices[i + 4] = offset + 3;
-			quadIndices[i + 5] = offset + 0;
-			offset += 4;
+			uint32_t offset = 4 * (i / 6);
+			constexpr uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
+			indicies[i] = offset + quadIndices[i % 6];
 		}
 
-		data.QuadVertexArray->SetIndexBuffer(CreateShared<IndexBuffer>(quadIndices, data.MaxIndices));
-		delete[] quadIndices;
+		// Create vertex array
+		data.QuadVertexArray = CreateShared<VertexArray>();
+		data.QuadVertexArray->AddVertexBuffer(data.QuadVertexBuffer);
+		data.QuadVertexArray->SetIndexBuffer(CreateShared<IndexBuffer>(indicies, data.MaxIndices));
+		delete[] indicies;
 	}
 
 	void Renderer::Shutdown()
@@ -180,7 +174,6 @@ namespace proton {
 			data.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
 			data.QuadVertexBufferPtr->Color = color;
 			data.QuadVertexBufferPtr->TextureIndex = 0.0f;
-			data.QuadVertexBufferPtr->TilingFactor = 1.0f;
 			data.QuadVertexBufferPtr->TextureCoords = textureCoords[i];
 			data.QuadVertexBufferPtr++;
 		}
@@ -188,7 +181,7 @@ namespace proton {
 		data.QuadIndexCount += 6;
 	}
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, const glm::vec4& tintColor)
 	{
 		if (data.QuadIndexCount >= data.MaxIndices)
 			NextBatch();
@@ -213,25 +206,26 @@ namespace proton {
 			data.TextureSlotIndex++;
 		}
 
-		auto& textureCoords = sprite->GetTextureCoords();
-
 		constexpr uint16_t QuadVertexCount = 4;
 		for (uint16_t i = 0; i < QuadVertexCount; i++)
 		{
 			data.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
 			data.QuadVertexBufferPtr->Color = tintColor;
 			data.QuadVertexBufferPtr->TextureIndex = static_cast<float>(textureIndex);
-			data.QuadVertexBufferPtr->TextureCoords = textureCoords[i];
-			data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			data.QuadVertexBufferPtr->TextureCoords = sprite->m_TextureCoords[i];
 			data.QuadVertexBufferPtr++;
 		}
 
 		data.QuadIndexCount += 6;
 	}
 
-	void Renderer::Clear(glm::vec4 color)
+	void Renderer::SetClearColor(glm::vec4 color)
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
+	}
+
+	void Renderer::Clear()
+	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 

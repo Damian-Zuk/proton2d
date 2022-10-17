@@ -77,24 +77,19 @@ namespace proton {
 			assert(false && "Sprite doesn't have spritesheet attached!");
 	}
 
-	void Sprite::NextTile(uint32_t sizeX, uint32_t sizeY)
+	void Sprite::NextTile(uint32_t posY, uint32_t sizeX, uint32_t sizeY)
 	{
-		SetTile(m_PosX + 1, m_PosY, sizeX, sizeY);
+		SetTile(m_PosX + 1, posY, sizeX, sizeY);
 	}
 
-	void Sprite::PrevTile(uint32_t sizeX, uint32_t sizeY)
+	void Sprite::PrevTile(uint32_t posY, uint32_t sizeX, uint32_t sizeY)
 	{
-		SetTile(m_PosX - 1, m_PosY, sizeX, sizeY);
+		SetTile(m_PosX - 1, posY, sizeX, sizeY);
 	}
 
 	Shared<Texture> Sprite::GetTexture()
 	{
 		return m_Texture;
-	}
-
-	const std::array<glm::vec2, 4>& Sprite::GetTextureCoords() const
-	{
-		return m_TextureCoords;
 	}
 
 }
