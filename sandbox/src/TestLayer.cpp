@@ -100,8 +100,7 @@ void TestLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heigh
 			sprite = CreateShared<Sprite>(levelSheet, tileX, tileY);
 			
 			platform.AddChildEntity(tile);
-			m_Level.AddChildEntity(platform);
 		}
-
 	}
+	m_Level.AddChildEntity(platform);
 }

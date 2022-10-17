@@ -10,9 +10,7 @@ namespace proton {
 	{
 	public:
 		Entity() = default;
-
-		Entity(Scene* scene, entt::entity handle)
-			: m_Scene(scene), m_Handle(handle) {}
+		Entity(Scene* scene, entt::entity handle);
 
 		virtual ~Entity() = default;
 
@@ -59,77 +57,10 @@ namespace proton {
 			return m_Scene->m_Registry.any_of<T>(m_Handle);
 		}
 
-		bool IsValid()
-		{
-			if (!m_Scene->m_Registry.valid(m_Handle))
-			{
-				m_Handle = entt::null;
-				return false;
-			}
-			return true;
-		}
-
-		void Destroy()
-		{
-			auto& rc = GetComponent<RelationshipComponent>();
-
-			if (rc.Parent != entt::null)
-			{
-				// Update relationship linked list
-				Entity parent{ m_Scene, rc.Parent };
-				Entity prev{ m_Scene, rc.Prev };
-				Entity next{ m_Scene, rc.Next };
-
-				auto& parentReletions = parent.GetComponent<RelationshipComponent>();
-				parentReletions.ChildrenCount--;
-
-				if (prev)
-					prev.GetComponent<RelationshipComponent>().Next = next.m_Handle;
-				else
-					parentReletions.First = rc.Next;
-
-				if (next)
-					next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
-				else
-					parentReletions.Last = rc.Prev;
-			}
-			
-			if (rc.First != entt::null)
-			{
-				// Destroy child entities
-				auto current = rc.First;
-				for (uint32_t i = 0; i < rc.ChildrenCount; i++)
-				{
-					Entity e = { m_Scene, current };
-					auto next = e.GetComponent<RelationshipComponent>().Next;
-					m_Scene->m_Registry.destroy(current);
-					current = next;
-				}
-			}
-
-			m_Scene->m_Registry.destroy(m_Handle);
-			m_Handle = entt::null;
-		}
-
-		void AddChildEntity(Entity& child)
-		{
-			auto& parentComponent = GetComponent<RelationshipComponent>();
-			auto& childComponent = child.GetComponent<RelationshipComponent>();
-
-			childComponent.Parent = m_Handle;
-
-			if (parentComponent.ChildrenCount)
-			{
-				childComponent.Prev = parentComponent.Last;
-				Entity lastEntity = { m_Scene, parentComponent.Last };
-				lastEntity.GetComponent<RelationshipComponent>().Next = child.m_Handle;
-			}
-			else
-				parentComponent.First = child.m_Handle;
-
-			parentComponent.Last = child.m_Handle;
-			parentComponent.ChildrenCount++;
-		}
+		bool IsValid();
+		void Destroy();
+		void AddChildEntity(Entity& child);
+		void DestroyChildEntities();
 
 		operator uint32_t() const { return (uint32_t)m_Handle; }
 		operator bool() const { return m_Handle != entt::null; }

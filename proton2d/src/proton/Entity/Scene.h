@@ -14,8 +14,6 @@ namespace proton {
 		Scene(const std::string& name = "Unnamed Scene");
 		~Scene();
 
-		float m_Val = 0.0f;
-
 		Entity CreateEntity(const std::string& name = "Unnamed Entity");
 
 		void DestroyEntity(entt::entity entity);
