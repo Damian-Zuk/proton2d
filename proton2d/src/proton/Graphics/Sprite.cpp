@@ -87,6 +87,16 @@ namespace proton {
 		SetTile(m_PosX - 1, posY, sizeX, sizeY);
 	}
 
+	void Sprite::FlipX(bool flip)
+	{
+		m_FlipX = flip;
+	}
+
+	void Sprite::FlipY(bool flip)
+	{
+		m_FlipY = flip;
+	}
+
 	Shared<Texture> Sprite::GetTexture()
 	{
 		return m_Texture;

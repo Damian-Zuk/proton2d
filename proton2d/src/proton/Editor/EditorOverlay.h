@@ -28,7 +28,6 @@ namespace proton {
 		DebugInfo m_DebugInfo;
 
 		Shared<Scene> m_ActiveScene;
-		Entity m_SelectedEntity;
 
 		friend class Application;
 	};

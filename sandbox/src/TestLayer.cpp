@@ -10,7 +10,7 @@ void TestLayer::OnAttach()
 	LOAD_SCRIPT(RotationScript);
 
 	// Create scene
-	m_MainScene = CreateShared<Scene>();
+	m_MainScene = CreateShared<Scene>("Sample scene");
 	m_MainScene->SetPrimaryCamera(m_CameraController.GetCamera());
 	Application::Get().SetEditorActiveScene(m_MainScene); // temp
 

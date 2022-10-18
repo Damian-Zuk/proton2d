@@ -218,6 +218,12 @@ namespace proton {
 								ImGui::EndCombo();
 							}
 							ImGui::Dummy({ 0.0f, 10.0f });
+							ImGui::Text("Sprite flip: ");
+							ImGui::SameLine();
+							ImGui::Checkbox("X##Flip", &sprite->m_FlipX);
+							ImGui::SameLine();
+							ImGui::Checkbox("Y##Flip", &sprite->m_FlipY);
+							ImGui::Dummy({ 0.0f, 10.0f });
 						}
 
 						// Check if texture is spritesheet

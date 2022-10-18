@@ -47,18 +47,35 @@ namespace proton {
 			ImGui::Dummy({0.0f, 1.0f});
 			if (ImGui::Button("Create new entity", {340.0f, 25.0f}))
 			{
-				m_ActiveScene->CreateEntity();
+				Entity entity = m_ActiveScene->CreateEntity();
+				if (m_Inspector.m_SelectedEntity)
+					m_Inspector.m_SelectedEntity.AddChildEntity(entity);
 			}
 			ImGui::Dummy({0.0f, 1.0f});
 
-			m_ActiveScene->m_Registry.each([&](auto id)
-			{
-				Entity entity{ m_ActiveScene.get(), id};
-				auto& relationship = entity.GetComponent<RelationshipComponent>();
+			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
 
-				if (relationship.Parent == entt::null)
-					DrawEntityTreeNode(entity);
-			});
+			if (!m_Inspector.m_SelectedEntity)
+				flags |= ImGuiTreeNodeFlags_Selected;
+
+			bool opened = ImGui::TreeNodeEx(m_ActiveScene->m_SceneName.c_str(), flags);
+			
+			if (ImGui::IsItemClicked())
+				m_Inspector.SetSelectionContext(Entity{});
+
+			if (opened)
+			{
+				m_ActiveScene->m_Registry.each([&](auto id)
+				{
+					Entity entity{ m_ActiveScene.get(), id};
+					auto& relationship = entity.GetComponent<RelationshipComponent>();
+
+					if (relationship.Parent == entt::null)
+						DrawEntityTreeNode(entity);
+				});
+				
+				ImGui::TreePop();
+			}
 		}
 		ImGui::End();
 

@@ -37,17 +37,22 @@ namespace proton {
 		void NextTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void PrevTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 
+		void FlipX(bool flip = true);
+		void FlipY(bool flip = true);
+
 		Shared<Texture> GetTexture();
 
 	private:
 		uint32_t m_PosX = 0, m_PosY = 0;
 		uint32_t m_SizeX = 1, m_SizeY = 1;
+		bool m_FlipX = false, m_FlipY = false;
 
 		Shared<Texture> m_Texture;
 		Shared<SpriteSheet> m_SpriteSheet = nullptr;
 		std::array<glm::vec2, 4> m_TextureCoords;
 
 		friend class Renderer;
+		friend class Scene;
 		friend class Inspector;
 	};
 

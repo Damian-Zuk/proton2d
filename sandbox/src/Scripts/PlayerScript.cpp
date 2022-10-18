@@ -7,7 +7,7 @@ using namespace proton;
 
 enum PlayerAnimation : uint32_t
 {
-	Idle = 0, Run = 1
+	Idle = 0, Run = 1, Attack = 2
 };
 
 void PlayerScript::OnUpdate(float ts)
@@ -16,20 +16,38 @@ void PlayerScript::OnUpdate(float ts)
 	auto& sprite = GetComponent<SpriteComponent>().Sprite;
 	glm::vec3 positionBeforeInput = position;
 
-	// Update input
-	if (Input::IsKeyPressed(Key::Right))
-		position.x += m_PlayerSpeed * ts;
+	// User input
+	bool attacking = Input::IsKeyPressed(Key::Space);
 
-	if (Input::IsKeyPressed(Key::Left))
-		position.x -= m_PlayerSpeed * ts;
+	if (!attacking)
+	{
+		if (Input::IsKeyPressed(Key::Right))
+		{
+			position.x += m_PlayerSpeed * ts;
+			sprite->FlipX(false);
+		}
+
+		if (Input::IsKeyPressed(Key::Left))
+		{
+			position.x -= m_PlayerSpeed * ts;
+			sprite->FlipX(true);
+		}
+	}
 
 	// Update animation
-	if (m_AnimationTimer.OnInterval(1.0f / 8.0f))
+	if (m_AnimationTimer.OnInterval(m_AnimationFrameTime))
 	{
-		if (position != positionBeforeInput)
-			sprite->NextTile(PlayerAnimation::Run);
+		if (attacking)
+		{
+			sprite->NextTile(PlayerAnimation::Attack);
+		}
 		else
-			sprite->NextTile(PlayerAnimation::Idle);
+		{
+			if (position != positionBeforeInput)
+				sprite->NextTile(PlayerAnimation::Run);
+			else
+				sprite->NextTile(PlayerAnimation::Idle);
+		}
 	}
 
 	m_AnimationTimer.Tick(ts);

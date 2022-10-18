@@ -70,10 +70,10 @@ namespace proton {
 
 	void Scene::RenderScene(const Camera& camera)
 	{
-		auto renderable = m_Registry.group<TransformComponent>(entt::get<SpriteComponent, RelationshipComponent>);
-
 		Renderer::Clear();
 		Renderer::BeginScene(camera);
+
+		auto renderable = m_Registry.group<TransformComponent>(entt::get<SpriteComponent, RelationshipComponent>);
 
 		for (auto entity : renderable)
 		{
@@ -82,10 +82,20 @@ namespace proton {
 			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position);
 			
 			if (relationship.Parent != entt::null)
-				transformMatrix = GetEntityWorldTransform(transformMatrix, relationship.Parent);
+				transformMatrix = CalculateWorldTransform(transformMatrix, relationship.Parent);
 
+			glm::vec3 spriteFlip = { 1.0f, 1.0f, 1.0f };
+			if (sprite.Sprite)
+			{
+				if (sprite.Sprite->m_FlipX)
+					spriteFlip.x = -1.0f;
+
+				if (sprite.Sprite->m_FlipY)
+					spriteFlip.y = -1.0f;
+			}
+			
 			transformMatrix *= glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
-				* glm::scale(glm::mat4(1.0f), { transform.Scale.x, transform.Scale.y, 1.0f });
+				* glm::scale(glm::mat4(1.0f), spriteFlip * glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f });
 
 			if (sprite.Sprite)
 				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color);
@@ -96,16 +106,16 @@ namespace proton {
 		Renderer::EndScene();
 	}
 
-	glm::mat4 Scene::GetEntityWorldTransform(glm::mat4 localTransform, entt::entity parent)
+	glm::mat4 Scene::CalculateWorldTransform(glm::mat4 localTransform, entt::entity parent)
 	{
 		auto [parentTransform, parentRelationship] = m_Registry.get<TransformComponent, RelationshipComponent>(parent);
 
 		if (parentRelationship.Parent != entt::null)
-			localTransform = GetEntityWorldTransform(localTransform, parentRelationship.Parent);
+			localTransform = CalculateWorldTransform(localTransform, parentRelationship.Parent);
 
 		return localTransform
 			* glm::translate(glm::mat4(1.0f), parentTransform.Position)
-			* inverse(localTransform)
+			* glm::inverse(localTransform)
 			* glm::rotate(glm::mat4(1.0f), glm::radians(parentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), { parentTransform.Scale.x, parentTransform.Scale.y, 1.0f })
 			* localTransform;

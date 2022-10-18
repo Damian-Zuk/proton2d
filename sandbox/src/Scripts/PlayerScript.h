@@ -9,5 +9,6 @@ public:
 	virtual void OnUpdate(float ts) override;
 private:
 	proton::Timer m_AnimationTimer;
-	float m_PlayerSpeed = 0.7f;
+	float m_AnimationFrameTime = 0.08f;
+	float m_PlayerSpeed = 0.8f;
 };
