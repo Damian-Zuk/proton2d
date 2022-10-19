@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "proton/Editor/Inspector.h"
+#include "proton/Editor/ScriptRegistry.h"
 #include "proton/Assets/AssetsManager.h"
-#include "proton/Entity/ScriptLoader.h"
 #include "proton/Entity/Components.h"
 
 #include <imgui.h>
@@ -40,7 +40,7 @@ namespace proton {
 					if (ImGui::BeginMenu("Script component"))
 					{
 						for (auto& [scriptName, addScriptFunction] 
-							: ScriptLoader::s_Instance->m_AddScriptFunctions)
+							: ScriptRegistry::s_Instance->m_AddScriptFunctions)
 						{
 							if (ImGui::MenuItem(scriptName.c_str()))
 							{
@@ -154,16 +154,16 @@ namespace proton {
 						{
 							if (textureSource.size())
 							{
-								if (AssetsManager::Get().SpriteSheetExists(textureSource))
+								if (AssetsManager::SpriteSheetExists(textureSource))
 								{
 									// If sprite sheet exists then use it
-									auto& spriteSheet = AssetsManager::Get().GetSpriteSheet(textureSource);
+									auto& spriteSheet = AssetsManager::GetSpriteSheet(textureSource);
 									sprite = CreateShared<Sprite>(spriteSheet);
 								}
 								else
 								{
 									// Otherwise use full texture
-									auto& texture = AssetsManager::Get().GetTexture(textureSource);
+									auto& texture = AssetsManager::GetTexture(textureSource);
 									if (texture)
 										sprite = CreateShared<Sprite>(texture);
 								}

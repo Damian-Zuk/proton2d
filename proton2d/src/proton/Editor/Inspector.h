@@ -17,7 +17,7 @@ namespace proton {
 		void SetSelectionContext(Entity entity);
 
 	private:
-		Shared<Scene> m_ActiveScene;
+		Scene* m_ActiveScene;
 		Entity m_SelectedEntity;
 
 		std::string m_SpriteComponentTextureSource;

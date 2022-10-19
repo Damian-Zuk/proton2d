@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Graphics/CameraController.h"
+#include "proton/Editor/EditorCameraController.h"
 #include "proton/Core/Input.h"
 #include "proton/Events/MouseEvents.h"
 #include "proton/Core/Application.h"
@@ -9,12 +9,12 @@
 
 namespace proton {
 
-	CameraController::CameraController(const Shared<Camera>& camera)
+	EditorCameraController::EditorCameraController(const Shared<Camera>& camera)
 		: m_AspectRatio(Application::Get().GetWindow().GetAspectRatio()), m_Camera(camera)
 	{
 	}
 
-	void CameraController::OnUpdate(float ts)
+	void EditorCameraController::OnUpdate(float ts)
 	{
 		float zoomLevel = m_Camera->GetZoomLevel();
 
@@ -43,7 +43,7 @@ namespace proton {
 			m_Camera->SetZoomLevel(glm::max(zoomLevel - zoomOffset, m_ZoomLevelTarget));
 	}	
 
-	void CameraController::OnEvent(Event& e)
+	void EditorCameraController::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
 

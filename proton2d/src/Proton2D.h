@@ -11,9 +11,6 @@
 #include "proton/Events/MouseEvents.h"
 #include "proton/Events/WindowEvents.h"
 
-#include "proton/Graphics/Renderer.h"
-#include "proton/Graphics/CameraController.h"
-
 #include "proton/Entity/Entity.h"
 #include "proton/Entity/Components.h"
 #include "proton/Scripting.h"

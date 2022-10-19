@@ -3,7 +3,6 @@
 #include "proton/Core/Input.h"
 #include "proton/Events/WindowEvents.h"
 #include "proton/Graphics/Renderer.h"
-#include "proton/Entity/ScriptLoader.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "proton/Platform/Windows/WindowsWindow.h"
@@ -19,24 +18,28 @@ namespace proton {
 
 
 	Application::Application(const std::string& appName)
-		: m_AppName(appName), m_EditorOverlay(new EditorOverlay())
+		: m_AppName(appName)
 	{
-		s_Instance = this;
+		Application::s_Instance = this;
 
-	#ifdef PROTON_PLATFORM_WINDOWS
+#	ifdef PROTON_PLATFORM_WINDOWS
 		m_Window = CreateUnique<WindowsWindow>(appName, 1600, 900);
 		Input::s_Instance = new WindowsInput();
-	#endif
+#	endif
 
 		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
+
+#	ifndef PROTON_DISTRIBUTION
+		m_EditorOverlay = new EditorOverlay();
 		PushOverlay(m_EditorOverlay);
+#	endif
 	}
 
 	Application::~Application()
 	{
-		for (Layer* layer : m_AppLayers)
+		for (AppLayer* layer : m_AppLayers)
 		{
-			layer->OnDetach();
+			layer->OnDestroy();
 			delete layer;
 		}
 	}
@@ -45,7 +48,6 @@ namespace proton {
 	{
 		Logger::init();
 		Renderer::Init();
-		ScriptLoader::Init();
 
 		if (OnCreate()) 
 		{
@@ -57,21 +59,19 @@ namespace proton {
 
 				if (!m_WindowMinimized) 
 				{
-					for (Layer* layer : m_AppLayers)
+					for (AppLayer* layer : m_AppLayers)
 						layer->OnUpdate(m_LastFrameTime);
 				}
 
-			#ifndef PROTON_DISTRIBUTION
-				// Update and render editor
+#			ifndef PROTON_DISTRIBUTION
 				m_EditorOverlay->m_DebugInfo.m_FrameTime = m_LastFrameTime;
-
 				m_EditorOverlay->BeginImGuiRender();
 
-				for (Layer* layer : m_AppLayers)
+				for (AppLayer* layer : m_AppLayers)
 					layer->OnImGuiRender();
 
 				m_EditorOverlay->EndImGuiRender();
-			#endif
+#			endif
 
 				m_Window->OnUpdate();
 				
@@ -81,21 +81,16 @@ namespace proton {
 		}
 	}
 
-	void Application::PushLayer(Layer* layer)
+	void Application::PushLayer(AppLayer* layer)
 	{
 		m_AppLayers.insert(m_AppLayers.begin(), layer);
-		layer->OnAttach();
+		layer->OnCreate();
 	}
 
-	void Application::PushOverlay(Layer* layer)
+	void Application::PushOverlay(AppLayer* layer)
 	{
 		m_AppLayers.emplace_back(layer);
-		layer->OnAttach();
-	}
-
-	void Application::SetEditorActiveScene(const Shared<Scene>& scene)
-	{
-		m_EditorOverlay->SetActiveScene(scene);
+		layer->OnCreate();
 	}
 
 	void Application::OnEvent(Event& event)
@@ -118,11 +113,11 @@ namespace proton {
 			}
 			else 
 				m_WindowMinimized = true;
+
 			return false;
 		});
 
-		// Propagate event to layers
-		for (Layer* layer : m_AppLayers)
+		for (AppLayer* layer : m_AppLayers)
 			layer->OnEvent(event);
 	}
 

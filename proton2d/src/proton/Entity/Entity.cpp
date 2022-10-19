@@ -58,8 +58,6 @@ namespace proton
 
 			if (next)
 				next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
-			else
-				parentReletions.Last = rc.Prev;
 		}
 
 		m_Scene->m_Registry.destroy(m_Handle);
@@ -75,14 +73,12 @@ namespace proton
 
 		if (parentComponent.ChildrenCount)
 		{
-			childComponent.Prev = parentComponent.Last;
-			Entity lastEntity = { m_Scene, parentComponent.Last };
-			lastEntity.GetComponent<RelationshipComponent>().Next = child.m_Handle;
+			Entity firstEntity = { m_Scene, parentComponent.First };
+			firstEntity.GetComponent<RelationshipComponent>().Prev = child.m_Handle;
+			childComponent.Next = parentComponent.First;
 		}
-		else
-			parentComponent.First = child.m_Handle;
 
-		parentComponent.Last = child.m_Handle;
+		parentComponent.First = child.m_Handle;
 		parentComponent.ChildrenCount++;
 	}
 }

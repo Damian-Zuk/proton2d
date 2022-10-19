@@ -5,6 +5,10 @@
 #include "proton/Core/Application.h"
 #include "proton/Entity/EntityScript.h"
 
+#ifndef PROTON_DISTRIBUTION
+#include "proton/Editor/EditorOverlay.h"
+#endif
+
 namespace proton {
 
 	constexpr static glm::vec4 s_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
@@ -13,6 +17,9 @@ namespace proton {
 		: m_SceneName(name)
 	{
 		Renderer::SetClearColor(s_ClearColor);
+#	ifndef PROTON_DISTRIBUTION
+		EditorOverlay::SetSceneContext(this);
+#	endif
 	}
 
 	Scene::~Scene()

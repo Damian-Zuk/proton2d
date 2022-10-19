@@ -4,13 +4,13 @@
 
 namespace proton {
 
-	class Layer
+	class AppLayer
 	{
 	public:
-		virtual ~Layer() = default;
+		virtual ~AppLayer() = default;
 
-		virtual void OnAttach() {}
-		virtual void OnDetach() {}
+		virtual void OnCreate() {}
+		virtual void OnDestroy() {}
 		virtual void OnUpdate(float timestep) {}
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiRender() {}

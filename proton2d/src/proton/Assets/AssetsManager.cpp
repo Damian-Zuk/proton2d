@@ -3,11 +3,11 @@
 
 namespace proton {
 
-	AssetsManager& AssetsManager::Get()
+	static struct AssetsManagerData
 	{
-		static AssetsManager instance;
-		return instance;
-	}
+		std::unordered_map<std::string, Shared<Texture>> Textures;
+		std::unordered_map<std::string, Shared<SpriteSheet>> SpriteSheets;
+	} data;
 
 	Shared<Texture> AssetsManager::LoadTexture(const std::string& filepath)
 	{
@@ -15,7 +15,7 @@ namespace proton {
 		if (texture->IsLoaded()) 
 		{
 			LOG_INFO("[AssetsManager] Loaded texture:", filepath);
-			m_Textures[filepath] = texture;
+			data.Textures[filepath] = texture;
 			return texture;
 		}
 		LOG_ERROR("[AssetsManager] Couldn't load texture:", filepath);
@@ -29,7 +29,7 @@ namespace proton {
 		if (texture) 
 		{
 			auto spriteSheet = CreateShared<SpriteSheet>(texture, tileWidth, tileHeight);
-			m_SpriteSheets[filepath] = spriteSheet;
+			data.SpriteSheets[filepath] = spriteSheet;
 
 			return spriteSheet;
 		}
@@ -39,12 +39,12 @@ namespace proton {
 
 	bool AssetsManager::TextureExists(const std::string& keyPath)
 	{
-		return m_Textures.find(keyPath) != m_Textures.end();
+		return data.Textures.find(keyPath) != data.Textures.end();
 	}
 
 	bool AssetsManager::SpriteSheetExists(const std::string& keyPath)
 	{
-		return m_SpriteSheets.find(keyPath) != m_SpriteSheets.end();
+		return data.SpriteSheets.find(keyPath) != data.SpriteSheets.end();
 	}
 
 	Shared<Texture> AssetsManager::GetTexture(const std::string& keyPath)
@@ -52,18 +52,18 @@ namespace proton {
 		if (!TextureExists(keyPath))
 		{
 			if (LoadTexture(keyPath))
-				return m_Textures[keyPath];
+				return data.Textures[keyPath];
 
 			return nullptr;
 		}
 
-		return m_Textures[keyPath];
+		return data.Textures[keyPath];
 	}
 	Shared<SpriteSheet> AssetsManager::GetSpriteSheet(const std::string& keyPath)
 	{
 		if (!SpriteSheetExists(keyPath))
 			return nullptr;
 
-		return m_SpriteSheets[keyPath];
+		return data.SpriteSheets[keyPath];
 	}
 }

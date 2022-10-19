@@ -1,4 +1,4 @@
 #pragma once
 
 #include "proton/Entity/EntityScript.h"
-#include "proton/Entity/ScriptLoader.h"
+#include "proton/Editor/ScriptRegistry.h"

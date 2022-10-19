@@ -3,22 +3,31 @@
 #include "proton/Core/Application.h"
 #include "proton/Core/Window.h"
 #include "proton/Entity/Components.h"
+#include "proton/Editor/ScriptRegistry.h"
 
-#include "proton/Editor/ImGui/imgui_impl_opengl3.h"
-#include "proton/Editor/ImGui/imgui_impl_glfw.h"
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
 namespace proton {
 
-	void EditorOverlay::OnAttach()
+	EditorOverlay* EditorOverlay::s_Instance = nullptr;
+
+	EditorOverlay::EditorOverlay()
+	{
+		EditorOverlay::s_Instance = this;
+		ScriptRegistry::Init();
+	}
+
+	void EditorOverlay::OnCreate()
 	{
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
 		auto& io = ImGui::GetIO();
-		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 		
 		io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
 
@@ -27,11 +36,16 @@ namespace proton {
 		ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
-	void EditorOverlay::OnDetach()
+	void EditorOverlay::OnDestroy()
 	{
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
+	}
+
+	void EditorOverlay::OnUpdate(float ts)
+	{
+		m_CameraController.OnUpdate(ts);
 	}
 
 	void EditorOverlay::OnImGuiRender()
@@ -41,7 +55,7 @@ namespace proton {
 		//************************************
 		//   Entity Hierarchy 
 		//************************************
-		ImGui::Begin("Entity Hierarchy");
+		ImGui::Begin("Hierarchy");
 		if (m_ActiveScene)
 		{
 			ImGui::Dummy({0.0f, 1.0f});
@@ -67,7 +81,7 @@ namespace proton {
 			{
 				m_ActiveScene->m_Registry.each([&](auto id)
 				{
-					Entity entity{ m_ActiveScene.get(), id};
+					Entity entity{ m_ActiveScene, id};
 					auto& relationship = entity.GetComponent<RelationshipComponent>();
 
 					if (relationship.Parent == entt::null)
@@ -87,6 +101,11 @@ namespace proton {
 
 		m_Inspector.OnImGuiRender();
 		m_DebugInfo.OnImGuiRender();
+	}
+
+	void EditorOverlay::OnEvent(Event& event)
+	{
+		m_CameraController.OnEvent(event);
 	}
 
 	void EditorOverlay::DrawEntityTreeNode(Entity entity)
@@ -113,7 +132,7 @@ namespace proton {
 				auto current = relationship.First;
 				for (uint32_t i = 0; i < relationship.ChildrenCount; i++)
 				{
-					Entity e{ m_ActiveScene.get(), current };
+					Entity e{ m_ActiveScene, current };
 					DrawEntityTreeNode(e);
 					current = e.GetComponent<RelationshipComponent>().Next;
 				}
@@ -122,10 +141,11 @@ namespace proton {
 		}
 	}
 
-	void EditorOverlay::SetActiveScene(const Shared<Scene>& scene)
+	void EditorOverlay::SetSceneContext(Scene* context)
 	{
-		m_ActiveScene = scene;
-		m_Inspector.m_ActiveScene = scene;
+		s_Instance->m_ActiveScene = context;
+		s_Instance->m_Inspector.m_ActiveScene = context;
+		context->SetPrimaryCamera(s_Instance->m_CameraController.GetCamera());
 	}
 
 	void EditorOverlay::BeginImGuiRender()

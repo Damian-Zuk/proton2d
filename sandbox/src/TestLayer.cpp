@@ -4,23 +4,18 @@
 
 using namespace proton;
 
-void TestLayer::OnAttach()
+void TestLayer::OnCreate()
 {
-	LOAD_SCRIPT(PlayerScript);
-	LOAD_SCRIPT(RotationScript);
-
 	// Create scene
 	m_MainScene = CreateShared<Scene>("Sample scene");
-	m_MainScene->SetPrimaryCamera(m_CameraController.GetCamera());
-	Application::Get().SetEditorActiveScene(m_MainScene); // temp
 
 	// Load assets
-	AssetsManager::Get().LoadSpriteSheet("skeleton-sheet.png", 150, 150);
-	auto playerSpriteSheet = AssetsManager::Get().LoadSpriteSheet("player-sheet.png", 120, 80);
-	m_Level = m_MainScene->CreateEntity("Level");
-	m_Level.GetComponent<TransformComponent>().Scale = { 1.0f, 1.0f };
+	AssetsManager::LoadSpriteSheet("skeleton-sheet.png", 150, 150);
+	auto playerSpriteSheet = AssetsManager::LoadSpriteSheet("player-sheet.png", 120, 80);
 
 	// Create game objects
+	m_Level = m_MainScene->CreateEntity("Level");
+
 	SpawnPlatform({ 3.6f, -1.17f }, 32, 5);
 	SpawnPlatform({ -1.8f,  0.0f }, 4, 20);
 	SpawnPlatform({ -0.2f,  0.7f }, 1, 1);
@@ -38,19 +33,16 @@ void TestLayer::OnAttach()
 		transform.Position = { -0.3f, -0.1f, -0.1f };
 		transform.Scale    = { 1.5f, 1.0f };
 		sprite.Sprite      = CreateShared<Sprite>(playerSpriteSheet, 0, 0);
-		m_Player.AddScript<PlayerScript>("Player Script");
+		m_Player.AddScript<PlayerScript>("PlayerScript");
 	}
+
+	EDITOR_REGISTER_SCRIPT(PlayerScript);
+	EDITOR_REGISTER_SCRIPT(RotationScript);
 }
 
 void TestLayer::OnUpdate(float ts)
 {
-	m_CameraController.OnUpdate(ts);
 	m_MainScene->OnUpdate(ts);
-}
-
-void TestLayer::OnEvent(proton::Event& event)
-{
-	m_CameraController.OnEvent(event);
 }
 
 void TestLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles)
@@ -61,7 +53,7 @@ void TestLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heigh
 		transform.Position = { pos.x, pos.y, 0.1f };
 		transform.Scale = { 1.0f, 1.0f };
 	}
-	auto levelSheet = AssetsManager::Get().LoadSpriteSheet("level-sheet-1.png", 32, 32);
+	auto levelSheet = AssetsManager::LoadSpriteSheet("level-sheet-1.png", 32, 32);
 	
 	if (heightTiles == 1)
 		widthTiles++;

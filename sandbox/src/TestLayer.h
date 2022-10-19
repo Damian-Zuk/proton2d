@@ -4,19 +4,16 @@
 
 using namespace proton;
 
-class TestLayer : public Layer
+class TestLayer : public AppLayer
 {
 public:
-	virtual void OnAttach() override;
-
+	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
-	virtual void OnEvent(Event& event);
 
 	void SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles);
 
 private:
 	Shared<Scene> m_MainScene;
-	CameraController m_CameraController;
 	Entity m_Player;
 	Entity m_Level;
 };

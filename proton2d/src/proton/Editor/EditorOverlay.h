@@ -1,21 +1,26 @@
 #pragma once
-#include "proton/Core/Layer.h"
+#include "proton/Core/AppLayer.h"
 #include "proton/Entity/Entity.h"
+
 #include "proton/Editor/Inspector.h"
 #include "proton/Editor/DebugInfo.h"
+#include "proton/Editor/EditorCameraController.h"
 
 namespace proton {
 
-	class EditorOverlay : Layer
+	class EditorOverlay : AppLayer
 	{
 	public:
+		EditorOverlay();
 		virtual ~EditorOverlay() = default;
 
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+		virtual void OnCreate() override;
+		virtual void OnDestroy() override;
+		virtual void OnUpdate(float ts) override;
 		virtual void OnImGuiRender() override;
+		virtual void OnEvent(Event& event) override;
 
-		void SetActiveScene(const Shared<Scene>& scene);
+		static void SetSceneContext(Scene* context);
 
 	private:
 		void BeginImGuiRender();
@@ -24,10 +29,14 @@ namespace proton {
 		void DrawEntityTreeNode(Entity entity);
 
 	private:
+		static EditorOverlay* s_Instance;
+
 		Inspector m_Inspector;
 		DebugInfo m_DebugInfo;
 
-		Shared<Scene> m_ActiveScene;
+		EditorCameraController m_CameraController;
+
+		Scene* m_ActiveScene = nullptr;
 
 		friend class Application;
 	};

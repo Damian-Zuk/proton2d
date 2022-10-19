@@ -2,7 +2,7 @@
 
 #include "proton/Core/Core.h"
 #include "proton/Core/Window.h"
-#include "proton/Core/Layer.h"
+#include "proton/Core/AppLayer.h"
 #include "proton/Editor/EditorOverlay.h"
 
 namespace proton {
@@ -18,10 +18,8 @@ namespace proton {
 		
 		void Run();
 		
-		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* layer);
-
-		void SetEditorActiveScene(const Shared<Scene>& scene);
+		void PushLayer(AppLayer* layer);
+		void PushOverlay(AppLayer* layer);
 
 	protected:
 		virtual bool OnCreate() = 0; // To be defined by user
@@ -35,7 +33,7 @@ namespace proton {
 		float m_LastFrameTime = 0.0f;
 		std::string m_AppName;
 		
-		std::vector<Layer*> m_AppLayers;
+		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;
 		EditorOverlay* m_EditorOverlay;
 	};

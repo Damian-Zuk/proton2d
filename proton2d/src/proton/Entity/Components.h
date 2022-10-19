@@ -19,7 +19,7 @@ namespace proton {
 	{
 		glm::vec3 Position { 0.0f, 0.0f, 0.0f };
 		float Rotation { 0.0f };
-		glm::vec2 Scale { 0.25f, 0.25f };
+		glm::vec2 Scale { 1.0f, 1.0f };
 	};
 
 	struct SpriteComponent
@@ -61,9 +61,8 @@ namespace proton {
 
 	struct RelationshipComponent
 	{
-		std::uint32_t ChildrenCount = 0;
+		uint32_t ChildrenCount = 0;
 		entt::entity First  { entt::null };
-		entt::entity Last   { entt::null };
 		entt::entity Prev   { entt::null };
 		entt::entity Next   { entt::null };
 		entt::entity Parent { entt::null };

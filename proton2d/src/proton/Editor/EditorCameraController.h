@@ -6,10 +6,10 @@
 
 namespace proton {
 
-	class CameraController {
+	class EditorCameraController {
 	public:
-		CameraController(const Shared<Camera>& camera = CreateShared<Camera>());
-		virtual ~CameraController() = default;
+		EditorCameraController(const Shared<Camera>& camera = CreateShared<Camera>());
+		virtual ~EditorCameraController() = default;
 
 		void OnUpdate(float ts);
 		void OnEvent(Event& e);
