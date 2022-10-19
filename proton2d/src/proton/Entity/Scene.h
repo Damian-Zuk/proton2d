@@ -30,7 +30,7 @@ namespace proton {
 	private:
 		void RenderScene(const Camera& camera);
 
-		glm::mat4 CalculateWorldTransform(glm::mat4 transform, entt::entity parent);
+		glm::mat4 CalculateParentTransform(entt::entity parent);
 
 	private:
 		std::string m_SceneName;
