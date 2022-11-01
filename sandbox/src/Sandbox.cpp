@@ -1,4 +1,4 @@
-#include "TestLayer.h"
+#include "GameLayer.h"
 
 class Sandbox : public proton::Application
 {
@@ -8,7 +8,7 @@ public:
 	bool OnCreate() override
 	{
 		proton::Application::GetWindow().SetVSync(false);
-		PushLayer(new TestLayer());
+		PushLayer(new GameLayer());
 		return true;
 	}
 };

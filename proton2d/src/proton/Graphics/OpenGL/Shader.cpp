@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Graphics/Shader.h"
+#include "proton/Graphics/OpenGL/Shader.h"
 #include "proton/Core/Utils.h"
 
 #include <filesystem>

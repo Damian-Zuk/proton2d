@@ -22,7 +22,7 @@ namespace proton {
 		void PushOverlay(AppLayer* layer);
 
 	protected:
-		virtual bool OnCreate() = 0; // To be defined by user
+		virtual bool OnCreate() = 0; // To be defined by client
 		void OnEvent(Event& event);
 
 	private:

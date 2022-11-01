@@ -1,9 +1,7 @@
 #pragma once
 
-#include "proton/Graphics/Texture.h"
 #include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/Camera.h"
-#include "proton/Graphics/VertexArray.h"
 
 namespace proton {
 

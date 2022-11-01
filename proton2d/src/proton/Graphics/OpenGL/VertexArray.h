@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proton/Core/Core.h"
-#include "proton/Graphics/Buffer.h"
+#include "proton/Graphics/OpenGL/Buffer.h"
 
 namespace proton {
 

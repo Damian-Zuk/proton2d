@@ -4,7 +4,7 @@
 
 using namespace proton;
 
-class TestLayer : public AppLayer
+class GameLayer : public AppLayer
 {
 public:
 	virtual void OnCreate() override;
@@ -13,7 +13,7 @@ public:
 	void SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles);
 
 private:
-	Shared<Scene> m_MainScene;
+	Shared<Scene> m_Scene;
 	Entity m_Player;
 	Entity m_Level;
 };

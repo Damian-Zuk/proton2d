@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef PROTON_DISTRIBUTION
-	#define EDITOR_REGISTER_SCRIPT(__script_class_type)                    \
+	#define REGISTER_SCRIPT(__script_class_type)                           \
 		ScriptRegistry::RegisterScript( [&](Entity entity) {               \
 			entity.AddScript<__script_class_type>(#__script_class_type);   \
 		}, #__script_class_type);

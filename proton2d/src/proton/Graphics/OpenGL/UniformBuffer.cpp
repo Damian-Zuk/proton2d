@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Graphics/UniformBuffer.h"
+#include "proton/Graphics/OpenGL/UniformBuffer.h"
 
 #include <glad/glad.h>
 

@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "proton/Graphics/Renderer.h"
-#include "proton/Graphics/VertexArray.h"
-#include "proton/Graphics/Shader.h"
-#include "proton/Graphics/UniformBuffer.h"
+
+#include "proton/Graphics/OpenGL/Shader.h"
+#include "proton/Graphics/OpenGL/UniformBuffer.h"
+#include "proton/Graphics/OpenGL/VertexArray.h"
+#include "proton/Graphics/OpenGL/Texture.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>

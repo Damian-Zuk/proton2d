@@ -1,20 +1,20 @@
-#include "TestLayer.h"
+#include "GameLayer.h"
 #include "Scripts/PlayerScript.h"
 #include "Scripts/RotationScript.h"
 
 using namespace proton;
 
-void TestLayer::OnCreate()
+void GameLayer::OnCreate()
 {
 	// Create scene
-	m_MainScene = CreateShared<Scene>("Sample scene");
+	m_Scene = CreateShared<Scene>("Sample scene");
 
 	// Load assets
 	AssetsManager::LoadSpriteSheet("skeleton-sheet.png", 150, 150);
 	auto playerSpriteSheet = AssetsManager::LoadSpriteSheet("player-sheet.png", 120, 80);
 
 	// Create game objects
-	m_Level = m_MainScene->CreateEntity("Level");
+	m_Level = m_Scene->CreateEntity("Level");
 
 	SpawnPlatform({ 3.6f, -1.17f }, 32, 5);
 	SpawnPlatform({ -1.8f,  0.0f }, 4, 20);
@@ -26,28 +26,28 @@ void TestLayer::OnCreate()
 	SpawnPlatform({  5.0f,  0.7f }, 4, 4);
 	SpawnPlatform({  6.8f,  0.7f }, 5, 5);
 
-	m_Player = m_MainScene->CreateEntity("Player");
+	m_Player = m_Scene->CreateEntity("Player");
 	{
 		auto& transform    = m_Player.GetComponent<TransformComponent>();
 		auto& sprite       = m_Player.AddComponent<SpriteComponent>();
 		transform.Position = { -0.3f, -0.1f, -0.1f };
-		transform.Scale    = { 1.5f, 1.0f };
+		transform.Scale    = { 1.0f, 1.0f };
 		sprite.Sprite      = CreateShared<Sprite>(playerSpriteSheet, 0, 0);
 		m_Player.AddScript<PlayerScript>("PlayerScript");
 	}
 
-	EDITOR_REGISTER_SCRIPT(PlayerScript);
-	EDITOR_REGISTER_SCRIPT(RotationScript);
+	REGISTER_SCRIPT(PlayerScript);
+	REGISTER_SCRIPT(RotationScript);
 }
 
-void TestLayer::OnUpdate(float ts)
+void GameLayer::OnUpdate(float ts)
 {
-	m_MainScene->OnUpdate(ts);
+	m_Scene->OnUpdate(ts);
 }
 
-void TestLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles)
+void GameLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles)
 {
-	auto platform = m_MainScene->CreateEntity("Platform " + std::to_string(widthTiles) + 'x' + std::to_string(heightTiles));
+	auto platform = m_Scene->CreateEntity("Platform " + std::to_string(widthTiles) + 'x' + std::to_string(heightTiles));
 	{
 		auto& transform = platform.GetComponent<TransformComponent>();
 		transform.Position = { pos.x, pos.y, 0.1f };
@@ -80,7 +80,7 @@ void TestLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heigh
 			if (heightTiles == 1)
 				tileX += 4;
 
-			auto tile = m_MainScene->CreateEntity("Terrain tile");
+			auto tile = m_Scene->CreateEntity("Terrain tile");
 			auto& transform = tile.GetComponent<TransformComponent>();
 			transform.Scale = { 0.3f, 0.3f };
 			transform.Position = { 

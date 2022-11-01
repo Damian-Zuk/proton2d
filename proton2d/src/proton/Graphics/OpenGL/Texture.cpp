@@ -1,8 +1,9 @@
 #include "pch.h"
-#include "proton/Graphics/Texture.h"
+#include "proton/Graphics/OpenGL/Texture.h"
 
 #include <glad/glad.h>
 #include <stb_image.h>
+#include <stb_image.cpp>
 
 namespace proton {
 

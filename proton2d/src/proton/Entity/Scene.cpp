@@ -86,11 +86,17 @@ namespace proton {
 		{
 			auto [transform, sprite, relationship] = renderable.get<TransformComponent, SpriteComponent, RelationshipComponent>(entity);
 
+			// Sprite flip
 			glm::vec3 outputScale = sprite.Sprite ? glm::vec3{
 				transform.Scale.x * (sprite.Sprite->m_FlipX ? -1.0f : 1.0f),
 				transform.Scale.y * (sprite.Sprite->m_FlipY ? -1.0f : 1.0f), 1.0f
 			} : glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f };
 
+			// Sprite aspect ratio
+			if (sprite.Sprite)
+				outputScale.x *= (float)sprite.Sprite->m_Width_px / (float)sprite.Sprite->m_Height_px;
+
+			// Create transform matrix
 			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
 				* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
 				* glm::scale(glm::mat4(1.0f), outputScale);

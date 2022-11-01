@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Graphics/VertexArray.h"
+#include "proton/Graphics/OpenGL/VertexArray.h"
 
 #include <glad/glad.h>
 

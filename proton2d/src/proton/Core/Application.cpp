@@ -51,11 +51,9 @@ namespace proton {
 
 		if (OnCreate()) 
 		{
-			using Clock = std::chrono::high_resolution_clock;
-
 			while (m_IsRunning) 
 			{
-				auto startFrameTime = Clock::now();
+				auto start = std::chrono::high_resolution_clock::now();
 
 				if (!m_WindowMinimized) 
 				{
@@ -75,8 +73,8 @@ namespace proton {
 
 				m_Window->OnUpdate();
 				
-				auto end = Clock::now();
-				m_LastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(end - startFrameTime).count() / 1000000.0f;
+				auto end = std::chrono::high_resolution_clock::now();
+				m_LastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0f;
 			}
 		}
 	}
