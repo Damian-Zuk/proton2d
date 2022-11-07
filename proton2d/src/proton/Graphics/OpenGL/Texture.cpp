@@ -3,7 +3,6 @@
 
 #include <glad/glad.h>
 #include <stb_image.h>
-#include <stb_image.cpp>
 
 namespace proton {
 

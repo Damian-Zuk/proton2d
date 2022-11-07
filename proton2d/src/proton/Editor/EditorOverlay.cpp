@@ -5,6 +5,7 @@
 #include "proton/Entity/Components.h"
 #include "proton/Editor/ScriptRegistry.h"
 
+#define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.cpp>
@@ -29,7 +30,7 @@ namespace proton {
 		ImGui::StyleColorsDark();
 
 		auto& io = ImGui::GetIO();
-		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_ViewportsEnable;
 		
 		io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
 
@@ -92,17 +93,17 @@ namespace proton {
 				
 				ImGui::TreePop();
 			}
+
+			//************************************
+			//   Other panels
+			//************************************
+			m_DebugInfo.m_EntitiesCount = m_ActiveScene->GetEntitiesCount();
+			m_DebugInfo.m_ScriptedEntitiesCount = m_ActiveScene->GetScriptedEntitiesCount();
+
+			m_Inspector.OnImGuiRender();
+			m_DebugInfo.OnImGuiRender();
 		}
 		ImGui::End();
-
-		//************************************
-		//   Other panels
-		//************************************
-		m_DebugInfo.m_EntitiesCount = m_ActiveScene->GetEntitiesCount();
-		m_DebugInfo.m_ScriptedEntitiesCount = m_ActiveScene->GetScriptedEntitiesCount();
-
-		m_Inspector.OnImGuiRender();
-		m_DebugInfo.OnImGuiRender();
 	}
 
 	void EditorOverlay::OnEvent(Event& event)
