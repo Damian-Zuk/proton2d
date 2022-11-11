@@ -18,6 +18,7 @@ IncludeDir["glm"] = "vendor/glm"
 IncludeDir["ImGui"] = "vendor/imgui"
 IncludeDir["stb"] = "vendor/stb"
 IncludeDir["entt"] = "vendor/entt/src"
+IncludeDir["json"] = "vendor/json"
 
 group "Dependencies"
 	include "vendor/GLFW"
@@ -43,7 +44,8 @@ project "proton2d"
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
 		"vendor/stb/**.h",
-		"vendor/stb/**.cpp"
+		"vendor/stb/**.cpp",
+		"vendor/json/**.hpp"
 	}
 
 	includedirs
@@ -54,7 +56,8 @@ project "proton2d"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.stb}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.json}"
 	}
 
 	links
@@ -77,11 +80,6 @@ project "proton2d"
 		{
 			"PROTON_PLATFORM_WINDOWS",
 			"GLFW_INCLUDE_NONE"
-		}
-
-		postbuildcommands
-		{
-			"{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/sandbox/\""
 		}
 
 	filter "configurations:Debug"
@@ -119,7 +117,8 @@ project "sandbox"
 		"proton2d/src",
 		"vendor",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.json}"
 	}
 
 	links
