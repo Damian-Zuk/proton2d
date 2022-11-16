@@ -30,7 +30,7 @@ namespace proton {
 		ImGui::StyleColorsDark();
 
 		auto& io = ImGui::GetIO();
-		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;// | ImGuiConfigFlags_ViewportsEnable;
 		
 		io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
 

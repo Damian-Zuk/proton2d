@@ -40,6 +40,7 @@ namespace proton {
 
 		friend class Entity;
 		friend class EditorOverlay;
+		friend class SceneSerializer;
 	};
 
 }
