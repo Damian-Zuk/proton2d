@@ -27,6 +27,7 @@ namespace proton {
 		void EndImGuiRender();
 
 		void DrawEntityTreeNode(Entity entity);
+		void DrawSceneSerializationPanel();
 
 	private:
 		static EditorOverlay* s_Instance;

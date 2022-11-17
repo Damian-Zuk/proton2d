@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "proton/Editor/Inspector.h"
-#include "proton/Editor/ScriptRegistry.h"
+#include "proton/Assets/ScriptFactory.h"
 #include "proton/Assets/AssetsManager.h"
 #include "proton/Entity/Components.h"
 
@@ -39,13 +39,10 @@ namespace proton {
 
 					if (ImGui::BeginMenu("Script component"))
 					{
-						for (auto& [scriptName, addScriptFunction] 
-							: ScriptRegistry::s_Instance->m_AddScriptFunctions)
+						for (auto& [scriptName, addScriptFunction] : ScriptFactory::GetScripts())
 						{
 							if (ImGui::MenuItem(scriptName.c_str()))
-							{
 								addScriptFunction(m_SelectedEntity);
-							}
 						}
 						ImGui::EndMenu();
 					}

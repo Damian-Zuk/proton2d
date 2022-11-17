@@ -72,6 +72,7 @@ namespace proton {
 		entt::entity m_Handle = entt::null;
 
 		friend class Scene;
+		friend class SceneSerializer;
 	};
 
 }

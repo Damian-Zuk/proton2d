@@ -3,6 +3,7 @@
 #include "proton/Core/Input.h"
 #include "proton/Events/WindowEvents.h"
 #include "proton/Graphics/Renderer.h"
+#include "proton/Assets/ScriptFactory.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "proton/Platform/Windows/WindowsWindow.h"
@@ -22,17 +23,17 @@ namespace proton {
 	{
 		Application::s_Instance = this;
 
-#	ifdef PROTON_PLATFORM_WINDOWS
-		m_Window = CreateUnique<WindowsWindow>(appName, 1600, 900);
-		Input::s_Instance = new WindowsInput();
-#	endif
+		#ifdef PROTON_PLATFORM_WINDOWS
+			m_Window = CreateUnique<WindowsWindow>(appName, 1600, 900);
+			Input::s_Instance = new WindowsInput();
+		#endif
 
 		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
 
-#	ifndef PROTON_DISTRIBUTION
-		m_EditorOverlay = new EditorOverlay();
-		PushOverlay(m_EditorOverlay);
-#	endif
+		#ifndef PROTON_DISTRIBUTION
+			m_EditorOverlay = new EditorOverlay();
+			PushOverlay(m_EditorOverlay);
+		#endif
 	}
 
 	Application::~Application()
@@ -48,6 +49,7 @@ namespace proton {
 	{
 		Logger::init();
 		Renderer::Init();
+		ScriptFactory::Init();
 
 		if (OnCreate()) 
 		{
@@ -61,15 +63,15 @@ namespace proton {
 						layer->OnUpdate(m_LastFrameTime);
 				}
 
-#			ifndef PROTON_DISTRIBUTION
-				m_EditorOverlay->m_DebugInfo.m_FrameTime = m_LastFrameTime;
-				m_EditorOverlay->BeginImGuiRender();
+				#ifndef PROTON_DISTRIBUTION
+					m_EditorOverlay->m_DebugInfo.m_FrameTime = m_LastFrameTime;
+					m_EditorOverlay->BeginImGuiRender();
 
-				for (AppLayer* layer : m_AppLayers)
-					layer->OnImGuiRender();
+					for (AppLayer* layer : m_AppLayers)
+						layer->OnImGuiRender();
 
-				m_EditorOverlay->EndImGuiRender();
-#			endif
+					m_EditorOverlay->EndImGuiRender();
+				#endif
 
 				m_Window->OnUpdate();
 				

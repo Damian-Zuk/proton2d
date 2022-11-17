@@ -1,7 +1,6 @@
 #include "GameLayer.h"
 #include "Scripts/PlayerScript.h"
 #include "Scripts/RotationScript.h"
-#include "proton/Assets/SceneSerializer.h"
 
 using namespace proton;
 
@@ -48,10 +47,7 @@ void GameLayer::OnUpdate(float ts)
 
 void GameLayer::OnImGuiRender()
 {
-	ImGui::Begin("Serializer");
-	if (ImGui::Button("Serialize"))
-		SceneSerializer::Serialize(m_Scene);
-	ImGui::End();
+
 }
 
 void GameLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles)

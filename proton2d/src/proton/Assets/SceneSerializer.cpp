@@ -1,37 +1,61 @@
 #include "pch.h"
 #include "proton/Assets/SceneSerializer.h"
+#include "proton/Assets/AssetsManager.h"
+#include "proton/Assets/ScriptFactory.h"
 #include "proton/Entity/Scene.h"
 #include "proton/Entity/Entity.h"
+#include "proton/Core/Utils.h"
 
 #include <fstream>
 
 namespace proton {
 
-	 void SceneSerializer::SerializeEntity(json& j, Entity entity, const Shared<Scene>& scene)
-	 {
-		auto json_obj = json::object();
+	Scene* SceneSerializer::m_Scene = nullptr;
+
+	static inline double round(float f)
+	{
+		return std::round((double)f * 100000) / 100000;
+	}
+
+	void SceneSerializer::SetContext(Scene* scene)
+	{
+		m_Scene = scene;
+	}
+
+	json SceneSerializer::SerializeEntity(Entity entity)
+	{
+		json jsonObj;
+
 		// Serialize TagComponent
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
-		json_obj["Tag"] = tag;
-		
+		jsonObj["Tag"] = tag;
+
 		// Serialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
-		auto& position = transform.Position;
-		json_obj["Transform"]["Position"] = json::array({ position.x, position.y, position.z });
-		json_obj["Transform"]["Rotation"] = transform.Rotation;
-		json_obj["Transform"]["Scale"]    = json::array({ transform.Scale.x, transform.Scale.y });
-		
+		auto position = transform.Position;
+		jsonObj["Transform"]["Position"] = { round(position.x), round(position.y), round(position.z) };
+		jsonObj["Transform"]["Rotation"] = round(transform.Rotation);
+		jsonObj["Transform"]["Scale"] = { round(transform.Scale.x), round(transform.Scale.y) };
+
 		// Serialize SpriteComponent
 		if (entity.HasComponent<SpriteComponent>())
 		{
 			auto& spriteComponent = entity.GetComponent<SpriteComponent>();
 			auto& sprite = spriteComponent.Sprite;
 			auto& color = spriteComponent.Color;
-			json_obj["Sprite"]["Texture"] = sprite->GetTexture()->GetPath();
-			json_obj["Sprite"]["Size"]    = json::array({ sprite->m_SizeX, sprite->m_SizeY });
-			json_obj["Sprite"]["Pos"]     = json::array({ sprite->m_PosX, sprite->m_PosY });
-			json_obj["Sprite"]["Flip"]    = json::array({ sprite->m_FlipX, sprite->m_FlipY });
-			json_obj["Sprite"]["Color"]   = json::array({ color.r, color.g, color.b, color.a });
+
+			if (sprite)
+			{
+				jsonObj["Sprite"]["Texture"] = sprite->GetTexture()->GetPath();
+				jsonObj["Sprite"]["Flip"] = { sprite->m_FlipX, sprite->m_FlipY };
+			}
+			if (sprite->m_SpriteSheet)
+			{
+				jsonObj["Sprite"]["TilePos"] = { sprite->m_PosX, sprite->m_PosY };
+				jsonObj["Sprite"]["TileSize"] = { sprite->m_SizeX, sprite->m_SizeY };
+			}
+			
+			jsonObj["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
 		}
 
 		// Serialize ScriptComponent
@@ -39,41 +63,127 @@ namespace proton {
 		{
 			auto& script = entity.GetComponent<ScriptComponent>();
 			for (auto& kv : script.Scripts)
-				json_obj["Scripts"].push_back(kv.first);
+				jsonObj["Scripts"].push_back(kv.first);
 		}
-		
-		// Serialize children
+
+		// Serialize child entities
 		auto& relationship = entity.GetComponent<RelationshipComponent>();
 		if (relationship.ChildrenCount)
 		{
 			entt::entity current = relationship.First;
 			while (current != entt::null)
 			{
-				Entity child{ scene.get(), current };
+				Entity child{ entity.m_Scene, current };
 				auto& rel = child.GetComponent<RelationshipComponent>();
-				SerializeEntity(json_obj["Children"], child, scene);
+				jsonObj["Entities"].push_back(SerializeEntity(child));
 				current = rel.Next;
 			}
 		}
-		j.push_back(json_obj);
+
+		return jsonObj;
 	}
 
-	bool SceneSerializer::Serialize(const Shared<Scene>& scene)
+	bool SceneSerializer::Serialize(const std::string& filepath)
 	{
-		std::ofstream out("out.json");
-		json j;
-		scene->m_Registry.each([&](auto id)
+		assert(m_Scene && "Scene context not set!");
+		json jsonObj;
+		jsonObj["Scene name"] = m_Scene->m_SceneName;
+
+		m_Scene->m_Registry.each([&](auto id)
 		{
-			Entity entity{ scene.get(), id};
+			Entity entity{ m_Scene, id };
 			auto& relationship = entity.GetComponent<RelationshipComponent>();
 			if (relationship.Parent == entt::null)
-			{
-				SerializeEntity(j, entity, scene);
-			}
+				jsonObj["Entities"].push_back(SerializeEntity(entity));
 		});
-		out << j.dump(4);
-		out.close();
 
+		std::ofstream out(filepath);
+		out << jsonObj.dump(4);
+		out.close();
 		return true;
 	}
+	
+	bool SceneSerializer::Deserialize(const std::string& filepath)
+	{
+		std::string jsonData = ReadFileBinary(filepath);
+		if (jsonData.size())
+		{
+			json jsonObj = json::parse(jsonData);
+			m_Scene->m_SceneName = jsonObj["Scene name"];
+		
+			json& entities = jsonObj["Entities"];
+			for (auto it = entities.rbegin(); it != entities.rend(); it++)
+				DeserializeEntity(*it);
+
+			return true;
+		}
+		return false;
+	}
+
+	Entity SceneSerializer::DeserializeEntity(json jsonObj)
+	{
+		Entity entity = m_Scene->CreateEntity(jsonObj["Tag"]);
+
+		// Deserialize TransformComponent
+		auto& transform = entity.GetComponent<TransformComponent>();
+		json& pos = jsonObj["Transform"]["Position"];
+		json& rotation = jsonObj["Transform"]["Rotation"];
+		json& scale = jsonObj["Transform"]["Scale"];
+		transform.Position = { pos[0], pos[1], pos[2] };
+		transform.Rotation = rotation;
+		transform.Scale = { scale[0], scale[1] };
+
+		// Deserialize SpriteComponent
+		if (jsonObj.contains("Sprite"))
+		{
+			json& sprite = jsonObj["Sprite"];
+			auto& spriteComponent = entity.AddComponent<SpriteComponent>();
+			
+			if (sprite.contains("Texture"))
+			{
+				if (sprite.contains("TilePos"))
+				{
+					auto& spriteSheet = AssetsManager::GetSpriteSheet(sprite["Texture"]);
+					spriteComponent.Sprite = CreateShared<Sprite>(
+						spriteSheet,
+						sprite["TilePos"][0], sprite["TilePos"][1],
+						sprite["TileSize"][0], sprite["TileSize"][1]
+					);
+				}
+				else
+				{
+					auto& texture = AssetsManager::GetTexture(sprite["Texture"]);
+					spriteComponent.Sprite = CreateShared<Sprite>(texture);
+				}
+
+				spriteComponent.Sprite->m_FlipX = sprite["Flip"][0];
+				spriteComponent.Sprite->m_FlipX = sprite["Flip"][1];
+			}
+			
+			json& color = jsonObj["Sprite"]["Color"];
+			spriteComponent.Color = { color[0], color[1], color[2], color[3] };
+		}
+
+		// Deserialize scripts
+		if (jsonObj.contains("Scripts"))
+		{
+			for (auto& scriptClass : jsonObj["Scripts"])
+			{
+				auto& registeredScripts = ScriptFactory::GetScripts();
+				assert(registeredScripts.find(scriptClass) == registeredScripts.end() && "Script not found!");
+				registeredScripts.at(scriptClass)(entity); // call add script to entity function
+			}
+		}
+
+		// Deserialize child entities
+		if (jsonObj.contains("Entities"))
+		{
+			json& entities = jsonObj["Entities"];
+			for (auto it = entities.rbegin(); it != entities.rend(); it++)
+				entity.AddChildEntity(DeserializeEntity(*it));
+		}
+
+		return entity;
+	}
+
 }

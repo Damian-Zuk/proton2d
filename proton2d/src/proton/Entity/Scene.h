@@ -17,6 +17,7 @@ namespace proton {
 		Entity CreateEntity(const std::string& name = "Unnamed Entity");
 
 		void DestroyEntity(entt::entity entity);
+		void DestroyAllEntities();
 
 		void OnUpdate(float ts);
 		

@@ -17,9 +17,9 @@ namespace proton {
 		: m_SceneName(name)
 	{
 		Renderer::SetClearColor(s_ClearColor);
-#	ifndef PROTON_DISTRIBUTION
-		EditorOverlay::SetSceneContext(this);
-#	endif
+		#ifndef PROTON_DISTRIBUTION
+			EditorOverlay::SetSceneContext(this);
+		#endif
 	}
 
 	Scene::~Scene()
@@ -43,6 +43,11 @@ namespace proton {
 	void Scene::DestroyEntity(entt::entity entity)
 	{
 		m_Registry.destroy(entity);
+	}
+
+	void Scene::DestroyAllEntities()
+	{
+		m_Registry.each([&](auto id) { m_Registry.destroy(id); });
 	}
 
 	void Scene::OnUpdate(float ts)

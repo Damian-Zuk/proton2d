@@ -3,7 +3,7 @@
 #include "proton/Core/Application.h"
 #include "proton/Core/Window.h"
 #include "proton/Entity/Components.h"
-#include "proton/Editor/ScriptRegistry.h"
+#include "proton/Assets/SceneSerializer.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -21,7 +21,6 @@ namespace proton {
 	EditorOverlay::EditorOverlay()
 	{
 		EditorOverlay::s_Instance = this;
-		ScriptRegistry::Init();
 	}
 
 	void EditorOverlay::OnCreate()
@@ -102,6 +101,7 @@ namespace proton {
 
 			m_Inspector.OnImGuiRender();
 			m_DebugInfo.OnImGuiRender();
+			DrawSceneSerializationPanel();
 		}
 		ImGui::End();
 	}
@@ -144,11 +144,32 @@ namespace proton {
 		}
 	}
 
+	void EditorOverlay::DrawSceneSerializationPanel()
+	{
+		static char filepath[128] = "scenes/scene.json";
+		ImGui::Begin("Scene serializer");
+		ImGui::InputText("File path", filepath, 128);
+
+		if (ImGui::Button("Save", { 100, 30 }))
+			SceneSerializer::Serialize(filepath);
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Load", { 100, 30 }))
+		{
+			m_ActiveScene->DestroyAllEntities();
+			SceneSerializer::Deserialize(filepath);
+		}
+
+		ImGui::End();
+	}
+
 	void EditorOverlay::SetSceneContext(Scene* context)
 	{
 		s_Instance->m_ActiveScene = context;
 		s_Instance->m_Inspector.m_ActiveScene = context;
 		context->SetPrimaryCamera(s_Instance->m_CameraController.GetCamera());
+		SceneSerializer::SetContext(context);
 	}
 
 	void EditorOverlay::BeginImGuiRender()

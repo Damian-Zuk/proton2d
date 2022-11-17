@@ -24,6 +24,7 @@ namespace proton {
 		uint32_t m_MaxTilesX = 0, m_MaxTilesY = 0;
 
 		friend class Inspector;
+		friend class Sprite;
 	};
 
 	class Sprite
@@ -43,6 +44,7 @@ namespace proton {
 		Shared<Texture> GetTexture();
 
 	private:
+		uint32_t m_Width_px = 1, m_Height_px = 1;
 		uint32_t m_PosX = 0, m_PosY = 0;
 		uint32_t m_SizeX = 1, m_SizeY = 1;
 		bool m_FlipX = false, m_FlipY = false;

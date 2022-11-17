@@ -32,14 +32,16 @@ namespace proton {
 	}
 
 	Sprite::Sprite(const Shared<Texture>& texture)
-		: m_Texture(texture)
+		: m_Texture(texture), m_Width_px(texture->GetWidth()), m_Height_px(texture->GetHeight()),
+		m_TextureCoords({ {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} })
 	{
-		m_TextureCoords = { {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} };
 	}
 
 	Sprite::Sprite(const Shared<SpriteSheet>& spriteSheet,
 		uint32_t x, uint32_t y, uint32_t sizeX, uint32_t sizeY)
 		: m_PosX(x), m_PosY(y), m_SizeX(sizeX), m_SizeY(sizeY),
+		m_Width_px(sizeX* spriteSheet->m_TileWidth),
+		m_Height_px(sizeY* spriteSheet->m_TileHeight),
 		m_SpriteSheet(spriteSheet), m_Texture(spriteSheet->GetTexture())
 	{
 		SetTile(x, y, sizeX, sizeY);
@@ -49,6 +51,8 @@ namespace proton {
 	{
 		m_SpriteSheet = spriteSheet;
 		m_Texture = spriteSheet->GetTexture();
+		m_Width_px = m_SizeX * spriteSheet->m_TileWidth;
+		m_Height_px = m_SizeY * spriteSheet->m_TileHeight;
 		SetTile(0, 0);
 	}
 
