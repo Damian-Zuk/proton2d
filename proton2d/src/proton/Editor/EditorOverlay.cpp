@@ -13,6 +13,8 @@
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include <filesystem>
+#include <fstream>
 
 namespace proton {
 
@@ -52,7 +54,7 @@ namespace proton {
 
 	void EditorOverlay::OnImGuiRender()
 	{
-		//ImGui::ShowDemoWindow(); // Demo window for reference
+		ImGui::ShowDemoWindow(); // Demo window for reference
 
 		//************************************
 		//   Entity Hierarchy 
@@ -144,22 +146,105 @@ namespace proton {
 		}
 	}
 
+	static std::vector<std::string> GetScenesFromDirectory()
+	{
+		std::vector<std::string> directoryScenes;
+		for (const auto& entry : std::filesystem::directory_iterator("scenes"))
+			directoryScenes.emplace_back(entry.path().stem().generic_string());
+		return directoryScenes;
+	}
+
 	void EditorOverlay::DrawSceneSerializationPanel()
 	{
-		static char filepath[128] = "scenes/scene.json";
-		ImGui::Begin("Scene serializer");
-		ImGui::InputText("File path", filepath, 128);
+		static std::vector<std::string> directoryScenes = GetScenesFromDirectory();
+		static std::string filename = directoryScenes.size() ? directoryScenes[0].c_str() : "No scenes found";
+		static int filenameIndex = 0;
+		static bool comboPlaceholder = true;
+		static bool createNewScenePopup = false;
 
-		if (ImGui::Button("Save", { 100, 30 }))
-			SceneSerializer::Serialize(filepath);
+		ImGui::Begin("Scene##serialization_panel");
 
-		ImGui::SameLine();
+		if (ImGui::BeginCombo("##select_path", comboPlaceholder ? "Select scene..." : 
+			(directoryScenes.size() ? directoryScenes[filenameIndex].c_str() : "No scenes found")))
+		{
+			comboPlaceholder = false;
+			directoryScenes = GetScenesFromDirectory();
 
-		if (ImGui::Button("Load", { 100, 30 }))
+			if (ImGui::Selectable("Create new scene"))
+				createNewScenePopup = true;
+
+			ImGui::Separator();
+
+			int index = 0;
+			for (const auto& entry : directoryScenes)
+			{
+				if (ImGui::Selectable(entry.c_str(), filenameIndex == index))
+					filenameIndex = index;
+
+				if (filenameIndex == index)
+					ImGui::SetItemDefaultFocus();
+				index++;
+			}
+			ImGui::EndCombo();
+		}
+
+		if (createNewScenePopup)
+		{
+			ImGui::OpenPopup("Create new scene##popup");
+			createNewScenePopup = false;
+		}
+		
+		if (ImGui::BeginPopup("Create new scene##popup"))
+		{
+			static char sceneName[128] = { 0 };
+			static bool emptyScene = true;
+			ImGui::Text("Create new scene");
+			ImGui::Separator();
+			ImGui::Text("Name");
+			ImGui::SameLine();
+			ImGui::PushItemWidth(200.0f);
+			ImGui::InputText("##new_scene", sceneName, 128);
+			ImGui::SameLine();
+
+			if (ImGui::Button("Create##new_scene", { 75, 25 }))
+			{
+				std::string filepath = "scenes/" + std::string(sceneName) + ".json";
+				
+				if (emptyScene)
+				{
+					std::ofstream file(filepath);
+					file << "{\"Scene name\": \"Sample scene\"}";
+					file.close();
+					m_ActiveScene->DestroyAllEntities();
+				}
+				else
+					SceneSerializer::Serialize(filepath);
+					
+				directoryScenes = GetScenesFromDirectory();
+				int index = 0;
+				for (const auto& entry : directoryScenes)
+				{
+					if (entry == sceneName)
+						filenameIndex = index;
+					index++;
+				}
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::Checkbox("Empty scene##new_scene", &emptyScene);
+
+			ImGui::EndPopup();
+		}
+
+		if (ImGui::Button("Load", { 75, 25 }))
 		{
 			m_ActiveScene->DestroyAllEntities();
-			SceneSerializer::Deserialize(filepath);
+			SceneSerializer::Deserialize("scenes/" + directoryScenes[filenameIndex] + ".json");
 		}
+		ImGui::SameLine();
+
+		if (ImGui::Button("Save", { 75, 25 }))
+			SceneSerializer::Serialize("scenes/" + directoryScenes[filenameIndex] + ".json");
 
 		ImGui::End();
 	}

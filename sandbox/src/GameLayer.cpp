@@ -6,38 +6,14 @@ using namespace proton;
 
 void GameLayer::OnCreate()
 {
-	// Create scene
-	m_Scene = CreateShared<Scene>("Sample scene");
-
-	// Load assets
 	AssetsManager::LoadSpriteSheet("skeleton-sheet.png", 150, 150);
-	auto playerSpriteSheet = AssetsManager::LoadSpriteSheet("player-sheet.png", 120, 80);
-
-	// Create game objects
-	m_Level = m_Scene->CreateEntity("Level");
-
-	SpawnPlatform({ 3.6f, -1.17f }, 32, 5);
-	SpawnPlatform({ -1.8f,  0.0f }, 4, 20);
-	SpawnPlatform({ -0.2f,  0.7f }, 1, 1);
-	SpawnPlatform({  0.6f,  0.7f }, 2, 1);
-	SpawnPlatform({  1.7f,  0.7f }, 3, 1);
-	SpawnPlatform({  2.8f,  0.7f }, 2, 2);
-	SpawnPlatform({  3.8f,  0.7f }, 3, 3);
-	SpawnPlatform({  5.0f,  0.7f }, 4, 4);
-	SpawnPlatform({  6.8f,  0.7f }, 5, 5);
-
-	m_Player = m_Scene->CreateEntity("Player");
-	{
-		auto& transform    = m_Player.GetComponent<TransformComponent>();
-		auto& sprite       = m_Player.AddComponent<SpriteComponent>();
-		transform.Position = { -0.3f, -0.1f, -0.1f };
-		transform.Scale    = { 1.0f, 1.0f };
-		sprite.Sprite      = CreateShared<Sprite>(playerSpriteSheet, 0, 0);
-		m_Player.AddScript<PlayerScript>("PlayerScript");
-	}
+	AssetsManager::LoadSpriteSheet("player-sheet.png", 120, 80);
+	AssetsManager::LoadSpriteSheet("level-sheet-1.png", 32, 32);
 
 	REGISTER_SCRIPT(PlayerScript);
 	REGISTER_SCRIPT(RotationScript);
+
+	m_Scene = CreateShared<Scene>("Sample scene");
 }
 
 void GameLayer::OnUpdate(float ts)
@@ -47,7 +23,19 @@ void GameLayer::OnUpdate(float ts)
 
 void GameLayer::OnImGuiRender()
 {
+	static int w = 1, h = 1;
+	ImGui::Begin("Game tools");
 
+	if (ImGui::InputInt("Width", &w))
+		w = std::max(w, 1);
+
+	if (ImGui::InputInt("Height", &h))
+		h = std::max(h, 1);
+
+	if (ImGui::Button("Spawn platform"))
+		SpawnPlatform({ 0, 0 }, w, h);
+
+	ImGui::End();
 }
 
 void GameLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles)
@@ -58,7 +46,6 @@ void GameLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heigh
 		transform.Position = { pos.x, pos.y, 0.1f };
 		transform.Scale = { 1.0f, 1.0f };
 	}
-	auto levelSheet = AssetsManager::LoadSpriteSheet("level-sheet-1.png", 32, 32);
 	
 	if (heightTiles == 1)
 		widthTiles++;
@@ -94,7 +81,7 @@ void GameLayer::SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heigh
 				0.1f 
 			};
 			auto& sprite = tile.AddComponent<SpriteComponent>().Sprite;
-			sprite = CreateShared<Sprite>(levelSheet, tileX, tileY);
+			sprite = CreateShared<Sprite>(AssetsManager::GetSpriteSheet("level-sheet-1.png"), tileX, tileY);
 			
 			platform.AddChildEntity(tile);
 		}

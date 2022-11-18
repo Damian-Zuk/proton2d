@@ -18,8 +18,8 @@ namespace proton {
 			data.Textures[filepath] = texture;
 			return texture;
 		}
-		LOG_ERROR("[AssetsManager] Couldn't load texture:", filepath);
 
+		LOG_ERROR("[AssetsManager] Couldn't load texture:", filepath);
 		return nullptr;
 	}
 
@@ -33,7 +33,7 @@ namespace proton {
 
 			return spriteSheet;
 		}
-		
+		LOG_ERROR("[AssetsManager] Couldn't load spritesheet:", filepath);
 		return nullptr;
 	}
 
@@ -54,6 +54,7 @@ namespace proton {
 			if (LoadTexture(keyPath))
 				return data.Textures[keyPath];
 
+			LOG_ERROR("[AssetsManager] Texture not found:", keyPath);
 			return nullptr;
 		}
 
@@ -61,8 +62,11 @@ namespace proton {
 	}
 	Shared<SpriteSheet> AssetsManager::GetSpriteSheet(const std::string& keyPath)
 	{
-		if (!SpriteSheetExists(keyPath))
+		if (!SpriteSheetExists(keyPath)) 
+		{
+			LOG_ERROR("[AssetsManager] Spritesheet not found:", keyPath);
 			return nullptr;
+		}
 
 		return data.SpriteSheets[keyPath];
 	}

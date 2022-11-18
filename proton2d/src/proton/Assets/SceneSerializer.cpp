@@ -32,7 +32,7 @@ namespace proton {
 
 		// Serialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
-		auto position = transform.Position;
+		auto& position = transform.Position;
 		jsonObj["Transform"]["Position"] = { round(position.x), round(position.y), round(position.z) };
 		jsonObj["Transform"]["Rotation"] = round(transform.Rotation);
 		jsonObj["Transform"]["Scale"] = { round(transform.Scale.x), round(transform.Scale.y) };
@@ -126,12 +126,12 @@ namespace proton {
 
 		// Deserialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
-		json& pos = jsonObj["Transform"]["Position"];
+		json& position = jsonObj["Transform"]["Position"];
+		json& scale    = jsonObj["Transform"]["Scale"];
 		json& rotation = jsonObj["Transform"]["Rotation"];
-		json& scale = jsonObj["Transform"]["Scale"];
-		transform.Position = { pos[0], pos[1], pos[2] };
+		transform.Position = { position[0], position[1], position[2] };
+		transform.Scale    = { scale[0], scale[1] };
 		transform.Rotation = rotation;
-		transform.Scale = { scale[0], scale[1] };
 
 		// Deserialize SpriteComponent
 		if (jsonObj.contains("Sprite"))
@@ -143,17 +143,15 @@ namespace proton {
 			{
 				if (sprite.contains("TilePos"))
 				{
-					auto& spriteSheet = AssetsManager::GetSpriteSheet(sprite["Texture"]);
 					spriteComponent.Sprite = CreateShared<Sprite>(
-						spriteSheet,
+						AssetsManager::GetSpriteSheet(sprite["Texture"]),
 						sprite["TilePos"][0], sprite["TilePos"][1],
 						sprite["TileSize"][0], sprite["TileSize"][1]
 					);
-				}
-				else
+				} else
 				{
-					auto& texture = AssetsManager::GetTexture(sprite["Texture"]);
-					spriteComponent.Sprite = CreateShared<Sprite>(texture);
+					spriteComponent.Sprite 
+						= CreateShared<Sprite>(AssetsManager::GetTexture(sprite["Texture"]));
 				}
 
 				spriteComponent.Sprite->m_FlipX = sprite["Flip"][0];
@@ -170,7 +168,10 @@ namespace proton {
 			for (auto& scriptClass : jsonObj["Scripts"])
 			{
 				auto& registeredScripts = ScriptFactory::GetScripts();
-				assert(registeredScripts.find(scriptClass) == registeredScripts.end() && "Script not found!");
+				
+				if (registeredScripts.find(scriptClass) == registeredScripts.end())
+					LOG_ERROR("[SceneSerializer] Script not found:", scriptClass);
+				
 				registeredScripts.at(scriptClass)(entity); // call add script to entity function
 			}
 		}

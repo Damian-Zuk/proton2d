@@ -97,7 +97,7 @@ namespace proton {
 						ImGui::DragFloat("##P_Y", &component.Position.y, 0.01f, 0.0f, 0.0f, " % .2f");
 						ImGui::SameLine();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##P_Z", &component.Position.z, 0.01f, 0.0f, 0.0f, "%.2f");
+						ImGui::DragFloat("##P_Z", &component.Position.z, 0.0001f, 0.0f, 0.0f, "%.2f");
 						ImGui::Columns(1);
 
 						// Draw Scale control
