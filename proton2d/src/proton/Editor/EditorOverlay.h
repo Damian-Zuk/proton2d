@@ -21,6 +21,7 @@ namespace proton {
 		virtual void OnEvent(Event& event) override;
 
 		static void SetSceneContext(Scene* context);
+		static void SetInspectorContext(Entity entity);
 
 	private:
 		void BeginImGuiRender();

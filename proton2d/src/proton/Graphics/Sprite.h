@@ -6,6 +6,8 @@
 
 namespace proton {
 
+	using TextureCoords = std::array<glm::vec2, 4>;
+
 	class SpriteSheet
 	{
 	public:
@@ -17,14 +19,19 @@ namespace proton {
 		std::pair<uint32_t, uint32_t> GetTileSize() const;
 		std::pair<uint32_t, uint32_t> GetMaxTilesCount() const;
 
+		const TextureCoords& GetTextureCoords(uint32_t x, uint32_t y) const;
+
 	private:
+		std::vector<std::vector<TextureCoords>> m_TextureCoords;
 		Shared<Texture> m_Texture;
+
 		uint32_t m_SheetWidth = 0, m_SheetHeight = 0;
 		uint32_t m_TileWidth = 0, m_TileHeight = 0;
 		uint32_t m_MaxTilesX = 0, m_MaxTilesY = 0;
 
 		friend class Inspector;
 		friend class Sprite;
+		friend class Scene;
 	};
 
 	class Sprite
@@ -44,14 +51,16 @@ namespace proton {
 		Shared<Texture> GetTexture();
 
 	private:
+		const TextureCoords& GetTextureCoords();
+		
+	private:
+		Shared<Texture> m_Texture;
+		Shared<SpriteSheet> m_SpriteSheet = nullptr;
+
 		uint32_t m_Width_px = 1, m_Height_px = 1;
 		uint32_t m_PosX = 0, m_PosY = 0;
 		uint32_t m_SizeX = 1, m_SizeY = 1;
 		bool m_FlipX = false, m_FlipY = false;
-
-		Shared<Texture> m_Texture;
-		Shared<SpriteSheet> m_SpriteSheet = nullptr;
-		std::array<glm::vec2, 4> m_TextureCoords;
 
 		friend class Renderer;
 		friend class Scene;

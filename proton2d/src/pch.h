@@ -15,3 +15,4 @@
 #endif
 
 #include "proton/Core/Logger.h"
+#include "proton/Core/Instrumentor.h"

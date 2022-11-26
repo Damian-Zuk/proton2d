@@ -8,6 +8,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define TILEMAP_BLANK_TILE glm::ivec2{ -1, -1 }
+
 namespace proton {
 
 	struct TagComponent
@@ -26,6 +28,22 @@ namespace proton {
 	{
 		Shared<proton::Sprite> Sprite = nullptr;
 		glm::vec4 Color { 1.0f };
+	};
+
+	struct TilemapSpriteComponent
+	{
+		TilemapSpriteComponent(const Shared<SpriteSheet>& spritesheet, uint32_t width, uint32_t height)
+			: Spritesheet(spritesheet), Width(width), Height(height)
+		{
+			Tilemap.resize(width);
+			for (auto& column : Tilemap)
+				column.resize(height, TILEMAP_BLANK_TILE);
+		}
+
+		Shared<SpriteSheet> Spritesheet = nullptr;
+		uint32_t Width, Height;
+		std::vector<std::vector<glm::ivec2>> Tilemap; // Tilemap[y][x]
+		glm::vec4 Color{ 1.0f };
 	};
 
 	class EntityScript; // forward declaration

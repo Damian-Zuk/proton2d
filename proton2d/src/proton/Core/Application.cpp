@@ -47,6 +47,8 @@ namespace proton {
 
 	void Application::Run()
 	{
+		PROFILE_BEGIN_SESSION("Proton-Runtime");
+
 		Logger::init();
 		Renderer::Init();
 		ScriptFactory::Init();
@@ -59,11 +61,14 @@ namespace proton {
 
 				if (!m_WindowMinimized) 
 				{
+					PROFILE_SCOPE("AppLayers OnUpdate");
 					for (AppLayer* layer : m_AppLayers)
 						layer->OnUpdate(m_LastFrameTime);
 				}
 
 				#ifndef PROTON_DISTRIBUTION
+				{
+					PROFILE_SCOPE("ImGuiRender");
 					m_EditorOverlay->m_DebugInfo.m_FrameTime = m_LastFrameTime;
 					m_EditorOverlay->BeginImGuiRender();
 
@@ -71,6 +76,7 @@ namespace proton {
 						layer->OnImGuiRender();
 
 					m_EditorOverlay->EndImGuiRender();
+				}
 				#endif
 
 				m_Window->OnUpdate();
@@ -79,6 +85,8 @@ namespace proton {
 				m_LastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0f;
 			}
 		}
+
+		PROFILE_END_SESSION();
 	}
 
 	void Application::PushLayer(AppLayer* layer)

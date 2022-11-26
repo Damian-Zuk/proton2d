@@ -9,6 +9,28 @@ namespace proton {
 	{
 		m_MaxTilesX = (uint32_t)((float)m_SheetWidth / (float)m_TileWidth);
 		m_MaxTilesY = (uint32_t)((float)m_SheetHeight / (float)m_TileHeight);
+		
+		// Tile size: [0.0 - 1.0] range
+		float tileSizeX = (float)tileWidth / (float)m_SheetWidth;
+		float tileSizeY = (float)tileHeight / (float)m_SheetHeight;
+
+		m_TextureCoords.resize(m_MaxTilesX);
+		uint32_t x = 0, y = 0;
+
+		for (auto& column : m_TextureCoords)
+		{
+			column.resize(m_MaxTilesY);
+			for (auto& tileTextureCoords : column)
+			{
+				// Texture coords: [0.0 - 1.0] range
+				tileTextureCoords[0] = { x * tileSizeX, y * tileSizeY };
+				tileTextureCoords[1] = { (x + 1) * tileSizeX, y * tileSizeY };
+				tileTextureCoords[2] = { (x + 1) * tileSizeX, (y + 1) * tileSizeY };
+				tileTextureCoords[3] = { x * tileSizeX, (y + 1) * tileSizeY };
+				y++;
+			}
+			y = 0; x++;
+		}
 	}
 
 	Shared<Texture> SpriteSheet::GetTexture()
@@ -31,17 +53,22 @@ namespace proton {
 		return { m_MaxTilesX, m_MaxTilesY };
 	}
 
+	const TextureCoords& SpriteSheet::GetTextureCoords(uint32_t x, uint32_t y) const
+	{
+		assert(x < m_MaxTilesX&& y < m_MaxTilesY && "Tile position out of bounds!");
+		return m_TextureCoords[x][y];
+	}
+
 	Sprite::Sprite(const Shared<Texture>& texture)
-		: m_Texture(texture), m_Width_px(texture->GetWidth()), m_Height_px(texture->GetHeight()),
-		m_TextureCoords({ {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} })
+		: m_Texture(texture), m_Width_px(texture->GetWidth()), m_Height_px(texture->GetHeight())
 	{
 	}
 
 	Sprite::Sprite(const Shared<SpriteSheet>& spriteSheet,
 		uint32_t x, uint32_t y, uint32_t sizeX, uint32_t sizeY)
 		: m_PosX(x), m_PosY(y), m_SizeX(sizeX), m_SizeY(sizeY),
-		m_Width_px(sizeX* spriteSheet->m_TileWidth),
-		m_Height_px(sizeY* spriteSheet->m_TileHeight),
+		m_Width_px(sizeX * spriteSheet->m_TileWidth),
+		m_Height_px(sizeY * spriteSheet->m_TileHeight),
 		m_SpriteSheet(spriteSheet), m_Texture(spriteSheet->GetTexture())
 	{
 		SetTile(x, y, sizeX, sizeY);
@@ -61,21 +88,8 @@ namespace proton {
 		if (m_SpriteSheet)
 		{
 			auto& [maxX, maxY] = m_SpriteSheet->GetMaxTilesCount();
-			auto& [sheetWidth, sheetHeight] = m_SpriteSheet->GetSheetSize();
-			auto& [tileWidth, tileHeight] = m_SpriteSheet->GetTileSize();
-			
 			x %= maxX; y %= maxY;
 			m_PosX = x; m_PosY = y;
-
-			// Size: [0.0 - 1.0] range
-			float tileSizeX = (float)tileWidth / (float)sheetWidth;
-			float tileSizeY = (float)tileHeight / (float)sheetHeight;
-
-			// Texture coords: [0.0 - 1.0] range
-			m_TextureCoords[0] = {  x * tileSizeX,            y * tileSizeY          };
-			m_TextureCoords[1] = { (x + sizeX) * tileSizeX,   y * tileSizeY          };
-			m_TextureCoords[2] = { (x + sizeX) * tileSizeX,  (y + sizeY) * tileSizeY };
-			m_TextureCoords[3] = {  x * tileSizeX,           (y + sizeY) * tileSizeY };
 		}
 		else
 			assert(false && "Sprite doesn't have spritesheet attached!");
@@ -104,6 +118,18 @@ namespace proton {
 	Shared<Texture> Sprite::GetTexture()
 	{
 		return m_Texture;
+	}
+
+	static TextureCoords s_FullTextureCoords
+		= { {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} };
+
+	const TextureCoords& Sprite::GetTextureCoords()
+	{
+		if (m_SpriteSheet)
+			return m_SpriteSheet->GetTextureCoords(m_PosX, m_PosY);
+
+		// If spritesheet not attached then return full texture coordinates
+		return s_FullTextureCoords;
 	}
 
 }

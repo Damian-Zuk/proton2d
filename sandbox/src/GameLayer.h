@@ -11,7 +11,7 @@ public:
 	virtual void OnUpdate(float ts) override;
 	virtual void OnImGuiRender() override;
 
-	void SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles);
+	Entity SpawnPlatform(glm::vec2 pos, uint32_t widthTiles, uint32_t heightTiles, bool edgeLeft, bool edgeRight);
 
 private:
 	Shared<Scene> m_Scene;

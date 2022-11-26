@@ -52,6 +52,7 @@ namespace proton {
 
 	void Scene::OnUpdate(float ts)
 	{
+		PROFILE_FUNCTION();
 		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent) 
 		{
 			for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
@@ -80,17 +81,43 @@ namespace proton {
 			RenderScene(*m_PrimaryCamera);
 	}
 
+	Entity Scene::FindByTag(const std::string& tag)
+	{
+		auto view = m_Registry.view<TagComponent>();
+		for (auto entity : view)
+		{
+			if (tag == view.get<TagComponent>(entity).Tag)
+				return Entity(this, entity);
+		}
+		return Entity();
+	}
+
+	std::vector<Entity> Scene::FindAllByTag(const std::string& tag)
+	{
+		auto view = m_Registry.view<TagComponent>();
+		std::vector<Entity> entities;
+		entities.reserve(view.size());
+		for (auto entity : view) 
+		{
+			if (tag == view.get<TagComponent>(entity).Tag)
+				entities.emplace_back(Entity(this, entity));
+		}
+		return entities;
+	}
+
 	void Scene::RenderScene(const Camera& camera)
 	{
+		PROFILE_FUNCTION();
 		Renderer::Clear();
 		Renderer::BeginScene(camera);
 
-		auto renderable = m_Registry.group<TransformComponent>(entt::get<SpriteComponent, RelationshipComponent>);
-
-		for (auto entity : renderable)
+		// Render entities with SpriteComponent
+		auto renderableSprite = m_Registry.group<SpriteComponent>(entt::get<TransformComponent, RelationshipComponent>);
+		for (auto e : renderableSprite)
 		{
-			auto [transform, sprite, relationship] = renderable.get<TransformComponent, SpriteComponent, RelationshipComponent>(entity);
-
+			PROFILE_SCOPE("Entity_Render_Sprite");
+			auto [transform, sprite, relationship] = renderableSprite.get<TransformComponent, SpriteComponent, RelationshipComponent>(e);
+			
 			// Sprite flip
 			glm::vec3 outputScale = sprite.Sprite ? glm::vec3{
 				transform.Scale.x * (sprite.Sprite->m_FlipX ? -1.0f : 1.0f),
@@ -106,8 +133,8 @@ namespace proton {
 				* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
 				* glm::scale(glm::mat4(1.0f), outputScale);
 
-			if (relationship.Parent != entt::null)
-				transformMatrix = CalculateParentTransform(relationship.Parent) * transformMatrix;
+			//if (relationship.Parent != entt::null)
+			//	transformMatrix = CalculateParentTransform(relationship.Parent) * transformMatrix;
 
 			if (sprite.Sprite)
 				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color);
@@ -115,11 +142,49 @@ namespace proton {
 				Renderer::DrawQuad(transformMatrix, sprite.Color);
 		}
 
+		// Render entities with TilemapSpriteComponent
+		auto renderableTilemapSprite = m_Registry.group<TilemapSpriteComponent>(entt::get<TransformComponent, RelationshipComponent>);
+		for (auto e : renderableTilemapSprite)
+		{
+			PROFILE_SCOPE("Entity_Render_TilemapSprite");
+			auto [transform, tilemap, relationship] = renderableTilemapSprite.get<TransformComponent, TilemapSpriteComponent, RelationshipComponent>(e);
+			auto& spritesheet = tilemap.Spritesheet;
+			if (spritesheet)
+			{
+				// Tilemap Entity transform matrix
+				glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
+					* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
+					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f });
+
+				uint32_t x = 0, y = 0;
+				for (auto& column : tilemap.Tilemap)
+				{
+					for (auto& tile : column)
+					{
+						if (tile != TILEMAP_BLANK_TILE)
+						{
+							// Tile local transform matrix
+							glm::mat4 tileTransformMatrix = glm::translate(glm::mat4(1.0f), {
+									(x - tilemap.Width / 2.0f) * transform.Scale.x,
+									(y - tilemap.Height / 2.0f) * transform.Scale.y, 0
+								}) * glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f });
+
+							Renderer::DrawQuad(transformMatrix * tileTransformMatrix, spritesheet->GetTexture(),
+								spritesheet->GetTextureCoords(tile.x, tile.y), tilemap.Color);
+						}
+						y++;
+					}
+					y = 0; x++;
+				}
+			}
+		}
+
 		Renderer::EndScene();
 	}
 
 	glm::mat4 Scene::CalculateParentTransform(entt::entity parent)
 	{
+		PROFILE_FUNCTION();
 		auto [parentTransform, parentRelationship] = m_Registry.get<TransformComponent, RelationshipComponent>(parent);
 
 		glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), parentTransform.Position)

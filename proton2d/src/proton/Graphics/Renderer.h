@@ -17,6 +17,7 @@ namespace proton {
 
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color);
 		static void DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, const glm::vec4& tintColor = glm::vec4(1.0f));
+		static void DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture, const TextureCoords& textureCoords, const glm::vec4& tintColor);
 
 		static void SetClearColor(glm::vec4 color);
 		static void Clear();

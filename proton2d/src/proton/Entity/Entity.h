@@ -25,7 +25,7 @@ namespace proton {
 		T& AddComponent(Types&& ...args) const
 		{
 			assert(!HasComponent<T>() && "Entity already have component!");
-			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward(args)...);
+			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward<Types>(args)...);
 		}
 
 		template <typename T>
@@ -56,6 +56,7 @@ namespace proton {
 		{
 			return m_Scene->m_Registry.any_of<T>(m_Handle);
 		}
+
 
 		bool IsValid();
 		void Destroy();

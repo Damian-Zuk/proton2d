@@ -20,8 +20,6 @@ namespace proton {
 		Scene* m_ActiveScene;
 		Entity m_SelectedEntity;
 
-		std::string m_SpriteComponentTextureSource;
-
 		friend class EditorOverlay;
 	};
 

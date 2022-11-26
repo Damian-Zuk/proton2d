@@ -77,6 +77,8 @@ namespace proton {
 
 	void Renderer::InitQuadVertexArray()
 	{
+		PROFILE_FUNCTION();
+
 		// Create vertex buffer
 		data.QuadVertexBuffer = CreateShared<VertexBuffer>((uint32_t)(data.MaxVertices * sizeof(QuadVertex)));
 		data.QuadVertexBuffer->SetLayout({
@@ -87,7 +89,7 @@ namespace proton {
 		});
 		data.QuadVertexBufferBase = new QuadVertex[data.MaxVertices];
 
-		// Create index buffer
+		// Create index buffer data
 		uint32_t* indicies = new uint32_t[data.MaxIndices];
 
 		for (uint32_t i = 0; i < data.MaxIndices; i++)
@@ -111,6 +113,7 @@ namespace proton {
 
 	void Renderer::BeginScene(const Camera& camera)
 	{
+		PROFILE_FUNCTION();
 		data.CameraUniformBuffer->SetData(&camera.GetViewProjection(), sizeof(glm::mat4));
 		data.OpenGLDrawCalls = 0;
 		StartBatch();
@@ -118,6 +121,7 @@ namespace proton {
 
 	void Renderer::EndScene()
 	{
+		PROFILE_FUNCTION();
 		Flush();
 	}
 
@@ -160,6 +164,8 @@ namespace proton {
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
 	{
+		PROFILE_FUNCTION();
+
 		if (data.QuadIndexCount >= data.MaxIndices)
 			NextBatch();
 
@@ -185,13 +191,21 @@ namespace proton {
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, const glm::vec4& tintColor)
 	{
+		DrawQuad(transform, sprite->GetTexture(), sprite->GetTextureCoords(), tintColor);
+	}
+
+	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture,
+		const TextureCoords& textureCoords, const glm::vec4& tintColor)
+	{
+		PROFILE_FUNCTION();
+
 		if (data.QuadIndexCount >= data.MaxIndices)
 			NextBatch();
 
 		uint32_t textureIndex = 0;
 		for (uint32_t i = 1; i < data.TextureSlotIndex; i++)
 		{
-			if (*data.TextureSlots[i] == *sprite->GetTexture())
+			if (*data.TextureSlots[i] == *texture)
 			{
 				textureIndex = i;
 				break;
@@ -204,7 +218,7 @@ namespace proton {
 				NextBatch();
 
 			textureIndex = data.TextureSlotIndex;
-			data.TextureSlots[data.TextureSlotIndex] = sprite->GetTexture();
+			data.TextureSlots[data.TextureSlotIndex] = texture;
 			data.TextureSlotIndex++;
 		}
 
@@ -214,7 +228,7 @@ namespace proton {
 			data.QuadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
 			data.QuadVertexBufferPtr->Color = tintColor;
 			data.QuadVertexBufferPtr->TextureIndex = static_cast<float>(textureIndex);
-			data.QuadVertexBufferPtr->TextureCoords = sprite->m_TextureCoords[i];
+			data.QuadVertexBufferPtr->TextureCoords = textureCoords[i];
 			data.QuadVertexBufferPtr++;
 		}
 

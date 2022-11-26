@@ -8,6 +8,8 @@
 
 #include <fstream>
 
+#define PROTON_SERIALIZER_INDENT_JSON 0
+
 namespace proton {
 
 	Scene* SceneSerializer::m_Scene = nullptr;
@@ -57,6 +59,27 @@ namespace proton {
 			
 			jsonObj["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
 		}
+		
+		// Serialize TilemapSpriteComponent
+		if (entity.HasComponent<TilemapSpriteComponent>())
+		{
+			auto& tilemap = entity.GetComponent<TilemapSpriteComponent>();
+			auto& spritesheet = tilemap.Spritesheet;
+			
+			if (spritesheet)
+				jsonObj["TilemapSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
+			else
+				jsonObj["TilemapSprite"]["Spritesheet"] = 0;
+
+			jsonObj["TilemapSprite"]["Width"] = tilemap.Width;
+			jsonObj["TilemapSprite"]["Height"] = tilemap.Height;
+			
+			for (const auto& column : tilemap.Tilemap)
+			{
+				for (const auto& tile : column)
+					jsonObj["TilemapSprite"]["Tilemap"].push_back({ tile.x, tile.y });
+			}
+		}
 
 		// Serialize ScriptComponent
 		if (entity.HasComponent<ScriptComponent>())
@@ -98,7 +121,11 @@ namespace proton {
 		});
 
 		std::ofstream out(filepath);
-		out << jsonObj.dump(4);
+		#if PROTON_SERIALIZER_INDENT_JSON
+			out << jsonObj.dump(4);
+		#else
+			out << jsonObj;
+		#endif
 		out.close();
 		return true;
 	}
@@ -146,9 +173,9 @@ namespace proton {
 					spriteComponent.Sprite = CreateShared<Sprite>(
 						AssetsManager::GetSpriteSheet(sprite["Texture"]),
 						sprite["TilePos"][0], sprite["TilePos"][1],
-						sprite["TileSize"][0], sprite["TileSize"][1]
-					);
-				} else
+						sprite["TileSize"][0], sprite["TileSize"][1]);
+				} 
+				else
 				{
 					spriteComponent.Sprite 
 						= CreateShared<Sprite>(AssetsManager::GetTexture(sprite["Texture"]));
@@ -160,6 +187,25 @@ namespace proton {
 			
 			json& color = jsonObj["Sprite"]["Color"];
 			spriteComponent.Color = { color[0], color[1], color[2], color[3] };
+		}
+
+		// Deserialize TilemapSpriteComponent
+		if (jsonObj.contains("TilemapSprite"))
+		{
+			uint32_t width = jsonObj["TilemapSprite"]["Width"];
+			uint32_t height = jsonObj["TilemapSprite"]["Height"];
+
+			auto& tilemap = entity.AddComponent<TilemapSpriteComponent>(
+					AssetsManager::GetSpriteSheet(jsonObj["TilemapSprite"]["Spritesheet"]),
+					width, height);
+
+			int i = 0;
+			for (auto& jsonCoords : jsonObj["TilemapSprite"]["Tilemap"])
+			{
+				tilemap.Tilemap[i / height][i % height] 
+					= glm::ivec2{ jsonCoords[0], jsonCoords[1] };
+				i++;
+			}
 		}
 
 		// Deserialize scripts

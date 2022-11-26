@@ -20,6 +20,9 @@ namespace proton {
 		void DestroyAllEntities();
 
 		void OnUpdate(float ts);
+
+		Entity FindByTag(const std::string& tag);
+		std::vector<Entity> FindAllByTag(const std::string& tag);
 		
 		void SetPrimaryCamera(Entity& cameraEntity);
 		void SetPrimaryCamera(Shared<Camera> camera);

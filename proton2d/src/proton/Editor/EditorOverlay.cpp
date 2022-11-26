@@ -27,6 +27,7 @@ namespace proton {
 
 	void EditorOverlay::OnCreate()
 	{
+		// ImGui setup
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
@@ -158,16 +159,14 @@ namespace proton {
 	{
 		static std::vector<std::string> directoryScenes = GetScenesFromDirectory();
 		static std::string filename = directoryScenes.size() ? directoryScenes[0].c_str() : "No scenes found";
-		static int filenameIndex = 0;
-		static bool comboPlaceholder = true;
+		static int filenameIndex = -1;
 		static bool createNewScenePopup = false;
 
 		ImGui::Begin("Scene##serialization_panel");
 
-		if (ImGui::BeginCombo("##select_path", comboPlaceholder ? "Select scene..." : 
+		if (ImGui::BeginCombo("##select_path", filenameIndex < 0 ? "Select scene..." :
 			(directoryScenes.size() ? directoryScenes[filenameIndex].c_str() : "No scenes found")))
 		{
-			comboPlaceholder = false;
 			directoryScenes = GetScenesFromDirectory();
 
 			if (ImGui::Selectable("Create new scene"))
@@ -206,7 +205,7 @@ namespace proton {
 			ImGui::InputText("##new_scene", sceneName, 128);
 			ImGui::SameLine();
 
-			if (ImGui::Button("Create##new_scene", { 75, 25 }))
+			if (ImGui::Button("Create##new_scene", { 75, 25 }) && strlen(sceneName))
 			{
 				std::string filepath = "scenes/" + std::string(sceneName) + ".json";
 				
@@ -236,14 +235,15 @@ namespace proton {
 			ImGui::EndPopup();
 		}
 
-		if (ImGui::Button("Load", { 75, 25 }))
+		ImGui::Dummy({ 0, 3.0f });
+		if (ImGui::Button("Load", { 75, 25 }) && filenameIndex >= 0)
 		{
 			m_ActiveScene->DestroyAllEntities();
 			SceneSerializer::Deserialize("scenes/" + directoryScenes[filenameIndex] + ".json");
 		}
 		ImGui::SameLine();
 
-		if (ImGui::Button("Save", { 75, 25 }))
+		if (filenameIndex != -1 && ImGui::Button("Save", { 75, 25 }))
 			SceneSerializer::Serialize("scenes/" + directoryScenes[filenameIndex] + ".json");
 
 		ImGui::End();
@@ -251,10 +251,19 @@ namespace proton {
 
 	void EditorOverlay::SetSceneContext(Scene* context)
 	{
+	#ifndef PROTON_DISTRIBUTION
 		s_Instance->m_ActiveScene = context;
 		s_Instance->m_Inspector.m_ActiveScene = context;
 		context->SetPrimaryCamera(s_Instance->m_CameraController.GetCamera());
 		SceneSerializer::SetContext(context);
+	#endif
+	}
+
+	void EditorOverlay::SetInspectorContext(Entity entity)
+	{
+	#ifndef PROTON_DISTRIBUTION
+		s_Instance->m_Inspector.m_SelectedEntity = entity;
+	#endif
 	}
 
 	void EditorOverlay::BeginImGuiRender()

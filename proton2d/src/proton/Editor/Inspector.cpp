@@ -9,6 +9,8 @@
 
 namespace proton {
 
+	static std::string s_SpriteComponentTextureSource;
+
 	void Inspector::OnImGuiRender()
 	{
 		if (m_ActiveScene)
@@ -37,7 +39,7 @@ namespace proton {
 							m_SelectedEntity.AddComponent<SpriteComponent>();
 					}
 
-					if (ImGui::BeginMenu("Script component"))
+					if (ImGui::BeginMenu("Script"))
 					{
 						for (auto& [scriptName, addScriptFunction] : ScriptFactory::GetScripts())
 						{
@@ -59,14 +61,11 @@ namespace proton {
 				{
 					m_SelectedEntity.Destroy();
 				}
+				ImGui::Dummy({ 0.0f, 5.0f });
 
 				////////////////////////////
 				// Entity components
 				////////////////////////////
-
-				ImGui::Dummy({ 0.0f, 5.0f });
-				ImGui::Text("Attached components:");
-				ImGui::Dummy({ 0.0f, 5.0f });
 
 				// Tag Component UI
 				if (m_SelectedEntity.HasComponent<TagComponent>())
@@ -130,7 +129,7 @@ namespace proton {
 					DrawComponentUI<SpriteComponent>("Sprite", [&](auto& component)
 					{
 						Shared<Sprite>& sprite = component.Sprite;
-						std::string& textureSource = m_SpriteComponentTextureSource;
+						std::string& textureSource = s_SpriteComponentTextureSource;
 						
 						// If component has sprite assigned then store it's path
 						if (sprite && !textureSource.size())
@@ -305,7 +304,7 @@ namespace proton {
 	void Inspector::SetSelectionContext(Entity entity)
 	{
 		m_SelectedEntity = entity;
-		m_SpriteComponentTextureSource.clear();
+		s_SpriteComponentTextureSource.clear();
 	}
 
 }
