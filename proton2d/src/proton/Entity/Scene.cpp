@@ -143,12 +143,12 @@ namespace proton {
 		}
 
 		// Render entities with TilemapSpriteComponent
-		auto renderableTilemapSprite = m_Registry.group<TilemapSpriteComponent>(entt::get<TransformComponent, RelationshipComponent>);
+		auto renderableTilemapSprite = m_Registry.group<TilemapSpriteComponent>(entt::get<TransformComponent>);
 		for (auto e : renderableTilemapSprite)
 		{
 			PROFILE_SCOPE("Entity_Render_TilemapSprite");
-			auto [transform, tilemap, relationship] = renderableTilemapSprite.get<TransformComponent, TilemapSpriteComponent, RelationshipComponent>(e);
-			auto& spritesheet = tilemap.Spritesheet;
+			auto [transform, tilemap] = renderableTilemapSprite.get<TransformComponent, TilemapSpriteComponent>(e);
+			auto& spritesheet = tilemap.TilemapSprite.m_Spritesheet;
 			if (spritesheet)
 			{
 				// Tilemap Entity transform matrix
@@ -157,7 +157,7 @@ namespace proton {
 					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f });
 
 				uint32_t x = 0, y = 0;
-				for (auto& column : tilemap.Tilemap)
+				for (auto& column : tilemap.TilemapSprite.m_Tilemap)
 				{
 					for (auto& tile : column)
 					{
@@ -165,8 +165,8 @@ namespace proton {
 						{
 							// Tile local transform matrix
 							glm::mat4 tileTransformMatrix = glm::translate(glm::mat4(1.0f), {
-									(x - tilemap.Width / 2.0f) * transform.Scale.x,
-									(y - tilemap.Height / 2.0f) * transform.Scale.y, 0
+									(x - tilemap.TilemapSprite.m_Width / 2.0f + 0.5f) * transform.Scale.x,
+									(y - tilemap.TilemapSprite.m_Height / 2.0f + 0.5f) * transform.Scale.y, 0
 								}) * glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f });
 
 							Renderer::DrawQuad(transformMatrix * tileTransformMatrix, spritesheet->GetTexture(),

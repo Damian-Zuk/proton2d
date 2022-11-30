@@ -4,6 +4,7 @@
 #include "proton/Core/Window.h"
 #include "proton/Entity/Components.h"
 #include "proton/Assets/SceneSerializer.h"
+#include "proton/Core/Utils.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -13,7 +14,6 @@
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <filesystem>
 #include <fstream>
 
 namespace proton {
@@ -69,6 +69,7 @@ namespace proton {
 				Entity entity = m_ActiveScene->CreateEntity();
 				if (m_Inspector.m_SelectedEntity)
 					m_Inspector.m_SelectedEntity.AddChildEntity(entity);
+				m_Inspector.SetSelectionContext(entity);
 			}
 			ImGui::Dummy({0.0f, 1.0f});
 
@@ -118,7 +119,7 @@ namespace proton {
 	{
 		auto& relationship = entity.GetComponent<RelationshipComponent>();
 		
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
 		
 		if (m_Inspector.m_SelectedEntity == entity)
 			flags |= ImGuiTreeNodeFlags_Selected;
@@ -147,27 +148,20 @@ namespace proton {
 		}
 	}
 
-	static std::vector<std::string> GetScenesFromDirectory()
-	{
-		std::vector<std::string> directoryScenes;
-		for (const auto& entry : std::filesystem::directory_iterator("scenes"))
-			directoryScenes.emplace_back(entry.path().stem().generic_string());
-		return directoryScenes;
-	}
-
 	void EditorOverlay::DrawSceneSerializationPanel()
 	{
-		static std::vector<std::string> directoryScenes = GetScenesFromDirectory();
-		static std::string filename = directoryScenes.size() ? directoryScenes[0].c_str() : "No scenes found";
+		static std::vector<std::string> directoryScenes = GetFilesFromDirectory("scenes");
 		static int filenameIndex = -1;
+		static std::string filename = directoryScenes.size() ? directoryScenes[0].c_str() : "No scenes found";
 		static bool createNewScenePopup = false;
 
 		ImGui::Begin("Scene##serialization_panel");
 
+		// Level select combo
 		if (ImGui::BeginCombo("##select_path", filenameIndex < 0 ? "Select scene..." :
 			(directoryScenes.size() ? directoryScenes[filenameIndex].c_str() : "No scenes found")))
 		{
-			directoryScenes = GetScenesFromDirectory();
+			directoryScenes = GetFilesFromDirectory("scenes");
 
 			if (ImGui::Selectable("Create new scene"))
 				createNewScenePopup = true;
@@ -193,10 +187,11 @@ namespace proton {
 			createNewScenePopup = false;
 		}
 		
+		// Create new scene popup
 		if (ImGui::BeginPopup("Create new scene##popup"))
 		{
 			static char sceneName[128] = { 0 };
-			static bool emptyScene = true;
+			static bool keepContent = true;
 			ImGui::Text("Create new scene");
 			ImGui::Separator();
 			ImGui::Text("Name");
@@ -209,7 +204,7 @@ namespace proton {
 			{
 				std::string filepath = "scenes/" + std::string(sceneName) + ".json";
 				
-				if (emptyScene)
+				if (!keepContent)
 				{
 					std::ofstream file(filepath);
 					file << "{\"Scene name\": \"Sample scene\"}";
@@ -219,7 +214,7 @@ namespace proton {
 				else
 					SceneSerializer::Serialize(filepath);
 					
-				directoryScenes = GetScenesFromDirectory();
+				directoryScenes = GetFilesFromDirectory("scenes");
 				int index = 0;
 				for (const auto& entry : directoryScenes)
 				{
@@ -230,11 +225,12 @@ namespace proton {
 				ImGui::CloseCurrentPopup();
 			}
 
-			ImGui::Checkbox("Empty scene##new_scene", &emptyScene);
+			ImGui::Checkbox("Keep current scene content##new_scene", &keepContent);
 
 			ImGui::EndPopup();
 		}
 
+		// Load / Save Buttons
 		ImGui::Dummy({ 0, 3.0f });
 		if (ImGui::Button("Load", { 75, 25 }) && filenameIndex >= 0)
 		{
@@ -262,7 +258,7 @@ namespace proton {
 	void EditorOverlay::SetInspectorContext(Entity entity)
 	{
 	#ifndef PROTON_DISTRIBUTION
-		s_Instance->m_Inspector.m_SelectedEntity = entity;
+		s_Instance->m_Inspector.SetSelectionContext(entity);
 	#endif
 	}
 

@@ -64,21 +64,15 @@ namespace proton {
 		if (entity.HasComponent<TilemapSpriteComponent>())
 		{
 			auto& tilemap = entity.GetComponent<TilemapSpriteComponent>();
-			auto& spritesheet = tilemap.Spritesheet;
+			auto& spritesheet = tilemap.TilemapSprite.GetSpritesheet();
 			
 			if (spritesheet)
 				jsonObj["TilemapSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
-			else
-				jsonObj["TilemapSprite"]["Spritesheet"] = 0;
 
-			jsonObj["TilemapSprite"]["Width"] = tilemap.Width;
-			jsonObj["TilemapSprite"]["Height"] = tilemap.Height;
-			
-			for (const auto& column : tilemap.Tilemap)
-			{
-				for (const auto& tile : column)
-					jsonObj["TilemapSprite"]["Tilemap"].push_back({ tile.x, tile.y });
-			}
+			auto [width, height] = tilemap.TilemapSprite.GetSize();
+			jsonObj["TilemapSprite"]["Width"] = width;
+			jsonObj["TilemapSprite"]["Height"] = height;
+			jsonObj["TilemapSprite"]["BlockEdges"] = tilemap.TilemapSprite.GetBlockEdges();
 		}
 
 		// Serialize ScriptComponent
@@ -192,20 +186,13 @@ namespace proton {
 		// Deserialize TilemapSpriteComponent
 		if (jsonObj.contains("TilemapSprite"))
 		{
-			uint32_t width = jsonObj["TilemapSprite"]["Width"];
-			uint32_t height = jsonObj["TilemapSprite"]["Height"];
+			auto& tilemap = entity.AddComponent<TilemapSpriteComponent>();
+			tilemap.TilemapSprite.SetSize(jsonObj["TilemapSprite"]["Width"], jsonObj["TilemapSprite"]["Height"]);
+			tilemap.TilemapSprite.SetBlockEdges(jsonObj["TilemapSprite"]["BlockEdges"]);
+			tilemap.TilemapSprite.GenerateTilemapBlock();
 
-			auto& tilemap = entity.AddComponent<TilemapSpriteComponent>(
-					AssetsManager::GetSpriteSheet(jsonObj["TilemapSprite"]["Spritesheet"]),
-					width, height);
-
-			int i = 0;
-			for (auto& jsonCoords : jsonObj["TilemapSprite"]["Tilemap"])
-			{
-				tilemap.Tilemap[i / height][i % height] 
-					= glm::ivec2{ jsonCoords[0], jsonCoords[1] };
-				i++;
-			}
+			if (jsonObj["TilemapSprite"].contains("Spritesheet"))
+				tilemap.TilemapSprite.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonObj["TilemapSprite"]["Spritesheet"]));
 		}
 
 		// Deserialize scripts

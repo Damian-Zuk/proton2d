@@ -17,6 +17,8 @@ namespace proton {
 		static Shared<Texture> GetTexture(const std::string& keyPath); 
 		// Texture not auto-loaded
 		static Shared<SpriteSheet> GetSpriteSheet(const std::string& keyPath); 
+
+		static std::unordered_map<std::string, Shared<SpriteSheet>>& GetSpritesheets();
 	};
 
 }

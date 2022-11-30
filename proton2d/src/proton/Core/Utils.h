@@ -8,5 +8,7 @@
 namespace proton {
 
 	std::string ReadFileBinary(const std::string& filepath);
+	
+	std::vector<std::string> GetFilesFromDirectory(const std::string& directory);
 
 }

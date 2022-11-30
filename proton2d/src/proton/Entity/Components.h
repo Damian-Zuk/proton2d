@@ -1,6 +1,7 @@
 #pragma once
 
 #include "proton/Graphics/Sprite.h"
+#include "proton/Graphics/TilemapSprite.h"
 #include "proton/Graphics/Camera.h"
 
 #include <entt/entity/entity.hpp>
@@ -26,23 +27,13 @@ namespace proton {
 
 	struct SpriteComponent
 	{
-		Shared<proton::Sprite> Sprite = nullptr;
+		Shared<Sprite> Sprite = nullptr;
 		glm::vec4 Color { 1.0f };
 	};
 
 	struct TilemapSpriteComponent
 	{
-		TilemapSpriteComponent(const Shared<SpriteSheet>& spritesheet, uint32_t width, uint32_t height)
-			: Spritesheet(spritesheet), Width(width), Height(height)
-		{
-			Tilemap.resize(width);
-			for (auto& column : Tilemap)
-				column.resize(height, TILEMAP_BLANK_TILE);
-		}
-
-		Shared<SpriteSheet> Spritesheet = nullptr;
-		uint32_t Width, Height;
-		std::vector<std::vector<glm::ivec2>> Tilemap; // Tilemap[y][x]
+		TilemapSprite TilemapSprite;
 		glm::vec4 Color{ 1.0f };
 	};
 

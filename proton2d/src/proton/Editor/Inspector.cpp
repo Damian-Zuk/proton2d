@@ -3,6 +3,7 @@
 #include "proton/Assets/ScriptFactory.h"
 #include "proton/Assets/AssetsManager.h"
 #include "proton/Entity/Components.h"
+#include "proton/Core/Utils.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -29,14 +30,20 @@ namespace proton {
 				{
 					if (!m_SelectedEntity.HasComponent<TransformComponent>())
 					{
-						if (ImGui::MenuItem("Transform component"))
+						if (ImGui::MenuItem("Transform"))
 							m_SelectedEntity.AddComponent<TransformComponent>();
 					}
 
 					if (!m_SelectedEntity.HasComponent<SpriteComponent>())
 					{
-						if (ImGui::MenuItem("Sprite component"))
+						if (ImGui::MenuItem("Sprite"))
 							m_SelectedEntity.AddComponent<SpriteComponent>();
+					}
+
+					if (!m_SelectedEntity.HasComponent<TilemapSpriteComponent>())
+					{
+						if (ImGui::MenuItem("Tilemap sprite"))
+							m_SelectedEntity.AddComponent<TilemapSpriteComponent>();
 					}
 
 					if (ImGui::BeginMenu("Script"))
@@ -90,13 +97,13 @@ namespace proton {
 						ImGui::Text("Position");
 						ImGui::NextColumn();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##P_X", &component.Position.x, 0.01f, 0.0f, 0.0f, "%.2f");
+						ImGui::DragFloat("##P_X", &component.Position.x, 0.01f, 0.0f, 0.0f, "%.3f");
 						ImGui::SameLine();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##P_Y", &component.Position.y, 0.01f, 0.0f, 0.0f, " % .2f");
+						ImGui::DragFloat("##P_Y", &component.Position.y, 0.01f, 0.0f, 0.0f, " %.3f");
 						ImGui::SameLine();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##P_Z", &component.Position.z, 0.0001f, 0.0f, 0.0f, "%.2f");
+						ImGui::DragFloat("##P_Z", &component.Position.z, 0.0001f, 0.0f, 0.0f, "%.3f");
 						ImGui::Columns(1);
 
 						// Draw Scale control
@@ -105,10 +112,10 @@ namespace proton {
 						ImGui::Text("Scale");
 						ImGui::NextColumn();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##S_X", &component.Scale.x, 0.01f, 0.0f, 0.0f, "%.2f");
+						ImGui::DragFloat("##S_X", &component.Scale.x, 0.01f, 0.0f, 0.0f, "%.3f");
 						ImGui::SameLine();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##S_Y", &component.Scale.y, 0.01f, 0.0f, 0.0f, "%.2f");
+						ImGui::DragFloat("##S_Y", &component.Scale.y, 0.01f, 0.0f, 0.0f, "%.3f");
 						ImGui::Columns(1);
 
 						// Draw Rotation control
@@ -117,7 +124,7 @@ namespace proton {
 						ImGui::Text("Rotation");;
 						ImGui::NextColumn();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##R", &component.Rotation, 0.2f, 0.0f, 0.0f, "%.2f");
+						ImGui::DragFloat("##R", &component.Rotation, 0.2f, 0.0f, 0.0f, "%.3f");
 
 						ImGui::Columns(1);
 					});
@@ -255,6 +262,110 @@ namespace proton {
 					});
 				}
 
+				if (m_SelectedEntity.HasComponent<TilemapSpriteComponent>())
+				{
+					DrawComponentUI<TilemapSpriteComponent>("Tilemap sprite", [&](auto& component)
+						{
+							static int spritesheetIndex = -1;
+
+							// TODO: optimize this maybe
+							std::vector<std::string> spritesheets;
+							for (auto& kv : AssetsManager::GetSpritesheets())
+								spritesheets.emplace_back(kv.first);
+
+							std::string placeholder;
+							if (spritesheetIndex == -1)
+							{
+								if (component.TilemapSprite.m_Spritesheet)
+									placeholder = component.TilemapSprite.m_Spritesheet->GetTexture()->GetPath();
+								else
+									placeholder = "Select spritesheet...";
+							}
+							else
+								placeholder = spritesheets[spritesheetIndex];
+
+							// Select spritesheet
+							ImGui::Text("Spritesheet:");
+							if (ImGui::BeginCombo("##tilemap_comp_select_spritesheet", placeholder.c_str()))
+							{
+								int index = 0;
+								for (const auto& name : spritesheets)
+								{
+									if (ImGui::Selectable(name.c_str(), spritesheetIndex == index))
+										spritesheetIndex = index;
+
+									if (spritesheetIndex == index)
+										ImGui::SetItemDefaultFocus();
+									index++;
+								}
+								ImGui::EndCombo();
+							}
+
+
+							// Set button
+							ImGui::SameLine();
+							if (ImGui::Button("Set##tilemap_comp_select_spritesheet", {50.0f, 25.0f}) && spritesheetIndex >= 0)
+							{
+								component.TilemapSprite.m_Spritesheet = AssetsManager::GetSpriteSheet(spritesheets[spritesheetIndex]);
+								component.TilemapSprite.GenerateTilemapBlock();
+							}
+
+							ImGui::Dummy({ 10.0f, 0.0f });
+
+							// Width and height controls
+							if (ImGui::InputInt("Width", (int*)&component.TilemapSprite.m_Width))
+							{
+								component.TilemapSprite.SetSize(
+									std::max(*(int*)&component.TilemapSprite.m_Width, 1), component.TilemapSprite.m_Height);
+								component.TilemapSprite.GenerateTilemapBlock();
+							}
+							if (ImGui::InputInt("Height", (int*)&component.TilemapSprite.m_Height))
+							{
+								component.TilemapSprite.SetSize(
+									component.TilemapSprite.m_Width, std::max(*(int*)&component.TilemapSprite.m_Height, 1));
+								component.TilemapSprite.GenerateTilemapBlock();
+							}
+
+							ImGui::Dummy({ 10.0f, 0.0f });
+
+							bool left        = component.TilemapSprite.m_BlockEdges & 1;
+							bool right       = component.TilemapSprite.m_BlockEdges & 2;
+							bool top         = component.TilemapSprite.m_BlockEdges & 4;
+							bool bottom      = component.TilemapSprite.m_BlockEdges & 8;
+							bool topLeft     = component.TilemapSprite.m_BlockEdges & 16;
+							bool topRight    = component.TilemapSprite.m_BlockEdges & 32;
+							bool bottomLeft  = component.TilemapSprite.m_BlockEdges & 64;
+							bool bottomRight = component.TilemapSprite.m_BlockEdges & 128;
+							uint8_t before = component.TilemapSprite.m_BlockEdges;
+
+							// Change edges and corners texture
+							ImGui::Text("Toggle edges texture: ");
+							ImGui::Checkbox("##tb_top_left_corner", &topLeft);
+							ImGui::SameLine();
+							ImGui::Checkbox("##tb_top_edge", &top);
+							ImGui::SameLine();
+							ImGui::Checkbox("##tb_top_right_corner", &topRight);
+							
+							ImGui::Checkbox("##tb_left_edge", &left);
+							ImGui::SameLine(); ImGui::Dummy({ 24.0f, 0.0f }); ImGui::SameLine();
+							ImGui::Checkbox("##tb_right_edge", &right);
+
+							ImGui::Checkbox("##tb_bottom_left_corner", &bottomLeft);
+							ImGui::SameLine();
+							ImGui::Checkbox("##tb_bottom_edge", &bottom);
+							ImGui::SameLine();
+							ImGui::Checkbox("##tb_bottom_right_corner", &bottomRight);
+
+							component.TilemapSprite.m_BlockEdges = left * 1 + right * 2 + top * 4 + bottom * 8
+								+ topLeft * 16 + topRight * 32 + bottomLeft * 64 + bottomRight * 128;
+
+							ImGui::Dummy({ 0, 3.0f });
+
+							if (before != component.TilemapSprite.m_BlockEdges)
+								component.TilemapSprite.GenerateTilemapBlock();
+					});
+				}
+
 				// Script Component UI
 				if (m_SelectedEntity.HasComponent<ScriptComponent>())
 				{
@@ -264,7 +375,8 @@ namespace proton {
 							ImGui::Text(scriptName.c_str());
 					});
 				}
-			}
+			}				
+	
 			ImGui::End();
 		}
 	}

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "proton/Core/Utils.h"
 
+#include <filesystem>
+
 namespace proton
 {
 	std::string ReadFileBinary(const std::string& filepath)
@@ -25,5 +27,13 @@ namespace proton
 			LOG_ERROR("Could not open file", filepath);
 
 		return result;
+	}
+
+	std::vector<std::string> GetFilesFromDirectory(const std::string& directory)
+	{
+		std::vector<std::string> directoryScenes;
+		for (const auto& entry : std::filesystem::directory_iterator(directory))
+			directoryScenes.emplace_back(entry.path().stem().generic_string());
+		return directoryScenes;
 	}
 }

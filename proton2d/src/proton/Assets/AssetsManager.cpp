@@ -70,4 +70,9 @@ namespace proton {
 
 		return data.SpriteSheets[keyPath];
 	}
+
+	std::unordered_map<std::string, Shared<SpriteSheet>>& AssetsManager::GetSpritesheets()
+	{
+		return data.SpriteSheets;
+	}
 }
