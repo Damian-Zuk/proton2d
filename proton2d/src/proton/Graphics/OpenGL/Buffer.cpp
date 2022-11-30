@@ -1,3 +1,11 @@
+/*
+* ------------------------------------------------------------------------------------------
+*  OpenGL vertex buffer and index buffer object API
+*  Based on Hazel Engine made by Cherno
+*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLBuffer.cpp
+* ------------------------------------------------------------------------------------------
+*/
+
 #include "pch.h"
 #include "proton/Graphics/OpenGL/Buffer.h"
 

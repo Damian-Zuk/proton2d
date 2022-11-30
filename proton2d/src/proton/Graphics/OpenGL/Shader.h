@@ -1,5 +1,12 @@
-#pragma once
+/*
+* ------------------------------------------------------------------------------------------
+*  OpenGL shader program API
+*  Based on Hazel Engine made by Cherno:
+*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLShader.h
+* ------------------------------------------------------------------------------------------
+*/
 
+#pragma once
 #include <glm/glm.hpp>
 #include <unordered_map>
 

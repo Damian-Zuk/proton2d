@@ -1,3 +1,11 @@
+/*
+* ------------------------------------------------------------------------------------------
+*  OpenGL uniform buffer object API
+*  Based on Hazel Engine made by Cherno:
+*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLUniformBuffer.cpp
+* ------------------------------------------------------------------------------------------
+*/
+
 #include "pch.h"
 #include "proton/Graphics/OpenGL/UniformBuffer.h"
 

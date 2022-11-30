@@ -1,3 +1,11 @@
+/*
+* ------------------------------------------------------------------------------------------
+*  OpenGL texture object API
+*  Based on Hazel Engine made by Cherno:
+*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLTexture.cpp
+* ------------------------------------------------------------------------------------------
+*/
+
 #include "pch.h"
 #include "proton/Graphics/OpenGL/Texture.h"
 

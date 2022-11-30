@@ -1,3 +1,11 @@
+/*
+* ------------------------------------------------------------------------------------------
+*  OpenGL vertex array object API
+*  Based on Hazel Engine made by Cherno:
+*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLVertexArray.h
+* ------------------------------------------------------------------------------------------
+*/
+
 #pragma once
 
 #include "proton/Core/Core.h"
