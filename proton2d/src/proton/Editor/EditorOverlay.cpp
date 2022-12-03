@@ -5,6 +5,7 @@
 #include "proton/Entity/Components.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Utils.h"
+#include "proton/Events/MouseEvents.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -34,7 +35,7 @@ namespace proton {
 		auto& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;// | ImGuiConfigFlags_ViewportsEnable;
 		
-		io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
+		io.Fonts->AddFontFromFileTTF(PROTON_ENGINE_ASSETS_DIR "Roboto.ttf", 18);
 
 		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -107,12 +108,67 @@ namespace proton {
 			m_DebugInfo.OnImGuiRender();
 			DrawSceneSerializationPanel();
 		}
+
 		ImGui::End();
 	}
 
 	void EditorOverlay::OnEvent(Event& event)
 	{
 		m_CameraController.OnEvent(event);
+
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e) 
+		{
+			// Select entity via left mouse button click
+			if (!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
+			&& !ImGui::IsWindowFocused(ImGuiHoveredFlags_AnyWindow))
+			{
+				glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
+				auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
+				bool foundAny = false;
+				for (auto entity : view)
+				{
+					auto& transform = view.get<TransformComponent>(entity);
+
+					float sinus = sin(glm::radians(transform.Rotation));
+					float cosinus = cos(glm::radians(transform.Rotation));
+					glm::vec2 point = mousePos;
+					if (transform.Rotation)
+					{
+						glm::vec2 rotationCenter = glm::vec2{ transform.Position.x, transform.Position.y };
+						point -= rotationCenter;
+						point = glm::vec2{
+							point.x * cosinus - point.y * sinus + rotationCenter.x,
+							point.x * sinus + point.y * cosinus + rotationCenter.y
+						};
+					}
+
+					const auto& position = transform.Position;
+					glm::vec2 scale;
+
+					if (m_ActiveScene->m_Registry.any_of<TilemapSpriteComponent>(entity))
+					{
+						auto& tilemap = m_ActiveScene->m_Registry.get<TilemapSpriteComponent>(entity);
+						auto [width, height] = tilemap.TilemapSprite.GetSize();
+						scale = { transform.Scale.x * width, transform.Scale.y * height };
+					}
+					else
+						scale = transform.Scale;
+
+					if (point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
+						&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f)
+					{
+						SetInspectorContext(Entity(m_ActiveScene, entity));
+						foundAny = true;
+						break;
+					}
+				}
+
+				if (!foundAny)
+					SetInspectorContext(Entity(m_ActiveScene, entt::null));
+			}
+			return true;
+		});
 	}
 
 	void EditorOverlay::DrawEntityTreeNode(Entity entity)
@@ -245,6 +301,11 @@ namespace proton {
 		ImGui::End();
 	}
 
+	void EditorOverlay::TryMouseSelectEntity()
+	{
+		
+	}
+
 	void EditorOverlay::SetSceneContext(Scene* context)
 	{
 	#ifndef PROTON_DISTRIBUTION
@@ -260,6 +321,11 @@ namespace proton {
 	#ifndef PROTON_DISTRIBUTION
 		s_Instance->m_Inspector.SetSelectionContext(entity);
 	#endif
+	}
+
+	Entity EditorOverlay::GetInspectorContext()
+	{
+		return s_Instance->m_Inspector.m_SelectedEntity;
 	}
 
 	void EditorOverlay::BeginImGuiRender()

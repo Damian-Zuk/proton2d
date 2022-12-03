@@ -3,10 +3,9 @@
 #include <memory>
 
 #define PROTON_ASSETS_DIR "assets/"
+#define PROTON_ENGINE_ASSETS_DIR "../proton2d/assets/"
 
-#ifdef PROTON_PLATFORM_WINDOWS
-
-#else
+#ifndef PROTON_PLATFORM_WINDOWS
 #error Unsuportted platform!
 #endif
 

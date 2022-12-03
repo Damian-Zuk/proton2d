@@ -1,7 +1,7 @@
 /*
 * ------------------------------------------------------------------------------------------
 *  OpenGL vertex buffer and index buffer object API
-*  Based on Hazel Engine made by Cherno
+*  From Hazel Engine made by Cherno
 *  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLBuffer.h
 * ------------------------------------------------------------------------------------------
 */

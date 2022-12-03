@@ -22,8 +22,6 @@ namespace proton {
 		float m_FrameTimeHistory[s_FrameTimePlotValuesCount] = {};
 		uint32_t m_FrameTimeValuesOffset = 0;
 
-		uint32_t m_RendererMaxQuads = 10000;
-
 		float m_RefreshStatsTimer = 0.0f;
 
 		friend class Application;

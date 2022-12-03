@@ -22,6 +22,7 @@ namespace proton {
 
 		static void SetSceneContext(Scene* context);
 		static void SetInspectorContext(Entity entity);
+		static Entity GetInspectorContext();
 
 	private:
 		void BeginImGuiRender();
@@ -30,8 +31,12 @@ namespace proton {
 		void DrawEntityTreeNode(Entity entity);
 		void DrawSceneSerializationPanel();
 
+		void TryMouseSelectEntity();
+
 	private:
 		static EditorOverlay* s_Instance;
+
+		bool m_DrawSelectedEntityOutline = true;
 
 		Inspector m_Inspector;
 		DebugInfo m_DebugInfo;
@@ -41,6 +46,8 @@ namespace proton {
 		Scene* m_ActiveScene = nullptr;
 
 		friend class Application;
+		friend class Scene;
+		friend class DebugInfo;
 	};
 
 }

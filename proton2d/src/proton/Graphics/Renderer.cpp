@@ -20,6 +20,12 @@ namespace proton {
 		float TextureIndex;
 	};
 
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+	};
+
 	static struct RendererData
 	{
 		uint32_t MaxQuads = 10000;
@@ -30,10 +36,19 @@ namespace proton {
 		Shared<VertexArray> QuadVertexArray;
 		Shared<VertexBuffer> QuadVertexBuffer;
 		Shared<Shader> QuadShader;
+
+		Shared<VertexArray> LineVertexArray;
+		Shared<VertexBuffer> LineVertexBuffer;
+		Shared<Shader> LineShader;
 		
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 		uint32_t QuadIndexCount = 0;
+
+		LineVertex* LineVertexBufferBase = nullptr;
+		LineVertex* LineVertexBufferPtr = nullptr;
+		uint32_t LineVertexCount = 0;
+		float LineWidth = 1.0f;
 
 		std::array<Shared<Texture>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1;
@@ -71,7 +86,8 @@ namespace proton {
 		InitQuadVertexArray();
 
 		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true); // white texture
-		data.QuadShader          = CreateShared<Shader>("assets/shaders/Quad2D.glsl");
+		data.QuadShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Quad2D.glsl");
+		data.LineShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Line2D.glsl");
 		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
 	}
 
@@ -99,6 +115,16 @@ namespace proton {
 			indicies[i] = offset + quadIndices[i % 6];
 		}
 
+		data.LineVertexArray = CreateShared<VertexArray>();
+
+		data.LineVertexBuffer = CreateShared<VertexBuffer>(data.MaxVertices * (uint32_t)sizeof(LineVertex));
+		data.LineVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "Position" },
+			{ ShaderDataType::Float4, "Color"    }
+			});
+		data.LineVertexArray->AddVertexBuffer(data.LineVertexBuffer);
+		data.LineVertexBufferBase = new LineVertex[data.MaxVertices];
+
 		// Create vertex array
 		data.QuadVertexArray = CreateShared<VertexArray>();
 		data.QuadVertexArray->AddVertexBuffer(data.QuadVertexBuffer);
@@ -109,6 +135,7 @@ namespace proton {
 	void Renderer::Shutdown()
 	{
 		delete[] data.QuadVertexBufferBase;
+		delete[] data.LineVertexBufferBase;
 	}
 
 	void Renderer::BeginScene(const Camera& camera)
@@ -129,6 +156,10 @@ namespace proton {
 	{
 		data.QuadIndexCount = 0;
 		data.QuadVertexBufferPtr = data.QuadVertexBufferBase;
+
+		data.LineVertexCount = 0;
+		data.LineVertexBufferPtr = data.LineVertexBufferBase;
+		
 		data.TextureSlotIndex = 1;
 	}
 
@@ -146,6 +177,17 @@ namespace proton {
 			data.QuadVertexArray->Bind();
 			glDrawElements(GL_TRIANGLES, data.QuadIndexCount, GL_UNSIGNED_INT, nullptr);
 			data.OpenGLDrawCalls++;
+		}
+
+		if (data.LineVertexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)data.LineVertexBufferPtr - (uint8_t*)data.LineVertexBufferBase);
+			data.LineVertexBuffer->SetData(data.LineVertexBufferBase, dataSize);
+
+			data.LineShader->Bind();
+			data.LineVertexArray->Bind();
+			glLineWidth(data.LineWidth);
+			glDrawArrays(GL_LINES, 0, data.LineVertexCount);
 		}
 	}
 
@@ -235,6 +277,49 @@ namespace proton {
 		data.QuadIndexCount += 6;
 	}
 
+	void Renderer::DrawLine(const glm::vec3& p0, glm::vec3& p1, const glm::vec4& color)
+	{
+		data.LineVertexBufferPtr->Position = p0;
+		data.LineVertexBufferPtr->Color = color;
+		data.LineVertexBufferPtr++;
+		
+		data.LineVertexBufferPtr->Position = p1;
+		data.LineVertexBufferPtr->Color = color;
+		data.LineVertexBufferPtr++;
+		
+		data.LineVertexCount += 2;
+	}
+
+	void Renderer::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	{
+		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
+		glm::vec3 p1 = glm::vec3(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
+		glm::vec3 p2 = glm::vec3(position.x + size.x * 0.5f, position.y + size.y * 0.5f, position.z);
+		glm::vec3 p3 = glm::vec3(position.x - size.x * 0.5f, position.y + size.y * 0.5f, position.z);
+
+		DrawLine(p0, p1, color);
+		DrawLine(p1, p2, color);
+		DrawLine(p2, p3, color);
+		DrawLine(p3, p0, color);
+	}
+
+	void Renderer::DrawRect(const glm::mat4& transform, const glm::vec4& color)
+	{
+		glm::vec3 lineVertices[4];
+		for (size_t i = 0; i < 4; i++)
+			lineVertices[i] = transform * QuadVertexPositions[i];
+
+		DrawLine(lineVertices[0], lineVertices[1], color);
+		DrawLine(lineVertices[1], lineVertices[2], color);
+		DrawLine(lineVertices[2], lineVertices[3], color);
+		DrawLine(lineVertices[3], lineVertices[0], color);
+	}
+
+	void Renderer::SetLineWidth(float width)
+	{
+		data.LineWidth = width;
+	}
+
 	void Renderer::SetClearColor(glm::vec4 color)
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
@@ -255,6 +340,11 @@ namespace proton {
 		data.MaxQuads = count;
 		data.MaxVertices = data.MaxQuads * 4;
 		data.MaxIndices = data.MaxQuads * 6;
+	}
+
+	void Renderer::ClearDepthBuffer()
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	uint32_t Renderer::GetDrawCallsCount()

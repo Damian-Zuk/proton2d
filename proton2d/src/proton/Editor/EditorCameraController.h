@@ -18,9 +18,9 @@ namespace proton {
 		const Shared<Camera> GetCamera() const { return m_Camera; }
 
 	private:
-		float m_AspectRatio;
 		Shared<Camera> m_Camera;
-		glm::vec2 m_CameraSpeed = glm::vec2(0.7f);
+		float m_AspectRatio = 16.0f / 9.0f;
+		float m_CameraSpeed = 3.0f;
 		float m_ZoomLevelTarget = 1.0f;
 		float m_CameraZoomSpeed = 0.10f;
 	};

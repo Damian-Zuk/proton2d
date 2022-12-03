@@ -51,10 +51,10 @@ namespace proton {
 			m_Scene->m_Registry.remove<T>(m_Handle);
 		}
 
-		template <typename T>
+		template <typename... TComponents>
 		bool HasComponent() const
 		{
-			return m_Scene->m_Registry.any_of<T>(m_Handle);
+			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
 

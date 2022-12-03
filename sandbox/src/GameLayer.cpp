@@ -14,7 +14,6 @@ void GameLayer::OnCreate()
 	REGISTER_SCRIPT(RotationScript);
 
 	m_Scene = CreateShared<Scene>("Sample scene");
-	m_Scene->CreateEntity("Level");
 }
 
 void GameLayer::OnUpdate(float ts)

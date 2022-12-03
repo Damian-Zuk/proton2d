@@ -8,6 +8,8 @@ namespace proton {
 	class TilemapSprite
 	{
 	public:
+		TilemapSprite();
+
 		void SetSpritesheet(const Shared<SpriteSheet>& spritesheet);
 
 		/*

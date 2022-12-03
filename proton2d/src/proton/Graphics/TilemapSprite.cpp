@@ -2,6 +2,10 @@
 #include "proton/Graphics/TilemapSprite.h"
 
 namespace proton {
+	TilemapSprite::TilemapSprite()
+	{
+		SetSize(1, 1);
+	}
 
 	void TilemapSprite::SetSpritesheet(const Shared<SpriteSheet>& spritesheet)
 	{

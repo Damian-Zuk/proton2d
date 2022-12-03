@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "proton/Editor/DebugInfo.h"
 #include "proton/Graphics/Renderer.h"
+#include "proton/Editor/EditorOverlay.h"
 
 #include "imgui.h"
 
@@ -39,6 +40,9 @@ namespace proton {
 			m_RefreshStatsTimer -= m_FrameTime;
 
 		ImGui::Begin("Debug info");
+
+		ImGui::Checkbox("Selected entity outline##debug_info", &EditorOverlay::s_Instance->m_DrawSelectedEntityOutline);
+
 		ImGui::Text("Frame time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
 
 		float max = 0.0f;
@@ -52,17 +56,6 @@ namespace proton {
 		ImGui::Text("Entities: %i (scripted: %i)", m_EntitiesCount, m_ScriptedEntitiesCount);
 		ImGui::Text("OpenGL draw calls: %i", Renderer::GetDrawCallsCount());
 		ImGui::Dummy({ 0.0f, 2.0f });
-		
-		ImGui::Text("Renderer quads limit per draw call:");
-		int input = m_RendererMaxQuads;
-		ImGui::PushItemWidth(75.0f);
-		if (ImGui::InputInt("##Max_Quads", &input, 0, 0) && input > 0)
-			m_RendererMaxQuads = input;
-
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-		if (ImGui::Button("Set", { 40.0f, 0.0f }))
-			Renderer::SetMaxQuadsCount(m_RendererMaxQuads);
 		
 		ImGui::End();
 

@@ -8,13 +8,9 @@
 namespace proton {
 
 	Camera::Camera(const glm::vec2& position, float aspectRatio)
-		: m_Position({ position.x, position.y, 0.0f })
+		: m_Position({ position.x, position.y, 0.0f }),
+		m_AspectRatio(aspectRatio > 0.0f ? aspectRatio : Application::Get().GetWindow().GetAspectRatio())
 	{
-		if (aspectRatio < 0.0f)
-			m_AspectRatio = Application::Get().GetWindow().GetAspectRatio();
-		else
-			m_AspectRatio = aspectRatio;
-
 		CalculateViewProjection();
 	}
 
@@ -57,8 +53,17 @@ namespace proton {
 
 	void Camera::CalculateViewProjection()
 	{
-		m_ViewProjection = glm::inverse(glm::translate(glm::mat4(1.0f), m_Position)
-			* glm::scale(glm::mat4(1.0f), glm::vec3(m_ZoomLevel * m_AspectRatio, m_ZoomLevel, m_ZoomLevel)));
+		glm::mat4 viewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), m_Position));
+		
+		m_Orthographic.Left = -m_OrthographicSize * m_AspectRatio * 0.5f * m_ZoomLevel;
+		m_Orthographic.Right = m_OrthographicSize * m_AspectRatio * 0.5f * m_ZoomLevel;
+		m_Orthographic.Bottom = -m_OrthographicSize * 0.5f * m_ZoomLevel;
+		m_Orthographic.Top = m_OrthographicSize * 0.5f * m_ZoomLevel;
+
+		glm::mat4 projectionMatrix = glm::ortho(m_Orthographic.Left, m_Orthographic.Right,
+			m_Orthographic.Bottom, m_Orthographic.Top, m_OrthographicNear, m_OrthographicFar);
+
+		m_ViewProjectionMatrix = projectionMatrix * viewMatrix;
 	}
 
 }

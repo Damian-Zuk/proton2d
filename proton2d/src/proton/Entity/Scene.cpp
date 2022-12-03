@@ -4,9 +4,11 @@
 #include "proton/Graphics/Renderer.h"
 #include "proton/Core/Application.h"
 #include "proton/Entity/EntityScript.h"
+#include "proton/Core/Input.h"
 
 #ifndef PROTON_DISTRIBUTION
 #include "proton/Editor/EditorOverlay.h"
+#include <imgui.h>
 #endif
 
 namespace proton {
@@ -130,7 +132,7 @@ namespace proton {
 
 			// Create transform matrix
 			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
-				* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f })
 				* glm::scale(glm::mat4(1.0f), outputScale);
 
 			//if (relationship.Parent != entt::null)
@@ -151,10 +153,9 @@ namespace proton {
 			auto& spritesheet = tilemap.TilemapSprite.m_Spritesheet;
 			if (spritesheet)
 			{
-				// Tilemap Entity transform matrix
+				// Tilemap entity transform matrix
 				glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
-					* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
-					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f });
+					* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f });
 
 				uint32_t x = 0, y = 0;
 				for (auto& column : tilemap.TilemapSprite.m_Tilemap)
@@ -178,6 +179,36 @@ namespace proton {
 				}
 			}
 		}
+
+#ifndef PROTON_DISTRIBUTION
+		// Draw selected entity outline
+		Entity selectedEntity = EditorOverlay::GetInspectorContext();
+		if (selectedEntity && EditorOverlay::s_Instance->m_DrawSelectedEntityOutline)
+		{
+			auto& transform = selectedEntity.GetComponent<TransformComponent>();
+			if (selectedEntity.HasComponent<SpriteComponent>())
+			{
+				glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), { transform.Position.x, transform.Position.y, 0.2f })
+					* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f })
+					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x + 0.05f, transform.Scale.y + 0.05f, 1.0f });
+
+				Renderer::SetLineWidth(0.1f);
+				Renderer::DrawRect(transformMatrix, { 255,255,255,255 });
+			}
+			if (selectedEntity.HasComponent<TilemapSpriteComponent>())
+			{
+				auto& tilemap = selectedEntity.GetComponent<TilemapSpriteComponent>().TilemapSprite;
+				auto& [width, height] = tilemap.GetSize();
+
+				glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), { transform.Position.x, transform.Position.y, 0.2f })
+					* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f })
+					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x * width + 0.05f, transform.Scale.y * height + 0.05f, 1.0f });
+
+				Renderer::SetLineWidth(0.1f);
+				Renderer::DrawRect(transformMatrix, { 255,255,255,255 });
+			}
+		}
+#endif
 
 		Renderer::EndScene();
 	}
@@ -206,6 +237,20 @@ namespace proton {
 	{
 		m_PrimaryCamera = camera;
 	}
+
+	glm::vec2 Scene::GetMouseWorldPosition()
+	{
+		Window& window = Application::Get().GetWindow();
+		uint32_t width = window.GetWidth(), height = window.GetHeight();
+		OrthoProjection ortho = m_PrimaryCamera->GetOrthoProjection();
+		glm::vec3 cameraPos = m_PrimaryCamera->GetPosition();
+		auto& [mouseX, mouseY] = Input::GetMousePosition();
+
+		return glm::vec2 {
+			mouseX / width * ortho.Right * 2.0f + cameraPos.x + ortho.Left,
+			mouseY / height * ortho.Bottom * 2.0f + cameraPos.y + ortho.Top
+		};
+}
 
 	size_t Scene::GetScriptedEntitiesCount() const
 	{

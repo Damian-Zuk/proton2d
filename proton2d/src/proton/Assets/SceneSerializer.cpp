@@ -8,7 +8,7 @@
 
 #include <fstream>
 
-#define PROTON_SERIALIZER_INDENT_JSON 0
+#define PROTON_SERIALIZER_INDENT_JSON 1
 
 namespace proton {
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "proton/Graphics/Camera.h"
+#include "proton/Events/Event.h"
 
 #include <entt/entt.hpp>
 
@@ -11,10 +12,10 @@ namespace proton {
 	class Scene
 	{
 	public:
-		Scene(const std::string& name = "Unnamed Scene");
+		Scene(const std::string& name = "Unnamed scene");
 		~Scene();
 
-		Entity CreateEntity(const std::string& name = "Unnamed Entity");
+		Entity CreateEntity(const std::string& name = "Unnamed entity");
 
 		void DestroyEntity(entt::entity entity);
 		void DestroyAllEntities();
@@ -28,6 +29,8 @@ namespace proton {
 		void SetPrimaryCamera(Shared<Camera> camera);
 		Shared<Camera> GetSceneCamera() { return m_PrimaryCamera; }
 
+		glm::vec2 GetMouseWorldPosition();
+
 		size_t GetEntitiesCount() const { return m_Registry.alive(); }
 		size_t GetScriptedEntitiesCount() const;
 	
@@ -39,6 +42,7 @@ namespace proton {
 	private:
 		std::string m_SceneName;
 		entt::registry m_Registry;
+		glm::vec2 m_MouseWorldPosition;
 		Shared<Camera> m_PrimaryCamera;
 		Camera m_DefaultCamera;
 

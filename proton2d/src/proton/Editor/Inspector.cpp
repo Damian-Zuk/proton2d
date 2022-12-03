@@ -363,6 +363,14 @@ namespace proton {
 
 							if (before != component.TilemapSprite.m_BlockEdges)
 								component.TilemapSprite.GenerateTilemapBlock();
+
+							// Tint color control
+							ImGui::Text("Tint color:");
+							ImGui::Dummy({ 0.0f, 3.0f });
+							ImGui::PushItemWidth(260.0f);
+							ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
+							ImGui::PopItemWidth();
+							ImGui::Dummy({ 0.0f, 10.0f });
 					});
 				}
 

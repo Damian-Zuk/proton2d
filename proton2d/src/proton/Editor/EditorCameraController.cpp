@@ -21,16 +21,16 @@ namespace proton {
 		if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
 		{
 			if (Input::IsKeyPressed(Key::W)) 
-				m_Camera->Move({ 0.0f, m_CameraSpeed.y * m_AspectRatio * ts * zoomLevel });
+				m_Camera->Move({ 0.0f, m_CameraSpeed * m_AspectRatio * ts * zoomLevel });
 
 			if (Input::IsKeyPressed(Key::A)) 
-				m_Camera->Move({ -m_CameraSpeed.x * ts * zoomLevel, 0.0f });
+				m_Camera->Move({ -m_CameraSpeed * ts * zoomLevel, 0.0f });
 
 			if (Input::IsKeyPressed(Key::S)) 
-				m_Camera->Move({ 0.0f, -m_CameraSpeed.y * m_AspectRatio * ts * zoomLevel });
+				m_Camera->Move({ 0.0f, -m_CameraSpeed * m_AspectRatio * ts * zoomLevel });
 
 			if (Input::IsKeyPressed(Key::D)) 
-				m_Camera->Move({ m_CameraSpeed.x * ts * zoomLevel, 0.0f });
+				m_Camera->Move({ m_CameraSpeed * ts * zoomLevel, 0.0f });
 		}
 
 		float zoomTargetDiff = glm::abs(m_ZoomLevelTarget - zoomLevel);

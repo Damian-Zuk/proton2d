@@ -18,7 +18,7 @@ namespace proton {
 
 	private:
 		Scene* m_ActiveScene;
-		Entity m_SelectedEntity;
+		Entity m_SelectedEntity; // Inspector Context
 
 		friend class EditorOverlay;
 	};
