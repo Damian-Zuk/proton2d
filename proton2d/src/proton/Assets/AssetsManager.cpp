@@ -75,4 +75,8 @@ namespace proton {
 	{
 		return data.SpriteSheets;
 	}
+	std::unordered_map<std::string, Shared<Texture>>& AssetsManager::GetTextures()
+	{
+		return data.Textures;
+	}
 }

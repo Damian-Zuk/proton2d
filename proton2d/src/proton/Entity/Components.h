@@ -1,5 +1,6 @@
 #pragma once
 
+#include "proton/Core/UUID.h"
 #include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/TilemapSprite.h"
 #include "proton/Graphics/Camera.h"
@@ -12,6 +13,11 @@
 #define TILEMAP_BLANK_TILE glm::ivec2{ -1, -1 }
 
 namespace proton {
+
+	struct IDComponent
+	{
+		UUID ID;
+	};
 
 	struct TagComponent
 	{

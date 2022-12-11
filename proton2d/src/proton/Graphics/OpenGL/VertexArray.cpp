@@ -36,17 +36,17 @@ namespace proton {
 
 	VertexArray::VertexArray()
 	{
-		glCreateVertexArrays(1, &m_OpenGL_ID);
+		glCreateVertexArrays(1, &m_Object_ID);
 	}
 
 	VertexArray::~VertexArray()
 	{
-		glDeleteVertexArrays(1, &m_OpenGL_ID);
+		glDeleteVertexArrays(1, &m_Object_ID);
 	}
 
 	void VertexArray::Bind() const
 	{
-		glBindVertexArray(m_OpenGL_ID);
+		glBindVertexArray(m_Object_ID);
 	}
 
 	void VertexArray::Unbind() const
@@ -58,7 +58,7 @@ namespace proton {
 	{
 		assert(vertexBuffer->GetLayout().GetElements().size() && "Vertex Buffer has no layout!");
 
-		glBindVertexArray(m_OpenGL_ID);
+		glBindVertexArray(m_Object_ID);
 		vertexBuffer->Bind();
 
 		const auto& layout = vertexBuffer->GetLayout();
@@ -124,7 +124,7 @@ namespace proton {
 
 	void VertexArray::SetIndexBuffer(const Shared<IndexBuffer>& indexBuffer)
 	{
-		glBindVertexArray(m_OpenGL_ID);
+		glBindVertexArray(m_Object_ID);
 		indexBuffer->Bind();
 
 		m_IndexBuffer = indexBuffer;

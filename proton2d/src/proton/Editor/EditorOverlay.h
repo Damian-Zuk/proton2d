@@ -31,8 +31,6 @@ namespace proton {
 		void DrawEntityTreeNode(Entity entity);
 		void DrawSceneSerializationPanel();
 
-		void TryMouseSelectEntity();
-
 	private:
 		static EditorOverlay* s_Instance;
 

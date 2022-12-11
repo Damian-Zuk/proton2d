@@ -28,7 +28,7 @@ namespace proton {
 
 	Shader::~Shader()
 	{
-		glDeleteProgram(m_OpenGL_ID);
+		glDeleteProgram(m_Object_ID);
 	}
 
 	void Shader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
@@ -68,7 +68,7 @@ namespace proton {
 			glShaderIDs[glShaderIDIndex++] = shader;
 		}
 
-		m_OpenGL_ID = program;
+		m_Object_ID = program;
 
 		glLinkProgram(program);
 
@@ -101,7 +101,7 @@ namespace proton {
 
 	void Shader::Bind() const
 	{
-		glUseProgram(m_OpenGL_ID);
+		glUseProgram(m_Object_ID);
 	}
 
 	void Shader::Unbind() const
@@ -111,49 +111,49 @@ namespace proton {
 
 	void Shader::SetInt(const std::string& name, int value)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniform1i(location, value);
 	}
 
 	void Shader::SetIntArray(const std::string& name, int* values, uint32_t count)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniform1iv(location, count, values);
 	}
 
 	void Shader::SetFloat(const std::string& name, float value)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniform1f(location, value);
 	}
 
 	void Shader::SetFloat2(const std::string& name, const glm::vec2& value)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniform2f(location, value.x, value.y);
 	}
 
 	void Shader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniform3f(location, value.x, value.y, value.z);
 	}
 
 	void Shader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniform4f(location, value.x, value.y, value.z, value.w);
 	}
 
 	void Shader::SetMat3(const std::string& name, const glm::mat3& matrix)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
 	void Shader::SetMat4(const std::string& name, const glm::mat4& matrix)
 	{
-		GLint location = glGetUniformLocation(m_OpenGL_ID, name.c_str());
+		GLint location = glGetUniformLocation(m_Object_ID, name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 

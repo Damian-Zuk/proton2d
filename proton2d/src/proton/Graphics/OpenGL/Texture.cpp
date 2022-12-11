@@ -18,8 +18,8 @@ namespace proton {
 		: m_Width(width), m_Height(height),
 		m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_OpenGL_ID);
-		glTextureStorage2D(m_OpenGL_ID, 1, m_InternalFormat, m_Width, m_Height);
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_Object_ID);
+		glTextureStorage2D(m_Object_ID, 1, m_InternalFormat, m_Width, m_Height);
 
 		SetFilterMode(TextureFilterMode::Nearest);
 		SetWrapMode(TextureWrapMode::Repeat);
@@ -61,13 +61,13 @@ namespace proton {
 
 			assert(m_InternalFormat & m_DataFormat && "Format not supported!");
 
-			glCreateTextures(GL_TEXTURE_2D, 1, &m_OpenGL_ID);
-			glTextureStorage2D(m_OpenGL_ID, 1, m_InternalFormat, m_Width, m_Height);
+			glCreateTextures(GL_TEXTURE_2D, 1, &m_Object_ID);
+			glTextureStorage2D(m_Object_ID, 1, m_InternalFormat, m_Width, m_Height);
 
 			SetFilterMode(TextureFilterMode::Nearest);
 			SetWrapMode(TextureWrapMode::Repeat);
 
-			glTextureSubImage2D(m_OpenGL_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+			glTextureSubImage2D(m_Object_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 
 			stbi_image_free(data);
 		}
@@ -75,14 +75,14 @@ namespace proton {
 
 	Texture::~Texture()
 	{
-		glDeleteTextures(1, &m_OpenGL_ID);
+		glDeleteTextures(1, &m_Object_ID);
 	}
 
 	void Texture::SetData(void* data, size_t size)
 	{
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
 		assert(size == m_Width * m_Height * bpp && "Data must be entire texture!");
-		glTextureSubImage2D(m_OpenGL_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+		glTextureSubImage2D(m_Object_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 
 	void Texture::SetFilterMode(TextureFilterMode mode)
@@ -90,13 +90,13 @@ namespace proton {
 		m_FilterMode = mode;
 		if (mode == TextureFilterMode::Nearest)
 		{
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTextureParameteri(m_Object_ID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTextureParameteri(m_Object_ID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		}
 		else if (mode == TextureFilterMode::Linear)
 		{
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTextureParameteri(m_Object_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTextureParameteri(m_Object_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 	}
 
@@ -121,12 +121,12 @@ namespace proton {
 		m_WrapModeX = xMode; m_WrapModeY = yMode;
 		GLenum sWrap = ProtonWrapModeToOpenGL(xMode);
 		GLenum tWrap = ProtonWrapModeToOpenGL(yMode);
-		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_S, sWrap);
-		glTextureParameteri(m_OpenGL_ID, GL_TEXTURE_WRAP_T, tWrap);
+		glTextureParameteri(m_Object_ID, GL_TEXTURE_WRAP_S, sWrap);
+		glTextureParameteri(m_Object_ID, GL_TEXTURE_WRAP_T, tWrap);
 	}
 
 	void Texture::Bind(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, m_OpenGL_ID);
+		glBindTextureUnit(slot, m_Object_ID);
 	}
 }

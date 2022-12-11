@@ -29,7 +29,7 @@ namespace proton {
 		const Shared<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
 
 	private:
-		uint32_t m_OpenGL_ID;
+		uint32_t m_Object_ID;
 		uint32_t m_VertexBufferIndex = 0;
 		std::vector<Shared<VertexBuffer>> m_VertexBuffers;
 		Shared<IndexBuffer> m_IndexBuffer;

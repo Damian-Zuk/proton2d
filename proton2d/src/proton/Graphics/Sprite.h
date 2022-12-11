@@ -15,13 +15,16 @@ namespace proton {
 
 		Shared<Texture> GetTexture();
 
+		// Get sheet size in pixels
 		std::pair<uint32_t, uint32_t> GetSheetSize() const;
+		// Get tile size in pixels
 		std::pair<uint32_t, uint32_t> GetTileSize() const;
+		// Get max tiles count that can fit into spritesheet
 		std::pair<uint32_t, uint32_t> GetMaxTilesCount() const;
 
-		const TextureCoords& GetTextureCoords(uint32_t x, uint32_t y) const;
-
 	private:
+		const TextureCoords& GetTextureCoords(uint32_t x, uint32_t y) const;
+		
 		std::vector<std::vector<TextureCoords>> m_TextureCoords;
 		Shared<Texture> m_Texture;
 
@@ -42,6 +45,7 @@ namespace proton {
 
 		void SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet);
 		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
+
 		void NextTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void PrevTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 

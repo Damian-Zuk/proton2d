@@ -2,6 +2,7 @@
 
 #include "proton/Graphics/Camera.h"
 #include "proton/Events/Event.h"
+#include "proton/Core/UUID.h"
 
 #include <entt/entt.hpp>
 
@@ -16,23 +17,24 @@ namespace proton {
 		~Scene();
 
 		Entity CreateEntity(const std::string& name = "Unnamed entity");
+		Entity CreateEntityWithID(UUID id, const std::string& name = "Unnamed entity");
 
-		void DestroyEntity(entt::entity entity);
+		void DestroyEntity(Entity entity);
 		void DestroyAllEntities();
 
-		void OnUpdate(float ts);
-
+		Entity FindByID(UUID id);
 		Entity FindByTag(const std::string& tag);
 		std::vector<Entity> FindAllByTag(const std::string& tag);
 		
-		void SetPrimaryCamera(Entity& cameraEntity);
 		void SetPrimaryCamera(Shared<Camera> camera);
-		Shared<Camera> GetSceneCamera() { return m_PrimaryCamera; }
+		Shared<Camera> GetPrimaryCamera();
 
-		glm::vec2 GetMouseWorldPosition();
+		glm::vec2 GetMouseWorldPosition() const;
 
-		size_t GetEntitiesCount() const { return m_Registry.alive(); }
-		size_t GetScriptedEntitiesCount() const;
+		uint32_t GetEntitiesCount() const;
+		uint32_t GetScriptedEntitiesCount() const;
+		
+		void OnUpdate(float ts);
 	
 	private:
 		void RenderScene(const Camera& camera);
@@ -42,7 +44,6 @@ namespace proton {
 	private:
 		std::string m_SceneName;
 		entt::registry m_Registry;
-		glm::vec2 m_MouseWorldPosition;
 		Shared<Camera> m_PrimaryCamera;
 		Camera m_DefaultCamera;
 

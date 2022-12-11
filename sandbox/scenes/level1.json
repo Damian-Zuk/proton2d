@@ -1,0 +1,310 @@
+{
+    "Scene name": "Sample scene",
+    "Entities": [
+        {
+            "ID": 11408318901811252360,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    9.69,
+                    28.51,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 18,
+                "Height": 4,
+                "BlockEdges": 125
+            }
+        },
+        {
+            "ID": 5002818924433962294,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "ID": 10350254501954566046,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    9.9,
+                    13.83,
+                    0.001
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 3,
+                "Height": 3,
+                "BlockEdges": 174
+            }
+        },
+        {
+            "ID": 9783218249449273734,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    4.47,
+                    15.38,
+                    0.001
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 3,
+                "Height": 3,
+                "BlockEdges": 93
+            }
+        },
+        {
+            "ID": 17237932787934215230,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    7.19,
+                    14.59,
+                    0.001
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 5,
+                "Height": 11,
+                "BlockEdges": 183
+            }
+        },
+        {
+            "ID": 13581737169537590351,
+            "Tag": "Player",
+            "Transform": {
+                "Position": [
+                    1.58751,
+                    3.81,
+                    0.009
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    5.0,
+                    5.0
+                ]
+            },
+            "Sprite": {
+                "Texture": "player-sheet.png",
+                "Flip": [
+                    false,
+                    false
+                ],
+                "TilePos": [
+                    4,
+                    0
+                ],
+                "TileSize": [
+                    1,
+                    1
+                ],
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Scripts": [
+                "PlayerScript"
+            ]
+        },
+        {
+            "ID": 8272029669088748554,
+            "Tag": "Box",
+            "Transform": {
+                "Position": [
+                    14.07,
+                    5.38,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "ID": 4184612299543310716,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    14.15,
+                    2.53,
+                    0.007
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 3,
+                "Height": 5,
+                "BlockEdges": 55
+            }
+        },
+        {
+            "ID": 17198748723466642269,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    9.69,
+                    1.6,
+                    0.008
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 2,
+                "Height": 3,
+                "BlockEdges": 55
+            }
+        },
+        {
+            "ID": 16938172434331193527,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    19.42,
+                    14.53,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 4,
+                "Height": 32,
+                "BlockEdges": 255
+            }
+        },
+        {
+            "ID": 17300330692052434970,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    2.17,
+                    8.91,
+                    0.001
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 15,
+                "Height": 3,
+                "BlockEdges": 190
+            }
+        },
+        {
+            "ID": 8327610645231503740,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    -5.93,
+                    4.41,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 4,
+                "Height": 12,
+                "BlockEdges": 255
+            }
+        },
+        {
+            "ID": 15150570906218397037,
+            "Tag": "Unnamed entity",
+            "Transform": {
+                "Position": [
+                    6.73,
+                    0.0,
+                    0.004
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "TilemapSprite": {
+                "Spritesheet": "level-sheet-1.png",
+                "Width": 24,
+                "Height": 3,
+                "BlockEdges": 204
+            }
+        }
+    ]
+}

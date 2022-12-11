@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "proton/Editor/Inspector.h"
-#include "proton/Assets/ScriptFactory.h"
+#include "proton/Entity/ScriptFactory.h"
 #include "proton/Assets/AssetsManager.h"
 #include "proton/Entity/Components.h"
 #include "proton/Core/Utils.h"
@@ -92,8 +92,7 @@ namespace proton {
 					DrawComponentUI<TransformComponent>("Transform", [](auto& component)
 					{
 						// Draw position control
-						ImGui::Columns(2);
-						ImGui::SetColumnWidth(0, 75.0f);
+						ImGui::Columns(2); ImGui::SetColumnWidth(0, 75.0f);
 						ImGui::Text("Position");
 						ImGui::NextColumn();
 						ImGui::PushItemWidth(75.0f);
@@ -121,7 +120,7 @@ namespace proton {
 						// Draw Rotation control
 						ImGui::Columns(2);
 						ImGui::SetColumnWidth(0, 75.0f);
-						ImGui::Text("Rotation");;
+						ImGui::Text("Rotation");
 						ImGui::NextColumn();
 						ImGui::PushItemWidth(75.0f);
 						ImGui::DragFloat("##R", &component.Rotation, 0.2f, 0.0f, 0.0f, "%.3f");
@@ -136,55 +135,41 @@ namespace proton {
 					DrawComponentUI<SpriteComponent>("Sprite", [&](auto& component)
 					{
 						Shared<Sprite>& sprite = component.Sprite;
-						std::string& textureSource = s_SpriteComponentTextureSource;
-						
-						// If component has sprite assigned then store it's path
-						if (sprite && !textureSource.size())
-							textureSource = sprite->GetTexture()->GetPath();
 
-						// Texutre source input
-						char buffer[256];
-						strcpy_s(buffer, sizeof(buffer), textureSource.c_str());
-						ImGui::Text("Texture source:");
-						ImGui::Dummy({ 0.0f, 3.0f });
-						ImGui::PushItemWidth(280.0f);
-						ImGui::InputText("##Texture_Source", buffer, sizeof(buffer));
-						ImGui::PopItemWidth();
-						textureSource = buffer;
+						std::string textureFilename = sprite ? sprite->GetTexture()->GetPath() : "Fill color";
 
-						// Set texture source button
-						if (ImGui::Button("Set texture", { 135.0f, 25.0f }))
+						// Select texture
+						ImGui::Text("Texture:");
+						if (ImGui::BeginCombo("##sprite_comp_select_texture", textureFilename.c_str()))
 						{
-							if (textureSource.size())
-							{
-								if (AssetsManager::SpriteSheetExists(textureSource))
-								{
-									// If sprite sheet exists then use it
-									auto& spriteSheet = AssetsManager::GetSpriteSheet(textureSource);
-									sprite = CreateShared<Sprite>(spriteSheet);
-								}
-								else
-								{
-									// Otherwise use full texture
-									auto& texture = AssetsManager::GetTexture(textureSource);
-									if (texture)
-										sprite = CreateShared<Sprite>(texture);
-								}
-								textureSource.clear();
-							}
-						}
+							if (ImGui::Selectable("Fill color"))
+								sprite = nullptr;
 
-						// Remove texture button
-						if (sprite)
-						{
-							ImGui::SameLine();
-							if (ImGui::Button("Remove texture", ImVec2(136.0f, 25.0f)) && sprite)
+							for (auto& kv : AssetsManager::GetTextures())
 							{
-								sprite.reset();
-								textureSource.clear();
+								bool isSelected = kv.first == textureFilename;
+
+								if (ImGui::Selectable(kv.first.c_str(), isSelected))
+								{
+									if (AssetsManager::SpriteSheetExists(kv.first))
+									{
+										auto& spriteSheet = AssetsManager::GetSpriteSheet(kv.first);
+										sprite = CreateShared<Sprite>(spriteSheet);
+									}
+									else
+									{
+										auto& texture = AssetsManager::GetTexture(kv.first);
+										if (texture)
+											sprite = CreateShared<Sprite>(texture);
+									}
+								}
+
+								if (isSelected)
+									ImGui::SetItemDefaultFocus();
 							}
-							ImGui::Dummy({ 0.0f, 10.0f });
+							ImGui::EndCombo();
 						}
+						ImGui::Dummy({ 0.0f, 10.0f });
 
 						// Tint color control
 						ImGui::Text("Tint color:");
@@ -266,50 +251,28 @@ namespace proton {
 				{
 					DrawComponentUI<TilemapSpriteComponent>("Tilemap sprite", [&](auto& component)
 						{
-							static int spritesheetIndex = -1;
-
-							// TODO: optimize this maybe
-							std::vector<std::string> spritesheets;
-							for (auto& kv : AssetsManager::GetSpritesheets())
-								spritesheets.emplace_back(kv.first);
-
-							std::string placeholder;
-							if (spritesheetIndex == -1)
-							{
-								if (component.TilemapSprite.m_Spritesheet)
-									placeholder = component.TilemapSprite.m_Spritesheet->GetTexture()->GetPath();
-								else
-									placeholder = "Select spritesheet...";
-							}
-							else
-								placeholder = spritesheets[spritesheetIndex];
+							auto& spritesheet = component.TilemapSprite.m_Spritesheet;
+							std::string filename = spritesheet ? spritesheet->GetTexture()->GetPath() : "Select...";
 
 							// Select spritesheet
 							ImGui::Text("Spritesheet:");
-							if (ImGui::BeginCombo("##tilemap_comp_select_spritesheet", placeholder.c_str()))
+							if (ImGui::BeginCombo("##tilemap_comp_select_spritesheet", filename.c_str()))
 							{
-								int index = 0;
-								for (const auto& name : spritesheets)
+								for (auto& kv : AssetsManager::GetSpritesheets())
 								{
-									if (ImGui::Selectable(name.c_str(), spritesheetIndex == index))
-										spritesheetIndex = index;
+									bool isSelected = filename == kv.first;
 
-									if (spritesheetIndex == index)
+									if (ImGui::Selectable(kv.first.c_str(), isSelected))
+									{
+										spritesheet = kv.second;
+										component.TilemapSprite.GenerateTilemapBlock();
+									}
+
+									if (isSelected)
 										ImGui::SetItemDefaultFocus();
-									index++;
 								}
 								ImGui::EndCombo();
 							}
-
-
-							// Set button
-							ImGui::SameLine();
-							if (ImGui::Button("Set##tilemap_comp_select_spritesheet", {50.0f, 25.0f}) && spritesheetIndex >= 0)
-							{
-								component.TilemapSprite.m_Spritesheet = AssetsManager::GetSpriteSheet(spritesheets[spritesheetIndex]);
-								component.TilemapSprite.GenerateTilemapBlock();
-							}
-
 							ImGui::Dummy({ 10.0f, 0.0f });
 
 							// Width and height controls

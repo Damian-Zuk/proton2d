@@ -34,7 +34,6 @@ namespace proton {
 
 		uint32_t GetWidth() const { return m_Width;  }
 		uint32_t GetHeight() const { return m_Height; }
-		uint32_t GetOpenGL_ID() const { return m_OpenGL_ID; }
 		const std::string& GetPath() const { return m_Path; }
 		
 		void Bind(uint32_t slot = 0) const;
@@ -50,14 +49,14 @@ namespace proton {
 
 		bool operator==(const Texture& other) const
 		{
-			return m_OpenGL_ID == other.GetOpenGL_ID();
+			return m_Object_ID == other.m_Object_ID;
 		}
 
 	private:
 		bool m_IsLoaded = false;
 		std::string m_Path;
 		uint32_t m_Width = 0, m_Height = 0;
-		uint32_t m_OpenGL_ID = 0;
+		uint32_t m_Object_ID = 0;
 		GLenum m_InternalFormat = 0;
 		GLenum m_DataFormat = 0;
 		TextureFilterMode m_FilterMode;

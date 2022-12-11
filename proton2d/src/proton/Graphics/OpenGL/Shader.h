@@ -38,7 +38,7 @@ namespace proton {
 		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
 	
 	private:
-		uint32_t m_OpenGL_ID;
+		uint32_t m_Object_ID;
 		std::string m_Name;
 	};
 

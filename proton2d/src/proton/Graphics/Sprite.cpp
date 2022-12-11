@@ -55,7 +55,7 @@ namespace proton {
 
 	const TextureCoords& SpriteSheet::GetTextureCoords(uint32_t x, uint32_t y) const
 	{
-		assert(x < m_MaxTilesX&& y < m_MaxTilesY && "Tile position out of bounds!");
+		assert(x < m_MaxTilesX && y < m_MaxTilesY && "Tile position out of bounds!");
 		return m_TextureCoords[x][y];
 	}
 
@@ -85,14 +85,11 @@ namespace proton {
 
 	void Sprite::SetTile(uint32_t x, uint32_t y, uint32_t sizeX, uint32_t sizeY)
 	{
-		if (m_SpriteSheet)
-		{
-			auto& [maxX, maxY] = m_SpriteSheet->GetMaxTilesCount();
-			x %= maxX; y %= maxY;
-			m_PosX = x; m_PosY = y;
-		}
-		else
-			assert(false && "Sprite doesn't have spritesheet attached!");
+		assert(m_SpriteSheet && "Sprite doesn't have spritesheet attached!");
+
+		auto& [maxX, maxY] = m_SpriteSheet->GetMaxTilesCount();
+		x %= maxX; y %= maxY;
+		m_PosX = x; m_PosY = y;
 	}
 
 	void Sprite::NextTile(uint32_t posY, uint32_t sizeX, uint32_t sizeY)

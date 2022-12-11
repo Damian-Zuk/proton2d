@@ -64,7 +64,7 @@ namespace proton
 		m_Handle = entt::null;
 	}
 
-	void Entity::AddChildEntity(Entity& child)
+	void Entity::AddChildEntity(Entity child)
 	{
 		auto& parentComponent = GetComponent<RelationshipComponent>();
 		auto& childComponent = child.GetComponent<RelationshipComponent>();

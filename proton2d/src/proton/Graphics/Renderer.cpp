@@ -1,3 +1,9 @@
+/*
+* 2D batch renderer
+*
+*  Inspired by Hazel Engine renderer:
+*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.cpp
+*/
 #include "pch.h"
 #include "proton/Graphics/Renderer.h"
 
@@ -12,7 +18,7 @@
 
 namespace proton {
 
-	struct QuadVertex
+	struct QuadVertex // vertex buffer data
 	{
 		glm::vec3 Position;
 		glm::vec4 Color;
@@ -20,7 +26,7 @@ namespace proton {
 		float TextureIndex;
 	};
 
-	struct LineVertex
+	struct LineVertex // vertex buffer data
 	{
 		glm::vec3 Position;
 		glm::vec4 Color;
@@ -31,30 +37,35 @@ namespace proton {
 		uint32_t MaxQuads = 10000;
 		uint32_t MaxVertices = MaxQuads * 4;
 		uint32_t MaxIndices = MaxQuads * 6;
-		static const uint32_t MaxTextureSlots = 32;
+		uint32_t MaxTextureSlots = 32;
 
+		// Quads OpenGL objects
 		Shared<VertexArray> QuadVertexArray;
 		Shared<VertexBuffer> QuadVertexBuffer;
 		Shared<Shader> QuadShader;
 
-		Shared<VertexArray> LineVertexArray;
-		Shared<VertexBuffer> LineVertexBuffer;
-		Shared<Shader> LineShader;
-		
+		// Quads VertexBuffer data
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 		uint32_t QuadIndexCount = 0;
 
+		// Lines OpenGL objects
+		Shared<VertexArray> LineVertexArray;
+		Shared<VertexBuffer> LineVertexBuffer;
+		Shared<Shader> LineShader;
+
+		// Lines VertexBuffer data
 		LineVertex* LineVertexBufferBase = nullptr;
 		LineVertex* LineVertexBufferPtr = nullptr;
 		uint32_t LineVertexCount = 0;
 		float LineWidth = 1.0f;
 
-		std::array<Shared<Texture>, MaxTextureSlots> TextureSlots;
+		// Textures and camera uniform buffer
+		std::vector<Shared<Texture>> TextureSlots;
 		uint32_t TextureSlotIndex = 1;
-		
 		Shared<UniformBuffer> CameraUniformBuffer;
 
+		// Stats
 		uint32_t OpenGLDrawCalls = 0;
 	} data;
 
@@ -82,20 +93,9 @@ namespace proton {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LINE_SMOOTH);
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (int*)&data.MaxTextureSlots);
 
-		InitQuadVertexArray();
-
-		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true); // white texture
-		data.QuadShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Quad2D.glsl");
-		data.LineShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Line2D.glsl");
-		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
-	}
-
-	void Renderer::InitQuadVertexArray()
-	{
-		PROFILE_FUNCTION();
-
-		// Create vertex buffer
+		// Create quad vertex buffer
 		data.QuadVertexBuffer = CreateShared<VertexBuffer>((uint32_t)(data.MaxVertices * sizeof(QuadVertex)));
 		data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "Position"      },
@@ -105,7 +105,7 @@ namespace proton {
 		});
 		data.QuadVertexBufferBase = new QuadVertex[data.MaxVertices];
 
-		// Create index buffer data
+		// Create quad index buffer data
 		uint32_t* indicies = new uint32_t[data.MaxIndices];
 
 		for (uint32_t i = 0; i < data.MaxIndices; i++)
@@ -115,21 +115,28 @@ namespace proton {
 			indicies[i] = offset + quadIndices[i % 6];
 		}
 
-		data.LineVertexArray = CreateShared<VertexArray>();
-
-		data.LineVertexBuffer = CreateShared<VertexBuffer>(data.MaxVertices * (uint32_t)sizeof(LineVertex));
-		data.LineVertexBuffer->SetLayout({
-			{ ShaderDataType::Float3, "Position" },
-			{ ShaderDataType::Float4, "Color"    }
-			});
-		data.LineVertexArray->AddVertexBuffer(data.LineVertexBuffer);
-		data.LineVertexBufferBase = new LineVertex[data.MaxVertices];
-
-		// Create vertex array
+		// Create quad vertex array
 		data.QuadVertexArray = CreateShared<VertexArray>();
 		data.QuadVertexArray->AddVertexBuffer(data.QuadVertexBuffer);
 		data.QuadVertexArray->SetIndexBuffer(CreateShared<IndexBuffer>(indicies, data.MaxIndices));
 		delete[] indicies;
+
+		// Create line vertex buffer and vertex array
+		data.LineVertexBuffer = CreateShared<VertexBuffer>(data.MaxVertices * (uint32_t)sizeof(LineVertex));
+		data.LineVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "Position" },
+			{ ShaderDataType::Float4, "Color"    }
+		});
+		data.LineVertexBufferBase = new LineVertex[data.MaxVertices];
+		data.LineVertexArray = CreateShared<VertexArray>();
+		data.LineVertexArray->AddVertexBuffer(data.LineVertexBuffer);
+
+		// Init texture slots vector, shaders and camera uniform buffer
+		data.TextureSlots.resize(data.MaxTextureSlots);
+		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true); // white texture
+		data.QuadShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Quad2D.glsl");
+		data.LineShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Line2D.glsl");
+		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
 	}
 
 	void Renderer::Shutdown()
@@ -256,7 +263,7 @@ namespace proton {
 
 		if (textureIndex == 0)
 		{
-			if (data.TextureSlotIndex >= RendererData::MaxTextureSlots)
+			if (data.TextureSlotIndex >= data.MaxTextureSlots)
 				NextBatch();
 
 			textureIndex = data.TextureSlotIndex;

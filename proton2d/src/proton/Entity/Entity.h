@@ -57,10 +57,9 @@ namespace proton {
 			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
-
 		bool IsValid();
 		void Destroy();
-		void AddChildEntity(Entity& child);
+		void AddChildEntity(Entity child);
 		void DestroyChildEntities();
 
 		operator uint32_t() const { return (uint32_t)m_Handle; }

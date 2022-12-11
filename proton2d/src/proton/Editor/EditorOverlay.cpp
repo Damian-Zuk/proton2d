@@ -117,19 +117,21 @@ namespace proton {
 		m_CameraController.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e) 
+		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			// Select entity via left mouse button click
-			if (!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
-			&& !ImGui::IsWindowFocused(ImGuiHoveredFlags_AnyWindow))
+			// Select entity on mouse pressed event (Button 0)
+			if (e.GetMouseButton() == Mouse::Button0 && !ImGui::GetIO().WantCaptureMouse)
 			{
 				glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
 				auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
-				bool foundAny = false;
+				Entity target; float transformMaxZ = 0.0f;
+
 				for (auto entity : view)
 				{
 					auto& transform = view.get<TransformComponent>(entity);
 
+					// Apply entity rotation to point (mouse position)
+					// so we can easliy check after if point is inside rectangle
 					float sinus = sin(glm::radians(transform.Rotation));
 					float cosinus = cos(glm::radians(transform.Rotation));
 					glm::vec2 point = mousePos;
@@ -146,6 +148,8 @@ namespace proton {
 					const auto& position = transform.Position;
 					glm::vec2 scale;
 
+					// If entity has TilemapSpriteComponent calculate size
+					// otherwise use entity TransformComponent scale
 					if (m_ActiveScene->m_Registry.any_of<TilemapSpriteComponent>(entity))
 					{
 						auto& tilemap = m_ActiveScene->m_Registry.get<TilemapSpriteComponent>(entity);
@@ -155,17 +159,21 @@ namespace proton {
 					else
 						scale = transform.Scale;
 
+					// Check if point is inside entity bounding box
 					if (point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
 						&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f)
 					{
-						SetInspectorContext(Entity(m_ActiveScene, entity));
-						foundAny = true;
-						break;
+						Entity _entity = Entity(m_ActiveScene, entity);
+						auto& transform = _entity.GetComponent<TransformComponent>();
+
+						if (!target || transform.Position.z > transformMaxZ)
+						{
+							target = _entity;
+							transformMaxZ = transform.Position.z;
+						}
 					}
 				}
-
-				if (!foundAny)
-					SetInspectorContext(Entity(m_ActiveScene, entt::null));
+				SetInspectorContext(target);
 			}
 			return true;
 		});
@@ -299,11 +307,6 @@ namespace proton {
 			SceneSerializer::Serialize("scenes/" + directoryScenes[filenameIndex] + ".json");
 
 		ImGui::End();
-	}
-
-	void EditorOverlay::TryMouseSelectEntity()
-	{
-		
 	}
 
 	void EditorOverlay::SetSceneContext(Scene* context)

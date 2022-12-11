@@ -1,3 +1,9 @@
+/*
+* 2D batch renderer
+* 
+*  Inspired by Hazel Engine renderer:
+*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.h
+*/
 #pragma once
 
 #include "proton/Graphics/Sprite.h"
@@ -33,8 +39,6 @@ namespace proton {
 		static uint32_t GetDrawCallsCount();
 		
 	private:
-		static void InitQuadVertexArray();
-
 		static void StartBatch();
 		static void NextBatch();
 	};

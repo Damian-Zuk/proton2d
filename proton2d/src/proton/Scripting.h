@@ -1,4 +1,4 @@
 #pragma once
 
 #include "proton/Entity/EntityScript.h"
-#include "proton/Assets/ScriptFactory.h"
+#include "proton/Entity/ScriptFactory.h"

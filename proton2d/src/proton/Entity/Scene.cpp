@@ -35,16 +35,22 @@ namespace proton {
 	 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
+		return CreateEntityWithID(UUID(), name);
+	}
+
+	Entity Scene::CreateEntityWithID(UUID id, const std::string& name)
+	{
 		Entity entity = Entity{ this, m_Registry.create() };
+		entity.AddComponent<IDComponent>().ID = id;
 		entity.AddComponent<TagComponent>().Tag = name;
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<RelationshipComponent>();
 		return entity;
 	}
 
-	void Scene::DestroyEntity(entt::entity entity)
+	void Scene::DestroyEntity(Entity entity)
 	{
-		m_Registry.destroy(entity);
+		m_Registry.destroy(entity.m_Handle);
 	}
 
 	void Scene::DestroyAllEntities()
@@ -81,6 +87,17 @@ namespace proton {
 			RenderScene(m_DefaultCamera);
 		else
 			RenderScene(*m_PrimaryCamera);
+	}
+
+	Entity Scene::FindByID(UUID id)
+	{
+		auto view = m_Registry.view<IDComponent>();
+		for (auto entity : view)
+		{
+			if (id == view.get<IDComponent>(entity).ID)
+				return Entity(this, entity);
+		}
+		return Entity();
 	}
 
 	Entity Scene::FindByTag(const std::string& tag)
@@ -228,17 +245,17 @@ namespace proton {
 		return transformMatrix;
 	}
 
-	void Scene::SetPrimaryCamera(Entity& cameraEntity)
-	{
-		SetPrimaryCamera(cameraEntity.GetComponent<CameraComponent>().Camera);
-	}
-
 	void Scene::SetPrimaryCamera(Shared<Camera> camera)
 	{
 		m_PrimaryCamera = camera;
 	}
 
-	glm::vec2 Scene::GetMouseWorldPosition()
+	Shared<Camera> Scene::GetPrimaryCamera()
+	{
+		return m_PrimaryCamera;
+	}
+
+	glm::vec2 Scene::GetMouseWorldPosition() const
 	{
 		Window& window = Application::Get().GetWindow();
 		uint32_t width = window.GetWidth(), height = window.GetHeight();
@@ -252,9 +269,14 @@ namespace proton {
 		};
 }
 
-	size_t Scene::GetScriptedEntitiesCount() const
+	uint32_t Scene::GetEntitiesCount() const
 	{
-		return m_Registry.view<ScriptComponent>().size();
+		return (int32_t)m_Registry.alive();
+	}
+
+	uint32_t Scene::GetScriptedEntitiesCount() const
+	{
+		return (int32_t)m_Registry.view<ScriptComponent>().size();
 	}
 
 }

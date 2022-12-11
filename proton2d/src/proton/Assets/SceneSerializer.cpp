@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Assets/AssetsManager.h"
-#include "proton/Assets/ScriptFactory.h"
+#include "proton/Entity/ScriptFactory.h"
 #include "proton/Entity/Scene.h"
 #include "proton/Entity/Entity.h"
 #include "proton/Core/Utils.h"
@@ -28,6 +28,10 @@ namespace proton {
 	{
 		json jsonObj;
 
+		// Serialize IDComponent
+		auto& uuid = entity.GetComponent<IDComponent>().ID;
+		jsonObj["ID"] = (uint64_t)uuid;
+
 		// Serialize TagComponent
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 		jsonObj["Tag"] = tag;
@@ -50,13 +54,14 @@ namespace proton {
 			{
 				jsonObj["Sprite"]["Texture"] = sprite->GetTexture()->GetPath();
 				jsonObj["Sprite"]["Flip"] = { sprite->m_FlipX, sprite->m_FlipY };
+
+				if (sprite->m_SpriteSheet)
+				{
+					jsonObj["Sprite"]["TilePos"] = { sprite->m_PosX, sprite->m_PosY };
+					jsonObj["Sprite"]["TileSize"] = { sprite->m_SizeX, sprite->m_SizeY };
+				}
 			}
-			if (sprite->m_SpriteSheet)
-			{
-				jsonObj["Sprite"]["TilePos"] = { sprite->m_PosX, sprite->m_PosY };
-				jsonObj["Sprite"]["TileSize"] = { sprite->m_SizeX, sprite->m_SizeY };
-			}
-			
+
 			jsonObj["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
 		}
 		
@@ -143,7 +148,7 @@ namespace proton {
 
 	Entity SceneSerializer::DeserializeEntity(json jsonObj)
 	{
-		Entity entity = m_Scene->CreateEntity(jsonObj["Tag"]);
+		Entity entity = m_Scene->CreateEntityWithID((uint64_t)jsonObj["ID"], jsonObj["Tag"]);
 
 		// Deserialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
