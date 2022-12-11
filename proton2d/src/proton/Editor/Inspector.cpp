@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "proton/Editor/Inspector.h"
-#include "proton/Entity/ScriptFactory.h"
+#include "proton/Scene/ScriptFactory.h"
 #include "proton/Assets/AssetsManager.h"
-#include "proton/Entity/Components.h"
+#include "proton/Scene/Components.h"
 #include "proton/Core/Utils.h"
 
 #include <imgui.h>

@@ -11,8 +11,8 @@
 #include "proton/Events/MouseEvents.h"
 #include "proton/Events/WindowEvents.h"
 
-#include "proton/Entity/Entity.h"
-#include "proton/Entity/Components.h"
+#include "proton/Scene/Entity.h"
+#include "proton/Scene/Components.h"
 #include "proton/Scripting.h"
 
 #include <imgui/imgui.h>

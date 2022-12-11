@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Entity/ScriptFactory.h"
+#include "proton/Scene/ScriptFactory.h"
 
 namespace proton {
 

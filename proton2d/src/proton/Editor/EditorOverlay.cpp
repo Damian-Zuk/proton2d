@@ -2,7 +2,7 @@
 #include "proton/Editor/EditorOverlay.h"
 #include "proton/Core/Application.h"
 #include "proton/Core/Window.h"
-#include "proton/Entity/Components.h"
+#include "proton/Scene/Components.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Utils.h"
 #include "proton/Events/MouseEvents.h"

@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "proton/Entity/Scene.h"
-#include "proton/Entity/Entity.h"
+#include "proton/Scene/Scene.h"
+#include "proton/Scene/Entity.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Core/Application.h"
-#include "proton/Entity/EntityScript.h"
+#include "proton/Scene/EntityScript.h"
 #include "proton/Core/Input.h"
 
 #ifndef PROTON_DISTRIBUTION

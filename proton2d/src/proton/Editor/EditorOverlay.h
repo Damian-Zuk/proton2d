@@ -1,6 +1,6 @@
 #pragma once
 #include "proton/Core/AppLayer.h"
-#include "proton/Entity/Entity.h"
+#include "proton/Scene/Entity.h"
 
 #include "proton/Editor/Inspector.h"
 #include "proton/Editor/DebugInfo.h"

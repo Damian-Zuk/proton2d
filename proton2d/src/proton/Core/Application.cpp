@@ -3,7 +3,7 @@
 #include "proton/Core/Input.h"
 #include "proton/Events/WindowEvents.h"
 #include "proton/Graphics/Renderer.h"
-#include "proton/Entity/ScriptFactory.h"
+#include "proton/Scene/ScriptFactory.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "proton/Platform/Windows/WindowsWindow.h"

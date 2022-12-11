@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Assets/AssetsManager.h"
-#include "proton/Entity/ScriptFactory.h"
-#include "proton/Entity/Scene.h"
-#include "proton/Entity/Entity.h"
+#include "proton/Scene/ScriptFactory.h"
+#include "proton/Scene/Scene.h"
+#include "proton/Scene/Entity.h"
 #include "proton/Core/Utils.h"
 
 #include <fstream>
