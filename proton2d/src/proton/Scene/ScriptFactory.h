@@ -1,15 +1,16 @@
 #pragma once
 
-#define REGISTER_SCRIPT(__script_class_type)                           \
-	ScriptFactory::RegisterScript( [&](Entity entity) {                \
-		entity.AddScript<__script_class_type>(#__script_class_type);   \
+#define REGISTER_SCRIPT(__script_class_type)                                \
+	ScriptFactory::RegisterScript( [&](Entity entity) {                     \
+		return entity.AddScript<__script_class_type>(#__script_class_type); \
 	}, #__script_class_type);
 
 
 namespace proton {
 
 	class Entity;
-	using AddScriptToEntityFunction = std::function<void(Entity entity)>;
+	class EntityScript;
+	using AddScriptToEntityFunction = std::function<EntityScript*(Entity entity)>;
 
 	class ScriptFactory
 	{

@@ -142,7 +142,9 @@
                 ]
             },
             "Scripts": [
-                "PlayerScript"
+                {
+                    "ClassName": "PlayerScript"
+                }
             ]
         },
         {

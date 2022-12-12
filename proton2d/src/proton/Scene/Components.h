@@ -50,27 +50,27 @@ namespace proton {
 		struct ScriptData
 		{
 			EntityScript* ScriptInstance = nullptr;
-			std::function<void()> CreateInstanceFunction;
 			std::function<void()> DestroyInstanceFunction;
+			bool Initialized = false;
 		};
 
 		std::unordered_map<std::string, ScriptData> Scripts;
 
-		template<typename T>
-		void Bind(const std::string& scriptName)
+		template<typename TScriptClass>
+		EntityScript* Attach(const std::string& scriptName)
 		{
 			ScriptData& script = Scripts[scriptName];
-
-			script.CreateInstanceFunction = [&, scriptName]()
-			{
-				script.ScriptInstance = new T();
-			};
+			
+			script.ScriptInstance = new TScriptClass();
+			script.ScriptInstance->RegisterFields();
 
 			script.DestroyInstanceFunction = [&, scriptName]()
 			{
-				delete script.ScriptInstance;
+				delete (TScriptClass*)script.ScriptInstance;
 				script.ScriptInstance = nullptr;
 			};
+
+			return script.ScriptInstance;
 		}
 	};
 
@@ -85,6 +85,25 @@ namespace proton {
 
 	struct CameraComponent
 	{
-		Shared<Camera> Camera;
+		Shared<Camera> Camera = nullptr;
+	};
+
+	struct RigidBodyComponent
+	{
+		enum class BodyType { Static, Kinematic, Dynamic };
+		BodyType Type = BodyType::Static;
+		bool FixedRotation = false;
+	};
+
+	struct BoxColliderComponent
+	{
+		glm::vec2 Size = { 0.5f, 0.5f };
+		glm::vec2 Offset = { 0.0f, 0.0f };
+
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+		float RestitutionThreshold = 0.5f;
+		float Density = 1.0f;
+		bool IsSensor = false;
 	};
 }

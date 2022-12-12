@@ -47,7 +47,7 @@ namespace proton {
 	{
 		EventDispatcher dispatcher(e);
 
-		if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+		if (!ImGui::GetIO().WantCaptureMouse)
 		{
 			dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
 			{

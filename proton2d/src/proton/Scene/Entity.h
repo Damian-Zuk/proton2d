@@ -29,12 +29,12 @@ namespace proton {
 		}
 
 		template <typename T>
-		void AddScript(const std::string& scriptName) const
+		EntityScript* AddScript(const std::string& scriptName) const
 		{
 			if (!HasComponent<ScriptComponent>())
 				AddComponent<ScriptComponent>();
 			
-			GetComponent<ScriptComponent>().Bind<T>(scriptName);
+			return GetComponent<ScriptComponent>().Attach<T>(scriptName);
 		}
 
 		template <typename T>
@@ -73,6 +73,7 @@ namespace proton {
 
 		friend class Scene;
 		friend class SceneSerializer;
+		friend class EntityScript;
 	};
 
 }

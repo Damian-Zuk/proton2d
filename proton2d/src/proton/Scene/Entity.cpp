@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "proton/Scene/Entity.h"
 
+#include <box2d/b2_body.h>
+
 namespace proton 
 {
 	Entity::Entity(Scene* scene, entt::entity handle)

@@ -11,9 +11,17 @@
 #include <imgui.h>
 #endif
 
+#include <box2d/b2_world.h>
+#include <box2d/b2_body.h>
+#include <box2d/b2_fixture.h>
+#include <box2d/b2_polygon_shape.h>
+
+
 namespace proton {
 
 	constexpr static glm::vec4 s_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
+	constexpr int32_t s_PhysicsVelocityIterations = 6;
+	constexpr int32_t s_PhysicsPositionIterations = 2;
 
 	Scene::Scene(const std::string& name)
 		: m_SceneName(name)
@@ -31,6 +39,72 @@ namespace proton {
 			for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
 				scriptData.DestroyInstanceFunction();
 		});
+
+		if (m_PlayState)
+			OnEndPlay();
+	}
+
+	void Scene::OnBeginPlay()
+	{
+		// Initialize physics world
+		m_World = new b2World({ 0.0f, -9.8f });
+		auto view = m_Registry.view<IDComponent, TransformComponent, RigidBodyComponent>();
+		for (auto entity : view)
+		{
+			auto [id, transform, rb] = view.get<IDComponent, TransformComponent, RigidBodyComponent>(entity);
+
+			b2BodyDef bodyDef;
+			if (rb.Type == RigidBodyComponent::BodyType::Static)
+				bodyDef.type = b2_staticBody;
+			else if (rb.Type == RigidBodyComponent::BodyType::Kinematic)
+				bodyDef.type = b2_kinematicBody;
+			else if (rb.Type == RigidBodyComponent::BodyType::Dynamic)
+				bodyDef.type = b2_dynamicBody;
+
+			bodyDef.position.Set(transform.Position.x, transform.Position.y);
+			bodyDef.angle = glm::radians(transform.Rotation);
+
+			// Create box2d rigid body
+			b2Body* body = m_World->CreateBody(&bodyDef);
+			body->SetFixedRotation(rb.FixedRotation);
+
+			if (m_Registry.any_of<BoxColliderComponent>(entity))
+			{
+				auto& bc = m_Registry.get<BoxColliderComponent>(entity);
+				b2PolygonShape shape;
+				b2FixtureDef fixtureDef;
+
+				if (m_Registry.any_of<TilemapSpriteComponent>(entity))
+				{
+					auto& tilemap = m_Registry.get<TilemapSpriteComponent>(entity);
+					shape.SetAsBox(tilemap.TilemapSprite.m_Width * bc.Size.x * transform.Scale.x,
+						tilemap.TilemapSprite.m_Height * bc.Size.y * transform.Scale.y);
+				}
+				else
+					shape.SetAsBox(bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y);
+
+				fixtureDef.shape = &shape;
+				fixtureDef.friction = bc.Friction;
+				fixtureDef.restitution = bc.Restitution;
+				fixtureDef.restitutionThreshold = bc.RestitutionThreshold;
+				fixtureDef.density = bc.Density;
+				fixtureDef.isSensor = bc.IsSensor;
+				body->CreateFixture(&fixtureDef);
+			}
+
+			// Add rigid body to unordered map
+			m_RigidBodies[id.ID] = body;
+		}
+	}
+
+	void Scene::OnEndPlay()
+	{
+		if (!m_World)
+		{
+			delete m_World;
+			m_World = nullptr;
+		}
+		m_RigidBodies.clear();
 	}
 	 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -61,28 +135,46 @@ namespace proton {
 	void Scene::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
-		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent) 
+
+		if (m_PlayState)
 		{
-			for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
+			// Update scripts
 			{
-				if (!scriptData.ScriptInstance)
+				PROFILE_SCOPE("update_scripts");
+				m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent)
 				{
-					scriptData.CreateInstanceFunction();
-					if (scriptData.ScriptInstance)
+					for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
 					{
-						scriptData.ScriptInstance->m_Entity = Entity{ this, entity };
-						scriptData.ScriptInstance->OnCreate();
+						if (!scriptData.Initialized && scriptData.ScriptInstance)
+						{
+							scriptData.ScriptInstance->m_Entity = Entity{ this, entity };
+							scriptData.ScriptInstance->OnCreate();
+							scriptData.Initialized = true;
+						}
+						scriptData.ScriptInstance->OnUpdate(ts);
 					}
-					else
-					{
-						assert(false && "Script instantiation failed!");
-					}
-				}
-
-				scriptData.ScriptInstance->OnUpdate(ts);
+				});
 			}
-		});
 
+			// Update physics
+			{
+				PROFILE_SCOPE("update_physics");
+				m_World->Step(ts, s_PhysicsVelocityIterations, s_PhysicsPositionIterations);
+				auto view = m_Registry.view<IDComponent, TransformComponent, RigidBodyComponent>();
+				for (auto entity : view)
+				{
+					auto [id, transform, rb] = view.get<IDComponent, TransformComponent, RigidBodyComponent>(entity);
+					
+					b2Body* body = m_RigidBodies.at(id.ID);
+					const auto& position = body->GetPosition();
+					transform.Position.x = position.x;
+					transform.Position.y = position.y;
+					transform.Rotation = glm::degrees(body->GetAngle());
+				}
+			}
+		}
+
+		// Render scene
 		if (!m_PrimaryCamera)
 			RenderScene(m_DefaultCamera);
 		else
@@ -124,6 +216,11 @@ namespace proton {
 		return entities;
 	}
 
+	b2Body* Scene::GetBox2DRigidBody(UUID id)
+	{
+		return m_RigidBodies.at(id);
+	}
+
 	void Scene::RenderScene(const Camera& camera)
 	{
 		PROFILE_FUNCTION();
@@ -134,7 +231,7 @@ namespace proton {
 		auto renderableSprite = m_Registry.group<SpriteComponent>(entt::get<TransformComponent, RelationshipComponent>);
 		for (auto e : renderableSprite)
 		{
-			PROFILE_SCOPE("Entity_Render_Sprite");
+			PROFILE_SCOPE("entity_render_sprite");
 			auto [transform, sprite, relationship] = renderableSprite.get<TransformComponent, SpriteComponent, RelationshipComponent>(e);
 			
 			// Sprite flip
@@ -149,7 +246,7 @@ namespace proton {
 
 			// Create transform matrix
 			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
-				* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
 				* glm::scale(glm::mat4(1.0f), outputScale);
 
 			//if (relationship.Parent != entt::null)
@@ -165,14 +262,14 @@ namespace proton {
 		auto renderableTilemapSprite = m_Registry.group<TilemapSpriteComponent>(entt::get<TransformComponent>);
 		for (auto e : renderableTilemapSprite)
 		{
-			PROFILE_SCOPE("Entity_Render_TilemapSprite");
+			PROFILE_SCOPE("entity_render_tilemap_sprite");
 			auto [transform, tilemap] = renderableTilemapSprite.get<TransformComponent, TilemapSpriteComponent>(e);
 			auto& spritesheet = tilemap.TilemapSprite.m_Spritesheet;
 			if (spritesheet)
 			{
 				// Tilemap entity transform matrix
 				glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
-					* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f });
+					* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f });
 
 				uint32_t x = 0, y = 0;
 				for (auto& column : tilemap.TilemapSprite.m_Tilemap)
@@ -203,13 +300,16 @@ namespace proton {
 		if (selectedEntity && EditorOverlay::s_Instance->m_DrawSelectedEntityOutline)
 		{
 			auto& transform = selectedEntity.GetComponent<TransformComponent>();
+			float zoomLevel = m_PrimaryCamera->GetZoomLevel();
+			glm::vec3 padding = { 0.05f * zoomLevel, 0.05f * zoomLevel, 0.0f };
+			
 			if (selectedEntity.HasComponent<SpriteComponent>())
 			{
 				glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), { transform.Position.x, transform.Position.y, 0.2f })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f })
-					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x + 0.05f, transform.Scale.y + 0.05f, 1.0f });
+					* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
+					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x, transform.Scale.y , 1.0f } + padding);
 
-				Renderer::SetLineWidth(0.1f);
+				Renderer::SetLineWidth(0.05f * zoomLevel);
 				Renderer::DrawRect(transformMatrix, { 255,255,255,255 });
 			}
 			if (selectedEntity.HasComponent<TilemapSpriteComponent>())
@@ -218,10 +318,10 @@ namespace proton {
 				auto& [width, height] = tilemap.GetSize();
 
 				glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), { transform.Position.x, transform.Position.y, 0.2f })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(-transform.Rotation), { 0.0f, 0.0f, 1.0f })
-					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x * width + 0.05f, transform.Scale.y * height + 0.05f, 1.0f });
+					* glm::rotate(glm::mat4(1.0f), glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
+					* glm::scale(glm::mat4(1.0f), glm::vec3{ transform.Scale.x * width , transform.Scale.y * height, 1.0f } + padding);
 
-				Renderer::SetLineWidth(0.1f);
+				Renderer::SetLineWidth(0.05f * zoomLevel);
 				Renderer::DrawRect(transformMatrix, { 255,255,255,255 });
 			}
 		}

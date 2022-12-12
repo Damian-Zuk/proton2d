@@ -132,8 +132,8 @@ namespace proton {
 
 					// Apply entity rotation to point (mouse position)
 					// so we can easliy check after if point is inside rectangle
-					float sinus = sin(glm::radians(transform.Rotation));
-					float cosinus = cos(glm::radians(transform.Rotation));
+					float sinus = sin(glm::radians(-transform.Rotation));
+					float cosinus = cos(glm::radians(-transform.Rotation));
 					glm::vec2 point = mousePos;
 					if (transform.Rotation)
 					{
@@ -299,13 +299,36 @@ namespace proton {
 		if (ImGui::Button("Load", { 75, 25 }) && filenameIndex >= 0)
 		{
 			m_ActiveScene->DestroyAllEntities();
+			m_Inspector.m_ActiveScene->m_PlayState = 0;
+			m_Inspector.m_ActiveScene->OnEndPlay();
 			SceneSerializer::Deserialize("scenes/" + directoryScenes[filenameIndex] + ".json");
 		}
-		ImGui::SameLine();
+		
+		if (filenameIndex != -1)
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("Save", { 75, 25 }))
+				SceneSerializer::Serialize("scenes/" + directoryScenes[filenameIndex] + ".json");
+		}
 
-		if (filenameIndex != -1 && ImGui::Button("Save", { 75, 25 }))
-			SceneSerializer::Serialize("scenes/" + directoryScenes[filenameIndex] + ".json");
-
+		ImGui::Dummy({ 0.0f, 3.0f });
+		if (m_Inspector.m_ActiveScene->m_PlayState)
+		{
+			if (ImGui::Button("Stop", { 75, 25 }))
+			{
+				m_Inspector.m_ActiveScene->m_PlayState = 0;
+				m_Inspector.m_ActiveScene->OnEndPlay();
+			}
+		}
+		else
+		{
+			if (ImGui::Button("Play", { 75, 25 }))
+			{
+				m_Inspector.m_ActiveScene->m_PlayState = 1;
+				m_Inspector.m_ActiveScene->OnBeginPlay();
+			}
+		}
+		
 		ImGui::End();
 	}
 

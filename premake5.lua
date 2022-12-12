@@ -19,11 +19,13 @@ IncludeDir["ImGui"] = "vendor/imgui"
 IncludeDir["stb"] = "vendor/stb"
 IncludeDir["entt"] = "vendor/entt/src"
 IncludeDir["json"] = "vendor/json"
+IncludeDir["box2d"] = "vendor/box2d/include"
 
 group "Dependencies"
 	include "vendor/GLFW"
 	include "vendor/glad"
 	include "vendor/imgui"
+	include "vendor/box2d"
 group ""
 
 project "proton2d"
@@ -57,7 +59,8 @@ project "proton2d"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.stb}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.json}"
+		"%{IncludeDir.json}",
+		"%{IncludeDir.box2d}"
 	}
 
 	links
@@ -65,7 +68,8 @@ project "proton2d"
 		"glad",
 		"GLFW",
 		"ImGui",
-		"opengl32.lib"
+		"opengl32.lib",
+		"box2d"
 	}
 
 	defines

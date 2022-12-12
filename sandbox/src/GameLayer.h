@@ -7,11 +7,13 @@ using namespace proton;
 class GameLayer : public AppLayer
 {
 public:
+	GameLayer();
+
 	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
 
 private:
-	Shared<Scene> m_Scene;
+	Scene m_Scene;
 	Entity m_Player;
 	Entity m_Level;
 };

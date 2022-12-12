@@ -4,6 +4,7 @@
 #include "proton/Assets/AssetsManager.h"
 #include "proton/Scene/Components.h"
 #include "proton/Core/Utils.h"
+#include "proton/Scene/EntityScript.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -44,6 +45,18 @@ namespace proton {
 					{
 						if (ImGui::MenuItem("Tilemap sprite"))
 							m_SelectedEntity.AddComponent<TilemapSpriteComponent>();
+					}
+
+					if (!m_SelectedEntity.HasComponent<RigidBodyComponent>())
+					{
+						if (ImGui::MenuItem("RigidBody"))
+							m_SelectedEntity.AddComponent<RigidBodyComponent>();
+					}
+
+					if (!m_SelectedEntity.HasComponent<BoxColliderComponent>())
+					{
+						if (ImGui::MenuItem("BoxCollider"))
+							m_SelectedEntity.AddComponent<BoxColliderComponent>();
 					}
 
 					if (ImGui::BeginMenu("Script"))
@@ -337,13 +350,66 @@ namespace proton {
 					});
 				}
 
+				// 
+				if (m_SelectedEntity.HasComponent<RigidBodyComponent>())
+				{
+					DrawComponentUI<RigidBodyComponent>("RigidBody", [](auto& component)
+					{
+						std::string bodyType = "Static";
+						if (component.Type == RigidBodyComponent::BodyType::Dynamic)
+							bodyType = "Dynamic";
+						else if (component.Type == RigidBodyComponent::BodyType::Kinematic)
+							bodyType = "Kinematic";
+
+						if (ImGui::BeginCombo("Body type", bodyType.c_str()))
+						{
+							if (ImGui::Selectable("Static"))
+								component.Type = RigidBodyComponent::BodyType::Static;
+							else if (ImGui::Selectable("Dynamic"))
+								component.Type = RigidBodyComponent::BodyType::Dynamic;
+							else if (ImGui::Selectable("Kinematic"))
+								component.Type = RigidBodyComponent::BodyType::Kinematic;
+
+							ImGui::EndCombo();
+						}
+
+						ImGui::Dummy({ 0.0f, 3.0f });
+						ImGui::Checkbox("Fixed rotation", &component.FixedRotation);
+					});
+				}
+
+				if (m_SelectedEntity.HasComponent<BoxColliderComponent>())
+				{
+					DrawComponentUI<BoxColliderComponent>("BoxCollider", [](auto& component)
+					{
+							ImGui::DragFloat2("Size", glm::value_ptr(component.Size), 0.01f);
+							ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
+							ImGui::DragFloat("Friction", &component.Friction, 0.01f);
+							ImGui::DragFloat("Restitution", &component.Restitution, 0.01f);
+							ImGui::DragFloat("RestitutionThreshold", &component.RestitutionThreshold, 0.01f);
+							ImGui::DragFloat("Density", &component.Density, 0.01f);
+							ImGui::Checkbox("IsSensor", &component.IsSensor);
+					});
+				}
+
 				// Script Component UI
 				if (m_SelectedEntity.HasComponent<ScriptComponent>())
 				{
 					DrawComponentUI<ScriptComponent>("Script", [&](auto& component)
 					{
-						for (auto& [scriptName, scriptData] : component.Scripts)
-							ImGui::Text(scriptName.c_str());
+						for (auto& [scriptClassName, scriptData] : component.Scripts)
+						{
+							ImGui::Text(scriptClassName.c_str());
+							
+							if (!scriptData.ScriptInstance)
+								continue;
+
+							for (auto& [fieldName, fieldData] : scriptData.ScriptInstance->m_ScriptFields)
+							{
+								if (fieldData.Type == ScriptFieldType::Float)
+									ImGui::DragFloat(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							}
+						}
 					});
 				}
 			}				

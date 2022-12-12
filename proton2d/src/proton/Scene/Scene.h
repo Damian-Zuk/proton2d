@@ -6,6 +6,9 @@
 
 #include <entt/entt.hpp>
 
+class b2World;
+class b2Body;
+
 namespace proton {
 
 	class Entity;
@@ -16,6 +19,9 @@ namespace proton {
 		Scene(const std::string& name = "Unnamed scene");
 		~Scene();
 
+		void OnBeginPlay();
+		void OnEndPlay();
+		
 		Entity CreateEntity(const std::string& name = "Unnamed entity");
 		Entity CreateEntityWithID(UUID id, const std::string& name = "Unnamed entity");
 
@@ -26,6 +32,8 @@ namespace proton {
 		Entity FindByTag(const std::string& tag);
 		std::vector<Entity> FindAllByTag(const std::string& tag);
 		
+		b2Body* GetBox2DRigidBody(UUID id);
+
 		void SetPrimaryCamera(Shared<Camera> camera);
 		Shared<Camera> GetPrimaryCamera();
 
@@ -46,6 +54,11 @@ namespace proton {
 		entt::registry m_Registry;
 		Shared<Camera> m_PrimaryCamera;
 		Camera m_DefaultCamera;
+
+		bool m_PlayState = false;
+
+		b2World* m_World = nullptr;
+		std::unordered_map<UUID, b2Body*> m_RigidBodies;
 
 		friend class Entity;
 		friend class EditorOverlay;

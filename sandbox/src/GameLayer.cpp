@@ -4,6 +4,11 @@
 
 using namespace proton;
 
+GameLayer::GameLayer()
+	: m_Scene("Sample scene")
+{
+}
+
 void GameLayer::OnCreate()
 {
 	AssetsManager::LoadSpriteSheet("skeleton-sheet.png", 150, 150);
@@ -12,11 +17,9 @@ void GameLayer::OnCreate()
 
 	REGISTER_SCRIPT(PlayerScript);
 	REGISTER_SCRIPT(RotationScript);
-
-	m_Scene = CreateShared<Scene>("Sample scene");
 }
 
 void GameLayer::OnUpdate(float ts)
 {
-	m_Scene->OnUpdate(ts);
+	m_Scene.OnUpdate(ts);
 }

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Assets/AssetsManager.h"
+#include "proton/Scene/EntityScript.h"
 #include "proton/Scene/ScriptFactory.h"
 #include "proton/Scene/Scene.h"
 #include "proton/Scene/Entity.h"
@@ -84,8 +85,43 @@ namespace proton {
 		if (entity.HasComponent<ScriptComponent>())
 		{
 			auto& script = entity.GetComponent<ScriptComponent>();
-			for (auto& kv : script.Scripts)
-				jsonObj["Scripts"].push_back(kv.first);
+			for (auto& [scriptClassName, scriptData] : script.Scripts)
+			{
+				json scriptObj;
+				scriptObj["ClassName"] = scriptClassName;
+				for (auto& [fieldName, fieldData] : scriptData.ScriptInstance->m_ScriptFields)
+				{
+					json fieldObj;
+					fieldObj["FieldName"] = fieldName;
+					if (fieldData.Type == ScriptFieldType::Float)
+					{
+						fieldObj["Type"] = "Float";
+						fieldObj["Value"] = *(float*)fieldData.InstanceFieldValue;
+					}
+					scriptObj["Fields"].push_back(fieldObj);
+				}
+				jsonObj["Scripts"].push_back(scriptObj);
+			}
+		}
+
+		// Serialize RigidBodyComponent
+		if (entity.HasComponent<RigidBodyComponent>())
+		{
+			auto& rb = entity.GetComponent<RigidBodyComponent>();
+			jsonObj["RigidBody"]["Type"] = rb.Type;
+			jsonObj["RigidBody"]["FixedRotation"] = rb.FixedRotation;
+		}
+
+		// Serialize BoxColliderComponent
+		if (entity.HasComponent<BoxColliderComponent>())
+		{
+			auto& collider = entity.GetComponent<BoxColliderComponent>();
+			jsonObj["BoxCollider"]["Size"] = { collider.Size.x, collider.Size.y };
+			jsonObj["BoxCollider"]["Offset"] = { collider.Offset.x, collider.Offset.y };
+			jsonObj["BoxCollider"]["Friction"] = collider.Friction;
+			jsonObj["BoxCollider"]["Restitution"] = collider.Restitution;
+			jsonObj["BoxCollider"]["RestitutionThreshold"] = collider.RestitutionThreshold;
+			jsonObj["BoxCollider"]["Density"] = collider.Density;
 		}
 
 		// Serialize child entities
@@ -200,17 +236,60 @@ namespace proton {
 				tilemap.TilemapSprite.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonObj["TilemapSprite"]["Spritesheet"]));
 		}
 
+		// Deserialize RigidBodyComponent
+		if (jsonObj.contains("RigidBody"))
+		{
+			auto& rb = entity.AddComponent<RigidBodyComponent>();
+			rb.Type = jsonObj["RigidBody"]["Type"];
+			rb.FixedRotation = jsonObj["RigidBody"]["FixedRotation"];
+		}
+
+		// Deserialize BoxColliderComponent
+		if (jsonObj.contains("BoxCollider"))
+		{
+			auto& collider = entity.AddComponent<BoxColliderComponent>();
+			json& boxCollider = jsonObj["BoxCollider"];
+			json& size = boxCollider["Size"];
+			json& offset = boxCollider["Offset"];
+
+			collider.Size = { size[0], size[1] };
+			collider.Offset = { offset[0], offset[1] };
+			collider.Friction = boxCollider["Friction"];
+			collider.Restitution = boxCollider["Restitution"];
+			collider.RestitutionThreshold = boxCollider["RestitutionThreshold"];
+			collider.Density = boxCollider["Density"];
+		}
+
 		// Deserialize scripts
 		if (jsonObj.contains("Scripts"))
 		{
-			for (auto& scriptClass : jsonObj["Scripts"])
+			for (auto& scriptJson : jsonObj["Scripts"])
 			{
+				std::string scriptClassName = scriptJson["ClassName"];
 				auto& registeredScripts = ScriptFactory::GetScripts();
 				
-				if (registeredScripts.find(scriptClass) == registeredScripts.end())
-					LOG_ERROR("[SceneSerializer] Script not found:", scriptClass);
+				if (registeredScripts.find(scriptClassName) == registeredScripts.end())
+					LOG_ERROR("[SceneSerializer] Script not found:", scriptClassName);
 				
-				registeredScripts.at(scriptClass)(entity); // call add script to entity function
+				// Call add script to entity function
+				EntityScript* script = registeredScripts.at(scriptClassName)(entity);
+
+				if (scriptJson.contains("Fields"))
+				{
+					json& fields = scriptJson["Fields"];
+					for (auto& field : fields)
+					{
+						std::string fieldName = field["FieldName"];
+						if (script->m_ScriptFields.find(fieldName) != script->m_ScriptFields.end())
+						{
+							ScriptField& scriptField = script->m_ScriptFields[fieldName];
+							if (scriptField.Type == ScriptFieldType::Float)
+								*(float*)scriptField.InstanceFieldValue = field["Value"];
+						}
+						else
+							LOG_ERROR("[SceneSerializer] Field not found:", fieldName, "ClassName:", scriptClassName);
+					}
+				}
 			}
 		}
 
