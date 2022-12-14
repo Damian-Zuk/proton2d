@@ -39,10 +39,17 @@ namespace proton {
 		else
 			m_RefreshStatsTimer -= m_FrameTime;
 
-		ImGui::Begin("Debug info");
+		ImGui::Begin("Settings and statistics");
 
-		ImGui::Checkbox("Selected entity outline##debug_info", &EditorOverlay::s_Instance->m_DrawSelectedEntityOutline);
+		if (ImGui::TreeNodeEx("Settings", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Checkbox("Show selection outline", &EditorOverlay::s_Instance->m_ShowSelectionOutline);
+			ImGui::Checkbox("Show selection collider", &EditorOverlay::s_Instance->m_ShowSelectionCollider);
+			ImGui::Checkbox("Show all colliders", &EditorOverlay::s_Instance->m_ShowAllColliders);
+			ImGui::TreePop();
+		}
 
+		ImGui::Dummy({ 0.0f, 3.0f });
 		ImGui::Text("Frame time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
 
 		float max = 0.0f;
@@ -55,7 +62,6 @@ namespace proton {
 		ImGui::Dummy({ 0.0f, 2.0f });
 		ImGui::Text("Entities: %i (scripted: %i)", m_EntitiesCount, m_ScriptedEntitiesCount);
 		ImGui::Text("OpenGL draw calls: %i", Renderer::GetDrawCallsCount());
-		ImGui::Dummy({ 0.0f, 2.0f });
 		
 		ImGui::End();
 

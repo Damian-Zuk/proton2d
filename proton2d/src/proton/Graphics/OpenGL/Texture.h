@@ -62,6 +62,8 @@ namespace proton {
 		TextureFilterMode m_FilterMode;
 		TextureWrapMode m_WrapModeX;
 		TextureWrapMode m_WrapModeY;
+
+		friend class SceneSerializer;
 	};
 
 }

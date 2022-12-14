@@ -122,7 +122,8 @@ project "sandbox"
 		"vendor",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.json}"
+		"%{IncludeDir.json}",
+		"%{IncludeDir.box2d}"
 	}
 
 	links

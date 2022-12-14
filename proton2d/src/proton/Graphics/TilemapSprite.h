@@ -1,9 +1,24 @@
 #pragma once
 #include "proton/Graphics/Sprite.h"
 
-#define TILEMAP_BLANK_TILE glm::ivec2{ -1, -1 }
+#define TILEMAP_BLANK_TILE glm::uvec2{ -1, -1 }
 
 namespace proton {
+
+	enum BlockBorder : uint16_t
+	{
+		BlockBorder_Left        = 1 << 0,
+		BlockBorder_Right       = 1 << 1,
+		BlockBorder_Top         = 1 << 2,
+		BlockBorder_Bottom      = 1 << 3,
+		BlockBorder_TopLeft     = 1 << 4,
+		BlockBorder_TopRight    = 1 << 5,
+		BlockBorder_BottomLeft  = 1 << 6,
+		BlockBorder_BottomRight = 1 << 7,
+		BlockBorder_All         = 0xFF
+	};
+
+	using BlockBorders = uint8_t;
 
 	class TilemapSprite
 	{
@@ -11,38 +26,23 @@ namespace proton {
 		TilemapSprite();
 
 		void SetSpritesheet(const Shared<SpriteSheet>& spritesheet);
+		Shared<SpriteSheet> GetSpritesheet();
 
-		/*
-			Set size in tile count
-		*/
+		// Set size in tile count
 		void SetSize(uint32_t width, uint32_t height);
+		std::pair<uint32_t, uint32_t> GetSize() const;
 
 		void GenerateTilemapBlock();
-
-		/*
-			Each byte defines if tilemap edge tiles texture
-			is changed to texture of the center of spritesheet block
-			
-			Byte 0 - Left edge
-			Byte 1 - Right edge
-			Byte 2 - Top edge
-			Byte 3 - Bottom edge
-			Byte 4 - Top left corner
-			Byte 5 - Top right corner
-			Byte 6 - Bottom left corner
-			Byte 7 - bottom right corner
-		*/
-		void SetBlockEdges(uint8_t edges);
-
-		Shared<SpriteSheet> GetSpritesheet();
-		std::pair<uint32_t, uint32_t> GetSize();
-		uint8_t GetBlockEdges();
+		void SetBlockBorders(BlockBorders borders);
+		uint8_t GetBlockBorders();
 
 	private:
 		Shared<SpriteSheet> m_Spritesheet = nullptr;
 		uint32_t m_Width = 1, m_Height = 1;
-		std::vector<std::vector<glm::ivec2>> m_Tilemap; // [x][y]
-		uint8_t m_BlockEdges = 0xff;
+
+		std::vector<std::vector<glm::uvec2>> m_Tilemap; // [x][y]
+
+		BlockBorders m_BlockBorders = BlockBorder_All;
 
 		friend class Scene;
 		friend class Inspector;

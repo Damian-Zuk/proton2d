@@ -20,6 +20,8 @@ namespace proton {
 		Scene* m_ActiveScene;
 		Entity m_SelectedEntity; // Inspector Context
 
+		char m_SceneNameBuffer[256] = { 0 };
+
 		friend class EditorOverlay;
 	};
 

@@ -18,7 +18,7 @@ namespace proton {
 	{
 		float zoomLevel = m_Camera->GetZoomLevel();
 
-		if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+		if (!ImGui::GetIO().WantCaptureMouse)
 		{
 			if (Input::IsKeyPressed(Key::W)) 
 				m_Camera->Move({ 0.0f, m_CameraSpeed * m_AspectRatio * ts * zoomLevel });

@@ -49,7 +49,7 @@ namespace proton {
 		{
 			assert(HasComponent<RigidBodyComponent>());
 			auto& id = GetComponent<IDComponent>();
-			return m_Entity.m_Scene->GetBox2DRigidBody(id.ID);
+			return m_Entity.m_Scene->GetBox2DRuntimeBody(id.ID);
 		}
 
 		Scene* GetScene()

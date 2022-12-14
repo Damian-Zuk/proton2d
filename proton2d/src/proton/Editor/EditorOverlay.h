@@ -20,6 +20,8 @@ namespace proton {
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& event) override;
 
+		static EditorOverlay* Get() { return s_Instance; }
+
 		static void SetSceneContext(Scene* context);
 		static void SetInspectorContext(Entity entity);
 		static Entity GetInspectorContext();
@@ -34,7 +36,10 @@ namespace proton {
 	private:
 		static EditorOverlay* s_Instance;
 
-		bool m_DrawSelectedEntityOutline = true;
+		bool m_ShowSelectionOutline = true;
+		bool m_ShowSelectionCollider = true;
+		bool m_ShowAllColliders = false;
+		bool m_MovingSelection = false;
 
 		Inspector m_Inspector;
 		DebugInfo m_DebugInfo;
@@ -44,6 +49,7 @@ namespace proton {
 		Scene* m_ActiveScene = nullptr;
 
 		friend class Application;
+		friend class Inspector;
 		friend class Scene;
 		friend class DebugInfo;
 	};

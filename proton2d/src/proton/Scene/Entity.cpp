@@ -10,6 +10,11 @@ namespace proton
 	{
 	}
 
+	UUID Entity::GetID() const
+	{
+		return GetComponent<IDComponent>().ID;
+	}
+
 	bool Entity::IsValid()
 	{
 		if (!m_Scene->m_Registry.valid(m_Handle))

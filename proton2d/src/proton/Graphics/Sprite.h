@@ -45,6 +45,9 @@ namespace proton {
 
 		void SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet);
 		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		void SetTileX(uint32_t x, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		void SetTileY(uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		glm::uvec2 GetTilePos() { return glm::uvec2{m_PosX, m_PosY}; };
 
 		void NextTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void PrevTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);

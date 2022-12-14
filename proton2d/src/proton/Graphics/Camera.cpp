@@ -3,6 +3,7 @@
 #include "proton/Graphics/Camera.h"
 #include "proton/Core/Application.h"
 
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace proton {

@@ -11,6 +11,7 @@ public:
 
 	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
+	virtual void OnEvent(Event& e);
 
 private:
 	Scene m_Scene;

@@ -10,7 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#define TILEMAP_BLANK_TILE glm::ivec2{ -1, -1 }
+#include <box2d/b2_body.h>
 
 namespace proton {
 
@@ -90,14 +90,13 @@ namespace proton {
 
 	struct RigidBodyComponent
 	{
-		enum class BodyType { Static, Kinematic, Dynamic };
-		BodyType Type = BodyType::Static;
+		b2BodyType Type = b2_staticBody;
 		bool FixedRotation = false;
 	};
 
 	struct BoxColliderComponent
 	{
-		glm::vec2 Size = { 0.5f, 0.5f };
+		glm::vec2 Size = { 1.0f, 1.0f };
 		glm::vec2 Offset = { 0.0f, 0.0f };
 
 		float Friction = 0.5f;

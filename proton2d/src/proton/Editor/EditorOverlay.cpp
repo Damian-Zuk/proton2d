@@ -34,8 +34,10 @@ namespace proton {
 
 		auto& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;// | ImGuiConfigFlags_ViewportsEnable;
-		
 		io.Fonts->AddFontFromFileTTF(PROTON_ENGINE_ASSETS_DIR "Roboto.ttf", 18);
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.FrameRounding = 7.0f;
 
 		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -122,57 +124,19 @@ namespace proton {
 			// Select entity on mouse pressed event (Button 0)
 			if (e.GetMouseButton() == Mouse::Button0 && !ImGui::GetIO().WantCaptureMouse)
 			{
-				glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
-				auto view = m_ActiveScene->m_Registry.view<TransformComponent>();
+				std::vector<Entity> entities = m_ActiveScene->GetEntitiesOnMousePosition();
 				Entity target; float transformMaxZ = 0.0f;
 
-				for (auto entity : view)
+				for (auto& entity : entities)
 				{
-					auto& transform = view.get<TransformComponent>(entity);
-
-					// Apply entity rotation to point (mouse position)
-					// so we can easliy check after if point is inside rectangle
-					float sinus = sin(glm::radians(-transform.Rotation));
-					float cosinus = cos(glm::radians(-transform.Rotation));
-					glm::vec2 point = mousePos;
-					if (transform.Rotation)
+					auto& transform = entity.GetComponent<TransformComponent>();
+					if (!target || transform.Position.z > transformMaxZ)
 					{
-						glm::vec2 rotationCenter = glm::vec2{ transform.Position.x, transform.Position.y };
-						point -= rotationCenter;
-						point = glm::vec2{
-							point.x * cosinus - point.y * sinus + rotationCenter.x,
-							point.x * sinus + point.y * cosinus + rotationCenter.y
-						};
-					}
-
-					const auto& position = transform.Position;
-					glm::vec2 scale;
-
-					// If entity has TilemapSpriteComponent calculate size
-					// otherwise use entity TransformComponent scale
-					if (m_ActiveScene->m_Registry.any_of<TilemapSpriteComponent>(entity))
-					{
-						auto& tilemap = m_ActiveScene->m_Registry.get<TilemapSpriteComponent>(entity);
-						auto [width, height] = tilemap.TilemapSprite.GetSize();
-						scale = { transform.Scale.x * width, transform.Scale.y * height };
-					}
-					else
-						scale = transform.Scale;
-
-					// Check if point is inside entity bounding box
-					if (point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
-						&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f)
-					{
-						Entity _entity = Entity(m_ActiveScene, entity);
-						auto& transform = _entity.GetComponent<TransformComponent>();
-
-						if (!target || transform.Position.z > transformMaxZ)
-						{
-							target = _entity;
-							transformMaxZ = transform.Position.z;
-						}
+						target = entity;
+						transformMaxZ = transform.Position.z;
 					}
 				}
+
 				SetInspectorContext(target);
 			}
 			return true;
@@ -273,7 +237,7 @@ namespace proton {
 					std::ofstream file(filepath);
 					file << "{\"Scene name\": \"Sample scene\"}";
 					file.close();
-					m_ActiveScene->DestroyAllEntities();
+					m_ActiveScene->DestroyAll();
 				}
 				else
 					SceneSerializer::Serialize(filepath);
@@ -297,35 +261,27 @@ namespace proton {
 		// Load / Save Buttons
 		ImGui::Dummy({ 0, 3.0f });
 		if (ImGui::Button("Load", { 75, 25 }) && filenameIndex >= 0)
-		{
-			m_ActiveScene->DestroyAllEntities();
-			m_Inspector.m_ActiveScene->m_PlayState = 0;
-			m_Inspector.m_ActiveScene->OnEndPlay();
-			SceneSerializer::Deserialize("scenes/" + directoryScenes[filenameIndex] + ".json");
-		}
+			m_ActiveScene->LoadFromFilepath(directoryScenes[filenameIndex] + ".json");
 		
 		if (filenameIndex != -1)
 		{
 			ImGui::SameLine();
 			if (ImGui::Button("Save", { 75, 25 }))
-				SceneSerializer::Serialize("scenes/" + directoryScenes[filenameIndex] + ".json");
+				m_ActiveScene->SaveAsFile(directoryScenes[filenameIndex] + ".json");
 		}
 
 		ImGui::Dummy({ 0.0f, 3.0f });
-		if (m_Inspector.m_ActiveScene->m_PlayState)
+		if (m_ActiveScene->m_PlayState)
 		{
 			if (ImGui::Button("Stop", { 75, 25 }))
-			{
-				m_Inspector.m_ActiveScene->m_PlayState = 0;
-				m_Inspector.m_ActiveScene->OnEndPlay();
-			}
+				m_ActiveScene->LoadFromFilepath(directoryScenes[filenameIndex] + ".json");
 		}
 		else
 		{
 			if (ImGui::Button("Play", { 75, 25 }))
 			{
-				m_Inspector.m_ActiveScene->m_PlayState = 1;
-				m_Inspector.m_ActiveScene->OnBeginPlay();
+				m_ActiveScene->m_PlayState = 1;
+				m_ActiveScene->OnBeginPlay();
 			}
 		}
 		

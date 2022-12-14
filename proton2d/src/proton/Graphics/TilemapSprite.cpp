@@ -22,14 +22,14 @@ namespace proton {
 
 	void TilemapSprite::GenerateTilemapBlock()
 	{
-		bool left        = m_BlockEdges & 1;
-		bool right       = m_BlockEdges & 2;
-		bool top         = m_BlockEdges & 4;
-		bool bottom      = m_BlockEdges & 8;
-		bool topLeft     = m_BlockEdges & 16;
-		bool topRight    = m_BlockEdges & 32;
-		bool bottomLeft  = m_BlockEdges & 64;
-		bool bottomRight = m_BlockEdges & 128;
+		bool left        = m_BlockBorders & BlockBorder_Left;
+		bool right       = m_BlockBorders & BlockBorder_Right;
+		bool top         = m_BlockBorders & BlockBorder_Top;
+		bool bottom      = m_BlockBorders & BlockBorder_Bottom;
+		bool topLeft     = m_BlockBorders & BlockBorder_TopLeft;
+		bool topRight    = m_BlockBorders & BlockBorder_TopRight;
+		bool bottomLeft  = m_BlockBorders & BlockBorder_BottomLeft;
+		bool bottomRight = m_BlockBorders & BlockBorder_BottomRight;
 
 		if (m_Width == 1 && m_Height == 1) // 1x1 size
 		{
@@ -179,9 +179,9 @@ namespace proton {
 		}
 	}
 
-	void TilemapSprite::SetBlockEdges(uint8_t edges)
+	void TilemapSprite::SetBlockBorders(BlockBorders borders)
 	{
-		m_BlockEdges = edges;
+		m_BlockBorders = borders;
 	}
 
 	Shared<SpriteSheet> TilemapSprite::GetSpritesheet()
@@ -189,14 +189,14 @@ namespace proton {
 		return m_Spritesheet;
 	}
 
-	std::pair<uint32_t, uint32_t> TilemapSprite::GetSize()
+	std::pair<uint32_t, uint32_t> TilemapSprite::GetSize() const
 	{
 		return std::pair<uint32_t, uint32_t>(m_Width, m_Height);
 	}
 
-	uint8_t TilemapSprite::GetBlockEdges()
+	uint8_t TilemapSprite::GetBlockBorders()
 	{
-		return m_BlockEdges;
+		return m_BlockBorders;
 	}
 
 }

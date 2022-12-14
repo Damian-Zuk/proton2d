@@ -25,6 +25,10 @@ namespace proton {
 		m_Scene = scene;
 	}
 
+	// *****************************************
+	//       Serialize Entity Function
+	// *****************************************
+
 	json SceneSerializer::SerializeEntity(Entity entity)
 	{
 		json jsonObj;
@@ -54,6 +58,7 @@ namespace proton {
 			if (sprite)
 			{
 				jsonObj["Sprite"]["Texture"] = sprite->GetTexture()->GetPath();
+				jsonObj["Sprite"]["Filter Mode"] = sprite->GetTexture()->GetFilterMode();
 				jsonObj["Sprite"]["Flip"] = { sprite->m_FlipX, sprite->m_FlipY };
 
 				if (sprite->m_SpriteSheet)
@@ -78,7 +83,7 @@ namespace proton {
 			auto [width, height] = tilemap.TilemapSprite.GetSize();
 			jsonObj["TilemapSprite"]["Width"] = width;
 			jsonObj["TilemapSprite"]["Height"] = height;
-			jsonObj["TilemapSprite"]["BlockEdges"] = tilemap.TilemapSprite.GetBlockEdges();
+			jsonObj["TilemapSprite"]["BlockBorders"] = tilemap.TilemapSprite.GetBlockBorders();
 		}
 
 		// Serialize ScriptComponent
@@ -122,6 +127,7 @@ namespace proton {
 			jsonObj["BoxCollider"]["Restitution"] = collider.Restitution;
 			jsonObj["BoxCollider"]["RestitutionThreshold"] = collider.RestitutionThreshold;
 			jsonObj["BoxCollider"]["Density"] = collider.Density;
+			jsonObj["BoxCollider"]["IsSensor"] = collider.IsSensor;
 		}
 
 		// Serialize child entities
@@ -141,11 +147,17 @@ namespace proton {
 		return jsonObj;
 	}
 
+	// *****************************************
+	//         Serialize Scene Function
+	// *****************************************
+
 	bool SceneSerializer::Serialize(const std::string& filepath)
 	{
 		assert(m_Scene && "Scene context not set!");
 		json jsonObj;
 		jsonObj["Scene name"] = m_Scene->m_SceneName;
+		jsonObj["World gravity"] = m_Scene->m_WorldGravity;
+		jsonObj["Enable physics"] = m_Scene->m_EnablePhysics;
 
 		m_Scene->m_Registry.each([&](auto id)
 		{
@@ -165,6 +177,10 @@ namespace proton {
 		return true;
 	}
 	
+	// *****************************************
+	//       Deserialize Scene Function
+	// *****************************************
+
 	bool SceneSerializer::Deserialize(const std::string& filepath)
 	{
 		std::string jsonData = ReadFileBinary(filepath);
@@ -172,6 +188,8 @@ namespace proton {
 		{
 			json jsonObj = json::parse(jsonData);
 			m_Scene->m_SceneName = jsonObj["Scene name"];
+			m_Scene->m_WorldGravity = jsonObj["World gravity"];
+			//m_Scene->m_EnablePhysics = jsonObj["Enable physics"];
 		
 			json& entities = jsonObj["Entities"];
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)
@@ -181,6 +199,10 @@ namespace proton {
 		}
 		return false;
 	}
+
+	// *****************************************
+	//       Deserialize Entity Function
+	// *****************************************
 
 	Entity SceneSerializer::DeserializeEntity(json jsonObj)
 	{
@@ -216,6 +238,7 @@ namespace proton {
 						= CreateShared<Sprite>(AssetsManager::GetTexture(sprite["Texture"]));
 				}
 
+				spriteComponent.Sprite->GetTexture()->m_FilterMode = sprite["Filter Mode"];
 				spriteComponent.Sprite->m_FlipX = sprite["Flip"][0];
 				spriteComponent.Sprite->m_FlipX = sprite["Flip"][1];
 			}
@@ -229,7 +252,7 @@ namespace proton {
 		{
 			auto& tilemap = entity.AddComponent<TilemapSpriteComponent>();
 			tilemap.TilemapSprite.SetSize(jsonObj["TilemapSprite"]["Width"], jsonObj["TilemapSprite"]["Height"]);
-			tilemap.TilemapSprite.SetBlockEdges(jsonObj["TilemapSprite"]["BlockEdges"]);
+			tilemap.TilemapSprite.SetBlockBorders(jsonObj["TilemapSprite"]["BlockBorders"]);
 			tilemap.TilemapSprite.GenerateTilemapBlock();
 
 			if (jsonObj["TilemapSprite"].contains("Spritesheet"))
@@ -258,6 +281,7 @@ namespace proton {
 			collider.Restitution = boxCollider["Restitution"];
 			collider.RestitutionThreshold = boxCollider["RestitutionThreshold"];
 			collider.Density = boxCollider["Density"];
+			collider.IsSensor = boxCollider["IsSensor"];
 		}
 
 		// Deserialize scripts

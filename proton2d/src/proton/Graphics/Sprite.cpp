@@ -92,6 +92,16 @@ namespace proton {
 		m_PosX = x; m_PosY = y;
 	}
 
+	void Sprite::SetTileX(uint32_t x, uint32_t sizeX, uint32_t sizeY)
+	{
+		SetTile(x, m_PosY);
+	}
+
+	void Sprite::SetTileY(uint32_t y, uint32_t sizeX, uint32_t sizeY)
+	{
+		SetTile(m_PosX, y);
+	}
+
 	void Sprite::NextTile(uint32_t posY, uint32_t sizeX, uint32_t sizeY)
 	{
 		SetTile(m_PosX + 1, posY, sizeX, sizeY);
