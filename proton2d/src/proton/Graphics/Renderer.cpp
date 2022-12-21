@@ -12,9 +12,10 @@
 #include "proton/Graphics/OpenGL/VertexArray.h"
 #include "proton/Graphics/OpenGL/Texture.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 
 namespace proton {
 
@@ -134,8 +135,8 @@ namespace proton {
 		// Init texture slots vector, shaders and camera uniform buffer
 		data.TextureSlots.resize(data.MaxTextureSlots);
 		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true); // white texture
-		data.QuadShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Quad2D.glsl");
-		data.LineShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "shaders/Line2D.glsl");
+		data.QuadShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "/shaders/Quad2D.glsl");
+		data.LineShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "/shaders/Line2D.glsl");
 		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
 	}
 
@@ -145,10 +146,12 @@ namespace proton {
 		delete[] data.LineVertexBufferBase;
 	}
 
-	void Renderer::BeginScene(const Camera& camera)
+	void Renderer::BeginScene(const Camera& camera, const glm::vec3& position)
 	{
 		PROFILE_FUNCTION();
-		data.CameraUniformBuffer->SetData(&camera.GetViewProjection(), sizeof(glm::mat4));
+		glm::mat4 viewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), position));
+		glm::mat4 viewProjection = camera.GetProjection() * viewMatrix;
+		data.CameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
 		data.OpenGLDrawCalls = 0;
 		StartBatch();
 	}
@@ -347,11 +350,6 @@ namespace proton {
 		data.MaxQuads = count;
 		data.MaxVertices = data.MaxQuads * 4;
 		data.MaxIndices = data.MaxQuads * 6;
-	}
-
-	void Renderer::ClearDepthBuffer()
-	{
-		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	uint32_t Renderer::GetDrawCallsCount()

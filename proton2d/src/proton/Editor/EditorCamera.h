@@ -6,10 +6,10 @@
 
 namespace proton {
 
-	class EditorCameraController {
+	class EditorCamera {
 	public:
-		EditorCameraController(const Shared<Camera>& camera = CreateShared<Camera>());
-		virtual ~EditorCameraController() = default;
+		EditorCamera(const Shared<Camera>& camera = CreateShared<Camera>());
+		virtual ~EditorCamera() = default;
 
 		void OnUpdate(float ts);
 		void OnEvent(Event& e);
@@ -17,9 +17,14 @@ namespace proton {
 		Shared<Camera> GetCamera() { return m_Camera; }
 		const Shared<Camera> GetCamera() const { return m_Camera; }
 
+		const glm::vec3& GetPosition() const { return m_Position; }
+
 	private:
 		Shared<Camera> m_Camera;
-		float m_AspectRatio = 16.0f / 9.0f;
+		
+		glm::vec3 m_Position;
+
+		float m_AspectRatio;
 		float m_CameraSpeed = 3.0f;
 		float m_ZoomLevelTarget = 1.0f;
 		float m_CameraZoomSpeed = 0.10f;

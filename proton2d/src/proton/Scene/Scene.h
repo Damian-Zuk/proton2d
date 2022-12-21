@@ -13,17 +13,19 @@ namespace proton {
 
 	class Entity;
 
+	enum class SceneState
+	{
+		EditMode, PlayMode, Paused
+	};
+
 	class Scene
 	{
 	public:
 		Scene(const std::string& name = "Unnamed scene");
 		~Scene();
 
-		// Serialize scene to specified file (JSON format)
-		void SaveAsFile(const std::string& filepath);
-
-		// Deserialize scene to specified file (JSON format)
-		void LoadFromFilepath(const std::string& filepath);
+		// Call this function in your AppLayer OnUpdate function to update and render scene.
+		void OnUpdate(float ts);
 		
 		// Create entitiy with random identifier
 		Entity CreateEntity(const std::string& name = "Unnamed entity");
@@ -54,36 +56,48 @@ namespace proton {
 		// Entity must have RigidbodyComponent.
 		b2Body* GetBox2DRuntimeBody(UUID id);
 
-		void SetPrimaryCamera(Shared<Camera> camera);
+		// Enitity is required to have CameraComponent
+		void SetPrimaryCameraEntity(Entity entity);
 		Shared<Camera> GetPrimaryCamera();
+		Entity GetPrimaryCameraEntity();
 
-		glm::vec2 GetMouseWorldPosition() const;
+		glm::vec2 GetMouseWorldPosition();
 		std::vector<Entity> GetEntitiesOnMousePosition(); // todo: add default argument "useCollider"
 
-		// Call this function in your AppLayer update function to update and render scene.
-		void OnUpdate(float ts);
+		// Serialize scene to specified file (JSON format)
+		void SaveAsFile(const std::string& filepath);
+
+		// Deserialize scene to specified file (JSON format)
+		void LoadFromFilepath(const std::string& filepath);
+
+		// Get scene filepath. If scene is unsaved returns empty string
+		std::string GetFilepath();
 	
 	private:
 		void OnBeginPlay();
 		void OnEndPlay();
 		void RenderScene(const Camera& camera);
 
+		glm::vec3 GetPrimaryCameraPosition();
+
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
 
 	private:
 		std::string m_SceneName;
-		entt::registry m_Registry;
-		Shared<Camera> m_PrimaryCamera;
-		Camera m_DefaultCamera;
+		std::string m_SceneFilepath;
+		SceneState m_SceneState;
 
-		bool m_PlayState = false;
-		std::vector<Entity> m_RuntimeEntities;
+		entt::registry m_Registry;
 
 		bool m_EnablePhysics = true;
-		b2World* m_World = nullptr;
 		float m_WorldGravity = 9.8f;
-		std::unordered_map<UUID, b2Body*> m_RigidBodies;
+		b2World* m_World = nullptr;
+		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
+
+		entt::entity m_PrimaryCameraEntity = entt::null;
+		Shared<Camera> m_PrimaryCamera;
+		Shared<Camera> m_DefaultCamera;
 
 		friend class Entity;
 		friend class EditorOverlay;

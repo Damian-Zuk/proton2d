@@ -34,7 +34,7 @@ namespace proton {
 		json jsonObj;
 
 		// Serialize IDComponent
-		auto& uuid = entity.GetComponent<IDComponent>().ID;
+		auto& uuid = entity.GetUUID();
 		jsonObj["ID"] = (uint64_t)uuid;
 
 		// Serialize TagComponent
@@ -58,7 +58,7 @@ namespace proton {
 			if (sprite)
 			{
 				jsonObj["Sprite"]["Texture"] = sprite->GetTexture()->GetPath();
-				jsonObj["Sprite"]["Filter Mode"] = sprite->GetTexture()->GetFilterMode();
+				jsonObj["Sprite"]["FilterMode"] = sprite->GetTexture()->GetFilterMode();
 				jsonObj["Sprite"]["Flip"] = { sprite->m_FlipX, sprite->m_FlipY };
 
 				if (sprite->m_SpriteSheet)
@@ -86,6 +86,34 @@ namespace proton {
 			jsonObj["TilemapSprite"]["BlockBorders"] = tilemap.TilemapSprite.GetBlockBorders();
 		}
 
+		// Serialize CameraComponent
+		if (entity.HasComponent<CameraComponent>())
+		{
+			auto& camera = entity.GetComponent<CameraComponent>();
+			jsonObj["Camera"]["ZoomLevel"] = camera.Camera->GetZoomLevel();
+		}
+
+		// Serialize RigidbodyComponent
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			auto& rb = entity.GetComponent<RigidbodyComponent>();
+			jsonObj["Rigidbody"]["Type"] = rb.Type;
+			jsonObj["Rigidbody"]["FixedRotation"] = rb.FixedRotation;
+		}
+
+		// Serialize BoxColliderComponent
+		if (entity.HasComponent<BoxColliderComponent>())
+		{
+			auto& collider = entity.GetComponent<BoxColliderComponent>();
+			jsonObj["BoxCollider"]["Size"] = { collider.Size.x, collider.Size.y };
+			jsonObj["BoxCollider"]["Offset"] = { collider.Offset.x, collider.Offset.y };
+			jsonObj["BoxCollider"]["Friction"] = collider.Material.Friction;
+			jsonObj["BoxCollider"]["Restitution"] = collider.Material.Restitution;
+			jsonObj["BoxCollider"]["RestitutionThreshold"] = collider.Material.RestitutionThreshold;
+			jsonObj["BoxCollider"]["Density"] = collider.Material.Density;
+			jsonObj["BoxCollider"]["IsSensor"] = collider.IsSensor;
+		}
+
 		// Serialize ScriptComponent
 		if (entity.HasComponent<ScriptComponent>())
 		{
@@ -107,27 +135,6 @@ namespace proton {
 				}
 				jsonObj["Scripts"].push_back(scriptObj);
 			}
-		}
-
-		// Serialize RigidBodyComponent
-		if (entity.HasComponent<RigidBodyComponent>())
-		{
-			auto& rb = entity.GetComponent<RigidBodyComponent>();
-			jsonObj["RigidBody"]["Type"] = rb.Type;
-			jsonObj["RigidBody"]["FixedRotation"] = rb.FixedRotation;
-		}
-
-		// Serialize BoxColliderComponent
-		if (entity.HasComponent<BoxColliderComponent>())
-		{
-			auto& collider = entity.GetComponent<BoxColliderComponent>();
-			jsonObj["BoxCollider"]["Size"] = { collider.Size.x, collider.Size.y };
-			jsonObj["BoxCollider"]["Offset"] = { collider.Offset.x, collider.Offset.y };
-			jsonObj["BoxCollider"]["Friction"] = collider.Friction;
-			jsonObj["BoxCollider"]["Restitution"] = collider.Restitution;
-			jsonObj["BoxCollider"]["RestitutionThreshold"] = collider.RestitutionThreshold;
-			jsonObj["BoxCollider"]["Density"] = collider.Density;
-			jsonObj["BoxCollider"]["IsSensor"] = collider.IsSensor;
 		}
 
 		// Serialize child entities
@@ -155,9 +162,16 @@ namespace proton {
 	{
 		assert(m_Scene && "Scene context not set!");
 		json jsonObj;
-		jsonObj["Scene name"] = m_Scene->m_SceneName;
-		jsonObj["World gravity"] = m_Scene->m_WorldGravity;
-		jsonObj["Enable physics"] = m_Scene->m_EnablePhysics;
+		jsonObj["SceneName"] = m_Scene->m_SceneName;
+		jsonObj["EnablePhysics"] = m_Scene->m_EnablePhysics;
+		jsonObj["GravityForce"] = m_Scene->m_WorldGravity;
+
+		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
+		if (primaryCameraEntity)
+		{
+			uint64_t id = m_Scene->GetPrimaryCameraEntity().GetUUID();
+			jsonObj["PrimaryCameraEntity"] = id;
+		}
 
 		m_Scene->m_Registry.each([&](auto id)
 		{
@@ -187,13 +201,19 @@ namespace proton {
 		if (jsonData.size())
 		{
 			json jsonObj = json::parse(jsonData);
-			m_Scene->m_SceneName = jsonObj["Scene name"];
-			m_Scene->m_WorldGravity = jsonObj["World gravity"];
-			//m_Scene->m_EnablePhysics = jsonObj["Enable physics"];
+			m_Scene->m_SceneName = jsonObj["SceneName"];
+			m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
+			m_Scene->m_WorldGravity = jsonObj["GravityForce"];
 		
 			json& entities = jsonObj["Entities"];
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)
 				DeserializeEntity(*it);
+
+			if (jsonObj.contains("PrimaryCameraEntity"))
+			{
+				UUID id{ jsonObj["PrimaryCameraEntity"] };
+				m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
+			}
 
 			return true;
 		}
@@ -238,7 +258,7 @@ namespace proton {
 						= CreateShared<Sprite>(AssetsManager::GetTexture(sprite["Texture"]));
 				}
 
-				spriteComponent.Sprite->GetTexture()->m_FilterMode = sprite["Filter Mode"];
+				spriteComponent.Sprite->GetTexture()->m_FilterMode = sprite["FilterMode"];
 				spriteComponent.Sprite->m_FlipX = sprite["Flip"][0];
 				spriteComponent.Sprite->m_FlipX = sprite["Flip"][1];
 			}
@@ -259,12 +279,19 @@ namespace proton {
 				tilemap.TilemapSprite.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonObj["TilemapSprite"]["Spritesheet"]));
 		}
 
-		// Deserialize RigidBodyComponent
-		if (jsonObj.contains("RigidBody"))
+		// Deserialize CameraComponent
+		if (jsonObj.contains("Camera"))
 		{
-			auto& rb = entity.AddComponent<RigidBodyComponent>();
-			rb.Type = jsonObj["RigidBody"]["Type"];
-			rb.FixedRotation = jsonObj["RigidBody"]["FixedRotation"];
+			auto& camera = entity.AddComponent<CameraComponent>();
+			camera.Camera->SetZoomLevel(jsonObj["Camera"]["ZoomLevel"]);
+		}
+
+		// Deserialize RigidbodyComponent
+		if (jsonObj.contains("Rigidbody"))
+		{
+			auto& rb = entity.AddComponent<RigidbodyComponent>();
+			rb.Type = jsonObj["Rigidbody"]["Type"];
+			rb.FixedRotation = jsonObj["Rigidbody"]["FixedRotation"];
 		}
 
 		// Deserialize BoxColliderComponent
@@ -277,10 +304,10 @@ namespace proton {
 
 			collider.Size = { size[0], size[1] };
 			collider.Offset = { offset[0], offset[1] };
-			collider.Friction = boxCollider["Friction"];
-			collider.Restitution = boxCollider["Restitution"];
-			collider.RestitutionThreshold = boxCollider["RestitutionThreshold"];
-			collider.Density = boxCollider["Density"];
+			collider.Material.Friction = boxCollider["Friction"];
+			collider.Material.Restitution = boxCollider["Restitution"];
+			collider.Material.RestitutionThreshold = boxCollider["RestitutionThreshold"];
+			collider.Material.Density = boxCollider["Density"];
 			collider.IsSensor = boxCollider["IsSensor"];
 		}
 
@@ -290,7 +317,7 @@ namespace proton {
 			for (auto& scriptJson : jsonObj["Scripts"])
 			{
 				std::string scriptClassName = scriptJson["ClassName"];
-				auto& registeredScripts = ScriptFactory::GetScripts();
+				auto& registeredScripts = ScriptFactory::Get().GetScripts();
 				
 				if (registeredScripts.find(scriptClassName) == registeredScripts.end())
 					LOG_ERROR("[SceneSerializer] Script not found:", scriptClassName);

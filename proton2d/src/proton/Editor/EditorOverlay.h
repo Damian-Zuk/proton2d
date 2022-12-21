@@ -4,7 +4,7 @@
 
 #include "proton/Editor/Inspector.h"
 #include "proton/Editor/DebugInfo.h"
-#include "proton/Editor/EditorCameraController.h"
+#include "proton/Editor/EditorCamera.h"
 
 namespace proton {
 
@@ -44,9 +44,10 @@ namespace proton {
 		Inspector m_Inspector;
 		DebugInfo m_DebugInfo;
 
-		EditorCameraController m_CameraController;
+		EditorCamera m_Camera;
 
 		Scene* m_ActiveScene = nullptr;
+		std::string m_ActiveSceneFilepath;
 
 		friend class Application;
 		friend class Inspector;

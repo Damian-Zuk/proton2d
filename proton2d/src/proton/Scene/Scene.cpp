@@ -21,16 +21,17 @@
 namespace proton {
 
 	constexpr static glm::vec4 s_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
-	constexpr int32_t s_PhysicsVelocityIterations = 6;
-	constexpr int32_t s_PhysicsPositionIterations = 2;
+	constexpr static int32_t s_PhysicsVelocityIterations = 5;
+	constexpr static int32_t s_PhysicsPositionIterations = 5;
 
 	Scene::Scene(const std::string& name)
-		: m_SceneName(name)
+		: m_SceneName(name), m_DefaultCamera(CreateShared<Camera>())
 	{
 		Renderer::SetClearColor(s_ClearColor);
-		#ifndef PROTON_DISTRIBUTION
-			EditorOverlay::SetSceneContext(this);
-		#endif
+#if PROTON_EDITOR
+		EditorOverlay::SetSceneContext(this);
+		m_SceneState = SceneState::EditMode;
+#endif
 	}
 
 	Scene::~Scene()
@@ -41,40 +42,49 @@ namespace proton {
 				scriptData.DestroyInstanceFunction();
 		});
 
-		if (m_PlayState)
-			OnEndPlay();
+		OnEndPlay();
 	}
 
 	void Scene::SaveAsFile(const std::string& filepath)
 	{
 		SceneSerializer::SetContext(this);
 		SceneSerializer::Serialize("scenes/" + filepath);
+		m_SceneFilepath = filepath;
 	}
 
 	void Scene::LoadFromFilepath(const std::string& filepath)
 	{
-		if (m_PlayState)
+		if (m_SceneState == SceneState::PlayMode)
 		{
 			OnEndPlay();
-			m_PlayState = 0;
+#if PROTON_EDITOR
+			m_SceneState = SceneState::EditMode;
+#else
+			OnBeginPlay();
+#endif
 		}
 
 		DestroyAll();
 		SceneSerializer::SetContext(this);
 		SceneSerializer::Deserialize("scenes/" + filepath);
+		m_SceneFilepath = filepath;
 
-#ifndef PROTON_DISTRIBUTION
+#if PROTON_EDITOR
 		EditorOverlay::SetInspectorContext(Entity{});
-#endif // PROTON_DISTRIBUTION
+		if (EditorOverlay::Get()->m_ActiveScene == this)
+			EditorOverlay::Get()->m_ActiveSceneFilepath = filepath;
+#endif
+	}
+
+	std::string Scene::GetFilepath()
+	{
+		return m_SceneFilepath;
 	}
 
 	b2Body* Scene::CreateBox2DRuntimeBody(Entity entity)
 	{
-		if (!m_PlayState)
-			return nullptr;
-
 		auto& transform = entity.GetComponent<TransformComponent>();
-		auto& rb = entity.GetComponent<RigidBodyComponent>();
+		auto& rb = entity.GetComponent<RigidbodyComponent>();
 		
 		// Create body definition
 		b2BodyDef bodyDef;
@@ -82,15 +92,14 @@ namespace proton {
 		bodyDef.position.Set(transform.Position.x, transform.Position.y);
 		bodyDef.angle = glm::radians(transform.Rotation);
 
-		// Create box2d rigid body
+		// Create box2d body
 		b2Body* body = m_World->CreateBody(&bodyDef);
 		body->SetFixedRotation(rb.FixedRotation);
 
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
 			auto& bc = entity.GetComponent<BoxColliderComponent>();
-			b2PolygonShape shape;
-			b2FixtureDef fixtureDef;
+			b2FixtureDef fixtureDef; b2PolygonShape shape;
 
 			if (entity.HasComponent<TilemapSpriteComponent>())
 			{
@@ -99,44 +108,42 @@ namespace proton {
 					tilemap.m_Height * bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
 			}
 			else
-				shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
-					bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
+			shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
+				bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
 
+			// Set physics material proporties for body fixture
+			const PhysicsMaterial& material = bc.Material;
 			fixtureDef.shape = &shape;
-			fixtureDef.friction = bc.Friction;
-			fixtureDef.restitution = bc.Restitution;
-			fixtureDef.restitutionThreshold = bc.RestitutionThreshold;
-			fixtureDef.density = bc.Density;
+			fixtureDef.friction = material.Friction;
+			fixtureDef.restitution = material.Restitution;
+			fixtureDef.restitutionThreshold = material.RestitutionThreshold;
+			fixtureDef.density = material.Density;
 			fixtureDef.isSensor = bc.IsSensor;
 			body->CreateFixture(&fixtureDef);
 		}
 
-		// Add rigid body to unordered map
-		m_RigidBodies[(UUID)entity.GetComponent<IDComponent>().ID] = body;
+		m_RuntimeBodies[entity.GetUUID()] = body;
 		return body;
 	}
 
 	void Scene::OnBeginPlay()
-	{
+	{	
 		// Initialize physics world
+		m_SceneState = SceneState::PlayMode;
 		m_World = new b2World({ 0.0f, -m_WorldGravity });
-		auto view = m_Registry.view<IDComponent, TransformComponent, RigidBodyComponent>();
-		for (auto entity : view)
-		{
-			auto [id, transform, rb] = view.get<IDComponent, TransformComponent, RigidBodyComponent>(entity);
+		for (entt::entity entity : m_Registry.view<RigidbodyComponent>())
 			CreateBox2DRuntimeBody(Entity{ this, entity });
-		}
 	}
 
 	void Scene::OnEndPlay()
 	{
-		if (!m_World)
+		if (m_World)
 		{
 			delete m_World;
 			m_World = nullptr;
 		}
 
-		m_RigidBodies.clear();
+		m_RuntimeBodies.clear();
 	}
 	 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -169,7 +176,7 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
-		if (m_PlayState)
+		if (m_SceneState == SceneState::PlayMode)
 		{
 			// Update scripts
 			{
@@ -194,24 +201,20 @@ namespace proton {
 			{
 				PROFILE_SCOPE("update_physics");
 				m_World->Step(ts, s_PhysicsVelocityIterations, s_PhysicsPositionIterations);
-				auto view = m_Registry.view<IDComponent, TransformComponent, RigidBodyComponent>();
+				auto view = m_Registry.view<IDComponent, TransformComponent, RigidbodyComponent>();
 				for (auto entity : view)
 				{
-					auto [id, transform, rb] = view.get<IDComponent, TransformComponent, RigidBodyComponent>(entity);
-					b2Body* body = m_RigidBodies.at(id.ID);
-					const auto& position = body->GetPosition();
-					transform.Position.x = position.x;
-					transform.Position.y = position.y;
+					auto [id, transform] = view.get<IDComponent, TransformComponent>(entity);
+					b2Body* body = m_RuntimeBodies.at(id.ID);
+					transform.Position.x = body->GetPosition().x;
+					transform.Position.y = body->GetPosition().y;
 					transform.Rotation = glm::degrees(body->GetAngle());
 				}
 			}
 		}
 
 		// Render scene
-		if (!m_PrimaryCamera)
-			RenderScene(m_DefaultCamera);
-		else
-			RenderScene(*m_PrimaryCamera);
+		RenderScene(*GetPrimaryCamera());
 	}
 
 	Entity Scene::FindByID(UUID id)
@@ -251,7 +254,7 @@ namespace proton {
 
 	b2Body* Scene::GetBox2DRuntimeBody(UUID id)
 	{
-		return m_RigidBodies.at(id);
+		return m_RuntimeBodies.at(id);
 	}
 
 	static glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation = 0.0f)
@@ -265,7 +268,7 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 		Renderer::Clear();
-		Renderer::BeginScene(camera);
+		Renderer::BeginScene(camera, GetPrimaryCameraPosition());
 
 		// ***************************************************
 		// Render entities with SpriteComponent
@@ -293,7 +296,7 @@ namespace proton {
 			else
 				Renderer::DrawQuad(transformMatrix, sprite.Color);
 
-#ifndef PROTON_DISTRIBUTION
+#if PROTON_EDITOR
 			// Draw box collider
 			Entity entity = Entity{ this, e };
 			if (entity.HasComponent<BoxColliderComponent>())
@@ -312,7 +315,7 @@ namespace proton {
 					Renderer::DrawQuad(transformMatrix, { 0.9f, 0.6f, 0.3f, 0.5f });
 				}
 			}
-#endif // PROTON_DISTRIBUTION
+#endif 
 		}
 
 		// ***************************************************
@@ -351,7 +354,7 @@ namespace proton {
 				}
 			}
 
-#ifndef PROTON_DISTRIBUTION
+#if PROTON_EDITOR
 			// Draw box collider
 			Entity entity = Entity{ this, e };
 			if (entity.HasComponent<BoxColliderComponent>())
@@ -372,17 +375,17 @@ namespace proton {
 					Renderer::DrawQuad(transformMatrix, color);
 				}
 			}
-#endif // PROTON_DISTRIBUTION
+#endif
 		}
 
-#ifndef PROTON_DISTRIBUTION
+#if PROTON_EDITOR
 		// Draw selected entity outline
 		Entity selectedEntity = EditorOverlay::GetInspectorContext();
 		EditorOverlay* editor = EditorOverlay::Get();
 		if (selectedEntity && editor->m_ShowSelectionOutline)
 		{
 			auto& transform = selectedEntity.GetComponent<TransformComponent>();
-			float padding = glm::sqrt(m_PrimaryCamera->GetZoomLevel()) * 0.05f;
+			float padding = glm::sqrt(GetPrimaryCamera()->GetZoomLevel()) * 0.05f;
 			glm::vec3 scale;
 			
 			if (selectedEntity.HasComponent<TilemapSpriteComponent>())
@@ -403,27 +406,51 @@ namespace proton {
 			Renderer::SetLineWidth(glm::min(50.0f * padding, 1.0f));
 			Renderer::DrawRect(transformMatrix, color);
 		}
-#endif // PROTON_DISTRIBUTION
+#endif
 
 		Renderer::EndScene();
 	}
 
-	void Scene::SetPrimaryCamera(Shared<Camera> camera)
+	void Scene::SetPrimaryCameraEntity(Entity entity)
 	{
-		m_PrimaryCamera = camera;
+		if (!entity)
+		{
+			m_PrimaryCamera = nullptr;
+			m_PrimaryCameraEntity = entity.m_Handle;
+			return;
+		}
+
+		if (entity.HasComponent<CameraComponent>())
+		{
+			auto& camera = entity.GetComponent<CameraComponent>();
+			m_PrimaryCamera = camera.Camera;
+			m_PrimaryCameraEntity = entity.m_Handle;
+		}
 	}
 
 	Shared<Camera> Scene::GetPrimaryCamera()
 	{
-		return m_PrimaryCamera;
+#if PROTON_EDITOR
+		if (m_SceneState != SceneState::EditMode) {
+#endif
+			return m_PrimaryCamera ? m_PrimaryCamera : m_DefaultCamera;
+#if PROTON_EDITOR
+		}
+		return EditorOverlay::Get()->m_Camera.GetCamera();
+#endif
 	}
 
-	glm::vec2 Scene::GetMouseWorldPosition() const
+	Entity Scene::GetPrimaryCameraEntity()
+	{
+		return Entity{ this, m_PrimaryCameraEntity };
+	}
+
+	glm::vec2 Scene::GetMouseWorldPosition()
 	{
 		Window& window = Application::Get().GetWindow();
 		uint32_t width = window.GetWidth(), height = window.GetHeight();
-		OrthoProjection ortho = m_PrimaryCamera->GetOrthoProjection();
-		glm::vec3 cameraPos = m_PrimaryCamera->GetPosition();
+		OrthoProjection ortho = GetPrimaryCamera()->GetOrthoProjection();
+		glm::vec3 cameraPos = GetPrimaryCameraPosition();
 		auto& [mouseX, mouseY] = Input::GetMousePosition();
 
 		return glm::vec2 {
@@ -479,6 +506,19 @@ namespace proton {
 			}
 		}
 		return entities;
+	}
+
+	glm::vec3 Scene::GetPrimaryCameraPosition()
+	{
+#if PROTON_EDITOR
+		if (m_SceneState != SceneState::EditMode) {
+#endif
+			return m_PrimaryCameraEntity == entt::null ? glm::vec3{ 0.0f }
+				: m_Registry.get<TransformComponent>(m_PrimaryCameraEntity).Position;
+#if PROTON_EDITOR
+		} 
+		return EditorOverlay::Get()->m_Camera.GetPosition();
+#endif
 	}
 
 	uint32_t Scene::GetEntitiesCount() const

@@ -34,7 +34,7 @@ namespace proton {
 
 		auto& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;// | ImGuiConfigFlags_ViewportsEnable;
-		io.Fonts->AddFontFromFileTTF(PROTON_ENGINE_ASSETS_DIR "Roboto.ttf", 18);
+		io.Fonts->AddFontFromFileTTF(PROTON_ENGINE_ASSETS_DIR "/Roboto.ttf", 18);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FrameRounding = 7.0f;
@@ -53,7 +53,7 @@ namespace proton {
 
 	void EditorOverlay::OnUpdate(float ts)
 	{
-		m_CameraController.OnUpdate(ts);
+		m_Camera.OnUpdate(ts);
 	}
 
 	void EditorOverlay::OnImGuiRender()
@@ -66,6 +66,9 @@ namespace proton {
 		ImGui::Begin("Hierarchy");
 		if (m_ActiveScene)
 		{
+			if (!m_Inspector.m_SelectedEntity.IsValid())
+				m_Inspector.SetSelectionContext(Entity{});
+
 			ImGui::Dummy({0.0f, 1.0f});
 			if (ImGui::Button("Create new entity", {340.0f, 25.0f}))
 			{
@@ -116,7 +119,7 @@ namespace proton {
 
 	void EditorOverlay::OnEvent(Event& event)
 	{
-		m_CameraController.OnEvent(event);
+		m_Camera.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
@@ -180,14 +183,12 @@ namespace proton {
 	{
 		static std::vector<std::string> directoryScenes = GetFilesFromDirectory("scenes");
 		static int filenameIndex = -1;
-		static std::string filename = directoryScenes.size() ? directoryScenes[0].c_str() : "No scenes found";
 		static bool createNewScenePopup = false;
 
 		ImGui::Begin("Scene##serialization_panel");
 
 		// Level select combo
-		if (ImGui::BeginCombo("##select_path", filenameIndex < 0 ? "Select scene..." :
-			(directoryScenes.size() ? directoryScenes[filenameIndex].c_str() : "No scenes found")))
+		if (ImGui::BeginCombo("##select_path", filenameIndex < 0 ? "Select scene..." : directoryScenes[filenameIndex].c_str()))
 		{
 			directoryScenes = GetFilesFromDirectory("scenes");
 
@@ -271,18 +272,19 @@ namespace proton {
 		}
 
 		ImGui::Dummy({ 0.0f, 3.0f });
-		if (m_ActiveScene->m_PlayState)
+		if (m_ActiveScene->m_SceneState == SceneState::PlayMode)
 		{
 			if (ImGui::Button("Stop", { 75, 25 }))
-				m_ActiveScene->LoadFromFilepath(directoryScenes[filenameIndex] + ".json");
+			{
+				std::string filepath = m_ActiveScene->GetFilepath();
+				if (filepath.size())
+					m_ActiveScene->LoadFromFilepath(filepath);
+			}
 		}
 		else
 		{
 			if (ImGui::Button("Play", { 75, 25 }))
-			{
-				m_ActiveScene->m_PlayState = 1;
 				m_ActiveScene->OnBeginPlay();
-			}
 		}
 		
 		ImGui::End();
@@ -293,7 +295,6 @@ namespace proton {
 	#ifndef PROTON_DISTRIBUTION
 		s_Instance->m_ActiveScene = context;
 		s_Instance->m_Inspector.m_ActiveScene = context;
-		context->SetPrimaryCamera(s_Instance->m_CameraController.GetCamera());
 		SceneSerializer::SetContext(context);
 	#endif
 	}

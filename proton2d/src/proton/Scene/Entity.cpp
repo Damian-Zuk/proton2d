@@ -10,13 +10,16 @@ namespace proton
 	{
 	}
 
-	UUID Entity::GetID() const
+	UUID Entity::GetUUID() const
 	{
 		return GetComponent<IDComponent>().ID;
 	}
 
 	bool Entity::IsValid()
 	{
+		if (m_Handle == entt::null)
+			return false;
+
 		if (!m_Scene->m_Registry.valid(m_Handle))
 		{
 			m_Handle = entt::null;
@@ -41,6 +44,45 @@ namespace proton
 
 			current = next;
 		}
+	}
+
+	b2Body* Entity::GetBox2DRigidbody()
+	{
+		if (!HasComponent<RigidbodyComponent>())
+			return nullptr;
+
+		auto& id = GetComponent<IDComponent>();
+		return m_Scene->GetBox2DRuntimeBody(id.ID);
+	}
+
+	void Entity::SetVelocity(float x_mps, float y_mps)
+	{
+		b2Body* body = GetBox2DRigidbody();
+		body->SetLinearVelocity({ x_mps, y_mps });
+	}
+
+	void Entity::SetVelocityX(float mps)
+	{
+		b2Body* body = GetBox2DRigidbody();
+		body->SetLinearVelocity({ mps, body->GetLinearVelocity().y });
+	}
+
+	void Entity::SetVelocityY(float mps)
+	{
+		b2Body* body = GetBox2DRigidbody();
+		body->SetLinearVelocity({ body->GetLinearVelocity().x, mps });
+	}
+
+	glm::vec2 Entity::GetVelocity()
+	{
+		b2Vec2 velocity = GetBox2DRigidbody()->GetLinearVelocity();
+		return glm::vec2{ velocity.x, velocity.y };
+	}
+
+	void Entity::ApplyImpulse(const glm::vec2& impulse)
+	{
+		b2Body* body = GetBox2DRigidbody();
+		body->ApplyLinearImpulse({impulse.x, impulse.y }, body->GetWorldCenter(), true);
 	}
 
 	void Entity::Destroy()

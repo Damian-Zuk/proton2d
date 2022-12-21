@@ -51,7 +51,6 @@ namespace proton {
 
 		Logger::init();
 		Renderer::Init();
-		ScriptFactory::Init();
 
 		if (OnCreate()) 
 		{

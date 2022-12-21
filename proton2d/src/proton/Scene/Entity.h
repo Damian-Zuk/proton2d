@@ -28,6 +28,15 @@ namespace proton {
 			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward<Types>(args)...);
 		}
 
+		template<>
+		CameraComponent& AddComponent() const
+		{
+			assert(!HasComponent<T>() && "Entity already have component!");
+			auto& camera = m_Scene->m_Registry.emplace<CameraComponent>(m_Handle);
+			camera.Camera = CreateShared<Camera>();
+			return camera;
+		}
+
 		template <typename T>
 		EntityScript* AddScript(const std::string& scriptName) const
 		{
@@ -46,22 +55,43 @@ namespace proton {
 			{
 				for (auto& [scriptName, scriptData] : GetComponent<ScriptComponent>().Scripts)
 					scriptData.DestroyInstanceFunction();
-			
 			}
 			m_Scene->m_Registry.remove<T>(m_Handle);
 		}
 
-		template <typename... TComponents>
+		template <typename T>
 		bool HasComponent() const
+		{
+			return m_Scene->m_Registry.any_of<T>(m_Handle);
+		}
+
+		template <typename... TComponents>
+		bool HasComponents() const
 		{
 			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
-		UUID GetID() const;
+		UUID GetUUID() const;
 		bool IsValid();
 		void Destroy();
 		void AddChildEntity(Entity child);
 		void DestroyChildEntities();
+
+		// Requires RigidbodyComponent
+		b2Body* GetBox2DRigidbody();
+
+		// Requires RigidbodyComponent
+		void SetVelocity(float x_mps, float y_mps);
+		// Requires RigidbodyComponent
+		void SetVelocityX(float mps);
+		// Requires RigidbodyComponent
+		void SetVelocityY(float mps);
+
+		// Requires RigidbodyComponent
+		glm::vec2 GetVelocity();
+
+		// Requires RigidbodyComponent
+		void ApplyImpulse(const glm::vec2& impulse);
 
 		operator uint32_t() const { return (uint32_t)m_Handle; }
 		operator bool() const { return m_Handle != entt::null; }
@@ -75,6 +105,7 @@ namespace proton {
 		friend class Scene;
 		friend class SceneSerializer;
 		friend class EntityScript;
+		friend class Inspector;
 	};
 
 }

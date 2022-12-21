@@ -8,6 +8,8 @@
 
 using namespace proton;
 
+ENTITY_SCRIPT_IMPLEMENTATION(PlayerScript);
+
 enum PlayerAnimation : uint32_t
 {
 	Idle = 0, Run = 1, Attack = 2, Jump = 3
@@ -15,52 +17,52 @@ enum PlayerAnimation : uint32_t
 
 void PlayerScript::RegisterFields()
 {
-	RegisterFloatField("PlayerSpeed", &m_PlayerSpeed);
-	RegisterFloatField("JumpForce", &m_JumpForce);
-	RegisterFloatField("AnimationFrameTime", &m_AnimationFrameTime);
+	RegisterField(ScriptFieldType::Float, "PlayerSpeed", &m_PlayerSpeed);
+	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
+	RegisterField(ScriptFieldType::Float, "AnimationFrameTime", &m_AnimationFrameTime);
 }
 
 void PlayerScript::OnCreate()
 {
-	m_Body = GetBox2DRigidBody();
+	m_Body = GetBox2DRigidbody();
 }
 
 void PlayerScript::OnUpdate(float ts)
 {
 	auto& sprite = GetComponent<SpriteComponent>().Sprite;
-	bool attacking = Input::IsKeyPressed(Key::Space);
-
 	PlayerAnimation animation = PlayerAnimation::Idle;
 
-	if (!attacking)
+	bool isAttacking = Input::IsKeyPressed(Key::Space);
+
+	if (!isAttacking)
 	{
 		// Move left / right
 		if (Input::IsKeyPressed(Key::Right))
 		{
-			m_Body->SetLinearVelocity({ m_PlayerSpeed, m_Body->GetLinearVelocity().y });
+			SetVelocityX(m_PlayerSpeed);
 			sprite->FlipX(false);
 			animation = PlayerAnimation::Run;
 		}
 		else if (Input::IsKeyPressed(Key::Left))
 		{
-			m_Body->SetLinearVelocity({ -m_PlayerSpeed, m_Body->GetLinearVelocity().y });
+			SetVelocityX(-m_PlayerSpeed);
 			sprite->FlipX(true);
 			animation = PlayerAnimation::Run;
 		}
 		else
-			m_Body->SetLinearVelocity({ 0.0f, m_Body->GetLinearVelocity().y });
+			SetVelocityX(0.0f);
 
 		// Jump
 		if (Input::IsKeyPressed(Key::Up))
 		{
-			if (m_Body->GetLinearVelocity().y == 0.0f)
-				m_Body->ApplyLinearImpulse({ 0.0f, m_Body->GetMass() * m_JumpForce }, m_Body->GetWorldCenter(), true);
+			if (GetVelocity().y == 0.0f)
+				ApplyImpulse({ 0.0f,  m_JumpForce });
 		}
 	}
 	else
 	{
 		animation = PlayerAnimation::Attack;
-		m_Body->SetLinearVelocity({ 0.0f, m_Body->GetLinearVelocity().y });
+		SetVelocityX(0.0f);
 	}
 
 	// Update animation

@@ -8,15 +8,16 @@ using namespace proton;
 class RotationScript : public EntityScript
 {
 public:
+	ENTITY_SCRIPT_CLASS(RotationScript)
 
 	virtual void RegisterFields()
 	{
-		RegisterFloatField("RotationSpeed", &m_RotationSpeed);
+		RegisterField(ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
 	}
 
 	virtual void OnCreate()
 	{
-		m_Body = GetBox2DRigidBody();
+		m_Body = GetBox2DRigidbody();
 	}
 
 	virtual void OnUpdate(float ts) override

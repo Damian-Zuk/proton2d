@@ -3,7 +3,7 @@
 #include <memory>
 
 #define PROTON_ASSETS_DIR "assets/"
-#define PROTON_ENGINE_ASSETS_DIR "../proton2d/assets/"
+#define PROTON_ENGINE_ASSETS_DIR "../proton2d/assets"
 
 #ifndef PROTON_PLATFORM_WINDOWS
 #error Unsuportted platform!
@@ -11,6 +11,12 @@
 
 #ifndef PROTON_DEBUG
 #define NDEBUG
+#endif
+
+#ifndef PROTON_DISTRIBUTION
+#define PROTON_EDITOR 1
+#else
+#define PROTON_EDITOR 0
 #endif
 
 #define BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)

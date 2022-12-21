@@ -1,5 +1,6 @@
 #include "pch.h"
-#include "proton/Editor/EditorCameraController.h"
+
+#include "proton/Editor/EditorCamera.h"
 #include "proton/Core/Input.h"
 #include "proton/Events/MouseEvents.h"
 #include "proton/Core/Application.h"
@@ -9,28 +10,29 @@
 
 namespace proton {
 
-	EditorCameraController::EditorCameraController(const Shared<Camera>& camera)
-		: m_AspectRatio(Application::Get().GetWindow().GetAspectRatio()), m_Camera(camera)
+	EditorCamera::EditorCamera(const Shared<Camera>& camera)
+		: m_AspectRatio(Application::Get().GetWindow().GetAspectRatio()),
+		m_Camera(camera), m_Position({ 0.0f, 0.0f, 0.0f })
 	{
 	}
 
-	void EditorCameraController::OnUpdate(float ts)
+	void EditorCamera::OnUpdate(float ts)
 	{
 		float zoomLevel = m_Camera->GetZoomLevel();
 
 		if (!ImGui::GetIO().WantCaptureMouse)
 		{
 			if (Input::IsKeyPressed(Key::W)) 
-				m_Camera->Move({ 0.0f, m_CameraSpeed * m_AspectRatio * ts * zoomLevel });
+				m_Position.y += m_CameraSpeed * m_AspectRatio * ts * zoomLevel;
 
-			if (Input::IsKeyPressed(Key::A)) 
-				m_Camera->Move({ -m_CameraSpeed * ts * zoomLevel, 0.0f });
+			if (Input::IsKeyPressed(Key::A))
+				m_Position.x += -m_CameraSpeed * ts * zoomLevel;
 
-			if (Input::IsKeyPressed(Key::S)) 
-				m_Camera->Move({ 0.0f, -m_CameraSpeed * m_AspectRatio * ts * zoomLevel });
+			if (Input::IsKeyPressed(Key::S))
+				m_Position.y += -m_CameraSpeed * m_AspectRatio * ts * zoomLevel;
 
-			if (Input::IsKeyPressed(Key::D)) 
-				m_Camera->Move({ m_CameraSpeed * ts * zoomLevel, 0.0f });
+			if (Input::IsKeyPressed(Key::D))
+				m_Position.x += m_CameraSpeed * ts * zoomLevel;
 		}
 
 		float zoomTargetDiff = glm::abs(m_ZoomLevelTarget - zoomLevel);
@@ -43,7 +45,7 @@ namespace proton {
 			m_Camera->SetZoomLevel(glm::max(zoomLevel - zoomOffset, m_ZoomLevelTarget));
 	}	
 
-	void EditorCameraController::OnEvent(Event& e)
+	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
 

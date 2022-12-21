@@ -12,7 +12,7 @@
 
 #define ADD_COMPONENT_POPUP_MENU_ITEM(component) \
 	if (!m_SelectedEntity.HasComponent<component>() && ImGui::MenuItem(#component)) \
-		m_SelectedEntity.AddComponent<component>(); 
+		m_SelectedEntity.AddComponent<component>()
 
 namespace proton {
 
@@ -32,15 +32,17 @@ namespace proton {
 
 				if (ImGui::BeginPopup("add_component_popup"))
 				{
-					ADD_COMPONENT_POPUP_MENU_ITEM(TransformComponent)
-					ADD_COMPONENT_POPUP_MENU_ITEM(SpriteComponent)
-					ADD_COMPONENT_POPUP_MENU_ITEM(TilemapSpriteComponent)
-					ADD_COMPONENT_POPUP_MENU_ITEM(RigidBodyComponent)
-					ADD_COMPONENT_POPUP_MENU_ITEM(BoxColliderComponent)
+					ADD_COMPONENT_POPUP_MENU_ITEM(TransformComponent);
+					ADD_COMPONENT_POPUP_MENU_ITEM(SpriteComponent);
+					ADD_COMPONENT_POPUP_MENU_ITEM(TilemapSpriteComponent);
+					ADD_COMPONENT_POPUP_MENU_ITEM(CameraComponent);
+					ADD_COMPONENT_POPUP_MENU_ITEM(RigidbodyComponent);
+					ADD_COMPONENT_POPUP_MENU_ITEM(BoxColliderComponent);
 
+					ImGui::Separator();
 					if (ImGui::BeginMenu("Script"))
 					{
-						for (auto& [scriptName, addScriptFunction] : ScriptFactory::GetScripts())
+						for (auto& [scriptName, addScriptFunction] : ScriptFactory::Get().GetScripts())
 						{
 							if (ImGui::MenuItem(scriptName.c_str()))
 								addScriptFunction(m_SelectedEntity);
@@ -334,11 +336,33 @@ namespace proton {
 				}
 
 				// ****************************
-				// RigidBodyComponent UI
+				// CameraComponent UI
 				// ****************************
-				if (m_SelectedEntity.HasComponent<RigidBodyComponent>())
+				if (m_SelectedEntity.HasComponent<CameraComponent>())
 				{
-					DrawComponentUI<RigidBodyComponent>("RigidBody", [](auto& component)
+					DrawComponentUI<CameraComponent>("Camera", [&](auto& component)
+						{
+							bool isPrimary = m_ActiveScene->m_PrimaryCameraEntity == m_SelectedEntity.m_Handle;
+							if (ImGui::Checkbox("Set as primary", &isPrimary))
+							{
+								if (isPrimary)
+									m_ActiveScene->SetPrimaryCameraEntity(m_SelectedEntity);
+								else
+									m_ActiveScene->SetPrimaryCameraEntity(Entity{});
+							}
+
+							float zoom = component.Camera->GetZoomLevel();
+							if (ImGui::DragFloat("Zoom level", &zoom, 0.01f))
+								component.Camera->SetZoomLevel(zoom);
+						});
+				}
+
+				// ****************************
+				// RigidbodyComponent UI
+				// ****************************
+				if (m_SelectedEntity.HasComponent<RigidbodyComponent>())
+				{
+					DrawComponentUI<RigidbodyComponent>("Rigidbody", [](auto& component)
 					{
 						std::string bodyType = "Static";
 						if (component.Type == b2_dynamicBody)
@@ -372,10 +396,10 @@ namespace proton {
 						ImGui::Dummy({ 0.0f, 5.0f });
 						ImGui::DragFloat2("Size", glm::value_ptr(component.Size), 0.01f);
 						ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
-						ImGui::DragFloat("Friction", &component.Friction, 0.01f);
-						ImGui::DragFloat("Restitution", &component.Restitution, 0.01f);
-						ImGui::DragFloat("RestitutionThreshold", &component.RestitutionThreshold, 0.01f);
-						ImGui::DragFloat("Density", &component.Density, 0.01f);
+						ImGui::DragFloat("Friction", &component.Material.Friction, 0.01f);
+						ImGui::DragFloat("Restitution", &component.Material.Restitution, 0.01f);
+						ImGui::DragFloat("RestitutionThreshold", &component.Material.RestitutionThreshold, 0.01f);
+						ImGui::DragFloat("Density", &component.Material.Density, 0.01f);
 						ImGui::Checkbox("IsSensor", &component.IsSensor);
 					});
 				}
@@ -414,7 +438,7 @@ namespace proton {
 				if (ImGui::InputText("Scene name", m_SceneNameBuffer, 256))
 					m_ActiveScene->m_SceneName = m_SceneNameBuffer;
 
-				ImGui::DragFloat("World garavity", &m_ActiveScene->m_WorldGravity, 0.1f);
+				ImGui::DragFloat("World gravity", &m_ActiveScene->m_WorldGravity, 0.1f);
 				ImGui::Checkbox("Enable physics", &m_ActiveScene->m_EnablePhysics);
 			}
 		}

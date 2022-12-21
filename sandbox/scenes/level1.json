@@ -1,7 +1,8 @@
 {
-    "Scene name": "Sample scene",
-    "World gravity": 16.0,
-    "Enable physics": true,
+    "SceneName": "Sample scene",
+    "EnablePhysics": true,
+    "GravityForce": 9.800000190734863,
+    "PrimaryCameraEntity": 13581737169537590351,
     "Entities": [
         {
             "ID": 8011558218177762518,
@@ -46,7 +47,7 @@
                 "Height": 1,
                 "BlockBorders": 200
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -87,7 +88,7 @@
                 "Height": 3,
                 "BlockBorders": 21
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -150,7 +151,7 @@
                 "Height": 4,
                 "BlockBorders": 38
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -191,7 +192,7 @@
                 "Height": 2,
                 "BlockBorders": 254
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -232,7 +233,7 @@
                 "Height": 2,
                 "BlockBorders": 221
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -273,7 +274,7 @@
                 "Height": 2,
                 "BlockBorders": 254
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -314,7 +315,7 @@
                 "Height": 3,
                 "BlockBorders": 93
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -355,7 +356,7 @@
                 "Height": 4,
                 "BlockBorders": 125
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -412,7 +413,7 @@
                 "Height": 4,
                 "BlockBorders": 238
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -453,7 +454,7 @@
                 "Height": 3,
                 "BlockBorders": 93
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -494,7 +495,7 @@
                 "Height": 11,
                 "BlockBorders": 183
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -531,7 +532,7 @@
             },
             "Sprite": {
                 "Texture": "player-sheet.png",
-                "Filter Mode": 0,
+                "FilterMode": 0,
                 "Flip": [
                     false,
                     false
@@ -551,6 +552,28 @@
                     1.0
                 ]
             },
+            "Camera": {
+                "ZoomLevel": 1.7999999523162842
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": true
+            },
+            "BoxCollider": {
+                "Size": [
+                    0.17000000178813934,
+                    0.46000000834465027
+                ],
+                "Offset": [
+                    -0.11999999731779099,
+                    -1.2899999618530273
+                ],
+                "Friction": 0.0,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 5.0,
+                "IsSensor": false
+            },
             "Scripts": [
                 {
                     "ClassName": "PlayerScript",
@@ -563,7 +586,7 @@
                         {
                             "FieldName": "JumpForce",
                             "Type": "Float",
-                            "Value": 10.0
+                            "Value": 75.0
                         },
                         {
                             "FieldName": "AnimationFrameTime",
@@ -572,26 +595,7 @@
                         }
                     ]
                 }
-            ],
-            "RigidBody": {
-                "Type": 2,
-                "FixedRotation": true
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.2800000011920929,
-                    0.49000000953674316
-                ],
-                "Offset": [
-                    -0.11999999731779099,
-                    -1.2899999618530273
-                ],
-                "Friction": 0.0,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
+            ]
         },
         {
             "ID": 8249321413363697644,
@@ -614,7 +618,7 @@
                 "Height": 4,
                 "BlockBorders": 93
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -655,7 +659,7 @@
                 "Height": 5,
                 "BlockBorders": 183
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -696,7 +700,7 @@
                 "Height": 3,
                 "BlockBorders": 55
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -737,7 +741,7 @@
                 "Height": 32,
                 "BlockBorders": 255
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -778,7 +782,7 @@
                 "Height": 3,
                 "BlockBorders": 190
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -819,7 +823,7 @@
                 "Height": 12,
                 "BlockBorders": 255
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },
@@ -860,7 +864,7 @@
                 "Height": 3,
                 "BlockBorders": 238
             },
-            "RigidBody": {
+            "Rigidbody": {
                 "Type": 0,
                 "FixedRotation": false
             },

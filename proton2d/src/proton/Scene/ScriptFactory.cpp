@@ -3,22 +3,20 @@
 
 namespace proton {
 
-	Unique<ScriptFactory> ScriptFactory::s_Instance = nullptr;
-
 	void ScriptFactory::RegisterScript(const AddScriptToEntityFunction& addFunction, const std::string& scriptName)
 	{
-		s_Instance->m_AddScriptFunctions[scriptName] = addFunction;
+		Get().m_AddScriptFunctions[scriptName] = addFunction;
 	}
 
-	void ScriptFactory::Init()
+	ScriptFactory& ScriptFactory::Get()
 	{
-		if (!s_Instance)
-			s_Instance = CreateUnique<ScriptFactory>();
+		static ScriptFactory instance;
+		return instance;
 	}
 
 	const std::unordered_map<std::string, AddScriptToEntityFunction>& ScriptFactory::GetScripts()
 	{
-		return s_Instance->m_AddScriptFunctions;
+		return Get().m_AddScriptFunctions;
 	}
 
 }

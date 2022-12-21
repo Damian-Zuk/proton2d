@@ -4,9 +4,13 @@
 #include <proton/Scripting.h>
 #include <box2d/include/box2d/b2_body.h>
 
+using namespace proton;
+
 class PlayerScript: public proton::EntityScript
 {
 public:
+	ENTITY_SCRIPT_CLASS(PlayerScript)
+
 	virtual void RegisterFields() override;
 	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
@@ -17,4 +21,5 @@ private:
 	float m_JumpForce = 5.0f;
 
 	b2Body* m_Body = nullptr;
+	b2Body* m_FootSensor = nullptr;
 };

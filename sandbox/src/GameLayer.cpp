@@ -18,8 +18,7 @@ void GameLayer::OnCreate()
 	AssetsManager::LoadSpriteSheet("level-sheet-1.png", 32, 32);
 	AssetsManager::LoadTexture("box.png");
 
-	REGISTER_SCRIPT(PlayerScript);
-	REGISTER_SCRIPT(RotationScript);
+	m_Scene.LoadFromFilepath("level2.json");
 }
 
 void GameLayer::OnUpdate(float ts)
@@ -42,25 +41,26 @@ void GameLayer::OnEvent(Event& e)
 	static std::uniform_real_distribution<> dist01(0, 1);
 
 	EventDispatcher dispather(e);
-	dispather.Dispatch< KeyPressedEvent>([&](KeyPressedEvent& event) 
-	{
-		if (event.GetKeyCode() == Key::R)
+	dispather.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& event)
 		{
-			glm::vec2 cursorPos = m_Scene.GetMouseWorldPosition();
-			Entity entity = m_Scene.CreateEntity("Box1");
-			entity.AddComponent<RigidBodyComponent>().Type = b2_dynamicBody;
-			entity.AddComponent<BoxColliderComponent>();
-			auto& sprite = entity.AddComponent<SpriteComponent>();
-			auto& transform = entity.GetComponent<TransformComponent>();
-			transform.Position = { cursorPos.x, cursorPos.y, 0 };
-			transform.Rotation = (float)dist1080(eng);
-			sprite.Color.r = (float)dist01(eng);
-			sprite.Color.g = (float)dist01(eng);
-			sprite.Color.b = (float)dist01(eng);
-			sprite.Color.a = 50;
-			sprite.Sprite = CreateShared<Sprite>(AssetsManager::GetTexture("box.png"));
-			m_Scene.CreateBox2DRuntimeBody(entity);
-		}
-		return true;
-	});
+			if (event.GetKeyCode() == Key::R)
+			{
+				glm::vec2 cursorPos = m_Scene.GetMouseWorldPosition();
+				Entity entity = m_Scene.CreateEntity("Box1");
+				entity.AddComponent<RigidbodyComponent>().Type = b2_dynamicBody;
+				entity.AddComponent<BoxColliderComponent>();
+				auto& sprite = entity.AddComponent<SpriteComponent>();
+				auto& transform = entity.GetComponent<TransformComponent>();
+				transform.Position = { cursorPos.x, cursorPos.y, 0 };
+				transform.Rotation = (float)dist1080(eng);
+				sprite.Color.r = (float)dist01(eng);
+				sprite.Color.g = (float)dist01(eng);
+				sprite.Color.b = (float)dist01(eng);
+				sprite.Color.a = 50;
+				sprite.Sprite = CreateShared<Sprite>(AssetsManager::GetTexture("box.png"));
+				m_Scene.CreateBox2DRuntimeBody(entity);
+			}
+			return true;
+		});
+
 }

@@ -4,6 +4,7 @@
 #include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/TilemapSprite.h"
 #include "proton/Graphics/Camera.h"
+#include "proton/Scene/PhysicsMaterial.h"
 
 #include <entt/entity/entity.hpp>
 
@@ -88,7 +89,7 @@ namespace proton {
 		Shared<Camera> Camera = nullptr;
 	};
 
-	struct RigidBodyComponent
+	struct RigidbodyComponent
 	{
 		b2BodyType Type = b2_staticBody;
 		bool FixedRotation = false;
@@ -98,11 +99,7 @@ namespace proton {
 	{
 		glm::vec2 Size = { 1.0f, 1.0f };
 		glm::vec2 Offset = { 0.0f, 0.0f };
-
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
-		float Density = 1.0f;
+		PhysicsMaterial Material;
 		bool IsSensor = false;
 	};
 }
