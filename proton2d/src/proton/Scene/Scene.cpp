@@ -7,7 +7,7 @@
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Input.h"
 
-#ifndef PROTON_DISTRIBUTION
+#if PROTON_EDITOR
 #include "proton/Editor/EditorOverlay.h"
 #include <imgui.h>
 #endif
@@ -59,6 +59,7 @@ namespace proton {
 			OnEndPlay();
 #if PROTON_EDITOR
 			m_SceneState = SceneState::EditMode;
+			ImGui::SetWindowFocus(nullptr);
 #else
 			OnBeginPlay();
 #endif
@@ -211,6 +212,11 @@ namespace proton {
 					transform.Rotation = glm::degrees(body->GetAngle());
 				}
 			}
+
+			// Update animations
+			auto view = m_Registry.view<FlipbookAnimationComponent>();
+			for (auto entity : view)
+				view.get<FlipbookAnimationComponent>(entity).Flipbook->PlayFrame(ts);
 		}
 
 		// Render scene

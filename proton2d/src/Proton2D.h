@@ -3,7 +3,7 @@
 #include "proton/Core/Application.h"
 #include "proton/Core/Logger.h"
 #include "proton/Core/Input.h"
-#include "proton/Core/Timer.h"
+#include "proton/Core/Random.h"
 
 #include "proton/Assets/AssetsManager.h"
 
@@ -14,5 +14,7 @@
 #include "proton/Scene/Entity.h"
 #include "proton/Scene/Components.h"
 #include "proton/Scripting.h"
+
+#include "proton/Graphics/Flipbook.h"
 
 #include <imgui/imgui.h>

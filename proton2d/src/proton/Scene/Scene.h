@@ -102,6 +102,7 @@ namespace proton {
 		friend class Entity;
 		friend class EditorOverlay;
 		friend class Inspector;
+		friend class EditorCamera;
 		friend class SceneSerializer;
 	};
 

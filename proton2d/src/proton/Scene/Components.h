@@ -4,6 +4,7 @@
 #include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/TilemapSprite.h"
 #include "proton/Graphics/Camera.h"
+#include "proton/Graphics/Flipbook.h"
 #include "proton/Scene/PhysicsMaterial.h"
 
 #include <entt/entity/entity.hpp>
@@ -27,21 +28,23 @@ namespace proton {
 
 	struct TransformComponent
 	{
-		glm::vec3 Position { 0.0f, 0.0f, 0.0f };
-		float Rotation { 0.0f };
-		glm::vec2 Scale { 1.0f, 1.0f };
+		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+		float Rotation = { 0.0f };
+		glm::vec2 Scale = { 1.0f, 1.0f };
 	};
 
 	struct SpriteComponent
 	{
 		Shared<Sprite> Sprite = nullptr;
-		glm::vec4 Color { 1.0f };
+		// RGBA, range: 0.0f - 1.0f
+		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 
 	struct TilemapSpriteComponent
 	{
 		TilemapSprite TilemapSprite;
-		glm::vec4 Color{ 1.0f };
+		// RGBA, range: 0.0f - 1.0f
+		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 
 	class EntityScript; // forward declaration
@@ -101,5 +104,10 @@ namespace proton {
 		glm::vec2 Offset = { 0.0f, 0.0f };
 		PhysicsMaterial Material;
 		bool IsSensor = false;
+	};
+
+	struct FlipbookAnimationComponent
+	{
+		Shared<Flipbook> Flipbook = nullptr;
 	};
 }

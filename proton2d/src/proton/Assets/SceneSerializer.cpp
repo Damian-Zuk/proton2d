@@ -337,8 +337,6 @@ namespace proton {
 							if (scriptField.Type == ScriptFieldType::Float)
 								*(float*)scriptField.InstanceFieldValue = field["Value"];
 						}
-						else
-							LOG_ERROR("[SceneSerializer] Field not found:", fieldName, "ClassName:", scriptClassName);
 					}
 				}
 			}

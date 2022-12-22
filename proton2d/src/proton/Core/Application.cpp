@@ -23,17 +23,17 @@ namespace proton {
 	{
 		Application::s_Instance = this;
 
-		#ifdef PROTON_PLATFORM_WINDOWS
-			m_Window = CreateUnique<WindowsWindow>(appName, 1600, 900);
-			Input::s_Instance = new WindowsInput();
-		#endif
+#ifdef PROTON_PLATFORM_WINDOWS
+		m_Window = CreateUnique<WindowsWindow>(appName, 1600, 900);
+		Input::s_Instance = new WindowsInput();
+#endif
 
 		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
 
-		#ifndef PROTON_DISTRIBUTION
-			m_EditorOverlay = new EditorOverlay();
-			PushOverlay(m_EditorOverlay);
-		#endif
+#if PROTON_EDITOR
+		m_EditorOverlay = new EditorOverlay();
+		PushOverlay(m_EditorOverlay);
+#endif
 	}
 
 	Application::~Application()
@@ -65,7 +65,7 @@ namespace proton {
 						layer->OnUpdate(m_LastFrameTime);
 				}
 
-				#ifndef PROTON_DISTRIBUTION
+				#if PROTON_EDITOR
 				{
 					PROFILE_SCOPE("ImGuiRender");
 					m_EditorOverlay->m_DebugInfo.m_FrameTime = m_LastFrameTime;

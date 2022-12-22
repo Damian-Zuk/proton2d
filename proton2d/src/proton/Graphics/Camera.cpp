@@ -34,10 +34,10 @@ namespace proton {
 
 	void Camera::RecalculateProjection()
 	{
-		m_Projection.Left = -m_OrthographicSize * m_AspectRatio * 0.5f * m_ZoomLevel;
-		m_Projection.Right = m_OrthographicSize * m_AspectRatio * 0.5f * m_ZoomLevel;
-		m_Projection.Bottom = -m_OrthographicSize * 0.5f * m_ZoomLevel;
-		m_Projection.Top = m_OrthographicSize * 0.5f * m_ZoomLevel;
+		m_Projection.Left   = -m_OrthographicSize / 2 * m_ZoomLevel * m_AspectRatio;
+		m_Projection.Right  =  m_OrthographicSize / 2 * m_ZoomLevel * m_AspectRatio;
+		m_Projection.Bottom = -m_OrthographicSize / 2 * m_ZoomLevel;
+		m_Projection.Top    =  m_OrthographicSize / 2 * m_ZoomLevel;
 
 		m_ProjectionMatrix = glm::ortho(m_Projection.Left, m_Projection.Right,
 			m_Projection.Bottom, m_Projection.Top, m_OrthographicNear, m_OrthographicFar);;

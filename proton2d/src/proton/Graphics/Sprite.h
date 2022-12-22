@@ -52,8 +52,7 @@ namespace proton {
 		void NextTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void PrevTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 
-		void FlipX(bool flip = true);
-		void FlipY(bool flip = true);
+		void MirrorFlip(bool mirror_x, bool mirror_y);
 
 		Shared<Texture> GetTexture();
 
@@ -73,6 +72,7 @@ namespace proton {
 		friend class Scene;
 		friend class Inspector;
 		friend class SceneSerializer;
+		friend class Entity;
 	};
 
 }

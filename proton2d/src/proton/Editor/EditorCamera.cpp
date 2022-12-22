@@ -18,9 +18,12 @@ namespace proton {
 
 	void EditorCamera::OnUpdate(float ts)
 	{
+		if (EditorOverlay::Get()->m_ActiveScene->m_SceneState != SceneState::EditMode)
+			return;
+
 		float zoomLevel = m_Camera->GetZoomLevel();
 
-		if (!ImGui::GetIO().WantCaptureMouse)
+		if (!ImGui::GetIO().WantCaptureKeyboard)
 		{
 			if (Input::IsKeyPressed(Key::W)) 
 				m_Position.y += m_CameraSpeed * m_AspectRatio * ts * zoomLevel;
@@ -51,13 +54,16 @@ namespace proton {
 
 		if (!ImGui::GetIO().WantCaptureMouse)
 		{
-			dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
+			if (EditorOverlay::Get()->m_ActiveScene->m_SceneState == SceneState::EditMode)
 			{
-				float zoomOffset = m_CameraZoomSpeed * -event.GetYOffset();
-				m_ZoomLevelTarget += round(zoomOffset * round(m_ZoomLevelTarget * 10.0f) * 1000.0f) / 10000.0f;
-				m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.2f), 10.0f);
-				return false;
-			});
+				dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
+				{
+					float zoomOffset = m_CameraZoomSpeed * -event.GetYOffset();
+					m_ZoomLevelTarget += round(zoomOffset * round(m_ZoomLevelTarget * 10.0f) * 1000.0f) / 10000.0f;
+					m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.2f), 10.0f);
+					return false;
+				});
+			}
 		}
 
 		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& event) -> bool 

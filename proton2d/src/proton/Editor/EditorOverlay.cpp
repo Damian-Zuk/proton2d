@@ -292,7 +292,7 @@ namespace proton {
 
 	void EditorOverlay::SetSceneContext(Scene* context)
 	{
-	#ifndef PROTON_DISTRIBUTION
+	#if PROTON_EDITOR
 		s_Instance->m_ActiveScene = context;
 		s_Instance->m_Inspector.m_ActiveScene = context;
 		SceneSerializer::SetContext(context);
@@ -301,7 +301,7 @@ namespace proton {
 
 	void EditorOverlay::SetInspectorContext(Entity entity)
 	{
-	#ifndef PROTON_DISTRIBUTION
+	#if PROTON_EDITOR
 		s_Instance->m_Inspector.SetSelectionContext(entity);
 	#endif
 	}

@@ -31,10 +31,23 @@ namespace proton {
 		template<>
 		CameraComponent& AddComponent() const
 		{
-			assert(!HasComponent<T>() && "Entity already have component!");
+			assert(!HasComponent<CameraComponent>() && "Entity already have component!");
 			auto& camera = m_Scene->m_Registry.emplace<CameraComponent>(m_Handle);
 			camera.Camera = CreateShared<Camera>();
 			return camera;
+		}
+
+		template<>
+		FlipbookAnimationComponent& AddComponent() const
+		{
+			assert(!HasComponent<FlipbookAnimationComponent>() && "Entity already have component!");
+			assert(HasComponent<SpriteComponent>() && "Entity must have sprite component");
+			auto& sprite = GetComponent<SpriteComponent>();
+			assert(sprite.Sprite && sprite.Sprite->m_SpriteSheet && "Entity must have spritesheet texture");
+
+			auto& fb = m_Scene->m_Registry.emplace<FlipbookAnimationComponent>(m_Handle);
+			fb.Flipbook = CreateShared<Flipbook>(sprite.Sprite);
+			return fb;
 		}
 
 		template <typename T>

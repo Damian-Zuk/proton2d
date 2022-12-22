@@ -53,6 +53,7 @@ namespace proton {
 		friend class Inspector;
 		friend class Scene;
 		friend class DebugInfo;
+		friend class EditorCamera;
 	};
 
 }
