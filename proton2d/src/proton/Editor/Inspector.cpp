@@ -418,8 +418,38 @@ namespace proton {
 
 							for (auto& [fieldName, fieldData] : scriptData.ScriptInstance->m_ScriptFields)
 							{
-								if (fieldData.Type == ScriptFieldType::Float)
+								switch (fieldData.Type)
+								{
+								case ScriptFieldType::Float:
 									ImGui::DragFloat(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+									break;
+								case ScriptFieldType::Float2:
+									ImGui::DragFloat2(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+									break;
+								case ScriptFieldType::Float3:
+									ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+									break;
+								case ScriptFieldType::Float4:
+									ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+									break;
+
+								case ScriptFieldType::Int:
+									ImGui::DragInt(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+									break;
+								case ScriptFieldType::Int2:
+									ImGui::DragInt2(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+									break;
+								case ScriptFieldType::Int3:
+									ImGui::DragInt3(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+									break;
+								case ScriptFieldType::Int4:
+									ImGui::DragInt4(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+									break;
+
+								case ScriptFieldType::Bool:
+									ImGui::Checkbox(fieldName.c_str(), (bool*)fieldData.InstanceFieldValue);
+									break;
+								}
 							}
 							ImGui::Dummy({ 0.0f, 10.0f });
 						}

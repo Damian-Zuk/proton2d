@@ -126,10 +126,56 @@ namespace proton {
 				{
 					json fieldObj;
 					fieldObj["FieldName"] = fieldName;
-					if (fieldData.Type == ScriptFieldType::Float)
+
+					switch (fieldData.Type)
 					{
-						fieldObj["Type"] = "Float";
+					case ScriptFieldType::Float:
 						fieldObj["Value"] = *(float*)fieldData.InstanceFieldValue;
+						break;
+					case ScriptFieldType::Float2:
+					{
+						const glm::vec2& data = *(glm::vec2*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = { data.x, data.y };
+						break;
+					}
+					case ScriptFieldType::Float3:
+					{
+						const glm::vec3& data = *(glm::vec3*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = { data.x, data.y, data.z };
+						break;
+					}
+					case ScriptFieldType::Float4:
+					{
+						const glm::vec4& data = *(glm::vec4*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = { data.x, data.y, data.z, data.a };
+						break;
+					}
+
+					case ScriptFieldType::Int:
+						fieldObj["Value"] = *(int*)fieldData.InstanceFieldValue;
+						break;
+					case ScriptFieldType::Int2:
+					{
+						const glm::ivec2& data = *(glm::ivec2*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = { data.x, data.y };
+						break;
+					}
+					case ScriptFieldType::Int3:
+					{
+						const glm::ivec3& data = *(glm::ivec3*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = { data.x, data.y, data.z };
+						break;
+					}
+					case ScriptFieldType::Int4:
+					{
+						const glm::ivec4& data = *(glm::ivec4*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = { data.x, data.y, data.z, data.a };
+						break;
+					}
+
+					case ScriptFieldType::Bool:
+						fieldObj["Value"] = *(bool*)fieldData.InstanceFieldValue;
+						break;
 					}
 					scriptObj["Fields"].push_back(fieldObj);
 				}
@@ -334,8 +380,40 @@ namespace proton {
 						if (script->m_ScriptFields.find(fieldName) != script->m_ScriptFields.end())
 						{
 							ScriptField& scriptField = script->m_ScriptFields[fieldName];
-							if (scriptField.Type == ScriptFieldType::Float)
-								*(float*)scriptField.InstanceFieldValue = field["Value"];
+							json& value = field["Value"];
+
+							switch (scriptField.Type)
+							{
+							case ScriptFieldType::Float:
+								*(float*)scriptField.InstanceFieldValue = value;
+								break;
+							case ScriptFieldType::Float2:
+								*(glm::vec2*)scriptField.InstanceFieldValue = { value[0], value[1] };
+								break;											
+							case ScriptFieldType::Float3:						
+								*(glm::vec3*)scriptField.InstanceFieldValue = { value[0], value[1], value[2] };
+								break;											
+							case ScriptFieldType::Float4:						
+								*(glm::vec4*)scriptField.InstanceFieldValue = { value[0], value[1], value[2], value[3] };
+								break;
+
+							case ScriptFieldType::Int:
+								*(int*)scriptField.InstanceFieldValue = value;
+								break;
+							case ScriptFieldType::Int2:
+								*(glm::ivec2*)scriptField.InstanceFieldValue = { value[0], value[1] };
+								break;
+							case ScriptFieldType::Int3:
+								*(glm::ivec3*)scriptField.InstanceFieldValue = { value[0], value[1], value[2] };
+								break;
+							case ScriptFieldType::Int4:
+								*(glm::ivec4*)scriptField.InstanceFieldValue = { value[0], value[1], value[2], value[3] };
+								break;
+
+							case ScriptFieldType::Bool:
+								*(bool*)scriptField.InstanceFieldValue = value;
+								break;
+							}
 						}
 					}
 				}

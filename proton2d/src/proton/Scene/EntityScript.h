@@ -17,7 +17,9 @@
 
 namespace proton {
 
-	enum class ScriptFieldType { Float = 0, Float2, Float3, Float4, Int, Bool, String };
+	// FloatX types -> glm::vecX
+	// IntX types -> glm::ivecX
+	enum class ScriptFieldType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
 
 	struct ScriptField
 	{
@@ -44,6 +46,7 @@ namespace proton {
 		// Use RegisterField function
 		virtual void RegisterFields() {};
 
+		// Use glm::value_ptr for FloatX and IntX field types
 		void RegisterField(ScriptFieldType type, const std::string& name, void* field)
 		{
 			m_ScriptFields[name] = { type, field };
@@ -75,7 +78,7 @@ namespace proton {
 			return m_Entity.GetComponent<TransformComponent>();
 		}
 
-		Shared<Sprite>& GetSprite()
+		Shared<Sprite> GetSprite()
 		{
 			return m_Entity.GetComponent<SpriteComponent>().Sprite;
 		}

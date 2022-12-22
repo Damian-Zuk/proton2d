@@ -409,19 +409,64 @@
                     "ClassName": "PlayerScript",
                     "Fields": [
                         {
+                            "FieldName": "Float4",
+                            "Value": [
+                                0.14000000059604645,
+                                0.27000001072883606,
+                                0.4099999964237213,
+                                0.7300000190734863
+                            ]
+                        },
+                        {
                             "FieldName": "PlayerSpeed",
-                            "Type": "Float",
                             "Value": 5.0
                         },
                         {
+                            "FieldName": "Int2",
+                            "Value": [
+                                -19,
+                                -19
+                            ]
+                        },
+                        {
                             "FieldName": "JumpForce",
-                            "Type": "Float",
                             "Value": 75.0
                         },
                         {
-                            "FieldName": "AnimationFrameTime",
-                            "Type": "Float",
-                            "Value": 0.07999999821186066
+                            "FieldName": "Float2",
+                            "Value": [
+                                -0.10999999940395355,
+                                0.20999999344348907
+                            ]
+                        },
+                        {
+                            "FieldName": "Float3",
+                            "Value": [
+                                0.11999999731779099,
+                                0.0,
+                                -0.2199999988079071
+                            ]
+                        },
+                        {
+                            "FieldName": "Int3",
+                            "Value": [
+                                0,
+                                9,
+                                0
+                            ]
+                        },
+                        {
+                            "FieldName": "Int4",
+                            "Value": [
+                                0,
+                                19,
+                                22,
+                                15
+                            ]
+                        },
+                        {
+                            "FieldName": "Bool",
+                            "Value": true
                         }
                     ]
                 }

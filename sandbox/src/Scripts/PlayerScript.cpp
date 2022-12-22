@@ -6,6 +6,8 @@
 #include <box2d/b2_contact.h>
 #include <box2d/b2_world_callbacks.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 using namespace proton;
 
 ENTITY_SCRIPT_IMPLEMENTATION(PlayerScript);
@@ -14,7 +16,14 @@ void PlayerScript::RegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "PlayerSpeed", &m_PlayerSpeed);
 	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
-	RegisterField(ScriptFieldType::Float, "Threshold", &threshold);
+
+	RegisterField(ScriptFieldType::Float2, "Float2", glm::value_ptr(test1));
+	RegisterField(ScriptFieldType::Float3, "Float3", glm::value_ptr(test2));
+	RegisterField(ScriptFieldType::Float4, "Float4", glm::value_ptr(test3));
+	RegisterField(ScriptFieldType::Int2, "Int2", glm::value_ptr(test4));
+	RegisterField(ScriptFieldType::Int3, "Int3", glm::value_ptr(test5));
+	RegisterField(ScriptFieldType::Int4, "Int4", glm::value_ptr(test6));
+	RegisterField(ScriptFieldType::Bool, "Bool", &test7);
 }
 
 void PlayerScript::OnCreate()

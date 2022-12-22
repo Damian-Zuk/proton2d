@@ -33,7 +33,15 @@ private:
 	float m_PlayerSpeed = 5.0f;
 	float m_JumpForce = 5.0f;
 	bool m_IsAttacking = false;
-	float threshold = 0.1f;
+
+	// Field serialization test
+	glm::vec2 test1;
+	glm::vec3 test2;
+	glm::vec4 test3;
+	glm::vec2 test4;
+	glm::vec3 test5;
+	glm::vec4 test6;
+	bool test7;
 
 	b2Body* m_Body = nullptr;
 	b2Body* m_FootSensor = nullptr;
