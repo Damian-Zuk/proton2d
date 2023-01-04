@@ -5,7 +5,7 @@
 #include "proton/Graphics/TilemapSprite.h"
 #include "proton/Graphics/Camera.h"
 #include "proton/Graphics/Flipbook.h"
-#include "proton/Scene/PhysicsMaterial.h"
+#include "proton/Scene/Physics.h"
 
 #include <entt/entity/entity.hpp>
 
@@ -51,31 +51,7 @@ namespace proton {
 
 	struct ScriptComponent
 	{
-		struct ScriptData
-		{
-			EntityScript* ScriptInstance = nullptr;
-			std::function<void()> DestroyInstanceFunction;
-			bool Initialized = false;
-		};
-
-		std::unordered_map<std::string, ScriptData> Scripts;
-
-		template<typename TScriptClass>
-		EntityScript* Attach(const std::string& scriptName)
-		{
-			ScriptData& script = Scripts[scriptName];
-			
-			script.ScriptInstance = new TScriptClass();
-			script.ScriptInstance->RegisterFields();
-
-			script.DestroyInstanceFunction = [&, scriptName]()
-			{
-				delete (TScriptClass*)script.ScriptInstance;
-				script.ScriptInstance = nullptr;
-			};
-
-			return script.ScriptInstance;
-		}
+		std::unordered_map<std::string, EntityScript*> Scripts;
 	};
 
 	struct RelationshipComponent
@@ -104,6 +80,8 @@ namespace proton {
 		glm::vec2 Offset = { 0.0f, 0.0f };
 		PhysicsMaterial Material;
 		bool IsSensor = false;
+
+		PhysicsContactCallback ContactCallback;
 	};
 
 	struct FlipbookAnimationComponent

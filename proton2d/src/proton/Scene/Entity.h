@@ -42,33 +42,37 @@ namespace proton {
 		{
 			assert(!HasComponent<FlipbookAnimationComponent>() && "Entity already have component!");
 			assert(HasComponent<SpriteComponent>() && "Entity must have sprite component");
-			auto& sprite = GetComponent<SpriteComponent>();
-			assert(sprite.Sprite && sprite.Sprite->m_SpriteSheet && "Entity must have spritesheet texture");
+			auto& sprite = GetComponent<SpriteComponent>().Sprite;
+			assert(sprite && sprite->m_SpriteSheet && "Entity must have spritesheet texture");
 
 			auto& fb = m_Scene->m_Registry.emplace<FlipbookAnimationComponent>(m_Handle);
-			fb.Flipbook = CreateShared<Flipbook>(sprite.Sprite);
+			fb.Flipbook = CreateShared<Flipbook>(sprite);
 			return fb;
 		}
 
-		template <typename T>
-		EntityScript* AddScript(const std::string& scriptName) const
+		template <typename TScriptClass>
+		EntityScript* AddScript(const std::string& scriptClassName) const
 		{
 			if (!HasComponent<ScriptComponent>())
 				AddComponent<ScriptComponent>();
-			
-			return GetComponent<ScriptComponent>().Attach<T>(scriptName);
+
+			auto& component = GetComponent<ScriptComponent>();
+			EntityScript*& scriptInstance = component.Scripts[scriptClassName];
+
+			scriptInstance = new TScriptClass();
+			scriptInstance->RegisterFields();
+
+			return scriptInstance;
 		}
 
 		template <typename T>
-		void RemoveComponent() const
+		void RemoveComponent()
 		{
 			assert(HasComponent<T>() && "Entity doesn't have component!");
 			
 			if (std::is_base_of<ScriptComponent, T>::value)
-			{
-				for (auto& [scriptName, scriptData] : GetComponent<ScriptComponent>().Scripts)
-					scriptData.DestroyInstanceFunction();
-			}
+				DeleteAllScriptInstances();
+
 			m_Scene->m_Registry.remove<T>(m_Handle);
 		}
 
@@ -107,11 +111,14 @@ namespace proton {
 		void ApplyImpulse(const glm::vec2& impulse);
 
 		operator uint32_t() const { return (uint32_t)m_Handle; }
+		operator entt::entity() const { return m_Handle; }
 		operator bool() const { return m_Handle != entt::null; }
 		bool operator==(const Entity& other) const { return other.m_Handle == m_Handle; }
 		bool operator!=(const Entity& other) const { return !(other == *this); }
 
 	private:
+		void DeleteAllScriptInstances();
+
 		Scene* m_Scene = nullptr;
 		entt::entity m_Handle = entt::null;
 

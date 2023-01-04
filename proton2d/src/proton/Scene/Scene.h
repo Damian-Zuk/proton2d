@@ -3,6 +3,7 @@
 #include "proton/Graphics/Camera.h"
 #include "proton/Events/Event.h"
 #include "proton/Core/UUID.h"
+#include "proton/Scene/Physics.h"
 
 #include <entt/entt.hpp>
 
@@ -33,7 +34,7 @@ namespace proton {
 		// Create entitiy with specific identifier
 		Entity CreateEntityWithID(UUID id, const std::string& name = "Unnamed entity");
 
-		// Remove entitiy from scene
+		// Destroy specified entity
 		void DestroyEntity(Entity entity);
 
 		// Remove all entities from scene
@@ -60,6 +61,7 @@ namespace proton {
 		void SetPrimaryCameraEntity(Entity entity);
 		Shared<Camera> GetPrimaryCamera();
 		Entity GetPrimaryCameraEntity();
+		glm::vec3 GetPrimaryCameraPosition();
 
 		glm::vec2 GetMouseWorldPosition();
 		std::vector<Entity> GetEntitiesOnMousePosition(); // todo: add default argument "useCollider"
@@ -78,22 +80,22 @@ namespace proton {
 		void OnEndPlay();
 		void RenderScene(const Camera& camera);
 
-		glm::vec3 GetPrimaryCameraPosition();
-
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
 
 	private:
+		SceneState m_SceneState;
 		std::string m_SceneName;
 		std::string m_SceneFilepath;
-		SceneState m_SceneState;
 
 		entt::registry m_Registry;
+		std::unordered_map<UUID, Entity> m_EntityMap;
 
 		bool m_EnablePhysics = true;
 		float m_WorldGravity = 9.8f;
 		b2World* m_World = nullptr;
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
+		PhysicsContactListener m_ContactListener;
 
 		entt::entity m_PrimaryCameraEntity = entt::null;
 		Shared<Camera> m_PrimaryCamera;

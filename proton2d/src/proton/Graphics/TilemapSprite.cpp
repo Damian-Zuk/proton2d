@@ -2,6 +2,7 @@
 #include "proton/Graphics/TilemapSprite.h"
 
 namespace proton {
+
 	TilemapSprite::TilemapSprite()
 	{
 		SetSize(1, 1);
@@ -18,6 +19,11 @@ namespace proton {
 		m_Tilemap.resize(width);
 		for (auto& column : m_Tilemap)
 			column.resize(height, TILEMAP_BLANK_TILE);
+	}
+
+	void TilemapSprite::SetTileScale(glm::vec2 scale)
+	{
+		m_TileScale = scale;
 	}
 
 	void TilemapSprite::GenerateTilemapBlock()

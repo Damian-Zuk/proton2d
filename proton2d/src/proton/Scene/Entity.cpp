@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "proton/Scene/Entity.h"
+#include "proton/Scene/EntityScript.h"
 
 #include <box2d/b2_body.h>
 
@@ -40,7 +41,7 @@ namespace proton
 			entt::entity next = childRC.Next;
 
 			childEntity.DestroyChildEntities();
-			m_Scene->m_Registry.destroy(current);
+			m_Scene->DestroyEntity(childEntity);
 
 			current = next;
 		}
@@ -85,6 +86,18 @@ namespace proton
 		body->ApplyLinearImpulse({impulse.x, impulse.y }, body->GetWorldCenter(), true);
 	}
 
+	void Entity::DeleteAllScriptInstances()
+	{
+		for (auto& [scriptName, scriptInstance] : GetComponent<ScriptComponent>().Scripts)
+		{
+			if (m_Scene->m_SceneState != SceneState::EditMode)
+				scriptInstance->OnDestroy();
+
+			delete scriptInstance;
+			scriptInstance = nullptr;
+		}
+	}
+
 	void Entity::Destroy()
 	{
 		auto& rc = GetComponent<RelationshipComponent>();
@@ -109,7 +122,7 @@ namespace proton
 				next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
 		}
 
-		m_Scene->m_Registry.destroy(m_Handle);
+		m_Scene->DestroyEntity(*this);
 		m_Handle = entt::null;
 	}
 

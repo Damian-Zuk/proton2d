@@ -1,7 +1,7 @@
 {
     "SceneName": "Sample scene",
     "EnablePhysics": true,
-    "GravityForce": 9.800000190734863,
+    "GravityForce": 18.0,
     "PrimaryCameraEntity": 13581737169537590351,
     "Entities": [
         {
@@ -15,15 +15,19 @@
                 ],
                 "Rotation": 30.4,
                 "Scale": [
-                    0.96,
-                    0.71
+                    3.0,
+                    2.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 3,
                 "Height": 2,
-                "BlockBorders": 0
+                "BlockBorders": 0,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             }
         },
         {
@@ -37,7 +41,7 @@
                 ],
                 "Rotation": -143.60001,
                 "Scale": [
-                    1.0,
+                    3.0,
                     1.0
                 ]
             },
@@ -45,7 +49,11 @@
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 3,
                 "Height": 1,
-                "BlockBorders": 200
+                "BlockBorders": 200,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -78,15 +86,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    2.0,
+                    3.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 2,
                 "Height": 3,
-                "BlockBorders": 21
+                "BlockBorders": 21,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -119,15 +131,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    0.93
+                    3.0,
+                    3.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 3,
                 "Height": 3,
-                "BlockBorders": 0
+                "BlockBorders": 0,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             }
         },
         {
@@ -141,15 +157,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    0.95,
-                    0.91
+                    3.0,
+                    4.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 3,
                 "Height": 4,
-                "BlockBorders": 38
+                "BlockBorders": 38,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -182,15 +202,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    9.0,
+                    2.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 9,
                 "Height": 2,
-                "BlockBorders": 254
+                "BlockBorders": 254,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -223,15 +247,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    6.0,
+                    2.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 6,
                 "Height": 2,
-                "BlockBorders": 221
+                "BlockBorders": 221,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -264,15 +292,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    6.0,
+                    2.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 6,
                 "Height": 2,
-                "BlockBorders": 254
+                "BlockBorders": 254,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -305,15 +337,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    3.0,
+                    3.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 3,
                 "Height": 3,
-                "BlockBorders": 93
+                "BlockBorders": 93,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -346,15 +382,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    31.0,
+                    4.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 31,
                 "Height": 4,
-                "BlockBorders": 125
+                "BlockBorders": 125,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -403,15 +443,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    0.97,
-                    1.0
+                    4.0,
+                    4.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 4,
                 "Height": 4,
-                "BlockBorders": 238
+                "BlockBorders": 238,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -444,15 +488,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    3.0,
+                    3.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 3,
                 "Height": 3,
-                "BlockBorders": 93
+                "BlockBorders": 93,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -485,15 +533,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    4.0,
+                    11.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 4,
                 "Height": 11,
-                "BlockBorders": 183
+                "BlockBorders": 183,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -600,7 +652,7 @@
                         },
                         {
                             "FieldName": "JumpForce",
-                            "Value": 5.0
+                            "Value": 110.0
                         },
                         {
                             "FieldName": "Float2",
@@ -653,15 +705,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    4.0,
+                    4.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 4,
                 "Height": 4,
-                "BlockBorders": 93
+                "BlockBorders": 93,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -694,15 +750,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    3.0,
+                    5.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 3,
                 "Height": 5,
-                "BlockBorders": 183
+                "BlockBorders": 183,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -735,15 +795,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    2.0,
+                    3.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 2,
                 "Height": 3,
-                "BlockBorders": 55
+                "BlockBorders": 55,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -776,15 +840,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    4.0,
+                    32.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 4,
                 "Height": 32,
-                "BlockBorders": 255
+                "BlockBorders": 255,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -817,15 +885,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    15.0,
+                    3.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 15,
                 "Height": 3,
-                "BlockBorders": 190
+                "BlockBorders": 190,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -858,15 +930,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    4.0,
+                    12.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 4,
                 "Height": 12,
-                "BlockBorders": 255
+                "BlockBorders": 255,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,
@@ -899,15 +975,19 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    23.0,
+                    3.0
                 ]
             },
             "TilemapSprite": {
                 "Spritesheet": "level-sheet-1.png",
                 "Width": 23,
                 "Height": 3,
-                "BlockBorders": 238
+                "BlockBorders": 238,
+                "TileScale": [
+                    1.0,
+                    1.0
+                ]
             },
             "Rigidbody": {
                 "Type": 0,

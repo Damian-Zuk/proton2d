@@ -16,7 +16,7 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
-
+#include <box2d/b2_contact.h>
 
 namespace proton {
 
@@ -25,7 +25,7 @@ namespace proton {
 	constexpr static int32_t s_PhysicsPositionIterations = 5;
 
 	Scene::Scene(const std::string& name)
-		: m_SceneName(name), m_DefaultCamera(CreateShared<Camera>())
+		: m_SceneName(name), m_DefaultCamera(CreateShared<Camera>()), m_ContactListener(this)
 	{
 		Renderer::SetClearColor(s_ClearColor);
 #if PROTON_EDITOR
@@ -36,13 +36,8 @@ namespace proton {
 
 	Scene::~Scene()
 	{
-		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent)
-		{
-			for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
-				scriptData.DestroyInstanceFunction();
-		});
-
 		OnEndPlay();
+		DestroyAll();
 	}
 
 	void Scene::SaveAsFile(const std::string& filepath)
@@ -72,8 +67,6 @@ namespace proton {
 
 #if PROTON_EDITOR
 		EditorOverlay::SetInspectorContext(Entity{});
-		if (EditorOverlay::Get()->m_ActiveScene == this)
-			EditorOverlay::Get()->m_ActiveSceneFilepath = filepath;
 #endif
 	}
 
@@ -84,6 +77,7 @@ namespace proton {
 
 	b2Body* Scene::CreateBox2DRuntimeBody(Entity entity)
 	{
+		auto& uuid = entity.GetComponent<IDComponent>().ID;
 		auto& transform = entity.GetComponent<TransformComponent>();
 		auto& rb = entity.GetComponent<RigidbodyComponent>();
 		
@@ -92,6 +86,7 @@ namespace proton {
 		bodyDef.type = rb.Type;
 		bodyDef.position.Set(transform.Position.x, transform.Position.y);
 		bodyDef.angle = glm::radians(transform.Rotation);
+		bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&uuid);
 
 		// Create box2d body
 		b2Body* body = m_World->CreateBody(&bodyDef);
@@ -102,13 +97,6 @@ namespace proton {
 			auto& bc = entity.GetComponent<BoxColliderComponent>();
 			b2FixtureDef fixtureDef; b2PolygonShape shape;
 
-			if (entity.HasComponent<TilemapSpriteComponent>())
-			{
-				auto& tilemap = entity.GetComponent<TilemapSpriteComponent>().TilemapSprite;
-				shape.SetAsBox(tilemap.m_Width * bc.Size.x * transform.Scale.x / 2.0f,
-					tilemap.m_Height * bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
-			}
-			else
 			shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
 				bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
 
@@ -120,6 +108,7 @@ namespace proton {
 			fixtureDef.restitutionThreshold = material.RestitutionThreshold;
 			fixtureDef.density = material.Density;
 			fixtureDef.isSensor = bc.IsSensor;
+			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&uuid);
 			body->CreateFixture(&fixtureDef);
 		}
 
@@ -134,6 +123,7 @@ namespace proton {
 		m_World = new b2World({ 0.0f, -m_WorldGravity });
 		for (entt::entity entity : m_Registry.view<RigidbodyComponent>())
 			CreateBox2DRuntimeBody(Entity{ this, entity });
+		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 	}
 
 	void Scene::OnEndPlay()
@@ -159,18 +149,32 @@ namespace proton {
 		entity.AddComponent<TagComponent>().Tag = name;
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<RelationshipComponent>();
-
+		m_EntityMap[id] = entity;
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+			for (auto& kv : scriptComponent.Scripts)
+				kv.second->OnDestroy();
+
+			entity.DeleteAllScriptInstances();
+		}
+			
+		m_EntityMap.erase(entity.GetUUID());
 		m_Registry.destroy(entity.m_Handle);
 	}
 
 	void Scene::DestroyAll()
 	{
-		m_Registry.each([&](auto id) { m_Registry.destroy(id); });
+		m_Registry.each([&](entt::entity e) 
+		{
+			Entity entity{ this, e };
+			DestroyEntity(entity);
+		});
 	}
 
 	void Scene::OnUpdate(float ts)
@@ -184,15 +188,15 @@ namespace proton {
 				PROFILE_SCOPE("update_scripts");
 				m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent)
 				{
-					for (auto& [scriptName, scriptData] : scriptComponent.Scripts)
+					for (auto& [scriptName, scriptInstance] : scriptComponent.Scripts)
 					{
-						if (!scriptData.Initialized && scriptData.ScriptInstance)
+						if (!scriptInstance->m_Initialized)
 						{
-							scriptData.ScriptInstance->m_Entity = Entity{ this, entity };
-							scriptData.ScriptInstance->OnCreate();
-							scriptData.Initialized = true;
+							scriptInstance->m_Entity = Entity{ this, entity };
+							scriptInstance->OnCreate();
+							scriptInstance->m_Initialized = true;
 						}
-						scriptData.ScriptInstance->OnUpdate(ts);
+						scriptInstance->OnUpdate(ts);
 					}
 				});
 			}
@@ -225,12 +229,8 @@ namespace proton {
 
 	Entity Scene::FindByID(UUID id)
 	{
-		auto view = m_Registry.view<IDComponent>();
-		for (auto entity : view)
-		{
-			if (id == view.get<IDComponent>(entity).ID)
-				return Entity(this, entity);
-		}
+		if (m_EntityMap.find(id) != m_EntityMap.end())
+			return m_EntityMap.at(id);
 		return Entity();
 	}
 
@@ -302,26 +302,6 @@ namespace proton {
 			else
 				Renderer::DrawQuad(transformMatrix, sprite.Color);
 
-#if PROTON_EDITOR
-			// Draw box collider
-			Entity entity = Entity{ this, e };
-			if (entity.HasComponent<BoxColliderComponent>())
-			{
-				EditorOverlay* editor = EditorOverlay::s_Instance;
-				uint8_t drawCollider = editor->m_ShowAllColliders + (EditorOverlay::GetInspectorContext() == entity && editor->m_ShowSelectionCollider);
-				if (drawCollider)
-				{
-					auto& bc = entity.GetComponent<BoxColliderComponent>();
-					float z = drawCollider == 1 ? 0.2f : 0.205f;
-					glm::vec4 color = drawCollider == 1 ? glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f };
-					glm::vec3 position = { transform.Position.x + bc.Offset.x, transform.Position.y + bc.Offset.y, z };
-					glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
-					glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
-
-					Renderer::DrawQuad(transformMatrix, { 0.9f, 0.6f, 0.3f, 0.5f });
-				}
-			}
-#endif 
 		}
 
 		// ***************************************************
@@ -331,15 +311,17 @@ namespace proton {
 		for (auto e : renderableTilemapSprite)
 		{
 			PROFILE_SCOPE("entity_render_tilemap_sprite");
-			auto [transform, tilemap] = renderableTilemapSprite.get<TransformComponent, TilemapSpriteComponent>(e);
-			auto& spritesheet = tilemap.TilemapSprite.m_Spritesheet;
+			auto [transform, tsp] = renderableTilemapSprite.get<TransformComponent, TilemapSpriteComponent>(e);
+			auto& tilemap = tsp.TilemapSprite;
+			auto& spritesheet = tilemap.m_Spritesheet;
+
 			if (spritesheet)
 			{
 				// Tilemap entity transform matrix
 				glm::mat4 transformMatrix = GetTransform(transform.Position, glm::vec2{1.0f}, transform.Rotation);
 
 				uint32_t x = 0, y = 0;
-				for (auto& column : tilemap.TilemapSprite.m_Tilemap)
+				for (auto& column : tilemap.m_Tilemap)
 				{
 					for (auto& tile : column)
 					{
@@ -347,63 +329,55 @@ namespace proton {
 						{
 							// Tile local transform matrix
 							glm::mat4 tileTransformMatrix = GetTransform({
-									(x - tilemap.TilemapSprite.m_Width / 2.0f + 0.5f) * transform.Scale.x,
-									(y - tilemap.TilemapSprite.m_Height / 2.0f + 0.5f) * transform.Scale.y, 0
-								}, transform.Scale);
+									(x - tilemap.m_Width / 2.0f + 0.5f) * tilemap.m_TileScale.x,
+									(y - tilemap.m_Height / 2.0f + 0.5f) * tilemap.m_TileScale.y, 0
+								}, tilemap.m_TileScale);
 
 							Renderer::DrawQuad(transformMatrix * tileTransformMatrix, spritesheet->GetTexture(),
-								spritesheet->GetTextureCoords(tile.x, tile.y), tilemap.Color);
+								spritesheet->GetTextureCoords(tile.x, tile.y), tsp.Color);
 						}
 						y++;
 					}
 					y = 0; x++;
 				}
 			}
-
-#if PROTON_EDITOR
-			// Draw box collider
-			Entity entity = Entity{ this, e };
-			if (entity.HasComponent<BoxColliderComponent>())
-			{
-				EditorOverlay* editor = EditorOverlay::s_Instance;
-				uint8_t drawCollider = editor->m_ShowAllColliders + (EditorOverlay::GetInspectorContext() == entity && editor->m_ShowSelectionCollider);
-				if (drawCollider)
-				{
-					auto& bc = entity.GetComponent<BoxColliderComponent>();
-					float z = drawCollider == 1 ? 0.2f : 0.205f;
-					glm::vec4 color = drawCollider == 1 ? glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f };
-
-					auto& [width, height] = tilemap.TilemapSprite.GetSize();
-					glm::vec3 position = { transform.Position.x + bc.Offset.x, transform.Position.y + bc.Offset.y, z };
-					glm::vec2 scale = { width * bc.Size.x * transform.Scale.x, height * bc.Size.y * transform.Scale.y };
-					glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
-
-					Renderer::DrawQuad(transformMatrix, color);
-				}
-			}
-#endif
 		}
 
 #if PROTON_EDITOR
+
+		EditorOverlay* editor = EditorOverlay::Get();
+
+		// Draw box colliders
+		auto view = m_Registry.view<TransformComponent, BoxColliderComponent>();
+		for (auto entity : view)
+		{
+			auto [transform, bc] = view.get<TransformComponent, BoxColliderComponent>(entity);
+
+			bool drawAll = editor->m_ShowAllColliders;
+			// Check if current entity is selected entity and show selection collider is enabled
+			bool drawSelected = editor->m_ShowSelectionCollider && EditorOverlay::GetInspectorContext().m_Handle == entity;
+
+			if (drawAll || drawSelected)
+			{
+				float zPos = (drawAll && drawSelected) ? 0.205f : 0.2f;
+				glm::vec4 color = (drawAll && drawSelected) ? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
+				glm::vec3 position = { transform.Position.x + bc.Offset.x, transform.Position.y + bc.Offset.y, zPos };
+				glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
+				glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
+
+				Renderer::DrawQuad(transformMatrix, color);
+			}
+		}
+
 		// Draw selected entity outline
 		Entity selectedEntity = EditorOverlay::GetInspectorContext();
-		EditorOverlay* editor = EditorOverlay::Get();
+
 		if (selectedEntity && editor->m_ShowSelectionOutline)
 		{
 			auto& transform = selectedEntity.GetComponent<TransformComponent>();
 			float padding = glm::sqrt(GetPrimaryCamera()->GetZoomLevel()) * 0.05f;
-			glm::vec3 scale;
-			
-			if (selectedEntity.HasComponent<TilemapSpriteComponent>())
-			{
-				auto& tilemap = selectedEntity.GetComponent<TilemapSpriteComponent>().TilemapSprite;
-				auto& [width, height] = tilemap.GetSize();
-				scale = { width * transform.Scale.x + padding, height * transform.Scale.y + padding, 1.0f };
-			}
-			else
-				scale = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
-
 			glm::vec3 position = { transform.Position.x, transform.Position.y, 0.21f };
+			glm::vec3 scale = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
 			glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
 			
 			glm::vec4 color = editor->m_ShowSelectionOutline && editor->m_MovingSelection
@@ -467,7 +441,7 @@ namespace proton {
 
 	std::vector<Entity> Scene::GetEntitiesOnMousePosition()
 	{
-		glm::vec2 mousePos = GetMouseWorldPosition();
+		const glm::vec2& mousePos = GetMouseWorldPosition();
 		auto view = m_Registry.view<TransformComponent>();
 		std::vector<Entity> entities;
 
@@ -482,29 +456,17 @@ namespace proton {
 			glm::vec2 point = mousePos;
 			if (transform.Rotation)
 			{
-				glm::vec2 rotationCenter = glm::vec2{ transform.Position.x, transform.Position.y };
+				glm::vec2 rotationCenter = { transform.Position.x, transform.Position.y };
 				point -= rotationCenter;
-				point = glm::vec2{
+				point = {
 					point.x * cosinus - point.y * sinus + rotationCenter.x,
 					point.x * sinus + point.y * cosinus + rotationCenter.y
 				};
 			}
 
-			const auto& position = transform.Position;
-			glm::vec2 scale;
-
-			// If entity has TilemapSpriteComponent calculate size
-			// otherwise use entity TransformComponent scale
-			if (m_Registry.any_of<TilemapSpriteComponent>(entity))
-			{
-				auto& tilemap = m_Registry.get<TilemapSpriteComponent>(entity);
-				auto [width, height] = tilemap.TilemapSprite.GetSize();
-				scale = { transform.Scale.x * width, transform.Scale.y * height };
-			}
-			else
-				scale = transform.Scale;
-
 			// Check if point is inside entity bounding box
+			const glm::vec3& position = transform.Position;
+			const glm::vec2& scale = transform.Scale;
 			if (point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
 				&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f)
 			{
@@ -535,6 +497,65 @@ namespace proton {
 	uint32_t Scene::GetScriptedEntitiesCount() const
 	{
 		return (int32_t)m_Registry.view<ScriptComponent>().size();
+	}
+
+	PhysicsContactListener::PhysicsContactListener(Scene* scene)
+		: m_Scene(scene)
+	{
+	}
+
+#define GET_CONTACT_ENTITIES()\
+	b2Fixture* fixtureA = contact->GetFixtureA();\
+	b2Fixture* fixtureB = contact->GetFixtureB();\
+	UUID uuidA = *(UUID*)(fixtureA->GetUserData().pointer);\
+	UUID uuidB = *(UUID*)(fixtureB->GetUserData().pointer);\
+	Entity entityA = m_Scene->FindByID(uuidA);\
+	Entity entityB = m_Scene->FindByID(uuidB);\
+	auto& bcA = entityA.GetComponent<BoxColliderComponent>();\
+	auto& bcB = entityB.GetComponent<BoxColliderComponent>();
+
+	void PhysicsContactListener::BeginContact(b2Contact* contact)
+	{
+		GET_CONTACT_ENTITIES();
+		
+		if (bcA.ContactCallback.OnBeginContactFunction)
+			bcA.ContactCallback.OnBeginContactFunction({ uuidB, contact });
+		
+		if (bcB.ContactCallback.OnBeginContactFunction)
+			bcB.ContactCallback.OnBeginContactFunction({ uuidA, contact });
+	}
+
+	void PhysicsContactListener::EndContact(b2Contact* contact)
+	{
+		GET_CONTACT_ENTITIES();
+
+		if (bcA.ContactCallback.OnEndContactFunction)
+			bcA.ContactCallback.OnEndContactFunction({ uuidB, contact });
+
+		if (bcB.ContactCallback.OnEndContactFunction)
+			bcB.ContactCallback.OnEndContactFunction({ uuidA, contact });
+	}
+
+	void PhysicsContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
+	{
+		GET_CONTACT_ENTITIES();
+
+		if (bcA.ContactCallback.OnPreSolveFunction)
+			bcA.ContactCallback.OnPreSolveFunction({ uuidB, contact }, oldManifold);
+
+		if (bcB.ContactCallback.OnPreSolveFunction)
+			bcB.ContactCallback.OnPreSolveFunction({ uuidA, contact }, oldManifold);
+	}
+
+	void PhysicsContactListener::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
+	{
+		GET_CONTACT_ENTITIES();
+
+		if (bcA.ContactCallback.OnPostSolveFunction)
+			bcA.ContactCallback.OnPostSolveFunction({ uuidB, contact }, impulse);
+
+		if (bcB.ContactCallback.OnPostSolveFunction)
+			bcB.ContactCallback.OnPostSolveFunction({ uuidA, contact }, impulse);
 	}
 
 }

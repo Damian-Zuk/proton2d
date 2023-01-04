@@ -287,6 +287,9 @@ namespace proton {
 							}
 
 							ImGui::Dummy({ 10.0f, 0.0f });
+							ImGui::Text("Tile scale"); ImGui::SameLine();
+							ImGui::DragFloat2("##tile_scale", glm::value_ptr(tilemap.m_TileScale), 0.01f);
+							ImGui::Dummy({ 10.0f, 0.0f });
 
 							bool left        = tilemap.m_BlockBorders & 1;
 							bool right       = tilemap.m_BlockBorders & 2;
@@ -409,14 +412,14 @@ namespace proton {
 				{
 					DrawComponentUI<ScriptComponent>("Script", [&](auto& component)
 					{
-						for (auto& [scriptClassName, scriptData] : component.Scripts)
+						for (auto& [scriptClassName, scriptInstance] : component.Scripts)
 						{
 							ImGui::Text(scriptClassName.c_str());
 							
-							if (!scriptData.ScriptInstance)
+							if (!scriptInstance)
 								continue;
 
-							for (auto& [fieldName, fieldData] : scriptData.ScriptInstance->m_ScriptFields)
+							for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
 							{
 								switch (fieldData.Type)
 								{

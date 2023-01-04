@@ -74,16 +74,17 @@ namespace proton {
 		// Serialize TilemapSpriteComponent
 		if (entity.HasComponent<TilemapSpriteComponent>())
 		{
-			auto& tilemap = entity.GetComponent<TilemapSpriteComponent>();
-			auto& spritesheet = tilemap.TilemapSprite.GetSpritesheet();
+			auto& tilemap = entity.GetComponent<TilemapSpriteComponent>().TilemapSprite;
+			auto& spritesheet = tilemap.GetSpritesheet();
 			
 			if (spritesheet)
 				jsonObj["TilemapSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
 
-			auto [width, height] = tilemap.TilemapSprite.GetSize();
+			auto [width, height] = tilemap.GetSize();
 			jsonObj["TilemapSprite"]["Width"] = width;
 			jsonObj["TilemapSprite"]["Height"] = height;
-			jsonObj["TilemapSprite"]["BlockBorders"] = tilemap.TilemapSprite.GetBlockBorders();
+			jsonObj["TilemapSprite"]["BlockBorders"] = tilemap.GetBlockBorders();
+			jsonObj["TilemapSprite"]["TileScale"] = { tilemap.m_TileScale.x, tilemap.m_TileScale.y };
 		}
 
 		// Serialize CameraComponent
@@ -118,11 +119,11 @@ namespace proton {
 		if (entity.HasComponent<ScriptComponent>())
 		{
 			auto& script = entity.GetComponent<ScriptComponent>();
-			for (auto& [scriptClassName, scriptData] : script.Scripts)
+			for (auto& [scriptClassName, scriptInstance] : script.Scripts)
 			{
 				json scriptObj;
 				scriptObj["ClassName"] = scriptClassName;
-				for (auto& [fieldName, fieldData] : scriptData.ScriptInstance->m_ScriptFields)
+				for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
 				{
 					json fieldObj;
 					fieldObj["FieldName"] = fieldName;
@@ -316,13 +317,15 @@ namespace proton {
 		// Deserialize TilemapSpriteComponent
 		if (jsonObj.contains("TilemapSprite"))
 		{
-			auto& tilemap = entity.AddComponent<TilemapSpriteComponent>();
-			tilemap.TilemapSprite.SetSize(jsonObj["TilemapSprite"]["Width"], jsonObj["TilemapSprite"]["Height"]);
-			tilemap.TilemapSprite.SetBlockBorders(jsonObj["TilemapSprite"]["BlockBorders"]);
-			tilemap.TilemapSprite.GenerateTilemapBlock();
+			json& jsonTilemap = jsonObj["TilemapSprite"];
+			auto& tilemap = entity.AddComponent<TilemapSpriteComponent>().TilemapSprite;
+			tilemap.SetSize(jsonTilemap["Width"], jsonTilemap["Height"]);
+			tilemap.SetBlockBorders(jsonTilemap["BlockBorders"]);
+			tilemap.GenerateTilemapBlock();
+			tilemap.SetTileScale({ jsonTilemap["TileScale"][0], jsonTilemap["TileScale"][1] });
 
-			if (jsonObj["TilemapSprite"].contains("Spritesheet"))
-				tilemap.TilemapSprite.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonObj["TilemapSprite"]["Spritesheet"]));
+			if (jsonTilemap.contains("Spritesheet"))
+				tilemap.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonTilemap["Spritesheet"]));
 		}
 
 		// Deserialize CameraComponent

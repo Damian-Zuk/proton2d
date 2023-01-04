@@ -20,7 +20,7 @@ namespace proton {
 
     void Flipbook::SetAnimation(uint16_t index, bool mirror_x, bool mirror_y)
     {
-        assert(m_Animations.find(index) != m_Animations.end() && "Animation not found");
+        assert(m_AnimationsFrameCount.find(index) != m_AnimationsFrameCount.end() && "Animation not found");
         
         if (!m_Sprite)
             return;

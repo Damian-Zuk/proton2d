@@ -16,14 +16,6 @@ void PlayerScript::RegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "PlayerSpeed", &m_PlayerSpeed);
 	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
-
-	RegisterField(ScriptFieldType::Float2, "Float2", glm::value_ptr(test1));
-	RegisterField(ScriptFieldType::Float3, "Float3", glm::value_ptr(test2));
-	RegisterField(ScriptFieldType::Float4, "Float4", glm::value_ptr(test3));
-	RegisterField(ScriptFieldType::Int2, "Int2", glm::value_ptr(test4));
-	RegisterField(ScriptFieldType::Int3, "Int3", glm::value_ptr(test5));
-	RegisterField(ScriptFieldType::Int4, "Int4", glm::value_ptr(test6));
-	RegisterField(ScriptFieldType::Bool, "Bool", &test7);
 }
 
 void PlayerScript::OnCreate()
@@ -37,11 +29,36 @@ void PlayerScript::OnCreate()
 	m_Flipbook->CreateAnimation(Attack, 10);
 	m_Flipbook->CreateAnimation(Jump, 3);
 	m_Flipbook->SetAnimation(Idle, Right);
-	
+
+	m_FootSensor = GetScene()->FindByTag("FootSensor");
+	if (m_FootSensor)
+	{
+		auto& bc = m_FootSensor.GetComponent<BoxColliderComponent>();
+
+		bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContactInfo info)
+		{
+			m_ContactCount++;
+			LOG("BeginContact", info.OtherUUID);
+		};
+
+		bc.ContactCallback.OnEndContactFunction = [&](PhysicsContactInfo info)
+		{
+			m_ContactCount--;
+			LOG("EndContact", info.OtherUUID);
+		};
+	}
 }
 
 void PlayerScript::OnUpdate(float ts)
 {
+	auto& position = GetTransform().Position;
+	if (m_FootSensor)
+	{
+		b2Body* sensorBody = m_FootSensor.GetBox2DRigidbody();
+		sensorBody->SetTransform({ position.x, position.y }, 0.0f);
+		sensorBody->SetLinearVelocity({0.0f, 0.0f});
+	}
+
 	// Attack
 	if (m_IsAttacking)
 	{
@@ -49,7 +66,7 @@ void PlayerScript::OnUpdate(float ts)
 		if (!space && m_Flipbook->GetProgress() >= 0.5f)
 		{
 			// Stop attacking
-			m_Flipbook->SetAnimation(Idle, m_Orientation);
+			m_Flipbook->SetAnimation(Idle, m_Direction);
 			m_Flipbook->SetPlayMode(FlipbookPlayMode::REPEAT);
 			m_IsAttacking = false;
 		}
@@ -61,7 +78,7 @@ void PlayerScript::OnUpdate(float ts)
 		if (Input::IsKeyPressed(Key::Space))
 		{
 			// Begin attacking
-			m_Flipbook->SetAnimation(Attack, m_Orientation);
+			m_Flipbook->SetAnimation(Attack, m_Direction);
 			m_Flipbook->SetPlayMode(FlipbookPlayMode::PLAY_ONCE);
 			m_Flipbook->Replay();
 			m_IsAttacking = true;
@@ -71,7 +88,7 @@ void PlayerScript::OnUpdate(float ts)
 	// Movement
 	if (Input::IsKeyPressed(Key::Right))
 	{
-		m_Orientation = Right;
+		m_Direction = Right;
 		if (m_IsAttacking) // Walking while attacking
 		{
 			SetVelocityX(m_PlayerSpeed / 2);
@@ -85,7 +102,7 @@ void PlayerScript::OnUpdate(float ts)
 	}
 	else if (Input::IsKeyPressed(Key::Left))
 	{
-		m_Orientation = Left;
+		m_Direction = Left;
 		if (m_IsAttacking) // Walking while attacking
 		{
 			SetVelocityX(-m_PlayerSpeed / 2);
@@ -101,14 +118,13 @@ void PlayerScript::OnUpdate(float ts)
 	{
 		SetVelocityX(0.0f);
 		if (!m_IsAttacking) // Idle
-			m_Flipbook->SetAnimation(Idle, m_Orientation);
+			m_Flipbook->SetAnimation(Idle, m_Direction);
 	}
 
 	// Jumping
 	if (Input::IsKeyPressed(Key::Up))
 	{
-		if (GetVelocity().y == 0.0f) 
+		if (m_ContactCount > 1) 
 			ApplyImpulse({ 0.0f,  m_JumpForce });
 	}	
-
 }

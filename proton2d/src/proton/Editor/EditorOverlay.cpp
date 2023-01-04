@@ -6,6 +6,7 @@
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Utils.h"
 #include "proton/Events/MouseEvents.h"
+#include "proton/Events/KeyEvents.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -68,6 +69,14 @@ namespace proton {
 		{
 			if (!m_Inspector.m_SelectedEntity.IsValid())
 				m_Inspector.SetSelectionContext(Entity{});
+
+			if (m_MovingSelection)
+			{
+				glm::vec2 targetPos = m_ActiveScene->GetMouseWorldPosition() + m_SelectionMouseOffset;
+				auto& transform = m_Inspector.m_SelectedEntity.GetComponent<TransformComponent>();
+				transform.Position = { targetPos.x, targetPos.y, transform.Position.z };
+				ImGui::SetMouseCursor(2);
+			}
 
 			ImGui::Dummy({0.0f, 1.0f});
 			if (ImGui::Button("Create new entity", {340.0f, 25.0f}))
@@ -139,11 +148,26 @@ namespace proton {
 						transformMaxZ = transform.Position.z;
 					}
 				}
+				if (target && target == m_Inspector.m_SelectedEntity)
+				{
+					m_MovingSelection = true;
+					glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
+					auto& transform = m_Inspector.m_SelectedEntity.GetComponent<TransformComponent>();
+					m_SelectionMouseOffset = glm::vec2{ transform.Position.x, transform.Position.y } - mousePos;
+				}
 
 				SetInspectorContext(target);
 			}
 			return true;
 		});
+
+		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
+		{
+			m_MovingSelection = false;
+			ImGui::SetMouseCursor(0);
+			return true;
+		});
+
 	}
 
 	void EditorOverlay::DrawEntityTreeNode(Entity entity)

@@ -19,9 +19,9 @@ namespace proton {
 
 		void SetSprite(const Shared<Sprite>& sprite);
 
-		// index  - spritesheet Y tile pos
+		// index - spritesheet Y tile pos (from image bottom)
 		void CreateAnimation(uint16_t index, uint16_t frameCount);
-		// index - spritesheet Y tile pos
+		// index - spritesheet Y tile pos (from image bottom)
 		void SetAnimation(uint16_t index, bool mirror_x = false, bool mirror_y = false);
 		void SetMirrorFlip(bool mirror_x = false, bool mirror_y = false);
 		void SetPlayMode(FlipbookPlayMode mode);

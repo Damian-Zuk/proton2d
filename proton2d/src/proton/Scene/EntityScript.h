@@ -52,6 +52,10 @@ namespace proton {
 			m_ScriptFields[name] = { type, field };
 		}
 
+		// ******************************
+		//  Entity methods
+		// ******************************
+
 		Scene* GetScene() { return m_Entity.m_Scene; }
 
 		void AddChild(Entity entity) { m_Entity.AddChildEntity(entity); }
@@ -106,6 +110,7 @@ namespace proton {
 		Entity m_Entity;
 		
 	private:
+		bool m_Initialized = false;
 		std::unordered_map<std::string, ScriptField> m_ScriptFields;
 
 		friend class Scene;

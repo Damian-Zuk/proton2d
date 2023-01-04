@@ -46,8 +46,9 @@ namespace proton {
 
 		EditorCamera m_Camera;
 
+		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
+
 		Scene* m_ActiveScene = nullptr;
-		std::string m_ActiveSceneFilepath;
 
 		friend class Application;
 		friend class Inspector;
