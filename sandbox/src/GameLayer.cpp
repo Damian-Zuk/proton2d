@@ -7,7 +7,6 @@
 using namespace proton;
 
 GameLayer::GameLayer()
-	: m_Scene("Sample scene")
 {
 }
 
@@ -21,14 +20,13 @@ void GameLayer::OnCreate()
 
 void GameLayer::OnUpdate(float ts)
 {
-	m_Scene.OnUpdate(ts);
 
-	for (Entity entity : m_Scene.FindAllByTag("Box1"))
-	{
-		auto& transform = entity.GetComponent<TransformComponent>();
-		if (transform.Position.y < -60.0f)
-			entity.Destroy();
-	}
+	//for (Entity entity : m_Scene->FindAllByTag("Box1"))
+	//{
+	//	auto& transform = entity.GetComponent<TransformComponent>();
+	//	if (transform.Position.y < -60.0f)
+	//		entity.Destroy();
+	//}
 }
 
 void GameLayer::OnEvent(Event& e)
@@ -38,8 +36,8 @@ void GameLayer::OnEvent(Event& e)
 	{
 		if (event.GetKeyCode() == Key::R)
 		{
-			glm::vec2 cursorPos = m_Scene.GetMouseWorldPosition();
-			Entity entity = m_Scene.CreateEntity("Box1");
+			glm::vec2 cursorPos = m_Scene->GetMouseWorldPosition();
+			Entity entity = m_Scene->CreateEntity("Box1");
 			entity.AddComponent<RigidbodyComponent>().Type = b2_dynamicBody;
 			entity.AddComponent<BoxColliderComponent>();
 			auto& sprite = entity.AddComponent<SpriteComponent>();
@@ -51,7 +49,7 @@ void GameLayer::OnEvent(Event& e)
 			sprite.Color.b = Random::Float(0.0f, 1.0f);
 			sprite.Color.a = 50;
 			sprite.Sprite = CreateShared<Sprite>(AssetsManager::GetTexture("box.png"));
-			m_Scene.CreateBox2DRuntimeBody(entity);
+			m_Scene->CreateBox2DRuntimeBody(entity);
 		}
 		return true;
 	});

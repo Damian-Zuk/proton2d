@@ -20,17 +20,16 @@
 
 namespace proton {
 
-	constexpr static glm::vec4 s_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
 	constexpr static int32_t s_PhysicsVelocityIterations = 5;
 	constexpr static int32_t s_PhysicsPositionIterations = 5;
 
 	Scene::Scene(const std::string& name)
 		: m_SceneName(name), m_DefaultCamera(CreateShared<Camera>()), m_ContactListener(this)
 	{
-		Renderer::SetClearColor(s_ClearColor);
 #if PROTON_EDITOR
-		EditorOverlay::SetSceneContext(this);
 		m_SceneState = SceneState::EditMode;
+#else
+		m_SceneState = SceneState::PlayMode;
 #endif
 	}
 
@@ -54,7 +53,6 @@ namespace proton {
 			OnEndPlay();
 #if PROTON_EDITOR
 			m_SceneState = SceneState::EditMode;
-			ImGui::SetWindowFocus(nullptr);
 #else
 			OnBeginPlay();
 #endif
@@ -273,7 +271,6 @@ namespace proton {
 	void Scene::RenderScene(const Camera& camera)
 	{
 		PROFILE_FUNCTION();
-		Renderer::Clear();
 		Renderer::BeginScene(camera, GetPrimaryCameraPosition());
 
 		// ***************************************************
@@ -511,6 +508,7 @@ namespace proton {
 	UUID uuidB = *(UUID*)(fixtureB->GetUserData().pointer);\
 	Entity entityA = m_Scene->FindByID(uuidA);\
 	Entity entityB = m_Scene->FindByID(uuidB);\
+	if (!entityA.IsValid() || !entityB.IsValid()) return; \
 	auto& bcA = entityA.GetComponent<BoxColliderComponent>();\
 	auto& bcB = entityB.GetComponent<BoxColliderComponent>();
 

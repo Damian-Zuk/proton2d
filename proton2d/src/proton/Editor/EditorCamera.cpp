@@ -51,10 +51,10 @@ namespace proton {
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-
-		if (!ImGui::GetIO().WantCaptureMouse)
+		Scene* activeScene = EditorOverlay::Get()->m_ActiveScene;
+		if (activeScene && !ImGui::GetIO().WantCaptureMouse)
 		{
-			if (EditorOverlay::Get()->m_ActiveScene->m_SceneState == SceneState::EditMode)
+			if (activeScene->m_SceneState == SceneState::EditMode)
 			{
 				dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
 				{

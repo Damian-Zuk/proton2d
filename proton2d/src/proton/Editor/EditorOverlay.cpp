@@ -7,6 +7,7 @@
 #include "proton/Core/Utils.h"
 #include "proton/Events/MouseEvents.h"
 #include "proton/Events/KeyEvents.h"
+#include "proton/Scene/SceneManager.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -54,7 +55,21 @@ namespace proton {
 
 	void EditorOverlay::OnUpdate(float ts)
 	{
-		m_Camera.OnUpdate(ts);
+		if (m_ActiveScene)
+		{
+			m_Camera.OnUpdate(ts);
+
+			if (!m_Inspector.m_SelectedEntity.IsValid())
+				m_Inspector.SetSelectionContext(Entity{});
+
+			if (m_MovingSelection)
+			{
+				glm::vec2 targetPos = m_ActiveScene->GetMouseWorldPosition() + m_SelectionMouseOffset;
+				auto& transform = m_Inspector.m_SelectedEntity.GetComponent<TransformComponent>();
+				transform.Position = { targetPos.x, targetPos.y, transform.Position.z };
+				ImGui::SetMouseCursor(2);
+			}
+		}
 	}
 
 	void EditorOverlay::OnImGuiRender()
@@ -67,17 +82,6 @@ namespace proton {
 		ImGui::Begin("Hierarchy");
 		if (m_ActiveScene)
 		{
-			if (!m_Inspector.m_SelectedEntity.IsValid())
-				m_Inspector.SetSelectionContext(Entity{});
-
-			if (m_MovingSelection)
-			{
-				glm::vec2 targetPos = m_ActiveScene->GetMouseWorldPosition() + m_SelectionMouseOffset;
-				auto& transform = m_Inspector.m_SelectedEntity.GetComponent<TransformComponent>();
-				transform.Position = { targetPos.x, targetPos.y, transform.Position.z };
-				ImGui::SetMouseCursor(2);
-			}
-
 			ImGui::Dummy({0.0f, 1.0f});
 			if (ImGui::Button("Create new entity", {340.0f, 25.0f}))
 			{
@@ -133,6 +137,9 @@ namespace proton {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
+			if (!m_ActiveScene)
+				return false;
+
 			// Select entity on mouse pressed event (Button 0)
 			if (e.GetMouseButton() == Mouse::Button0 && !ImGui::GetIO().WantCaptureMouse)
 			{
@@ -216,7 +223,7 @@ namespace proton {
 		{
 			directoryScenes = GetFilesFromDirectory("scenes");
 
-			if (ImGui::Selectable("Create new scene"))
+			if (ImGui::Selectable("Save As / Create new scene"))
 				createNewScenePopup = true;
 
 			ImGui::Separator();
@@ -257,15 +264,33 @@ namespace proton {
 			{
 				std::string filepath = "scenes/" + std::string(sceneName) + ".json";
 				
-				if (!keepContent)
+				SceneManager* manager = SceneManager::s_Instance;
+				if (manager->m_Scenes.find(sceneName) != manager->m_Scenes.end())
 				{
-					std::ofstream file(filepath);
-					file << "{\"Scene name\": \"Sample scene\"}";
-					file.close();
-					m_ActiveScene->DestroyAll();
+					delete manager->m_Scenes[sceneName];
+				}
+
+				if (keepContent)
+				{
+					SceneSerializer::Serialize(filepath);
+					manager->m_Scenes[sceneName] = manager->m_Scenes[manager->m_ActiveSceneName];
+					if (manager->m_ActiveSceneName == "EDITOR_EMPTY_SCENE")
+						manager->m_Scenes[manager->m_ActiveSceneName] = new Scene();
+					SceneManager::SetActiveScene(sceneName);
 				}
 				else
-					SceneSerializer::Serialize(filepath);
+				{
+					if (manager->m_ActiveSceneName == "EDITOR_EMPTY_SCENE")
+					{
+						delete manager->m_Scenes["EDITOR_EMPTY_SCENE"];
+						manager->m_Scenes["EDITOR_EMPTY_SCENE"] = new Scene();
+					}
+					else
+					{
+						manager->m_Scenes[sceneName] = new Scene();
+						SceneManager::SetActiveScene(sceneName);
+					}
+				}
 					
 				directoryScenes = GetFilesFromDirectory("scenes");
 				int index = 0;
@@ -275,24 +300,28 @@ namespace proton {
 						filenameIndex = index;
 					index++;
 				}
+
 				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::Checkbox("Keep current scene content##new_scene", &keepContent);
-
 			ImGui::EndPopup();
 		}
 
-		// Load / Save Buttons
+		// Load / Save buttons
 		ImGui::Dummy({ 0, 3.0f });
 		if (ImGui::Button("Load", { 75, 25 }) && filenameIndex >= 0)
-			m_ActiveScene->LoadFromFilepath(directoryScenes[filenameIndex] + ".json");
+		{
+			ImGui::SetWindowFocus(nullptr);
+			SceneManager::Load(directoryScenes[filenameIndex]);
+			SceneManager::SetActiveScene(directoryScenes[filenameIndex]);
+		}
 		
 		if (filenameIndex != -1)
 		{
 			ImGui::SameLine();
 			if (ImGui::Button("Save", { 75, 25 }))
-				m_ActiveScene->SaveAsFile(directoryScenes[filenameIndex] + ".json");
+				m_ActiveScene->SaveAsFile(SceneManager::s_Instance->m_ActiveSceneName + ".json");
 		}
 
 		ImGui::Dummy({ 0.0f, 3.0f });

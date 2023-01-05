@@ -4,6 +4,7 @@
 #include "proton/Events/WindowEvents.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Scene/ScriptFactory.h"
+#include "proton/Scene/SceneManager.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "proton/Platform/Windows/WindowsWindow.h"
@@ -16,7 +17,7 @@ namespace proton {
 
 	Application* Application::s_Instance = nullptr;
 	Input* Input::s_Instance = nullptr;
-
+	static glm::vec4 s_ScreenClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
 
 	Application::Application(const std::string& appName)
 		: m_AppName(appName)
@@ -43,6 +44,8 @@ namespace proton {
 			layer->OnDestroy();
 			delete layer;
 		}
+		delete Input::s_Instance;
+		delete SceneManager::s_Instance;
 	}
 
 	void Application::Run()
@@ -51,6 +54,8 @@ namespace proton {
 
 		Logger::init();
 		Renderer::Init();
+		Renderer::SetClearColor(s_ScreenClearColor);
+		SceneManager::s_Instance = new SceneManager();
 
 		if (OnCreate()) 
 		{
@@ -60,14 +65,21 @@ namespace proton {
 
 				if (!m_WindowMinimized) 
 				{
-					PROFILE_SCOPE("AppLayers OnUpdate");
-					for (AppLayer* layer : m_AppLayers)
-						layer->OnUpdate(m_LastFrameTime);
+					{
+						PROFILE_SCOPE("app_layers_on_update");
+						for (AppLayer* layer : m_AppLayers)
+							layer->OnUpdate(m_LastFrameTime);
+					}
+					
+					Renderer::Clear();
+					Scene* activeScene = SceneManager::GetActiveScene();
+					if (activeScene)
+						activeScene->OnUpdate(m_LastFrameTime);
 				}
 
 				#if PROTON_EDITOR
 				{
-					PROFILE_SCOPE("ImGuiRender");
+					PROFILE_SCOPE("imgui_render");
 					m_EditorOverlay->m_DebugInfo.m_FrameTime = m_LastFrameTime;
 					m_EditorOverlay->BeginImGuiRender();
 

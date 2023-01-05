@@ -14,7 +14,7 @@ public:
 	virtual void OnEvent(Event& e);
 
 private:
-	Scene m_Scene;
+	Scene* m_Scene;
 	Entity m_Player;
 	Entity m_Level;
 };
