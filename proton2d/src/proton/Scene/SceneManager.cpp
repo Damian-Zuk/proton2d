@@ -15,6 +15,7 @@ namespace proton {
 	{
 #if PROTON_EDITOR
 		Scene* scene = new Scene();
+		scene->m_SceneState = SceneState::EditMode;
 		m_Scenes["EDITOR_EMPTY_SCENE"] = scene;
 		m_ActiveScene = scene;
 		m_ActiveSceneName = "EDITOR_EMPTY_SCENE";
@@ -31,9 +32,18 @@ namespace proton {
 	void SceneManager::Load(const std::string& sceneName)
 	{
 		Scene* scene = new Scene(sceneName);
-		scene->LoadFromFilepath(sceneName + ".json");
+
+#if PROTON_EDITOR
+		scene->m_SceneState = SceneState::EditMode;
+#endif
+
+		SceneSerializer::SetContext(scene);
+		SceneSerializer::Deserialize("scenes/" + sceneName + ".json");
+		scene->m_SceneFilepath = sceneName + ".json";
+
 		if (s_Instance->m_Scenes.find(sceneName) != s_Instance->m_Scenes.end())
 			delete s_Instance->m_Scenes[sceneName];
+
 		s_Instance->m_Scenes[sceneName] = scene;
 	}
 
@@ -45,10 +55,16 @@ namespace proton {
 
 	void SceneManager::SetActiveScene(const std::string& sceneName)
 	{
+		if (s_Instance->m_ActiveScene)
+			s_Instance->m_ActiveScene->OnEndPlay();
+
 		s_Instance->m_ActiveScene = s_Instance->m_Scenes.at(sceneName);
 		s_Instance->m_ActiveSceneName = sceneName;
+
 #if PROTON_EDITOR
 		EditorOverlay::SetSceneContext(s_Instance->m_ActiveScene);
+#else
+		s_Instance->m_ActiveScene->OnBeginPlay();
 #endif
 	}
 

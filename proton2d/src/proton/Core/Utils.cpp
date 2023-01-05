@@ -2,6 +2,7 @@
 #include "proton/Core/Utils.h"
 
 #include <filesystem>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace proton
 {
@@ -35,5 +36,12 @@ namespace proton
 		for (const auto& entry : std::filesystem::directory_iterator(directory))
 			directoryScenes.emplace_back(entry.path().stem().generic_string());
 		return directoryScenes;
+	}
+
+	glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation)
+	{
+		return glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
+			* glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
 	}
 }

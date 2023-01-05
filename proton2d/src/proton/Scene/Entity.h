@@ -126,6 +126,7 @@ namespace proton {
 		friend class SceneSerializer;
 		friend class EntityScript;
 		friend class Inspector;
+		friend class EditorOverlay;
 	};
 
 }

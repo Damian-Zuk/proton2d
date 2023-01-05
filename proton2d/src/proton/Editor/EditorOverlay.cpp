@@ -8,6 +8,8 @@
 #include "proton/Events/MouseEvents.h"
 #include "proton/Events/KeyEvents.h"
 #include "proton/Scene/SceneManager.h"
+#include "proton/Graphics/Renderer.h"
+#include "proton/Core/Utils.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -125,6 +127,7 @@ namespace proton {
 			m_Inspector.OnImGuiRender();
 			m_DebugInfo.OnImGuiRender();
 			DrawSceneSerializationPanel();
+			DrawCollidersAndSelectionOutline();
 		}
 
 		ImGui::End();
@@ -315,6 +318,7 @@ namespace proton {
 			ImGui::SetWindowFocus(nullptr);
 			SceneManager::Load(directoryScenes[filenameIndex]);
 			SceneManager::SetActiveScene(directoryScenes[filenameIndex]);
+			SetInspectorContext(Entity{});
 		}
 		
 		if (filenameIndex != -1)
@@ -341,6 +345,50 @@ namespace proton {
 		}
 		
 		ImGui::End();
+	}
+
+	void EditorOverlay::DrawCollidersAndSelectionOutline()
+	{
+		Renderer::BeginScene(*m_ActiveScene->GetPrimaryCamera(), m_ActiveScene->GetPrimaryCameraPosition());
+		// Draw box colliders
+		auto view = m_ActiveScene->m_Registry.view<TransformComponent, BoxColliderComponent>();
+		for (auto entity : view)
+		{
+			auto [transform, bc] = view.get<TransformComponent, BoxColliderComponent>(entity);
+
+			// Check if current entity is selected entity and show selection collider is enabled
+			bool drawSelected = m_ShowSelectionCollider && GetInspectorContext().m_Handle == entity;
+
+			if (m_ShowAllColliders || drawSelected)
+			{
+				float zPos = (m_ShowAllColliders && drawSelected) ? 0.205f : 0.2f;
+				glm::vec4 color = (m_ShowAllColliders && drawSelected) ? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
+				glm::vec3 position = { transform.Position.x + bc.Offset.x, transform.Position.y + bc.Offset.y, zPos };
+				glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
+				glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
+
+				Renderer::DrawQuad(transformMatrix, color);
+			}
+		}
+
+		// Draw selected entity outline
+		Entity selectedEntity = GetInspectorContext();
+
+		if (selectedEntity && m_ShowSelectionOutline)
+		{
+			auto& transform = selectedEntity.GetComponent<TransformComponent>();
+			float padding = glm::sqrt(m_ActiveScene->GetPrimaryCamera()->GetZoomLevel()) * 0.05f;
+			glm::vec3 position = { transform.Position.x, transform.Position.y, 0.21f };
+			glm::vec3 scale = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
+			glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
+
+			glm::vec4 color = m_ShowSelectionOutline && m_MovingSelection
+				? glm::vec4{ 0.8f, 0.8f, 0.2f, 1.0f } : glm::vec4{ 1.0f };
+
+			Renderer::SetLineWidth(glm::min(50.0f * padding, 1.0f));
+			Renderer::DrawRect(transformMatrix, color);
+		}
+		Renderer::EndScene();
 	}
 
 	void EditorOverlay::SetSceneContext(Scene* context)

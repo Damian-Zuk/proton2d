@@ -84,7 +84,7 @@ namespace proton {
 		uint32_t GetScriptedEntitiesCount() const;
 
 	private:
-		SceneState m_SceneState;
+		SceneState m_SceneState = SceneState::PlayMode;
 		std::string m_SceneName;
 		std::string m_SceneFilepath;
 
@@ -106,6 +106,7 @@ namespace proton {
 		friend class Inspector;
 		friend class EditorCamera;
 		friend class SceneSerializer;
+		friend class SceneManager;
 	};
 
 }

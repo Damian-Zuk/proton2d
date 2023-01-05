@@ -6,6 +6,7 @@
 #include "proton/Scene/EntityScript.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Input.h"
+#include "proton/Core/Utils.h"
 
 #if PROTON_EDITOR
 #include "proton/Editor/EditorOverlay.h"
@@ -26,11 +27,6 @@ namespace proton {
 	Scene::Scene(const std::string& name)
 		: m_SceneName(name), m_DefaultCamera(CreateShared<Camera>()), m_ContactListener(this)
 	{
-#if PROTON_EDITOR
-		m_SceneState = SceneState::EditMode;
-#else
-		m_SceneState = SceneState::PlayMode;
-#endif
 	}
 
 	Scene::~Scene()
@@ -62,10 +58,6 @@ namespace proton {
 		SceneSerializer::SetContext(this);
 		SceneSerializer::Deserialize("scenes/" + filepath);
 		m_SceneFilepath = filepath;
-
-#if PROTON_EDITOR
-		EditorOverlay::SetInspectorContext(Entity{});
-#endif
 	}
 
 	std::string Scene::GetFilepath()
@@ -261,13 +253,6 @@ namespace proton {
 		return m_RuntimeBodies.at(id);
 	}
 
-	static glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation = 0.0f)
-	{
-		return glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), { scale.x, scale.y, 1.0f });
-	}
-
 	void Scene::RenderScene(const Camera& camera)
 	{
 		PROFILE_FUNCTION();
@@ -339,51 +324,6 @@ namespace proton {
 				}
 			}
 		}
-
-#if PROTON_EDITOR
-
-		EditorOverlay* editor = EditorOverlay::Get();
-
-		// Draw box colliders
-		auto view = m_Registry.view<TransformComponent, BoxColliderComponent>();
-		for (auto entity : view)
-		{
-			auto [transform, bc] = view.get<TransformComponent, BoxColliderComponent>(entity);
-
-			bool drawAll = editor->m_ShowAllColliders;
-			// Check if current entity is selected entity and show selection collider is enabled
-			bool drawSelected = editor->m_ShowSelectionCollider && EditorOverlay::GetInspectorContext().m_Handle == entity;
-
-			if (drawAll || drawSelected)
-			{
-				float zPos = (drawAll && drawSelected) ? 0.205f : 0.2f;
-				glm::vec4 color = (drawAll && drawSelected) ? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
-				glm::vec3 position = { transform.Position.x + bc.Offset.x, transform.Position.y + bc.Offset.y, zPos };
-				glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
-				glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
-
-				Renderer::DrawQuad(transformMatrix, color);
-			}
-		}
-
-		// Draw selected entity outline
-		Entity selectedEntity = EditorOverlay::GetInspectorContext();
-
-		if (selectedEntity && editor->m_ShowSelectionOutline)
-		{
-			auto& transform = selectedEntity.GetComponent<TransformComponent>();
-			float padding = glm::sqrt(GetPrimaryCamera()->GetZoomLevel()) * 0.05f;
-			glm::vec3 position = { transform.Position.x, transform.Position.y, 0.21f };
-			glm::vec3 scale = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
-			glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
-			
-			glm::vec4 color = editor->m_ShowSelectionOutline && editor->m_MovingSelection
-				            ? glm::vec4{0.8f, 0.8f, 0.2f, 1.0f } : glm::vec4{1.0f};
-
-			Renderer::SetLineWidth(glm::min(50.0f * padding, 1.0f));
-			Renderer::DrawRect(transformMatrix, color);
-		}
-#endif
 
 		Renderer::EndScene();
 	}

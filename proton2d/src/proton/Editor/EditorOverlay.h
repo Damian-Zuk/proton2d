@@ -32,6 +32,7 @@ namespace proton {
 
 		void DrawEntityTreeNode(Entity entity);
 		void DrawSceneSerializationPanel();
+		void DrawCollidersAndSelectionOutline();
 
 	private:
 		static EditorOverlay* s_Instance;

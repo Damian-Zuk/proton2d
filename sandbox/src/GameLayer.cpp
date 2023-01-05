@@ -6,16 +6,15 @@
 
 using namespace proton;
 
-GameLayer::GameLayer()
-{
-}
-
 void GameLayer::OnCreate()
 {
 	//AssetsManager::LoadSpriteSheet("skeleton-sheet.png", 150, 150);
 	AssetsManager::LoadSpriteSheet("player-sheet.png", 120, 80);
 	AssetsManager::LoadSpriteSheet("level-sheet-1.png", 32, 32);
 	AssetsManager::LoadTexture("box.png");
+
+	SceneManager::Load("level2");
+	SceneManager::SetActiveScene("level2");
 }
 
 void GameLayer::OnUpdate(float ts)

@@ -7,8 +7,6 @@ using namespace proton;
 class GameLayer : public AppLayer
 {
 public:
-	GameLayer();
-
 	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
 	virtual void OnEvent(Event& e);
