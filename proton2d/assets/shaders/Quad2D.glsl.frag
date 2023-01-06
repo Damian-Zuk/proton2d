@@ -7,6 +7,7 @@ struct VertexOutput
 {
 	vec4 Color;
 	vec2 TextureCoords;
+	float TilingFactor;
 };
 
 layout (location = 0) in VertexOutput Input;
@@ -18,7 +19,7 @@ void main()
 {
 	vec4 textureColor = Input.Color;
 
-	textureColor *= texture(u_Textures[int(v_TextureIndex)], Input.TextureCoords);
+	textureColor *= texture(u_Textures[int(v_TextureIndex)], Input.TextureCoords * Input.TilingFactor);
 
 	if (textureColor.a == 0.0)
 		discard;

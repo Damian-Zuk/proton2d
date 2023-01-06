@@ -173,6 +173,22 @@ namespace proton {
 
 		if (m_SceneState == SceneState::PlayMode)
 		{
+			// Update physics
+			if (m_EnablePhysics)
+			{
+				PROFILE_SCOPE("update_physics");
+				m_World->Step(ts, s_PhysicsVelocityIterations, s_PhysicsPositionIterations);
+				auto view = m_Registry.view<IDComponent, TransformComponent, RigidbodyComponent>();
+				for (auto entity : view)
+				{
+					auto [id, transform] = view.get<IDComponent, TransformComponent>(entity);
+					b2Body* body = m_RuntimeBodies.at(id.ID);
+					transform.Position.x = body->GetPosition().x;
+					transform.Position.y = body->GetPosition().y;
+					transform.Rotation = glm::degrees(body->GetAngle());
+				}
+			}
+
 			// Update scripts
 			{
 				PROFILE_SCOPE("update_scripts");
@@ -189,22 +205,6 @@ namespace proton {
 						scriptInstance->OnUpdate(ts);
 					}
 				});
-			}
-
-			// Update physics
-			if (m_EnablePhysics)
-			{
-				PROFILE_SCOPE("update_physics");
-				m_World->Step(ts, s_PhysicsVelocityIterations, s_PhysicsPositionIterations);
-				auto view = m_Registry.view<IDComponent, TransformComponent, RigidbodyComponent>();
-				for (auto entity : view)
-				{
-					auto [id, transform] = view.get<IDComponent, TransformComponent>(entity);
-					b2Body* body = m_RuntimeBodies.at(id.ID);
-					transform.Position.x = body->GetPosition().x;
-					transform.Position.y = body->GetPosition().y;
-					transform.Rotation = glm::degrees(body->GetAngle());
-				}
 			}
 
 			// Update animations
@@ -280,9 +280,9 @@ namespace proton {
 			glm::mat4 transformMatrix = GetTransform(transform.Position, outputScale, transform.Rotation);
 
 			if (sprite.Sprite)
-				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color);
+				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color, sprite.TilingFactor);
 			else
-				Renderer::DrawQuad(transformMatrix, sprite.Color);
+				Renderer::DrawQuad(transformMatrix, sprite.Color, sprite.TilingFactor);
 
 		}
 

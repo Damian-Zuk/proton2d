@@ -207,6 +207,10 @@ namespace proton {
 							ImGui::SameLine();
 							ImGui::Checkbox("Y##Flip", &sprite->m_FlipY);
 							ImGui::Dummy({ 0.0f, 10.0f });
+
+							// Tiling factor
+							ImGui::DragFloat("Tiling factor", &component.TilingFactor, 0.1f);
+							ImGui::Dummy({ 0.0f, 10.0f });
 						}
 
 						// Check if texture is spritesheet

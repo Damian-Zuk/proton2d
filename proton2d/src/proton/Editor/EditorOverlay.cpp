@@ -374,7 +374,7 @@ namespace proton {
 		// Draw selected entity outline
 		Entity selectedEntity = GetInspectorContext();
 
-		if (selectedEntity && m_ShowSelectionOutline)
+		if (selectedEntity.IsValid() && m_ShowSelectionOutline)
 		{
 			auto& transform = selectedEntity.GetComponent<TransformComponent>();
 			float padding = glm::sqrt(m_ActiveScene->GetPrimaryCamera()->GetZoomLevel()) * 0.05f;
@@ -385,6 +385,11 @@ namespace proton {
 			glm::vec4 color = m_ShowSelectionOutline && m_MovingSelection
 				? glm::vec4{ 0.8f, 0.8f, 0.2f, 1.0f } : glm::vec4{ 1.0f };
 
+			if (selectedEntity.HasComponent<SpriteComponent>())
+			{
+				auto& sprite = selectedEntity.GetComponent<SpriteComponent>();
+				scale.x *= (float)sprite.Sprite->m_Width_px / (float)sprite.Sprite->m_Height_px;
+			}
 			Renderer::SetLineWidth(glm::min(50.0f * padding, 1.0f));
 			Renderer::DrawRect(transformMatrix, color);
 		}

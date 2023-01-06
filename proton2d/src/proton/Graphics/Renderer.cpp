@@ -25,6 +25,7 @@ namespace proton {
 		glm::vec4 Color;
 		glm::vec2 TextureCoords;
 		float TextureIndex;
+		float TilingFactor;
 	};
 
 	struct LineVertex // vertex buffer data
@@ -102,7 +103,8 @@ namespace proton {
 			{ ShaderDataType::Float3, "Position"      },
 			{ ShaderDataType::Float4, "Color"         },
 			{ ShaderDataType::Float2, "TextureCoords" },
-			{ ShaderDataType::Float,  "TextureIndex"  }
+			{ ShaderDataType::Float,  "TextureIndex"  },
+			{ ShaderDataType::Float,  "TilingFactor"  }
 		});
 		data.QuadVertexBufferBase = new QuadVertex[data.MaxVertices];
 
@@ -214,7 +216,7 @@ namespace proton {
 		{ -0.5f,  0.5f, 0.0f, 1.0f }
 	};
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
+	void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor)
 	{
 		PROFILE_FUNCTION();
 
@@ -235,19 +237,20 @@ namespace proton {
 			data.QuadVertexBufferPtr->Color = color;
 			data.QuadVertexBufferPtr->TextureIndex = 0.0f;
 			data.QuadVertexBufferPtr->TextureCoords = textureCoords[i];
+			data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			data.QuadVertexBufferPtr++;
 		}
 
 		data.QuadIndexCount += 6;
 	}
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, const glm::vec4& tintColor)
+	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, const glm::vec4& tintColor, float tilingFactor)
 	{
-		DrawQuad(transform, sprite->GetTexture(), sprite->GetTextureCoords(), tintColor);
+		DrawQuad(transform, sprite->GetTexture(), sprite->GetTextureCoords(), tintColor, tilingFactor);
 	}
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture,
-		const TextureCoords& textureCoords, const glm::vec4& tintColor)
+		const TextureCoords& textureCoords, const glm::vec4& tintColor, float tilingFactor)
 	{
 		PROFILE_FUNCTION();
 
@@ -281,6 +284,7 @@ namespace proton {
 			data.QuadVertexBufferPtr->Color = tintColor;
 			data.QuadVertexBufferPtr->TextureIndex = static_cast<float>(textureIndex);
 			data.QuadVertexBufferPtr->TextureCoords = textureCoords[i];
+			data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			data.QuadVertexBufferPtr++;
 		}
 
