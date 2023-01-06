@@ -13,7 +13,7 @@
 
 #include "proton/Scene/Entity.h"
 #include "proton/Scene/Components.h"
-#include "proton/Scripting.h"
+#include "proton/Scene/EntityScript.h"
 #include "proton/Scene/SceneManager.h"
 
 #include "proton/Graphics/Flipbook.h"

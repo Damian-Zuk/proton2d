@@ -1,6 +1,6 @@
 #pragma once
 
-#include <proton/Scripting.h>
+#include <proton/Scene/EntityScript.h>
 #include <proton/Graphics/Flipbook.h>
 #include <proton/Core/UUID.h>
 

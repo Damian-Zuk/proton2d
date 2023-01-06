@@ -71,6 +71,7 @@ namespace proton {
 		friend class Renderer;
 		friend class Scene;
 		friend class Inspector;
+		friend class EditorOverlay;
 		friend class SceneSerializer;
 		friend class Entity;
 	};

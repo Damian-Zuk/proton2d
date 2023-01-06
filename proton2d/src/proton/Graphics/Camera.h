@@ -17,7 +17,9 @@ namespace proton {
 
 		void SetZoomLevel(float zoomLevel);
 		void SetAspectRatio(float aspectRatio);
+		float GetAspectRatio() const { return m_AspectRatio; }
 		float GetZoomLevel() const { return m_ZoomLevel; }
+		float GetOrthographicSize() const { return m_OrthographicSize; }
 
 		const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
 		const OrthoProjection& GetOrthoProjection() const { return m_Projection; }

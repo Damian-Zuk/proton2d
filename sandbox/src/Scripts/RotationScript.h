@@ -1,6 +1,6 @@
 #pragma once
 
-#include <proton/Scripting.h>
+#include <proton/Scene/EntityScript.h>
 #include <box2d/include/box2d/b2_body.h>
 
 using namespace proton;

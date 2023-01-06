@@ -51,6 +51,7 @@ void PlayerScript::OnCreate()
 
 void PlayerScript::OnUpdate(float ts)
 {
+	LOG_INFO(m_ContactCount);
 	auto& position = GetTransform().Position;
 	if (m_FootSensor)
 	{
@@ -124,7 +125,9 @@ void PlayerScript::OnUpdate(float ts)
 	// Jumping
 	if (Input::IsKeyPressed(Key::Up))
 	{
-		if (m_ContactCount > 1) 
+		if (m_ContactCount > 0)
+		{
 			ApplyImpulse({ 0.0f,  m_JumpForce });
+		}
 	}	
 }

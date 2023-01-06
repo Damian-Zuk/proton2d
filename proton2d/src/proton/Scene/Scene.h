@@ -74,6 +74,8 @@ namespace proton {
 
 		// Get scene filepath. If scene is unsaved returns empty string
 		std::string GetFilepath();
+
+		SceneState GetSceneState() const { return m_SceneState; }
 	
 	private:
 		void OnBeginPlay();

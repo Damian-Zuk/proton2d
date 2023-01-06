@@ -15,4 +15,7 @@ private:
 	Scene* m_Scene;
 	Entity m_Player;
 	Entity m_Level;
+
+	float m_ZoomLevelTarget = 1.0f;
+	float m_CameraZoomSpeed = 0.10f;
 };
