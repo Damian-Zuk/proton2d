@@ -1,21 +1,21 @@
 #pragma once
+#include "proton/Scene/Entity.h"
 
 namespace proton {
 
-	class Entity;
 	class EntityScript;
-	using AddScriptToEntityFunction = std::function<EntityScript*(Entity entity)>;
+	using AddScriptFunction = std::function<EntityScript*(Entity entity)>;
 
 	class ScriptFactory
 	{
 	public:
-		static ScriptFactory& Get();
-
-		const std::unordered_map<std::string, AddScriptToEntityFunction>& GetScripts();
-		
-		void RegisterScript(const AddScriptToEntityFunction& addFunction, const std::string& scriptName);
+		static ScriptFactory& Get(); // Get singleton instance
+		EntityScript* AddScriptToEntity(Entity entity, const std::string& className);
+		bool RegisterScript(const AddScriptFunction& addFunction, const std::string& className);
 
 	private:
-		std::unordered_map<std::string, AddScriptToEntityFunction> m_AddScriptFunctions;
+		std::unordered_map<std::string, AddScriptFunction> m_ScriptRegistry;
+
+		friend class Inspector;
 	};
 }

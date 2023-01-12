@@ -6,9 +6,10 @@ using namespace proton;
 
 class ParallaxBackground : public EntityScript
 {
-	ENTITY_SCRIPT_CLASS(ParallaxBackground)
 public:
-	virtual void RegisterFields() override;
+	ENTITY_SCRIPT_CLASS(ParallaxBackground)
+
+	virtual void OnRegisterFields() override;
 	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
 private:

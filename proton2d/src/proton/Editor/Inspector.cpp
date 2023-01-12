@@ -42,7 +42,7 @@ namespace proton {
 					ImGui::Separator();
 					if (ImGui::BeginMenu("Script"))
 					{
-						for (auto& [scriptName, addScriptFunction] : ScriptFactory::Get().GetScripts())
+						for (auto& [scriptName, addScriptFunction] : ScriptFactory::Get().m_ScriptRegistry)
 						{
 							if (ImGui::MenuItem(scriptName.c_str()))
 								addScriptFunction(m_SelectedEntity);
@@ -61,6 +61,11 @@ namespace proton {
 				if (ImGui::Button("Destroy entity", { 165.0f, 25.0f }))
 				{
 					m_SelectedEntity.Destroy();
+				}
+				ImGui::Dummy({ 0.0f, 5.0f });
+				if (ImGui::Button("Create prefab"))
+				{
+
 				}
 				ImGui::Dummy({ 0.0f, 5.0f });
 

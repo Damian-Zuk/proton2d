@@ -21,6 +21,9 @@ namespace proton {
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
+		virtual void SetFullscreen(bool fullscreen = true) override;
+		bool IsFullscreen() const override;
+
 		virtual void* GetNativeWindow() const { return m_Window; }
 
 	private:
@@ -34,6 +37,7 @@ namespace proton {
 			std::string Title;
 			unsigned int Width, Height;
 			bool VSync;
+			bool Fullscreen;
 
 			EventCallbackFn EventCallback;
 		};

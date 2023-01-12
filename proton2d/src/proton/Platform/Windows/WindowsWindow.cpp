@@ -171,4 +171,24 @@ namespace proton {
 		return m_Data.VSync;
 	}
 
+	void WindowsWindow::SetFullscreen(bool fullscreen)
+	{
+		m_Data.Fullscreen = fullscreen;
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		if (fullscreen)
+		{
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+			glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+		}
+		else
+		{
+			glfwSetWindowMonitor(m_Window, NULL, 100, 100, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
+		}
+	}
+
+	bool WindowsWindow::IsFullscreen() const
+	{
+		return m_Data.Fullscreen;
+	}
+
 }

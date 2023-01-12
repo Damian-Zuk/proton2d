@@ -15,7 +15,7 @@ namespace proton {
 	{
 #if PROTON_EDITOR
 		Scene* scene = new Scene();
-		scene->m_SceneState = SceneState::EditMode;
+		scene->m_SceneState = SceneState::Edit;
 		m_Scenes["EDITOR_EMPTY_SCENE"] = scene;
 		m_ActiveScene = scene;
 		m_ActiveSceneName = "EDITOR_EMPTY_SCENE";
@@ -34,7 +34,7 @@ namespace proton {
 		Scene* scene = new Scene(sceneName);
 
 #if PROTON_EDITOR
-		scene->m_SceneState = SceneState::EditMode;
+		scene->m_SceneState = SceneState::Edit;
 #endif
 
 		SceneSerializer::SetContext(scene);
@@ -55,7 +55,7 @@ namespace proton {
 
 	void SceneManager::SetActiveScene(const std::string& sceneName)
 	{
-		if (s_Instance->m_ActiveScene)
+		if (s_Instance->m_ActiveScene && s_Instance->m_ActiveScene->GetSceneState() == SceneState::Play)
 			s_Instance->m_ActiveScene->OnEndPlay();
 
 		s_Instance->m_ActiveScene = s_Instance->m_Scenes.at(sceneName);

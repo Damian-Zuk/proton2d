@@ -3,11 +3,9 @@
 
 #include <cmath>
 
-ENTITY_SCRIPT_IMPLEMENTATION(ParallaxBackground)
-
 constexpr float TILING_FACTOR = 3.0f;
 
-void ParallaxBackground::RegisterFields()
+void ParallaxBackground::OnRegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "ParallaxFactor", &m_ParallaxFactor);
 }
@@ -22,7 +20,7 @@ void ParallaxBackground::OnCreate()
 
 void ParallaxBackground::OnUpdate(float ts)
 {
-	glm::vec2 cameraPos = GetScene()->GetPrimaryCameraPosition();
+	auto cameraPos = GetScene()->GetPrimaryCameraPosition();
 	auto& camera = GetScene()->GetPrimaryCamera();
 	float orthoSize = camera->GetOrthographicSize();
 	float zoomLevel = camera->GetZoomLevel();

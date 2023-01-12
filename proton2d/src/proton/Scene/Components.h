@@ -81,7 +81,7 @@ namespace proton {
 		glm::vec2 Offset = { 0.0f, 0.0f };
 		PhysicsMaterial Material;
 		bool IsSensor = false;
-
+		b2Filter Filter;
 		PhysicsContactCallback ContactCallback;
 	};
 
@@ -89,4 +89,14 @@ namespace proton {
 	{
 		Shared<Flipbook> Flipbook = nullptr;
 	};
+
+	template<typename... Component>
+	struct ComponentGroup
+	{
+	};
+
+	using AllComponents =
+		ComponentGroup<TransformComponent, SpriteComponent,
+		CameraComponent, ScriptComponent,
+		RigidbodyComponent, BoxColliderComponent>;
 }

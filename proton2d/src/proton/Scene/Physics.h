@@ -15,22 +15,6 @@ namespace proton {
 		float Density = 0.5f;
 	};
 
-	class Scene;
-
-	class PhysicsContactListener : public b2ContactListener
-	{
-	public:
-		PhysicsContactListener(Scene* scene);
-
-		virtual void BeginContact(b2Contact* contact) override;
-		virtual void EndContact(b2Contact* contact) override;
-		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
-		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override;
-
-	private:
-		Scene* m_Scene;
-	};
-
 	struct PhysicsContactInfo
 	{
 		UUID OtherUUID;
@@ -39,10 +23,14 @@ namespace proton {
 
 	struct PhysicsContactCallback
 	{
-		std::function<void(PhysicsContactInfo info)> OnBeginContactFunction = nullptr;
-		std::function<void(PhysicsContactInfo info)> OnEndContactFunction = nullptr;
-		std::function<void(PhysicsContactInfo info, const b2Manifold* oldManifold)> OnPreSolveFunction = nullptr;
-		std::function<void(PhysicsContactInfo info, const b2ContactImpulse* impulse)> OnPostSolveFunction = nullptr;
+		std::function<void(PhysicsContactInfo info)> 
+			OnBeginContactFunction = nullptr;
+		std::function<void(PhysicsContactInfo info)>
+			OnEndContactFunction = nullptr;
+		std::function<void(PhysicsContactInfo info, const b2Manifold* oldManifold)>
+			OnPreSolveFunction = nullptr;
+		std::function<void(PhysicsContactInfo info, const b2ContactImpulse* impulse)> 
+			OnPostSolveFunction = nullptr;
 	};
 
 }

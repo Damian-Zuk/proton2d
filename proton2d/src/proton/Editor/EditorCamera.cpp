@@ -18,7 +18,7 @@ namespace proton {
 
 	void EditorCamera::OnUpdate(float ts)
 	{
-		if (EditorOverlay::Get()->m_ActiveScene->m_SceneState != SceneState::EditMode)
+		if (EditorOverlay::Get()->m_ActiveScene->m_SceneState != SceneState::Edit)
 			return;
 
 		float zoomLevel = m_Camera->GetZoomLevel();
@@ -54,7 +54,7 @@ namespace proton {
 		Scene* activeScene = EditorOverlay::Get()->m_ActiveScene;
 		if (activeScene && !ImGui::GetIO().WantCaptureMouse)
 		{
-			if (activeScene->m_SceneState == SceneState::EditMode)
+			if (activeScene->m_SceneState == SceneState::Edit)
 			{
 				dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
 				{

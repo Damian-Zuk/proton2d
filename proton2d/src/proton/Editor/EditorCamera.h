@@ -15,7 +15,7 @@ namespace proton {
 		void OnEvent(Event& e);
 
 		Shared<Camera> GetCamera() { return m_Camera; }
-		const Shared<Camera> GetCamera() const { return m_Camera; }
+		const Shared<Camera>& GetCamera() const { return m_Camera; }
 
 		const glm::vec3& GetPosition() const { return m_Position; }
 

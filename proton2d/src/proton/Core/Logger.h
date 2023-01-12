@@ -14,18 +14,18 @@ namespace proton {
 	{
 	public:
 		template<typename ... TArgs>
-		static void log(int level, TArgs ... args) {
-			std::string msg = to_string(std::forward<TArgs>(args)...);
-			display_log(level, msg);
+		static void Log(int logLevel, TArgs ... args) {
+			std::string msg = ToString(std::forward<TArgs>(args)...);
+			DisplayLog(logLevel, msg);
 		}
-		static void display_log(int log_type, std::string msg);
-		static void init();
+		static void DisplayLog(int logLevel, const std::string& msg);
+		static void Init();
 	private:
-		static std::string to_string();
+		static std::string ToString();
 		template<typename P1, typename ... Param>
-		static std::string to_string(const P1& p1, const Param& ... param) {
+		static std::string ToString(const P1& p1, const Param& ... param) {
 			std::stringstream ss; ss << p1;
-			return ss.str() + ' ' + to_string(param...);
+			return ss.str() + ' ' + ToString(param...);
 		}
 
 	private:
@@ -34,8 +34,8 @@ namespace proton {
 
 }
 
-#define LOG(...)		::proton::Logger::log(0, __VA_ARGS__);
-#define LOG_INFO(...)	::proton::Logger::log(1, __VA_ARGS__);
-#define LOG_WARN(...)	::proton::Logger::log(2, __VA_ARGS__);
-#define LOG_ERROR(...)	::proton::Logger::log(3, __VA_ARGS__);
-#define LOG_OK(...)		::proton::Logger::log(4, __VA_ARGS__);
+#define LOG(...)		::proton::Logger::Log(0, __VA_ARGS__);
+#define LOG_INFO(...)	::proton::Logger::Log(1, __VA_ARGS__);
+#define LOG_WARN(...)	::proton::Logger::Log(2, __VA_ARGS__);
+#define LOG_ERROR(...)	::proton::Logger::Log(3, __VA_ARGS__);
+#define LOG_OK(...)		::proton::Logger::Log(4, __VA_ARGS__);

@@ -10,9 +10,7 @@
 
 using namespace proton;
 
-ENTITY_SCRIPT_IMPLEMENTATION(PlayerScript);
-
-void PlayerScript::RegisterFields()
+void PlayerScript::OnRegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "PlayerSpeed", &m_PlayerSpeed);
 	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
@@ -51,7 +49,6 @@ void PlayerScript::OnCreate()
 
 void PlayerScript::OnUpdate(float ts)
 {
-	LOG_INFO(m_ContactCount);
 	auto& position = GetTransform().Position;
 	if (m_FootSensor)
 	{

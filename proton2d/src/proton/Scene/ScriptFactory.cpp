@@ -3,20 +3,30 @@
 
 namespace proton {
 
-	void ScriptFactory::RegisterScript(const AddScriptToEntityFunction& addFunction, const std::string& scriptName)
-	{
-		Get().m_AddScriptFunctions[scriptName] = addFunction;
-	}
-
 	ScriptFactory& ScriptFactory::Get()
 	{
 		static ScriptFactory instance;
 		return instance;
 	}
 
-	const std::unordered_map<std::string, AddScriptToEntityFunction>& ScriptFactory::GetScripts()
+	EntityScript* ScriptFactory::AddScriptToEntity(Entity entity, const std::string& className)
 	{
-		return Get().m_AddScriptFunctions;
+		assert(m_ScriptRegistry.find(className) != m_ScriptRegistry.end()
+			&& "Script add function not found in registry");
+		AddScriptFunction& addScriptFunction = m_ScriptRegistry.at(className);
+		EntityScript* script = addScriptFunction(entity);
+		return script;
+	}
+
+	bool ScriptFactory::RegisterScript(const AddScriptFunction& addFunction, const std::string& className)
+	{
+		if (m_ScriptRegistry.find(className) != m_ScriptRegistry.end())
+		{
+			LOG_ERROR("Script registration failed, script already exists:", className);
+			return false;
+		}
+		m_ScriptRegistry[className] = addFunction;
+		return true;
 	}
 
 }

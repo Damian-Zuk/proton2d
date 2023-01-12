@@ -29,6 +29,22 @@ namespace proton {
 	{
 	}
 
+	Scene::Scene(const Scene& other)
+		: m_SceneName(other.m_SceneName), m_DefaultCamera(CreateShared<Camera>()), m_ContactListener(this)
+	{
+		std::unordered_map<UUID, Entity> enttMap;
+
+		// Create entities in new scene
+		auto idView = other.m_Registry.view<IDComponent>();
+		for (auto e : idView)
+		{
+			UUID uuid = other.m_Registry.get<IDComponent>(e).ID;
+			const auto& name = other.m_Registry.get<TagComponent>(e).Tag;
+			Entity newEntity = CreateEntityWithID(uuid, name);
+			enttMap[uuid] = newEntity;
+		}
+	}
+
 	Scene::~Scene()
 	{
 		OnEndPlay();
@@ -44,11 +60,11 @@ namespace proton {
 
 	void Scene::LoadFromFilepath(const std::string& filepath)
 	{
-		if (m_SceneState == SceneState::PlayMode)
+		if (m_SceneState == SceneState::Play)
 		{
 			OnEndPlay();
 #if PROTON_EDITOR
-			m_SceneState = SceneState::EditMode;
+			m_SceneState = SceneState::Edit;
 #else
 			OnBeginPlay();
 #endif
@@ -60,17 +76,12 @@ namespace proton {
 		m_SceneFilepath = filepath;
 	}
 
-	std::string Scene::GetFilepath()
-	{
-		return m_SceneFilepath;
-	}
-
 	b2Body* Scene::CreateBox2DRuntimeBody(Entity entity)
 	{
 		auto& uuid = entity.GetComponent<IDComponent>().ID;
 		auto& transform = entity.GetComponent<TransformComponent>();
 		auto& rb = entity.GetComponent<RigidbodyComponent>();
-		
+
 		// Create body definition
 		b2BodyDef bodyDef;
 		bodyDef.type = rb.Type;
@@ -98,6 +109,7 @@ namespace proton {
 			fixtureDef.restitutionThreshold = material.RestitutionThreshold;
 			fixtureDef.density = material.Density;
 			fixtureDef.isSensor = bc.IsSensor;
+			fixtureDef.filter = bc.Filter;
 			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&uuid);
 			body->CreateFixture(&fixtureDef);
 		}
@@ -109,11 +121,11 @@ namespace proton {
 	void Scene::OnBeginPlay()
 	{	
 		// Initialize physics world
-		m_SceneState = SceneState::PlayMode;
+		m_SceneState = SceneState::Play;
 		m_World = new b2World({ 0.0f, -m_WorldGravity });
+		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 		for (entt::entity entity : m_Registry.view<RigidbodyComponent>())
 			CreateBox2DRuntimeBody(Entity{ this, entity });
-		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 	}
 
 	void Scene::OnEndPlay()
@@ -171,7 +183,7 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
-		if (m_SceneState == SceneState::PlayMode)
+		if (m_SceneState == SceneState::Play)
 		{
 			// Update physics
 			if (m_EnablePhysics)
@@ -330,25 +342,21 @@ namespace proton {
 
 	void Scene::SetPrimaryCameraEntity(Entity entity)
 	{
-		if (!entity)
+		if (!entity || !entity.HasComponent<CameraComponent>())
 		{
-			m_PrimaryCamera = nullptr;
-			m_PrimaryCameraEntity = entity.m_Handle;
+			LOG_ERROR("Invalid camera entity");
 			return;
 		}
 
-		if (entity.HasComponent<CameraComponent>())
-		{
-			auto& camera = entity.GetComponent<CameraComponent>();
-			m_PrimaryCamera = camera.Camera;
-			m_PrimaryCameraEntity = entity.m_Handle;
-		}
+		auto& camera = entity.GetComponent<CameraComponent>();
+		m_PrimaryCamera = camera.Camera;
+		m_PrimaryCameraEntity = entity.m_Handle;
 	}
 
 	Shared<Camera> Scene::GetPrimaryCamera()
 	{
 #if PROTON_EDITOR
-		if (m_SceneState != SceneState::EditMode) {
+		if (m_SceneState != SceneState::Edit) {
 #endif
 			return m_PrimaryCamera ? m_PrimaryCamera : m_DefaultCamera;
 #if PROTON_EDITOR
@@ -413,10 +421,23 @@ namespace proton {
 		return entities;
 	}
 
+	void Scene::DuplicateEntity(Entity entity)
+	{
+		Entity newEntity = CreateEntity(entity.GetComponent<TagComponent>().Tag);
+		auto& srcComponents1 = m_Registry.get<TransformComponent>(entity);
+		auto& srcComponents2 = m_Registry.get<SpriteComponent>(entity);
+		m_Registry.emplace_or_replace<TransformComponent>(newEntity, srcComponents1);
+		m_Registry.emplace_or_replace<SpriteComponent>(newEntity, srcComponents2);
+	}
+
+	void Scene::CopyEntity(Entity entity, Scene* dstScene)
+	{
+	}
+
 	glm::vec3 Scene::GetPrimaryCameraPosition()
 	{
 #if PROTON_EDITOR
-		if (m_SceneState != SceneState::EditMode) {
+		if (m_SceneState != SceneState::Edit) {
 #endif
 			return m_PrimaryCameraEntity == entt::null ? glm::vec3{ 0.0f }
 				: m_Registry.get<TransformComponent>(m_PrimaryCameraEntity).Position;
@@ -436,7 +457,7 @@ namespace proton {
 		return (int32_t)m_Registry.view<ScriptComponent>().size();
 	}
 
-	PhysicsContactListener::PhysicsContactListener(Scene* scene)
+	Scene::PhysicsContactListener::PhysicsContactListener(Scene* scene)
 		: m_Scene(scene)
 	{
 	}
@@ -452,7 +473,7 @@ namespace proton {
 	auto& bcA = entityA.GetComponent<BoxColliderComponent>();\
 	auto& bcB = entityB.GetComponent<BoxColliderComponent>();
 
-	void PhysicsContactListener::BeginContact(b2Contact* contact)
+	void Scene::PhysicsContactListener::BeginContact(b2Contact* contact)
 	{
 		GET_CONTACT_ENTITIES();
 		
@@ -463,7 +484,7 @@ namespace proton {
 			bcB.ContactCallback.OnBeginContactFunction({ uuidA, contact });
 	}
 
-	void PhysicsContactListener::EndContact(b2Contact* contact)
+	void Scene::PhysicsContactListener::EndContact(b2Contact* contact)
 	{
 		GET_CONTACT_ENTITIES();
 
@@ -474,7 +495,7 @@ namespace proton {
 			bcB.ContactCallback.OnEndContactFunction({ uuidA, contact });
 	}
 
-	void PhysicsContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
+	void Scene::PhysicsContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
 		GET_CONTACT_ENTITIES();
 
@@ -485,7 +506,7 @@ namespace proton {
 			bcB.ContactCallback.OnPreSolveFunction({ uuidA, contact }, oldManifold);
 	}
 
-	void PhysicsContactListener::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
+	void Scene::PhysicsContactListener::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
 		GET_CONTACT_ENTITIES();
 

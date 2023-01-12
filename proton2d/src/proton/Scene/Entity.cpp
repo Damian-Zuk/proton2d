@@ -90,7 +90,7 @@ namespace proton
 	{
 		for (auto& [scriptName, scriptInstance] : GetComponent<ScriptComponent>().Scripts)
 		{
-			if (m_Scene->m_SceneState != SceneState::EditMode)
+			if (m_Scene->m_SceneState != SceneState::Edit)
 				scriptInstance->OnDestroy();
 
 			delete scriptInstance;

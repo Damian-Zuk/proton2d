@@ -23,7 +23,7 @@ class PlayerScript: public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(PlayerScript)
 
-	virtual void RegisterFields() override;
+	virtual void OnRegisterFields() override;
 	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
 

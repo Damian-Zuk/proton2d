@@ -5,9 +5,9 @@ namespace proton {
 
 	HANDLE Logger::m_ConsoleHandle;
 
-	void Logger::display_log(int log_type, std::string msg)
+	void Logger::DisplayLog(int logLevel, const std::string& msg)
 	{
-		switch (log_type) {
+		switch (logLevel) {
 		case 1:
 			SetConsoleTextAttribute(Logger::m_ConsoleHandle, _INFO_COLOR);
 			std::cout << "[INFO] ";
@@ -34,12 +34,12 @@ namespace proton {
 		std::cout << msg << std::endl;
 	}
 
-	void Logger::init()
+	void Logger::Init()
 	{
 		Logger::m_ConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
 
-	std::string Logger::to_string()
+	std::string Logger::ToString()
 	{
 		return std::string();
 	}

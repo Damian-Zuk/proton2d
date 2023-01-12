@@ -366,13 +366,7 @@ namespace proton {
 			for (auto& scriptJson : jsonObj["Scripts"])
 			{
 				std::string scriptClassName = scriptJson["ClassName"];
-				auto& registeredScripts = ScriptFactory::Get().GetScripts();
-				
-				if (registeredScripts.find(scriptClassName) == registeredScripts.end())
-					LOG_ERROR("[SceneSerializer] Script not found:", scriptClassName);
-				
-				// Call add script to entity function
-				EntityScript* script = registeredScripts.at(scriptClassName)(entity);
+				EntityScript* script = ScriptFactory::Get().AddScriptToEntity(entity, scriptClassName);
 
 				if (scriptJson.contains("Fields"))
 				{

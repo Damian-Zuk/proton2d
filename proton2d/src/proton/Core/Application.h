@@ -28,14 +28,15 @@ namespace proton {
 	private:
 		static Application* s_Instance;
 
-		bool m_IsRunning = true;
+		bool m_IsRunning = false;
 		bool m_WindowMinimized = false;
-		float m_LastFrameTime = 0.0f;
+		float m_FrameTime = 0.0f;
 		std::string m_AppName;
 		
 		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;
 		EditorOverlay* m_EditorOverlay;
+		bool m_ShowEditorOverlay = true;
 	};
 
 }

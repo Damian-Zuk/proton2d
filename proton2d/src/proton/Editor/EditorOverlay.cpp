@@ -171,6 +171,13 @@ namespace proton {
 			return true;
 		});
 
+		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
+			{
+				if (e.GetKeyCode() == Key::T)
+					m_ActiveScene->DuplicateEntity(GetInspectorContext());
+				return true;
+			});
+
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
 		{
 			m_MovingSelection = false;
@@ -329,7 +336,7 @@ namespace proton {
 		}
 
 		ImGui::Dummy({ 0.0f, 3.0f });
-		if (m_ActiveScene->m_SceneState == SceneState::PlayMode)
+		if (m_ActiveScene->m_SceneState == SceneState::Play)
 		{
 			if (ImGui::Button("Stop", { 75, 25 }))
 			{
@@ -344,6 +351,13 @@ namespace proton {
 				m_ActiveScene->OnBeginPlay();
 		}
 		
+		ImGui::End();
+	}
+
+	void EditorOverlay::DrawPrefabPanel()
+	{
+		ImGui::Begin("Prefabs");
+
 		ImGui::End();
 	}
 

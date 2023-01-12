@@ -51,24 +51,26 @@ namespace proton {
 		}
 
 		template <typename TScriptClass>
-		EntityScript* AddScript(const std::string& scriptClassName) const
+		EntityScript* AddScript() const
 		{
 			if (!HasComponent<ScriptComponent>())
 				AddComponent<ScriptComponent>();
 
 			auto& component = GetComponent<ScriptComponent>();
-			EntityScript*& scriptInstance = component.Scripts[scriptClassName];
+			std::string className = TScriptClass::__ScriptClassName;
+			assert(component.Scripts.find(className) == component.Scripts.end()
+				&& "Entity has already a script added");
 
+			EntityScript*& scriptInstance = component.Scripts[className];
 			scriptInstance = new TScriptClass();
-			scriptInstance->RegisterFields();
-
+			scriptInstance->OnRegisterFields();
 			return scriptInstance;
 		}
 
 		template <typename T>
 		void RemoveComponent()
 		{
-			assert(HasComponent<T>() && "Entity doesn't have component!");
+			assert(HasComponent<T>() && "Entity doesn't have a component!");
 			
 			if (std::is_base_of<ScriptComponent, T>::value)
 				DeleteAllScriptInstances();

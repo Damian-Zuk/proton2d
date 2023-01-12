@@ -16,13 +16,14 @@ namespace proton {
 
 	enum class SceneState
 	{
-		EditMode, PlayMode, Paused
+		Edit, Play, Paused
 	};
 
 	class Scene
 	{
 	public:
 		Scene(const std::string& name = "Unnamed scene");
+		Scene(const Scene& other);
 		~Scene();
 
 		// Call this function in your AppLayer OnUpdate function to update and render scene.
@@ -66,6 +67,9 @@ namespace proton {
 		glm::vec2 GetMouseWorldPosition();
 		std::vector<Entity> GetEntitiesOnMousePosition(); // todo: add default argument "useCollider"
 
+		void DuplicateEntity(Entity entity);
+		void CopyEntity(Entity entity, Scene* dstScene);
+
 		// Serialize scene to specified file (JSON format)
 		void SaveAsFile(const std::string& filepath);
 
@@ -73,7 +77,7 @@ namespace proton {
 		void LoadFromFilepath(const std::string& filepath);
 
 		// Get scene filepath. If scene is unsaved returns empty string
-		std::string GetFilepath();
+		const std::string& GetFilepath() const { return m_SceneFilepath; }
 
 		SceneState GetSceneState() const { return m_SceneState; }
 	
@@ -86,22 +90,33 @@ namespace proton {
 		uint32_t GetScriptedEntitiesCount() const;
 
 	private:
-		SceneState m_SceneState = SceneState::PlayMode;
+		SceneState m_SceneState = SceneState::Play;
 		std::string m_SceneName;
 		std::string m_SceneFilepath;
 
 		entt::registry m_Registry;
 		std::unordered_map<UUID, Entity> m_EntityMap;
 
+		entt::entity m_PrimaryCameraEntity = entt::null;
+		Shared<Camera> m_PrimaryCamera;
+		Shared<Camera> m_DefaultCamera;
+
 		bool m_EnablePhysics = true;
 		float m_WorldGravity = 9.8f;
 		b2World* m_World = nullptr;
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
-		PhysicsContactListener m_ContactListener;
 
-		entt::entity m_PrimaryCameraEntity = entt::null;
-		Shared<Camera> m_PrimaryCamera;
-		Shared<Camera> m_DefaultCamera;
+		class PhysicsContactListener : public b2ContactListener
+		{
+		public:
+			PhysicsContactListener(Scene* scene);
+			virtual void BeginContact(b2Contact* contact) override;
+			virtual void EndContact(b2Contact* contact) override;
+			virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
+			virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override;
+		private:
+			Scene* m_Scene;
+		} m_ContactListener;
 
 		friend class Entity;
 		friend class EditorOverlay;

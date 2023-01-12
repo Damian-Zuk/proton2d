@@ -3,22 +3,17 @@
 #include "proton/Scene/Entity.h"
 #include "proton/Scene/ScriptFactory.h"
 
+// Macro that registers script class inside ScriptFactory
 #define ENTITY_SCRIPT_CLASS(script_class) \
-	static bool __FactoryRegistered; \
-	static bool __FactoryRegisterClass() { \
+	static inline const char __ScriptClassName[] = #script_class; \
+	static inline const bool __RegisteredInFactory = \
 		proton::ScriptFactory::Get().RegisterScript([&](proton::Entity entity) { \
-			return entity.AddScript<script_class>(#script_class); \
-		}, #script_class); \
-		return true; \
-	}
-
-#define ENTITY_SCRIPT_IMPLEMENTATION(script_class) \
-	bool script_class::__FactoryRegistered = script_class::__FactoryRegisterClass();
+			return entity.AddScript<script_class>(); \
+		}, #script_class);
 
 namespace proton {
 
-	// FloatX types -> glm::vecX
-	// IntX types -> glm::ivecX
+	// FloatX types are glm::vecX, IntX types are glm::ivecX
 	enum class ScriptFieldType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
 
 	struct ScriptField
@@ -28,10 +23,9 @@ namespace proton {
 	};
 
 	// When creating EntityScript derived class make sure
-	// to enter ENTITY_SCRIPT_CLASS(script_class) macro inside class definition
-	// and ENTITY_SCRIPT_IMPL(script_class) inside .cpp file.
+	// to add ENTITY_SCRIPT_CLASS(script_class) macro inside class declaration
 	// This will register class and allow Editor and SceneSerializer
-	// to add script to entity based on class name string.
+	// to add script to entity based on its class name provided as string.
 	// All registered classes are stored inside ScriptFactory class.
 	class EntityScript
 	{
@@ -44,7 +38,7 @@ namespace proton {
 
 		// Register class members for serialization and editor view in this method
 		// Use RegisterField function
-		virtual void RegisterFields() {};
+		virtual void OnRegisterFields() {}
 
 		// Use glm::value_ptr for FloatX and IntX field types
 		void RegisterField(ScriptFieldType type, const std::string& name, void* field)

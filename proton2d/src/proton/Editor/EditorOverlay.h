@@ -32,6 +32,7 @@ namespace proton {
 
 		void DrawEntityTreeNode(Entity entity);
 		void DrawSceneSerializationPanel();
+		void DrawPrefabPanel();
 		void DrawCollidersAndSelectionOutline();
 
 	private:
