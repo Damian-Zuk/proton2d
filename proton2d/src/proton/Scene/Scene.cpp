@@ -299,23 +299,22 @@ namespace proton {
 		}
 
 		// ***************************************************
-		// Render entities with TilemapSpriteComponent
+		// Render entities with NineSliceSpriteComponent
 		// ***************************************************
-		auto renderableTilemapSprite = m_Registry.group<TilemapSpriteComponent>(entt::get<TransformComponent>);
-		for (auto e : renderableTilemapSprite)
+		auto renderableNineSlice = m_Registry.group<NineSliceSpriteComponent>(entt::get<TransformComponent>);
+		for (auto e : renderableNineSlice)
 		{
-			PROFILE_SCOPE("entity_render_tilemap_sprite");
-			auto [transform, tsp] = renderableTilemapSprite.get<TransformComponent, TilemapSpriteComponent>(e);
-			auto& tilemap = tsp.TilemapSprite;
-			auto& spritesheet = tilemap.m_Spritesheet;
+			PROFILE_SCOPE("entity_render_nine_slice_sprite");
+			auto [transform, nsc] = renderableNineSlice.get<TransformComponent, NineSliceSpriteComponent>(e);
+			auto& sprite = nsc.NineSliceSprite;
+			auto& spritesheet = sprite.m_Spritesheet;
 
 			if (spritesheet)
 			{
-				// Tilemap entity transform matrix
 				glm::mat4 transformMatrix = GetTransform(transform.Position, glm::vec2{1.0f}, transform.Rotation);
 
 				uint32_t x = 0, y = 0;
-				for (auto& column : tilemap.m_Tilemap)
+				for (auto& column : sprite.m_Tilemap)
 				{
 					for (auto& tile : column)
 					{
@@ -323,12 +322,12 @@ namespace proton {
 						{
 							// Tile local transform matrix
 							glm::mat4 tileTransformMatrix = GetTransform({
-									(x - tilemap.m_Width / 2.0f + 0.5f) * tsp.TileScale.x,
-									(y - tilemap.m_Height / 2.0f + 0.5f) * tsp.TileScale.y, 0
-								}, tsp.TileScale);
+									(x - sprite.m_Width / 2.0f + 0.5f) * nsc.TileScale.x,
+									(y - sprite.m_Height / 2.0f + 0.5f) * nsc.TileScale.y, 0
+								}, nsc.TileScale);
 
 							Renderer::DrawQuad(transformMatrix * tileTransformMatrix, spritesheet->GetTexture(),
-								spritesheet->GetTextureCoords(tile.x, tile.y), tsp.Color);
+								spritesheet->GetTextureCoords(tile.x, tile.y), nsc.Color);
 						}
 						y++;
 					}

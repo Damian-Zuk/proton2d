@@ -34,7 +34,7 @@ namespace proton {
 				{
 					ADD_COMPONENT_POPUP_MENU_ITEM(TransformComponent);
 					ADD_COMPONENT_POPUP_MENU_ITEM(SpriteComponent);
-					ADD_COMPONENT_POPUP_MENU_ITEM(TilemapSpriteComponent);
+					ADD_COMPONENT_POPUP_MENU_ITEM(NineSliceSpriteComponent);
 					ADD_COMPONENT_POPUP_MENU_ITEM(CameraComponent);
 					ADD_COMPONENT_POPUP_MENU_ITEM(RigidbodyComponent);
 					ADD_COMPONENT_POPUP_MENU_ITEM(BoxColliderComponent);
@@ -252,19 +252,19 @@ namespace proton {
 				}
 
 				// ****************************
-				// TilemapSpriteComponent UI
+				// NineSliceSpriteComponent UI
 				// ****************************
-				if (m_SelectedEntity.HasComponent<TilemapSpriteComponent>())
+				if (m_SelectedEntity.HasComponent<NineSliceSpriteComponent>())
 				{
-					DrawComponentUI<TilemapSpriteComponent>("Tilemap sprite", [&](auto& component)
+					DrawComponentUI<NineSliceSpriteComponent>("Nine Slice Sprite", [&](auto& component)
 						{
-							auto& spritesheet = component.TilemapSprite.m_Spritesheet;
-							auto& tilemap = component.TilemapSprite;
+							auto& spritesheet = component.NineSliceSprite.m_Spritesheet;
+							auto& sprite = component.NineSliceSprite;
 							std::string filename = spritesheet ? spritesheet->GetTexture()->GetPath() : "Select...";
 
 							// Select spritesheet
 							ImGui::Text("Spritesheet:");
-							if (ImGui::BeginCombo("##tilemap_comp_select_spritesheet", filename.c_str()))
+							if (ImGui::BeginCombo("##nine_slice_select_spritesheet", filename.c_str()))
 							{
 								for (auto& kv : AssetsManager::GetSpritesheets())
 								{
@@ -273,7 +273,7 @@ namespace proton {
 									if (ImGui::Selectable(kv.first.c_str(), isSelected))
 									{
 										spritesheet = kv.second;
-										tilemap.GenerateSliceScaledSprite();
+										sprite.GenerateSliceScaledSprite();
 									}
 
 									if (isSelected)
@@ -284,20 +284,20 @@ namespace proton {
 							ImGui::Dummy({ 10.0f, 0.0f });
 
 							// Width and height controls
-							int width = tilemap.m_Width;
+							int width = sprite.m_Width;
 							if (ImGui::InputInt("Width", &width))
 							{
-								tilemap.SetSize(std::max(width, 1), tilemap.m_Height);
+								sprite.SetSize(std::max(width, 1), sprite.m_Height);
 								auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-								transform.Scale = { component.TileScale.x * tilemap.m_Width, component.TileScale.y * tilemap.m_Height };
+								transform.Scale = { component.TileScale.x * sprite.m_Width, component.TileScale.y * sprite.m_Height };
 							}
 
-							int height = tilemap.m_Height;
+							int height = sprite.m_Height;
 							if (ImGui::InputInt("Height", &height))
 							{
-								tilemap.SetSize(tilemap.m_Width, std::max(height, 1));
+								sprite.SetSize(sprite.m_Width, std::max(height, 1));
 								auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-								transform.Scale = { component.TileScale.x * tilemap.m_Width, component.TileScale.y * tilemap.m_Height };
+								transform.Scale = { component.TileScale.x * sprite.m_Width, component.TileScale.y * sprite.m_Height };
 							}
 
 							ImGui::Dummy({ 10.0f, 0.0f });
@@ -305,19 +305,19 @@ namespace proton {
 							if (ImGui::DragFloat2("##tile_scale", glm::value_ptr(component.TileScale), 0.01f))
 							{
 								auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-								transform.Scale = { component.TileScale.x * tilemap.m_Width, component.TileScale.y * tilemap.m_Height};
+								transform.Scale = { component.TileScale.x * sprite.m_Width, component.TileScale.y * sprite.m_Height};
 
 							}
 							ImGui::Dummy({ 10.0f, 0.0f });
 
-							bool left        = tilemap.m_BlockBorders & 1;
-							bool right       = tilemap.m_BlockBorders & 2;
-							bool top         = tilemap.m_BlockBorders & 4;
-							bool bottom      = tilemap.m_BlockBorders & 8;
-							bool topLeft     = tilemap.m_BlockBorders & 16;
-							bool topRight    = tilemap.m_BlockBorders & 32;
-							bool bottomLeft  = tilemap.m_BlockBorders & 64;
-							bool bottomRight = tilemap.m_BlockBorders & 128;
+							bool left        = sprite.m_BlockBorders & 1;
+							bool right       = sprite.m_BlockBorders & 2;
+							bool top         = sprite.m_BlockBorders & 4;
+							bool bottom      = sprite.m_BlockBorders & 8;
+							bool topLeft     = sprite.m_BlockBorders & 16;
+							bool topRight    = sprite.m_BlockBorders & 32;
+							bool bottomLeft  = sprite.m_BlockBorders & 64;
+							bool bottomRight = sprite.m_BlockBorders & 128;
 
 							// Change edges and corners texture
 							ImGui::Text("Toggle edges texture: ");
@@ -337,7 +337,7 @@ namespace proton {
 							ImGui::SameLine(); 
 							ImGui::Checkbox("##tb_bottom_right_corner", &bottomRight);
 
-							tilemap.SetBlockBorders(left * 1 + right * 2 + top * 4 + bottom * 8
+							sprite.SetBlockBorders(left * 1 + right * 2 + top * 4 + bottom * 8
 								+ topLeft * 16 + topRight * 32 + bottomLeft * 64 + bottomRight * 128);
 
 							ImGui::Dummy({ 0, 3.0f });

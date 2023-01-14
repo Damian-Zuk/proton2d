@@ -69,21 +69,21 @@ namespace proton {
 			jsonObj["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
 		}
 		
-		// Serialize TilemapSpriteComponent
-		if (entity.HasComponent<TilemapSpriteComponent>())
+		// Serialize NineSliceSpriteComponent
+		if (entity.HasComponent<NineSliceSpriteComponent>())
 		{
-			auto& component = entity.GetComponent<TilemapSpriteComponent>();
-			auto& tilemap = component.TilemapSprite;
-			auto& spritesheet = tilemap.GetSpritesheet();
+			auto& component = entity.GetComponent<NineSliceSpriteComponent>();
+			auto& sprite = component.NineSliceSprite;
+			auto& spritesheet = sprite.GetSpritesheet();
 			
 			if (spritesheet)
-				jsonObj["TilemapSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
+				jsonObj["NineSliceSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
 
-			auto [width, height] = tilemap.GetSize();
-			jsonObj["TilemapSprite"]["Width"] = width;
-			jsonObj["TilemapSprite"]["Height"] = height;
-			jsonObj["TilemapSprite"]["BlockBorders"] = tilemap.GetBlockBorders();
-			jsonObj["TilemapSprite"]["TileScale"] = { component.TileScale.x, component.TileScale.y };
+			auto [width, height] = sprite.GetSize();
+			jsonObj["NineSliceSprite"]["Width"] = width;
+			jsonObj["NineSliceSprite"]["Height"] = height;
+			jsonObj["NineSliceSprite"]["BlockBorders"] = sprite.GetBlockBorders();
+			jsonObj["NineSliceSprite"]["TileScale"] = { component.TileScale.x, component.TileScale.y };
 		}
 
 		// Serialize CameraComponent
@@ -315,18 +315,18 @@ namespace proton {
 			spriteComponent.Color = { color[0], color[1], color[2], color[3] };
 		}
 
-		// Deserialize TilemapSpriteComponent
-		if (jsonObj.contains("TilemapSprite"))
+		// Deserialize NineSliceSpriteComponent
+		if (jsonObj.contains("NineSliceSprite"))
 		{
-			json& jsonTilemap = jsonObj["TilemapSprite"];
-			auto& component = entity.AddComponent<TilemapSpriteComponent>();
-			auto& tilemap = component.TilemapSprite;
-			tilemap.SetSize(jsonTilemap["Width"], jsonTilemap["Height"]);
-			tilemap.SetBlockBorders(jsonTilemap["BlockBorders"]);
-			component.TileScale = { jsonTilemap["TileScale"][0], jsonTilemap["TileScale"][1] };
+			json& jsonData = jsonObj["NineSliceSprite"];
+			auto& component = entity.AddComponent<NineSliceSpriteComponent>();
+			auto& sprite = component.NineSliceSprite;
+			sprite.SetSize(jsonData["Width"], jsonData["Height"]);
+			sprite.SetBlockBorders(jsonData["BlockBorders"]);
+			component.TileScale = { jsonData["TileScale"][0], jsonData["TileScale"][1] };
 
-			if (jsonTilemap.contains("Spritesheet"))
-				tilemap.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonTilemap["Spritesheet"]));
+			if (jsonData.contains("Spritesheet"))
+				sprite.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonData["Spritesheet"]));
 		}
 
 		// Deserialize CameraComponent

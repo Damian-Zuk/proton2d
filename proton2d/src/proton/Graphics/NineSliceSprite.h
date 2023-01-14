@@ -20,10 +20,10 @@ namespace proton {
 
 	using BlockBorders = uint8_t;
 
-	class TilemapSprite
+	class NineSliceSprite
 	{
 	public:
-		TilemapSprite();
+		NineSliceSprite();
 
 		void SetSpritesheet(const Shared<SpriteSheet>& spritesheet);
 		Shared<SpriteSheet> GetSpritesheet();
