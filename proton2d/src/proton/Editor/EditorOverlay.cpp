@@ -282,7 +282,8 @@ namespace proton {
 
 				if (keepContent)
 				{
-					SceneSerializer::Serialize(filepath);
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.Serialize(filepath);
 					manager->m_Scenes[sceneName] = manager->m_Scenes[manager->m_ActiveSceneName];
 					if (manager->m_ActiveSceneName == "EDITOR_EMPTY_SCENE")
 						manager->m_Scenes[manager->m_ActiveSceneName] = new Scene();
@@ -415,7 +416,6 @@ namespace proton {
 	#if PROTON_EDITOR
 		s_Instance->m_ActiveScene = context;
 		s_Instance->m_Inspector.m_ActiveScene = context;
-		SceneSerializer::SetContext(context);
 	#endif
 	}
 

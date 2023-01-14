@@ -40,10 +40,13 @@ namespace proton {
 	class Sprite
 	{
 	public:
+		Sprite() = default;
 		Sprite(const Shared<Texture>& texture);
-		Sprite(const Shared<SpriteSheet>& spriteSheet, uint32_t x = 0, uint32_t y = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		Sprite(const Shared<SpriteSheet>& spriteSheet);
 
+		void SetTexture(const Shared<Texture>& texture);
 		void SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet);
+
 		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void SetTileX(uint32_t x, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void SetTileY(uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
@@ -60,7 +63,7 @@ namespace proton {
 		const TextureCoords& GetTextureCoords();
 		
 	private:
-		Shared<Texture> m_Texture;
+		Shared<Texture> m_Texture = nullptr;
 		Shared<SpriteSheet> m_SpriteSheet = nullptr;
 
 		uint32_t m_Width_px = 1, m_Height_px = 1;

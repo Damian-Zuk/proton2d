@@ -114,13 +114,12 @@ namespace proton {
 
 				if (!m_WindowMinimized) 
 				{
+					Renderer::Clear();
 					{
 						PROFILE_SCOPE("app_layers_on_update");
 						for (AppLayer* layer : m_AppLayers)
 							layer->OnUpdate(m_FrameTime);
 					}
-					
-					Renderer::Clear();
 					Scene* activeScene = SceneManager::GetActiveScene();
 					if (activeScene)
 						activeScene->OnUpdate(m_FrameTime);
@@ -166,22 +165,23 @@ namespace proton {
 	{
 		EventDispatcher dispatcher(event);
 
-		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e) -> bool {
-#if PROTON_EDITOR
+		#if PROTON_EDITOR
+		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
+		{
 			if (e.GetKeyCode() == Key::F3)
-				m_ShowEditorOverlay = !m_ShowEditorOverlay;
-#endif
-			return false;
-		});
-
-		dispatcher.Dispatch<WindowClosedEvent>([&](WindowClosedEvent& e) -> bool {
-			
-			m_IsRunning = false;
+			m_ShowEditorOverlay = !m_ShowEditorOverlay;
 			return true;
 		});
+		#endif
 
-		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& e) -> bool {
-			
+		dispatcher.Dispatch<WindowClosedEvent>([&](WindowClosedEvent& e)
+			{
+				m_IsRunning = false;
+		return true;
+			});
+
+		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& e)
+		{
 			uint32_t width = e.GetWidth(), height = e.GetHeight();
 			if (width && height)
 			{

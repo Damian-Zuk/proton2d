@@ -40,17 +40,17 @@ namespace proton {
 
 	std::pair<uint32_t, uint32_t> SpriteSheet::GetSheetSize() const
 	{
-		return { m_SheetWidth, m_SheetHeight };
+		return std::make_pair(m_SheetWidth, m_SheetHeight);
 	}
 
 	std::pair<uint32_t, uint32_t> SpriteSheet::GetTileSize() const
 	{
-		return { m_TileWidth, m_TileHeight };
+		return std::make_pair(m_TileWidth, m_TileHeight);
 	}
 
 	std::pair<uint32_t, uint32_t> SpriteSheet::GetMaxTilesCount() const
 	{
-		return { m_MaxTilesX, m_MaxTilesY };
+		return std::make_pair(m_MaxTilesX, m_MaxTilesY);
 	}
 
 	const TextureCoords& SpriteSheet::GetTextureCoords(uint32_t x, uint32_t y) const
@@ -64,14 +64,17 @@ namespace proton {
 	{
 	}
 
-	Sprite::Sprite(const Shared<SpriteSheet>& spriteSheet,
-		uint32_t x, uint32_t y, uint32_t sizeX, uint32_t sizeY)
-		: m_PosX(x), m_PosY(y), m_SizeX(sizeX), m_SizeY(sizeY),
-		m_Width_px(sizeX * spriteSheet->m_TileWidth),
-		m_Height_px(sizeY * spriteSheet->m_TileHeight),
+	Sprite::Sprite(const Shared<SpriteSheet>& spriteSheet)
+		: m_Width_px(spriteSheet->m_TileWidth), m_Height_px(spriteSheet->m_TileHeight),
 		m_SpriteSheet(spriteSheet), m_Texture(spriteSheet->GetTexture())
 	{
-		SetTile(x, y, sizeX, sizeY);
+	}
+
+	void Sprite::SetTexture(const Shared<Texture>& texture)
+	{
+		m_Texture = texture;
+		m_Width_px = texture->GetWidth();
+		m_Height_px = texture->GetHeight();
 	}
 
 	void Sprite::SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet)
@@ -90,6 +93,7 @@ namespace proton {
 		auto& [maxX, maxY] = m_SpriteSheet->GetMaxTilesCount();
 		x %= maxX; y %= maxY;
 		m_PosX = x; m_PosY = y;
+		m_SizeX = sizeX; m_SizeY = sizeY;
 	}
 
 	void Sprite::SetTileX(uint32_t x, uint32_t sizeX, uint32_t sizeY)

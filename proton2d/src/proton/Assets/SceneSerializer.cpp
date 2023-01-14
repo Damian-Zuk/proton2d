@@ -13,16 +13,14 @@
 
 namespace proton {
 
-	Scene* SceneSerializer::m_Scene = nullptr;
-
 	static inline double round(float f)
 	{
 		return std::round((double)f * 100000) / 100000;
 	}
 
-	void SceneSerializer::SetContext(Scene* scene)
+	SceneSerializer::SceneSerializer(Scene* scene)
+		: m_Scene(scene)
 	{
-		m_Scene = scene;
 	}
 
 	// *****************************************
@@ -74,7 +72,8 @@ namespace proton {
 		// Serialize TilemapSpriteComponent
 		if (entity.HasComponent<TilemapSpriteComponent>())
 		{
-			auto& tilemap = entity.GetComponent<TilemapSpriteComponent>().TilemapSprite;
+			auto& component = entity.GetComponent<TilemapSpriteComponent>();
+			auto& tilemap = component.TilemapSprite;
 			auto& spritesheet = tilemap.GetSpritesheet();
 			
 			if (spritesheet)
@@ -84,7 +83,7 @@ namespace proton {
 			jsonObj["TilemapSprite"]["Width"] = width;
 			jsonObj["TilemapSprite"]["Height"] = height;
 			jsonObj["TilemapSprite"]["BlockBorders"] = tilemap.GetBlockBorders();
-			jsonObj["TilemapSprite"]["TileScale"] = { tilemap.m_TileScale.x, tilemap.m_TileScale.y };
+			jsonObj["TilemapSprite"]["TileScale"] = { component.TileScale.x, component.TileScale.y };
 		}
 
 		// Serialize CameraComponent
@@ -295,7 +294,9 @@ namespace proton {
 				if (sprite.contains("TilePos"))
 				{
 					spriteComponent.Sprite = CreateShared<Sprite>(
-						AssetsManager::GetSpriteSheet(sprite["Texture"]),
+						AssetsManager::GetSpriteSheet(sprite["Texture"]));
+
+					spriteComponent.Sprite->SetTile(
 						sprite["TilePos"][0], sprite["TilePos"][1],
 						sprite["TileSize"][0], sprite["TileSize"][1]);
 				} 
@@ -318,11 +319,11 @@ namespace proton {
 		if (jsonObj.contains("TilemapSprite"))
 		{
 			json& jsonTilemap = jsonObj["TilemapSprite"];
-			auto& tilemap = entity.AddComponent<TilemapSpriteComponent>().TilemapSprite;
+			auto& component = entity.AddComponent<TilemapSpriteComponent>();
+			auto& tilemap = component.TilemapSprite;
 			tilemap.SetSize(jsonTilemap["Width"], jsonTilemap["Height"]);
 			tilemap.SetBlockBorders(jsonTilemap["BlockBorders"]);
-			tilemap.GenerateTilemapBlock();
-			tilemap.SetTileScale({ jsonTilemap["TileScale"][0], jsonTilemap["TileScale"][1] });
+			component.TileScale = { jsonTilemap["TileScale"][0], jsonTilemap["TileScale"][1] };
 
 			if (jsonTilemap.contains("Spritesheet"))
 				tilemap.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonTilemap["Spritesheet"]));

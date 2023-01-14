@@ -11,16 +11,17 @@ namespace proton {
 	class SceneSerializer
 	{
 	public:
-		static void SetContext(Scene* scene);
+		SceneSerializer(Scene* scene);
+		~SceneSerializer() = default;
 
-		static bool Serialize(const std::string& filepath);
-		static json SerializeEntity(Entity entity);
+		bool Serialize(const std::string& filepath);
+		json SerializeEntity(Entity entity);
 
-		static bool Deserialize(const std::string& filepath);
-		static Entity DeserializeEntity(json jsonObj);
+		bool Deserialize(const std::string& filepath);
+		Entity DeserializeEntity(json jsonObj);
 	
 	private:
-		static Scene* m_Scene;
+		Scene* m_Scene;
 	};
 
 }

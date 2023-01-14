@@ -53,8 +53,8 @@ namespace proton {
 
 	void Scene::SaveAsFile(const std::string& filepath)
 	{
-		SceneSerializer::SetContext(this);
-		SceneSerializer::Serialize("scenes/" + filepath);
+		SceneSerializer serializer(this);
+		serializer.Serialize("scenes/" + filepath);
 		m_SceneFilepath = filepath;
 	}
 
@@ -71,8 +71,8 @@ namespace proton {
 		}
 
 		DestroyAll();
-		SceneSerializer::SetContext(this);
-		SceneSerializer::Deserialize("scenes/" + filepath);
+		SceneSerializer serializer(this);
+		serializer.Deserialize("scenes/" + filepath);
 		m_SceneFilepath = filepath;
 	}
 
@@ -323,9 +323,9 @@ namespace proton {
 						{
 							// Tile local transform matrix
 							glm::mat4 tileTransformMatrix = GetTransform({
-									(x - tilemap.m_Width / 2.0f + 0.5f) * tilemap.m_TileScale.x,
-									(y - tilemap.m_Height / 2.0f + 0.5f) * tilemap.m_TileScale.y, 0
-								}, tilemap.m_TileScale);
+									(x - tilemap.m_Width / 2.0f + 0.5f) * tsp.TileScale.x,
+									(y - tilemap.m_Height / 2.0f + 0.5f) * tsp.TileScale.y, 0
+								}, tsp.TileScale);
 
 							Renderer::DrawQuad(transformMatrix * tileTransformMatrix, spritesheet->GetTexture(),
 								spritesheet->GetTextureCoords(tile.x, tile.y), tsp.Color);

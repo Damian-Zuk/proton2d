@@ -36,9 +36,8 @@ namespace proton {
 #if PROTON_EDITOR
 		scene->m_SceneState = SceneState::Edit;
 #endif
-
-		SceneSerializer::SetContext(scene);
-		SceneSerializer::Deserialize("scenes/" + sceneName + ".json");
+		SceneSerializer serializer(scene);
+		serializer.Deserialize("scenes/" + sceneName + ".json");
 		scene->m_SceneFilepath = sceneName + ".json";
 
 		if (s_Instance->m_Scenes.find(sceneName) != s_Instance->m_Scenes.end())

@@ -33,6 +33,15 @@ namespace proton {
 		glm::vec2 Scale = { 1.0f, 1.0f };
 	};
 
+	struct RelationshipComponent
+	{
+		uint32_t ChildrenCount = 0;
+		entt::entity First  { entt::null };
+		entt::entity Prev   { entt::null };
+		entt::entity Next   { entt::null };
+		entt::entity Parent { entt::null };
+	};
+
 	struct SpriteComponent
 	{
 		Shared<Sprite> Sprite = nullptr;
@@ -44,6 +53,7 @@ namespace proton {
 	struct TilemapSpriteComponent
 	{
 		TilemapSprite TilemapSprite;
+		glm::vec2 TileScale = { 1.0f, 1.0f };
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
@@ -53,15 +63,6 @@ namespace proton {
 	struct ScriptComponent
 	{
 		std::unordered_map<std::string, EntityScript*> Scripts;
-	};
-
-	struct RelationshipComponent
-	{
-		uint32_t ChildrenCount = 0;
-		entt::entity First  { entt::null };
-		entt::entity Prev   { entt::null };
-		entt::entity Next   { entt::null };
-		entt::entity Parent { entt::null };
 	};
 
 	struct CameraComponent
@@ -89,14 +90,4 @@ namespace proton {
 	{
 		Shared<Flipbook> Flipbook = nullptr;
 	};
-
-	template<typename... Component>
-	struct ComponentGroup
-	{
-	};
-
-	using AllComponents =
-		ComponentGroup<TransformComponent, SpriteComponent,
-		CameraComponent, ScriptComponent,
-		RigidbodyComponent, BoxColliderComponent>;
 }
