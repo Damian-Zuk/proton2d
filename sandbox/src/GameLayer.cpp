@@ -17,9 +17,6 @@ void GameLayer::OnCreate()
 	AssetsManager::LoadTexture("background-jungle/plx-3.png");
 	AssetsManager::LoadTexture("background-jungle/plx-4.png");
 	AssetsManager::LoadTexture("background-jungle/plx-5.png");
-
-	SceneManager::Load("level2");
-	SceneManager::SetActiveScene("level2");
 }
 
 void GameLayer::OnUpdate(float ts)

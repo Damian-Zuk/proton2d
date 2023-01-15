@@ -27,13 +27,16 @@ namespace proton {
 	//       Serialize Entity Function
 	// *****************************************
 
-	json SceneSerializer::SerializeEntity(Entity entity)
+	json SceneSerializer::SerializeEntity(Entity entity, bool serializeUUID)
 	{
 		json jsonObj;
 
 		// Serialize IDComponent
-		auto& uuid = entity.GetUUID();
-		jsonObj["ID"] = (uint64_t)uuid;
+		if (serializeUUID)
+		{
+			auto& uuid = entity.GetUUID();
+			jsonObj["ID"] = (uint64_t)uuid;
+		}
 
 		// Serialize TagComponent
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -270,9 +273,11 @@ namespace proton {
 	//       Deserialize Entity Function
 	// *****************************************
 
-	Entity SceneSerializer::DeserializeEntity(json jsonObj)
+	Entity SceneSerializer::DeserializeEntity(json jsonObj, bool deserializeUUID)
 	{
-		Entity entity = m_Scene->CreateEntityWithID((uint64_t)jsonObj["ID"], jsonObj["Tag"]);
+		Entity entity = deserializeUUID ? 
+			m_Scene->CreateEntityWithID((uint64_t)jsonObj["ID"], jsonObj["Tag"])
+			: m_Scene->CreateEntity(jsonObj["Tag"]);
 
 		// Deserialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();

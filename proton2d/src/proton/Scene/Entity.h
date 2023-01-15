@@ -90,6 +90,8 @@ namespace proton {
 			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
+		Scene* GetScene() { return m_Scene; }
+
 		UUID GetUUID() const;
 		bool IsValid();
 		void Destroy();

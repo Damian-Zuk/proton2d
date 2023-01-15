@@ -6,6 +6,7 @@
 #include "proton/Graphics/Renderer.h"
 #include "proton/Scene/ScriptFactory.h"
 #include "proton/Scene/SceneManager.h"
+#include "proton/Scene/PrefabManager.h"
 #include "proton/Core/Utils.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
@@ -103,7 +104,8 @@ namespace proton {
 		Logger::Init();
 		Renderer::Init();
 		Renderer::SetClearColor(s_ScreenClearColor);
-		SceneManager::s_Instance = new SceneManager();
+		SceneManager::Init();
+		PrefabManager::Get().ReloadAllPrefabs();
 
 		if (OnCreate()) 
 		{

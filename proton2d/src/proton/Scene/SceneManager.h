@@ -7,11 +7,14 @@ namespace proton {
 	class SceneManager
 	{
 	public:
-		SceneManager();
+		SceneManager() = default;
 		~SceneManager();
 
+		static void Init();
+
+		static Scene* CreateNewEmptyScene(const std::string& sceneName);
 		static void Load(const std::string& sceneName);
-		static void UnLoad(const std::string& sceneName);
+		static void Unload(const std::string& sceneName);
 		static void SetActiveScene(const std::string& sceneName);
 		static Scene* GetActiveScene();
 

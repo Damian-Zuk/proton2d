@@ -10,6 +10,9 @@
 #include "proton/Scene/SceneManager.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Core/Utils.h"
+#include "proton/Scene/PrefabManager.h"
+
+#include "proton/Platform/Windows/FileDialogs.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -128,6 +131,7 @@ namespace proton {
 			m_DebugInfo.OnImGuiRender();
 			DrawSceneSerializationPanel();
 			DrawCollidersAndSelectionOutline();
+			DrawPrefabPanel();
 		}
 
 		ImGui::End();
@@ -220,126 +224,75 @@ namespace proton {
 		}
 	}
 
+	static std::string GetSceneFilename(const std::string& filepath) 
+	{
+		std::size_t pos = filepath.find("scenes");
+		if (pos != std::string::npos) {
+			return filepath.substr(pos + 7);
+		}
+		return std::string();
+	}
+
 	void EditorOverlay::DrawSceneSerializationPanel()
 	{
-		static std::vector<std::string> directoryScenes = GetFilesFromDirectory("scenes");
-		static int filenameIndex = -1;
-		static bool createNewScenePopup = false;
-
 		ImGui::Begin("Scene##serialization_panel");
 
-		// Level select combo
-		if (ImGui::BeginCombo("##select_path", filenameIndex < 0 ? "Select scene..." : directoryScenes[filenameIndex].c_str()))
+		ImGui::Dummy({ 0, 2.0f });
+		ImGui::Text("Scene: %s", m_ActiveScene->m_SceneFilepath.c_str());
+		ImGui::Dummy({ 0, 5.0f }); ImGui::Separator(); ImGui::Dummy({ 0, 5.0f });
+
+		if (ImGui::Button("New scene", { 100, 25 }))
 		{
-			directoryScenes = GetFilesFromDirectory("scenes");
+			SceneManager::CreateNewEmptyScene("<Unsaved scene>");
+			SceneManager::SetActiveScene("<Unsaved scene>");
+		}
+		ImGui::SameLine();
 
-			if (ImGui::Selectable("Save As / Create new scene"))
-				createNewScenePopup = true;
-
-			ImGui::Separator();
-
-			int index = 0;
-			for (const auto& entry : directoryScenes)
+		if (ImGui::Button("Open scene", { 100, 25 }))
+		{
+			std::string sceneFile = GetSceneFilename(FileDialogs::OpenFile("scene"));
+			if (sceneFile.size())
 			{
-				if (ImGui::Selectable(entry.c_str(), filenameIndex == index))
-					filenameIndex = index;
-
-				if (filenameIndex == index)
-					ImGui::SetItemDefaultFocus();
-				index++;
+				SceneManager::Load(sceneFile);
+				SceneManager::SetActiveScene(sceneFile);
 			}
-			ImGui::EndCombo();
 		}
 
-		if (createNewScenePopup)
-		{
-			ImGui::OpenPopup("Create new scene##popup");
-			createNewScenePopup = false;
-		}
+		ImGui::Dummy({ 0, 5.0f });
+
+		bool saveAs = false;
+		if (ImGui::Button("Save", { 100, 25 }))
+			if (m_ActiveScene->m_SceneFilepath != "<Unsaved scene>")
+				m_ActiveScene->SaveAsFile(SceneManager::s_Instance->m_ActiveSceneName);
+			else
+				saveAs = true;
 		
-		// Create new scene popup
-		if (ImGui::BeginPopup("Create new scene##popup"))
+		ImGui::SameLine();
+
+		if (ImGui::Button("Save as", { 100, 25 }))
+			saveAs = true;
+
+		if (saveAs)
 		{
-			static char sceneName[128] = { 0 };
-			static bool keepContent = true;
-			ImGui::Text("Create new scene");
-			ImGui::Separator();
-			ImGui::Text("Name");
-			ImGui::SameLine();
-			ImGui::PushItemWidth(200.0f);
-			ImGui::InputText("##new_scene", sceneName, 128);
-			ImGui::SameLine();
-
-			if (ImGui::Button("Create##new_scene", { 75, 25 }) && strlen(sceneName))
-			{
-				std::string filepath = "scenes/" + std::string(sceneName) + ".json";
-				
-				SceneManager* manager = SceneManager::s_Instance;
-				if (manager->m_Scenes.find(sceneName) != manager->m_Scenes.end())
-				{
-					delete manager->m_Scenes[sceneName];
-				}
-
-				if (keepContent)
-				{
-					SceneSerializer serializer(m_ActiveScene);
-					serializer.Serialize(filepath);
-					manager->m_Scenes[sceneName] = manager->m_Scenes[manager->m_ActiveSceneName];
-					if (manager->m_ActiveSceneName == "EDITOR_EMPTY_SCENE")
-						manager->m_Scenes[manager->m_ActiveSceneName] = new Scene();
-					SceneManager::SetActiveScene(sceneName);
-				}
-				else
-				{
-					if (manager->m_ActiveSceneName == "EDITOR_EMPTY_SCENE")
-					{
-						delete manager->m_Scenes["EDITOR_EMPTY_SCENE"];
-						manager->m_Scenes["EDITOR_EMPTY_SCENE"] = new Scene();
-					}
-					else
-					{
-						manager->m_Scenes[sceneName] = new Scene();
-						SceneManager::SetActiveScene(sceneName);
-					}
-				}
-					
-				directoryScenes = GetFilesFromDirectory("scenes");
-				int index = 0;
-				for (const auto& entry : directoryScenes)
-				{
-					if (entry == sceneName)
-						filenameIndex = index;
-					index++;
-				}
-
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::Checkbox("Keep current scene content##new_scene", &keepContent);
-			ImGui::EndPopup();
+			std::string sceneFile = GetSceneFilename(FileDialogs::SaveFile(".scene"));
+			if (sceneFile.size())
+				m_ActiveScene->SaveAsFile(sceneFile);
 		}
 
-		// Load / Save buttons
-		ImGui::Dummy({ 0, 3.0f });
-		if (ImGui::Button("Load", { 75, 25 }) && filenameIndex >= 0)
-		{
-			ImGui::SetWindowFocus(nullptr);
-			SceneManager::Load(directoryScenes[filenameIndex]);
-			SceneManager::SetActiveScene(directoryScenes[filenameIndex]);
-			SetInspectorContext(Entity{});
-		}
-		
-		if (filenameIndex != -1)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button("Save", { 75, 25 }))
-				m_ActiveScene->SaveAsFile(SceneManager::s_Instance->m_ActiveSceneName + ".json");
-		}
+		ImGui::Dummy({ 0, 5.0f }); ImGui::Separator(); ImGui::Dummy({ 0, 5.0f });
 
-		ImGui::Dummy({ 0.0f, 3.0f });
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		float size = 75.0f;
+		float avail = ImGui::GetContentRegionAvail().x;
+
+		float off = (avail - size) * 0.5f;
+		if (off > 0.0f)
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+
 		if (m_ActiveScene->m_SceneState == SceneState::Play)
 		{
-			if (ImGui::Button("Stop", { 75, 25 }))
+			if (ImGui::Button("Stop", { 75, 30 }))
 			{
 				std::string filepath = m_ActiveScene->GetFilepath();
 				if (filepath.size())
@@ -348,7 +301,7 @@ namespace proton {
 		}
 		else
 		{
-			if (ImGui::Button("Play", { 75, 25 }))
+			if (ImGui::Button("Play", { 75, 30 }))
 				m_ActiveScene->OnBeginPlay();
 		}
 		
@@ -359,6 +312,30 @@ namespace proton {
 	{
 		ImGui::Begin("Prefabs");
 
+		if (ImGui::Button("Reload all##prefab_panel"))
+			PrefabManager::Get().ReloadAllPrefabs();
+		
+		ImGui::Dummy({ 0.0f, 5.0f });
+		for (auto& [tag, jsonData] : PrefabManager::Get().m_PrefabsJsonData)
+		{
+			ImGui::Separator();
+			ImGui::Text(tag.c_str());
+			ImGui::SameLine(ImGui::GetWindowWidth() - 130);
+			if (ImGui::Button(("Spawn##prefab_panel" + tag).c_str(), {60, 25}))
+			{
+				Entity entity = PrefabManager::Get().SpawnPrefab(m_ActiveScene, tag);
+				auto& transform = entity.GetComponent<TransformComponent>();
+				glm::vec2 cameraPos = m_ActiveScene->GetPrimaryCameraPosition();
+				transform.Position.x = cameraPos.x;
+				transform.Position.y = cameraPos.y;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(("Delete##prefab_panel_" + tag).c_str(), {60, 25}))
+			{
+				PrefabManager::Get().DeletePrefab(tag);
+			}
+		}
+		ImGui::Separator();
 		ImGui::End();
 	}
 

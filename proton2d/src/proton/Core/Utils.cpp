@@ -30,12 +30,14 @@ namespace proton
 		return result;
 	}
 
-	std::vector<std::string> GetFilesFromDirectory(const std::string& directory)
+	std::vector<std::string> GetFilesFromDirectory(const std::string& directory, const std::string& extension)
 	{
-		std::vector<std::string> directoryScenes;
+		std::vector<std::string> files;
 		for (const auto& entry : std::filesystem::directory_iterator(directory))
-			directoryScenes.emplace_back(entry.path().stem().generic_string());
-		return directoryScenes;
+		{
+			files.emplace_back(entry.path().stem().generic_string());
+		}
+		return files;
 	}
 
 	glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation)

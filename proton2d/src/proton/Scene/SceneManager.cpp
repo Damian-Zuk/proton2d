@@ -11,22 +11,36 @@ namespace proton {
 
 	SceneManager* SceneManager::s_Instance = nullptr;
 
-	SceneManager::SceneManager()
-	{
-#if PROTON_EDITOR
-		Scene* scene = new Scene();
-		scene->m_SceneState = SceneState::Edit;
-		m_Scenes["EDITOR_EMPTY_SCENE"] = scene;
-		m_ActiveScene = scene;
-		m_ActiveSceneName = "EDITOR_EMPTY_SCENE";
-		EditorOverlay::SetSceneContext(scene);
-#endif
-	}
-
 	SceneManager::~SceneManager()
 	{
 		for (auto& [sceneName, scene] : m_Scenes)
 			delete scene;
+	}
+
+	void SceneManager::Init()
+	{
+		if (!s_Instance)
+		{
+			s_Instance = new SceneManager();
+#if PROTON_EDITOR
+			Scene* scene = CreateNewEmptyScene("<Unsaved scene>");
+			s_Instance->m_ActiveSceneName = "<Unsaved scene>";
+			s_Instance->m_ActiveScene = scene;
+			EditorOverlay::SetSceneContext(scene);
+#endif
+		}
+	}
+
+	Scene* SceneManager::CreateNewEmptyScene(const std::string& sceneName)
+	{
+		Scene* scene = new Scene();
+#if PROTON_EDITOR
+		scene->m_SceneState = SceneState::Edit;
+#else
+		scene->m_SceneState = SceneState::Paused;
+#endif
+		s_Instance->m_Scenes[sceneName] = scene;
+		return scene;
 	}
 
 	void SceneManager::Load(const std::string& sceneName)
@@ -35,18 +49,25 @@ namespace proton {
 
 #if PROTON_EDITOR
 		scene->m_SceneState = SceneState::Edit;
+#else
+		scene->m_SceneState = SceneState::Paused;
 #endif
 		SceneSerializer serializer(scene);
-		serializer.Deserialize("scenes/" + sceneName + ".json");
-		scene->m_SceneFilepath = sceneName + ".json";
+		if (!serializer.Deserialize("scenes/" + sceneName))
+		{
+			LOG_ERROR("[SceneManager] File not found ", sceneName);
+			return;
+		}
 
+		scene->m_SceneFilepath = sceneName;
 		if (s_Instance->m_Scenes.find(sceneName) != s_Instance->m_Scenes.end())
 			delete s_Instance->m_Scenes[sceneName];
 
 		s_Instance->m_Scenes[sceneName] = scene;
-	}
+		LOG_INFO("[SceneManager] Loaded", sceneName)
+}
 
-	void SceneManager::UnLoad(const std::string& sceneName)
+	void SceneManager::Unload(const std::string& sceneName)
 	{
 		delete s_Instance->m_Scenes.at(sceneName);
 		s_Instance->m_Scenes.erase(sceneName);

@@ -92,7 +92,7 @@ namespace proton {
 	private:
 		SceneState m_SceneState = SceneState::Play;
 		std::string m_SceneName;
-		std::string m_SceneFilepath;
+		std::string m_SceneFilepath = "<Unsaved scene>";
 
 		entt::registry m_Registry;
 		std::unordered_map<UUID, Entity> m_EntityMap;

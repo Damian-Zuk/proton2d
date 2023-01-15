@@ -6,6 +6,7 @@
 #include "proton/Scene/Components.h"
 #include "proton/Core/Utils.h"
 #include "proton/Scene/EntityScript.h"
+#include "proton/Scene/PrefabManager.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -63,9 +64,9 @@ namespace proton {
 					m_SelectedEntity.Destroy();
 				}
 				ImGui::Dummy({ 0.0f, 5.0f });
-				if (ImGui::Button("Create prefab"))
+				if (ImGui::Button("Create prefab", { 165.0f, 25.0f }))
 				{
-
+					PrefabManager::Get().SavePrefab(m_SelectedEntity);
 				}
 				ImGui::Dummy({ 0.0f, 5.0f });
 

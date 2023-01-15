@@ -15,10 +15,10 @@ namespace proton {
 		~SceneSerializer() = default;
 
 		bool Serialize(const std::string& filepath);
-		json SerializeEntity(Entity entity);
+		json SerializeEntity(Entity entity, bool serializeUUID = true);
 
 		bool Deserialize(const std::string& filepath);
-		Entity DeserializeEntity(json jsonObj);
+		Entity DeserializeEntity(json jsonObj, bool deserializeUUID = true);
 	
 	private:
 		Scene* m_Scene;

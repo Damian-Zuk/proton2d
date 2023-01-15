@@ -10,7 +10,7 @@ namespace proton {
 
 	std::string ReadFileBinary(const std::string& filepath);
 	
-	std::vector<std::string> GetFilesFromDirectory(const std::string& directory);
+	std::vector<std::string> GetFilesFromDirectory(const std::string& directory, const std::string& extension = std::string());
 
 	glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation = 0.0f);
 }
