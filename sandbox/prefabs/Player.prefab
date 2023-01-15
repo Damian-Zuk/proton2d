@@ -1,0 +1,111 @@
+{
+    "Tag": "Player",
+    "Transform": {
+        "Position": [
+            17.63215,
+            -1.3435,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            5.0,
+            5.0
+        ]
+    },
+    "Sprite": {
+        "Texture": "player-sheet.png",
+        "FilterMode": 0,
+        "Flip": [
+            false,
+            false
+        ],
+        "TilePos": [
+            5,
+            0
+        ],
+        "TileSize": [
+            1,
+            1
+        ],
+        "Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    "Camera": {
+        "ZoomLevel": 2.5
+    },
+    "Rigidbody": {
+        "Type": 2,
+        "FixedRotation": true
+    },
+    "BoxCollider": {
+        "Size": [
+            0.1599999964237213,
+            0.46000000834465027
+        ],
+        "Offset": [
+            -0.05999999865889549,
+            -1.3200000524520874
+        ],
+        "Friction": 0.0,
+        "Restitution": 0.0,
+        "RestitutionThreshold": 0.5,
+        "Density": 5.0,
+        "IsSensor": false
+    },
+    "Scripts": [
+        {
+            "ClassName": "PlayerScript",
+            "Fields": [
+                {
+                    "FieldName": "PlayerSpeed",
+                    "Value": 5.0
+                },
+                {
+                    "FieldName": "JumpForce",
+                    "Value": 5.0
+                }
+            ]
+        }
+    ],
+    "Entities": [
+        {
+            "ID": 16368068160741229109,
+            "Tag": "FootSensor",
+            "Transform": {
+                "Position": [
+                    17.632,
+                    -1.344,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": true
+            },
+            "BoxCollider": {
+                "Size": [
+                    0.6800000071525574,
+                    0.6800000071525574
+                ],
+                "Offset": [
+                    -0.10000000149011612,
+                    -2.390000104904175
+                ],
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": true
+            }
+        }
+    ]
+}

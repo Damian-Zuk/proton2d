@@ -1,0 +1,44 @@
+{
+    "Tag": "Block",
+    "Transform": {
+        "Position": [
+            -7.69276,
+            2.35388,
+            0.054
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            5.0,
+            5.0
+        ]
+    },
+    "NineSliceSprite": {
+        "Spritesheet": "level-sheet-1.png",
+        "Width": 5,
+        "Height": 5,
+        "BlockBorders": 255,
+        "TileScale": [
+            1.0,
+            1.0
+        ]
+    },
+    "Rigidbody": {
+        "Type": 0,
+        "FixedRotation": false
+    },
+    "BoxCollider": {
+        "Size": [
+            0.9399999976158142,
+            0.8999999761581421
+        ],
+        "Offset": [
+            0.0,
+            0.0
+        ],
+        "Friction": 0.5,
+        "Restitution": 0.0,
+        "RestitutionThreshold": 0.5,
+        "Density": 1.0,
+        "IsSensor": false
+    }
+}

@@ -2,8 +2,231 @@
     "SceneName": "Sample scene",
     "EnablePhysics": true,
     "GravityForce": 18.0,
-    "PrimaryCameraEntity": 13581737169537590351,
+    "PrimaryCameraEntity": 17511075397661609954,
     "Entities": [
+        {
+            "ID": 3185442608332620130,
+            "Tag": "Background",
+            "Transform": {
+                "Position": [
+                    10.48067,
+                    1.87902,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "ID": 3209907199090167696,
+                    "Tag": "bg-5",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            -0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Texture": "background-jungle/plx-5.png",
+                        "FilterMode": 0,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "ParallaxBackground",
+                            "Fields": [
+                                {
+                                    "FieldName": "ParallaxFactor",
+                                    "Value": 0.2199999988079071
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": 7083990055283766567,
+                    "Tag": "bg-4",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            -0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Texture": "background-jungle/plx-4.png",
+                        "FilterMode": 0,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "ParallaxBackground",
+                            "Fields": [
+                                {
+                                    "FieldName": "ParallaxFactor",
+                                    "Value": 0.17000000178813934
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": 7175284071415712829,
+                    "Tag": "bg-3",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            -0.102
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Texture": "background-jungle/plx-3.png",
+                        "FilterMode": 0,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "ParallaxBackground",
+                            "Fields": [
+                                {
+                                    "FieldName": "ParallaxFactor",
+                                    "Value": 0.0949999988079071
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": 11025858556848252266,
+                    "Tag": "bg-2",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            -0.103
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Texture": "background-jungle/plx-2.png",
+                        "FilterMode": 0,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "ParallaxBackground",
+                            "Fields": [
+                                {
+                                    "FieldName": "ParallaxFactor",
+                                    "Value": 0.04500000178813934
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": 9879717648033061331,
+                    "Tag": "bg-1",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            -0.104
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Texture": "background-jungle/plx-1.png",
+                        "FilterMode": 0,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "ParallaxBackground",
+                            "Fields": [
+                                {
+                                    "FieldName": "ParallaxFactor",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
         {
             "ID": 8011558218177762518,
             "Tag": "Unnamed entity",
@@ -568,13 +791,13 @@
             }
         },
         {
-            "ID": 13581737169537590351,
+            "ID": 17511075397661609954,
             "Tag": "Player",
             "Transform": {
                 "Position": [
-                    4.41244,
-                    4.019,
-                    0.009
+                    3.73001,
+                    4.56302,
+                    0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
@@ -590,7 +813,7 @@
                     false
                 ],
                 "TilePos": [
-                    6,
+                    5,
                     0
                 ],
                 "TileSize": [
@@ -605,7 +828,7 @@
                 ]
             },
             "Camera": {
-                "ZoomLevel": 1.7999999523162842
+                "ZoomLevel": 2.5
             },
             "Rigidbody": {
                 "Type": 2,
@@ -613,12 +836,12 @@
             },
             "BoxCollider": {
                 "Size": [
-                    0.17000000178813934,
+                    0.1599999964237213,
                     0.46000000834465027
                 ],
                 "Offset": [
-                    -0.11999999731779099,
-                    -1.2899999618530273
+                    -0.05999999865889549,
+                    -1.3200000524520874
                 ],
                 "Friction": 0.0,
                 "Restitution": 0.0,
@@ -636,9 +859,46 @@
                         },
                         {
                             "FieldName": "JumpForce",
-                            "Value": 110.0
+                            "Value": 5.0
                         }
                     ]
+                }
+            ],
+            "Entities": [
+                {
+                    "ID": 16368068160741229109,
+                    "Tag": "FootSensor",
+                    "Transform": {
+                        "Position": [
+                            17.632,
+                            -1.344,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": true
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.6800000071525574,
+                            0.6800000071525574
+                        ],
+                        "Offset": [
+                            -0.10000000149011612,
+                            -2.390000104904175
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": true
+                    }
                 }
             ]
         },
