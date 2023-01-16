@@ -22,22 +22,6 @@ namespace proton {
 			return;
 
 		float zoomLevel = m_Camera->GetZoomLevel();
-
-		if (!ImGui::GetIO().WantCaptureKeyboard)
-		{
-			if (Input::IsKeyPressed(Key::W)) 
-				m_Position.y += m_CameraSpeed * m_AspectRatio * ts * zoomLevel;
-
-			if (Input::IsKeyPressed(Key::A))
-				m_Position.x += -m_CameraSpeed * ts * zoomLevel;
-
-			if (Input::IsKeyPressed(Key::S))
-				m_Position.y += -m_CameraSpeed * m_AspectRatio * ts * zoomLevel;
-
-			if (Input::IsKeyPressed(Key::D))
-				m_Position.x += m_CameraSpeed * ts * zoomLevel;
-		}
-
 		float zoomTargetDiff = glm::abs(m_ZoomLevelTarget - zoomLevel);
 		float zoomOffset = glm::max(glm::round(zoomTargetDiff * ts * 10000.0f) / 1000.0f, 0.001f);
 

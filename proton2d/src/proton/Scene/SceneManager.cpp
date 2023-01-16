@@ -2,6 +2,7 @@
 #include "proton/Scene/SceneManager.h"
 #include "proton/Scene/Scene.h"
 #include "proton/Assets/SceneSerializer.h"
+#include "proton/Core/Application.h"
 
 #if PROTON_EDITOR
 #include "proton/Editor/EditorOverlay.h"
@@ -86,6 +87,7 @@ namespace proton {
 #else
 		s_Instance->m_ActiveScene->OnBeginPlay();
 #endif
+		Application::Get().SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
 	}
 
 	Scene* SceneManager::GetActiveScene()

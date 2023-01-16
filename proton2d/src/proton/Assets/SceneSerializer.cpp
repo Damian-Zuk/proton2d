@@ -214,6 +214,8 @@ namespace proton {
 		jsonObj["SceneName"] = m_Scene->m_SceneName;
 		jsonObj["EnablePhysics"] = m_Scene->m_EnablePhysics;
 		jsonObj["GravityForce"] = m_Scene->m_WorldGravity;
+		const auto& c = m_Scene->m_ClearColor;
+		jsonObj["ScreenClearColor"] = { c.r, c.g, c.b, c.a };
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
 		if (primaryCameraEntity)
@@ -253,6 +255,8 @@ namespace proton {
 			m_Scene->m_SceneName = jsonObj["SceneName"];
 			m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
 			m_Scene->m_WorldGravity = jsonObj["GravityForce"];
+			json& c = jsonObj["ScreenClearColor"];
+			m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
 		
 			json& entities = jsonObj["Entities"];
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)

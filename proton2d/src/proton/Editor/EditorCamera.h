@@ -28,5 +28,7 @@ namespace proton {
 		float m_CameraSpeed = 3.0f;
 		float m_ZoomLevelTarget = 1.0f;
 		float m_CameraZoomSpeed = 0.10f;
+
+		friend class EditorOverlay;
 	};
 }

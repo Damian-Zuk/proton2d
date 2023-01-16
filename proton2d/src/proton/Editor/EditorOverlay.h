@@ -42,6 +42,7 @@ namespace proton {
 		bool m_ShowSelectionCollider = true;
 		bool m_ShowAllColliders = false;
 		bool m_MovingSelection = false;
+		bool m_MovingCamera = false;
 
 		Inspector m_Inspector;
 		DebugInfo m_DebugInfo;
@@ -49,6 +50,7 @@ namespace proton {
 		EditorCamera m_Camera;
 
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
+		glm::vec2 m_CameraMoveClickPosition = { 0.0f, 0.0f };
 
 		Scene* m_ActiveScene = nullptr;
 

@@ -2,6 +2,12 @@
     "SceneName": "Sample scene",
     "EnablePhysics": true,
     "GravityForce": 9.800000190734863,
+    "ScreenClearColor": [
+        0.08139412850141525,
+        0.1379179060459137,
+        0.2509652376174927,
+        1.0
+    ],
     "PrimaryCameraEntity": 7639578020683319520,
     "Entities": [
         {

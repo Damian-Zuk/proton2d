@@ -21,6 +21,8 @@ namespace proton {
 		void PushLayer(AppLayer* layer);
 		void PushOverlay(AppLayer* layer);
 
+		void SetClearColor(const glm::vec4& color);
+
 	protected:
 		virtual bool OnCreate() = 0; // To be defined by client
 		void OnEvent(Event& event);
@@ -32,6 +34,7 @@ namespace proton {
 		bool m_WindowMinimized = false;
 		float m_FrameTime = 0.0f;
 		std::string m_AppName;
+		glm::vec4 m_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
 		
 		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;

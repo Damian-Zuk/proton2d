@@ -7,6 +7,7 @@
 #include "proton/Core/Utils.h"
 #include "proton/Scene/EntityScript.h"
 #include "proton/Scene/PrefabManager.h"
+#include "proton/Core/Application.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -488,6 +489,10 @@ namespace proton {
 
 				ImGui::DragFloat("World gravity", &m_ActiveScene->m_WorldGravity, 0.1f);
 				ImGui::Checkbox("Enable physics", &m_ActiveScene->m_EnablePhysics);
+				ImGui::Dummy({ 0.0f, 5.0f });
+				ImGui::Text("Screen clear color");
+				if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(m_ActiveScene->m_ClearColor)))
+					Application::Get().SetClearColor(m_ActiveScene->m_ClearColor);
 			}
 		}
 

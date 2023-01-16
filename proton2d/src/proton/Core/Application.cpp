@@ -29,7 +29,6 @@ namespace proton {
 
 	Application* Application::s_Instance = nullptr;
 	Input* Input::s_Instance = nullptr;
-	static glm::vec4 s_ScreenClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
 
 	Application::Application(const std::string& appName)
 		: m_AppName(appName)
@@ -103,7 +102,7 @@ namespace proton {
 
 		Logger::Init();
 		Renderer::Init();
-		Renderer::SetClearColor(s_ScreenClearColor);
+		Renderer::SetClearColor(m_ClearColor);
 		SceneManager::Init();
 		PrefabManager::Get().ReloadAllPrefabs();
 
@@ -161,6 +160,12 @@ namespace proton {
 	{
 		m_AppLayers.emplace_back(layer);
 		layer->OnCreate();
+	}
+
+	void Application::SetClearColor(const glm::vec4& color)
+	{
+		m_ClearColor = color;
+		Renderer::SetClearColor(color);
 	}
 
 	void Application::OnEvent(Event& event)

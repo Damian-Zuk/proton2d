@@ -60,20 +60,27 @@ namespace proton {
 
 	void EditorOverlay::OnUpdate(float ts)
 	{
-		if (m_ActiveScene)
+		if (!m_ActiveScene)
+			return;
+
+		m_Camera.OnUpdate(ts);
+
+		if (!m_Inspector.m_SelectedEntity.IsValid())
+			m_Inspector.SetSelectionContext(Entity{});
+
+		if (m_MovingSelection)
 		{
-			m_Camera.OnUpdate(ts);
-
-			if (!m_Inspector.m_SelectedEntity.IsValid())
-				m_Inspector.SetSelectionContext(Entity{});
-
-			if (m_MovingSelection)
-			{
-				glm::vec2 targetPos = m_ActiveScene->GetMouseWorldPosition() + m_SelectionMouseOffset;
-				auto& transform = m_Inspector.m_SelectedEntity.GetComponent<TransformComponent>();
-				transform.Position = { targetPos.x, targetPos.y, transform.Position.z };
-				ImGui::SetMouseCursor(2);
-			}
+			glm::vec2 targetPos = m_ActiveScene->GetMouseWorldPosition() + m_SelectionMouseOffset;
+			auto& transform = m_Inspector.m_SelectedEntity.GetComponent<TransformComponent>();
+			transform.Position = { targetPos.x, targetPos.y, transform.Position.z };
+			ImGui::SetMouseCursor(2);
+		}
+		if (m_MovingCamera)
+		{
+			glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
+			glm::vec2 offset = m_CameraMoveClickPosition - mousePos;
+			m_Camera.m_Position.x += offset.x;
+			m_Camera.m_Position.y += offset.y;
 		}
 	}
 
@@ -144,11 +151,11 @@ namespace proton {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			if (!m_ActiveScene)
+			if (!m_ActiveScene || ImGui::GetIO().WantCaptureMouse)
 				return false;
 
 			// Select entity on mouse pressed event (Button 0)
-			if (e.GetMouseButton() == Mouse::Button0 && !ImGui::GetIO().WantCaptureMouse)
+			if (e.GetMouseButton() == Mouse::Button0)
 			{
 				std::vector<Entity> entities = m_ActiveScene->GetEntitiesOnMousePosition();
 				Entity target; float transformMaxZ = 0.0f;
@@ -172,6 +179,11 @@ namespace proton {
 
 				SetInspectorContext(target);
 			}
+			else if (e.GetMouseButton() == Mouse::Button1 && !m_MovingCamera)
+			{
+				m_CameraMoveClickPosition = m_ActiveScene->GetMouseWorldPosition();
+				m_MovingCamera = true;
+			}
 			return true;
 		});
 
@@ -184,7 +196,10 @@ namespace proton {
 
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
 		{
-			m_MovingSelection = false;
+			if (e.GetMouseButton() == Mouse::Button0)
+				m_MovingSelection = false;
+			if (e.GetMouseButton() == Mouse::Button1)
+				m_MovingCamera = false;
 			ImGui::SetMouseCursor(0);
 			return true;
 		});
@@ -320,7 +335,7 @@ namespace proton {
 		{
 			ImGui::Separator();
 			ImGui::Text(tag.c_str());
-			ImGui::SameLine(ImGui::GetWindowWidth() - 130);
+			ImGui::SameLine(ImGui::GetWindowWidth() - 140);
 			if (ImGui::Button(("Spawn##prefab_panel" + tag).c_str(), {60, 25}))
 			{
 				Entity entity = PrefabManager::Get().SpawnPrefab(m_ActiveScene, tag);

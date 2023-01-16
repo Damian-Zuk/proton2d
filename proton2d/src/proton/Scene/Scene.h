@@ -93,6 +93,7 @@ namespace proton {
 		SceneState m_SceneState = SceneState::Play;
 		std::string m_SceneName;
 		std::string m_SceneFilepath = "<Unsaved scene>";
+		glm::vec4 m_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
 
 		entt::registry m_Registry;
 		std::unordered_map<UUID, Entity> m_EntityMap;
