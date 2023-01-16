@@ -17,12 +17,12 @@ namespace proton {
 		static void Unload(const std::string& sceneName);
 		static void SetActiveScene(const std::string& sceneName);
 		static Scene* GetActiveScene();
+		static const std::string& GetActiveSceneFilepath();
 
 	private:
 		static SceneManager* s_Instance;
 
 		Scene* m_ActiveScene = nullptr;
-		std::string m_ActiveSceneName;
 		std::unordered_map<std::string, Scene*> m_Scenes;
 
 		friend class Application;

@@ -5,6 +5,7 @@
 #include "proton/Events/KeyEvents.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Scene/ScriptFactory.h"
+#include "proton/Assets/AssetsManager.h"
 #include "proton/Scene/SceneManager.h"
 #include "proton/Scene/PrefabManager.h"
 #include "proton/Core/Utils.h"
@@ -88,9 +89,7 @@ namespace proton {
 			layer->OnDestroy();
 			delete layer;
 		}
-
-		delete Input::s_Instance;
-		delete SceneManager::s_Instance;
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()
@@ -98,13 +97,13 @@ namespace proton {
 		if (m_IsRunning)
 			return;
 
-		PROFILE_BEGIN_SESSION("Proton-Runtime");
-
 		Logger::Init();
-		Renderer::Init();
-		Renderer::SetClearColor(m_ClearColor);
+		AssetsManager::Init();
 		SceneManager::Init();
-		PrefabManager::Get().ReloadAllPrefabs();
+		PrefabManager::Init();
+		Renderer::Init();
+
+		PROFILE_BEGIN_SESSION("Proton-Runtime");
 
 		if (OnCreate()) 
 		{
@@ -129,7 +128,7 @@ namespace proton {
 				#if PROTON_EDITOR
 				if (m_ShowEditorOverlay)
 				{
-					PROFILE_SCOPE("imgui_render")
+					PROFILE_SCOPE("on_imgui_render")
 					m_EditorOverlay->m_DebugInfo.m_FrameTime = m_FrameTime;
 					m_EditorOverlay->BeginImGuiRender();
 
@@ -160,12 +159,6 @@ namespace proton {
 	{
 		m_AppLayers.emplace_back(layer);
 		layer->OnCreate();
-	}
-
-	void Application::SetClearColor(const glm::vec4& color)
-	{
-		m_ClearColor = color;
-		Renderer::SetClearColor(color);
 	}
 
 	void Application::OnEvent(Event& event)

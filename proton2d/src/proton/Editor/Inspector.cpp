@@ -8,6 +8,7 @@
 #include "proton/Scene/EntityScript.h"
 #include "proton/Scene/PrefabManager.h"
 #include "proton/Core/Application.h"
+#include "proton/Graphics/Renderer.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -25,6 +26,8 @@ namespace proton {
 		{
 			if (m_SelectedEntity)
 			{
+				ImGui::Text("ID: %u", m_SelectedEntity.GetUUID());
+
 				// *********************
 				// Add component
 				// *********************
@@ -67,7 +70,7 @@ namespace proton {
 				ImGui::Dummy({ 0.0f, 5.0f });
 				if (ImGui::Button("Create prefab", { 165.0f, 25.0f }))
 				{
-					PrefabManager::Get().SavePrefab(m_SelectedEntity);
+					PrefabManager::SaveAsPrefab(m_SelectedEntity);
 				}
 				ImGui::Dummy({ 0.0f, 5.0f });
 
@@ -150,7 +153,7 @@ namespace proton {
 							if (ImGui::Selectable("Fill color"))
 								sprite = nullptr;
 
-							for (auto& kv : AssetsManager::GetTextures())
+							for (auto& kv : AssetsManager::s_Instance->m_Textures)
 							{
 								bool isSelected = kv.first == textureFilename;
 
@@ -268,7 +271,7 @@ namespace proton {
 							ImGui::Text("Spritesheet:");
 							if (ImGui::BeginCombo("##nine_slice_select_spritesheet", filename.c_str()))
 							{
-								for (auto& kv : AssetsManager::GetSpritesheets())
+								for (auto& kv : AssetsManager::s_Instance->m_Spritesheets)
 								{
 									bool isSelected = filename == kv.first;
 
@@ -492,7 +495,7 @@ namespace proton {
 				ImGui::Dummy({ 0.0f, 5.0f });
 				ImGui::Text("Screen clear color");
 				if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(m_ActiveScene->m_ClearColor)))
-					Application::Get().SetClearColor(m_ActiveScene->m_ClearColor);
+					Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
 			}
 		}
 

@@ -13,15 +13,15 @@ namespace proton {
 		Application(const std::string& appName);
 		virtual ~Application();
 
-		static Application& Get() { return *s_Instance; }
-		Window& GetWindow() { return *m_Window; }
-		
+		// Call this function to run application
+		// after you created Application derivative instance
 		void Run();
 		
 		void PushLayer(AppLayer* layer);
 		void PushOverlay(AppLayer* layer);
 
-		void SetClearColor(const glm::vec4& color);
+		static Application& Get() { return *s_Instance; }
+		Window& GetWindow() { return *m_Window; }
 
 	protected:
 		virtual bool OnCreate() = 0; // To be defined by client
@@ -34,7 +34,6 @@ namespace proton {
 		bool m_WindowMinimized = false;
 		float m_FrameTime = 0.0f;
 		std::string m_AppName;
-		glm::vec4 m_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
 		
 		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;

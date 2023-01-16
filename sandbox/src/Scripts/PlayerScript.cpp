@@ -84,7 +84,7 @@ void PlayerScript::OnUpdate(float ts)
 	} 
 
 	// Movement
-	if (Input::IsKeyPressed(Key::Right))
+	if (Input::IsKeyPressed(Key::D))
 	{
 		m_Direction = Right;
 		if (m_IsAttacking) // Walking while attacking
@@ -98,7 +98,7 @@ void PlayerScript::OnUpdate(float ts)
 			m_Flipbook->SetAnimation(Run, Right);
 		}
 	}
-	else if (Input::IsKeyPressed(Key::Left))
+	else if (Input::IsKeyPressed(Key::A))
 	{
 		m_Direction = Left;
 		if (m_IsAttacking) // Walking while attacking
@@ -120,7 +120,7 @@ void PlayerScript::OnUpdate(float ts)
 	}
 
 	// Jumping
-	if (Input::IsKeyPressed(Key::Up))
+	if (Input::IsKeyPressed(Key::W))
 	{
 		if (m_ContactCount > 0)
 		{

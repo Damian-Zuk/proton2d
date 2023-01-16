@@ -6,6 +6,8 @@
 */
 #pragma once
 
+#define DEFAULT_CLEAR_COLOR { 0.1f, 0.12f, 0.16f, 1.0f }
+
 #include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/Camera.h"
 

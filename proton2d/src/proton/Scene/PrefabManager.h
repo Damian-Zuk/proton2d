@@ -12,19 +12,22 @@ namespace proton {
 	class PrefabManager
 	{
 	public:
-		static PrefabManager& Get();
+		static void Init();
 
-		void ReloadAllPrefabs();
+		static void ReloadAllPrefabs();
 
-		bool LoadPrefab(const std::string& prefabName);
-		void SavePrefab(Entity entity);
-		bool DeletePrefab(const std::string& prefabName);
-		
-		Entity SpawnPrefab(Scene* scene, const std::string& prefabName) const;
+		static void SaveAsPrefab(Entity entity);
+		static bool LoadPrefab(const std::string& prefabName);
+		static bool DeletePrefab(const std::string& prefabName);
+		static json GetJsonData(const std::string& prefabName);
 
-		bool Exists(const std::string& prefabName) const;
+		static Entity SpawnPrefab(Scene* scene, const std::string& prefabName);
+
+		static bool Exists(const std::string& prefabName);
 		
 	private:
+		static PrefabManager* s_Instance;
+
 		std::unordered_map<std::string, json> m_PrefabsJsonData;
 		
 		friend class Application;

@@ -140,6 +140,8 @@ namespace proton {
 		data.QuadShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "/shaders/Quad2D.glsl");
 		data.LineShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "/shaders/Line2D.glsl");
 		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
+	
+		SetClearColor(DEFAULT_CLEAR_COLOR);
 	}
 
 	void Renderer::Shutdown()

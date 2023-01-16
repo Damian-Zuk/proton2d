@@ -3,6 +3,7 @@
 #include "proton/Scene/Scene.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Application.h"
+#include "proton/Graphics/Renderer.h"
 
 #if PROTON_EDITOR
 #include "proton/Editor/EditorOverlay.h"
@@ -25,7 +26,6 @@ namespace proton {
 			s_Instance = new SceneManager();
 #if PROTON_EDITOR
 			Scene* scene = CreateNewEmptyScene("<Unsaved scene>");
-			s_Instance->m_ActiveSceneName = "<Unsaved scene>";
 			s_Instance->m_ActiveScene = scene;
 			EditorOverlay::SetSceneContext(scene);
 #endif
@@ -80,19 +80,23 @@ namespace proton {
 			s_Instance->m_ActiveScene->OnEndPlay();
 
 		s_Instance->m_ActiveScene = s_Instance->m_Scenes.at(sceneName);
-		s_Instance->m_ActiveSceneName = sceneName;
 
 #if PROTON_EDITOR
 		EditorOverlay::SetSceneContext(s_Instance->m_ActiveScene);
 #else
 		s_Instance->m_ActiveScene->OnBeginPlay();
 #endif
-		Application::Get().SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
+		Renderer::SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
 	}
 
 	Scene* SceneManager::GetActiveScene()
 	{
 		return s_Instance->m_ActiveScene;
+	}
+
+	const std::string& SceneManager::GetActiveSceneFilepath()
+	{
+		return s_Instance->m_ActiveScene->m_SceneFilepath;
 	}
 
 }

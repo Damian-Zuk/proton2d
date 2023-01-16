@@ -7,19 +7,29 @@ namespace proton {
 	class AssetsManager
 	{
 	public:
-		static bool TextureExists(const std::string& keyPath);
-		static bool SpriteSheetExists(const std::string& keyPath);
+		AssetsManager() = default;
+		~AssetsManager() = default;
+
+		static void Init();
+
+		static bool TextureExists(const std::string& filepath);
+		static bool SpriteSheetExists(const std::string& filepath);
 
 		static Shared<Texture> LoadTexture(const std::string& filepath);
+		static Shared<Texture> GetTexture(const std::string& filepath);
+		static bool UnloadTexture(const std::string& filepath);
+
 		static Shared<SpriteSheet> LoadSpriteSheet(const std::string& filepath, uint32_t tileWidth, uint32_t tileHeight);
+		static Shared<SpriteSheet> GetSpriteSheet(const std::string& filepath);
+		static bool UnloadSpritesheet(const std::string& filepath);
 
-		// Texture auto-loaded
-		static Shared<Texture> GetTexture(const std::string& keyPath); 
-		// Texture not auto-loaded
-		static Shared<SpriteSheet> GetSpriteSheet(const std::string& keyPath); 
+	private:
+		static AssetsManager* s_Instance;
 
-		static std::unordered_map<std::string, Shared<SpriteSheet>>& GetSpritesheets();
-		static std::unordered_map<std::string, Shared<Texture>>& GetTextures();
+		std::unordered_map<std::string, Shared<Texture>> m_Textures;
+		std::unordered_map<std::string, Shared<SpriteSheet>> m_Spritesheets;
+
+		friend class Inspector;
 	};
 
 }

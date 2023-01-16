@@ -11,9 +11,19 @@ namespace proton
 	{
 	}
 
+	Entity Entity::CopyEntity(Scene* dstScene)
+	{
+		return m_Scene->CopyEntity(*this, dstScene);
+	}
+
 	UUID Entity::GetUUID() const
 	{
 		return GetComponent<IDComponent>().ID;
+	}
+
+	const std::string& Entity::GetTag() const
+	{
+		return GetComponent<TagComponent>().Tag;
 	}
 
 	bool Entity::IsValid()

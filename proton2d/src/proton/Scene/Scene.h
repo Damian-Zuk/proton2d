@@ -62,13 +62,14 @@ namespace proton {
 		void SetPrimaryCameraEntity(Entity entity);
 		Shared<Camera> GetPrimaryCamera();
 		Entity GetPrimaryCameraEntity();
-		glm::vec3 GetPrimaryCameraPosition();
+		const glm::vec3& GetPrimaryCameraPosition();
 
 		glm::vec2 GetMouseWorldPosition();
 		std::vector<Entity> GetEntitiesOnMousePosition(); // todo: add default argument "useCollider"
 
-		void DuplicateEntity(Entity entity);
-		void CopyEntity(Entity entity, Scene* dstScene);
+		// TODO: implement
+		Entity DuplicateEntity(Entity entity);
+		Entity CopyEntity(Entity entity, Scene* dstScene);
 
 		// Serialize scene to specified file (JSON format)
 		void SaveAsFile(const std::string& filepath);

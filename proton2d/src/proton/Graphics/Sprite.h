@@ -43,6 +43,7 @@ namespace proton {
 		Sprite() = default;
 		Sprite(const Shared<Texture>& texture);
 		Sprite(const Shared<SpriteSheet>& spriteSheet);
+		Sprite(const Sprite& other);
 
 		void SetTexture(const Shared<Texture>& texture);
 		void SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet);

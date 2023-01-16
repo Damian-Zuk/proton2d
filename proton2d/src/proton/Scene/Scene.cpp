@@ -420,25 +420,35 @@ namespace proton {
 		return entities;
 	}
 
-	void Scene::DuplicateEntity(Entity entity)
+	Entity Scene::DuplicateEntity(Entity entity)
 	{
-		Entity newEntity = CreateEntity(entity.GetComponent<TagComponent>().Tag);
-		auto& srcComponents1 = m_Registry.get<TransformComponent>(entity);
-		auto& srcComponents2 = m_Registry.get<SpriteComponent>(entity);
-		m_Registry.emplace_or_replace<TransformComponent>(newEntity, srcComponents1);
-		m_Registry.emplace_or_replace<SpriteComponent>(newEntity, srcComponents2);
+		return CopyEntity(entity, this);
 	}
 
-	void Scene::CopyEntity(Entity entity, Scene* dstScene)
+	Entity Scene::CopyEntity(Entity entity, Scene* dstScene)
 	{
+		//const auto& tag = entity.GetTag();
+		//Entity newEntity = dstScene != this ?
+		//	CreateEntity(tag) : CreateEntityWithID(entity.GetUUID(), tag);
+
+		//auto& transform = m_Registry.get<TransformComponent>(entity);
+		//m_Registry.emplace_or_replace<TransformComponent>(newEntity, transform);
+
+		//if (entity.HasComponent<SpriteComponent>())
+		//{
+		//	auto& src = m_Registry.get<SpriteComponent>(entity);
+		//	m_Registry.emplace_or_replace<SpriteComponent>(newEntity, src);
+		//}
+		return Entity{};
 	}
 
-	glm::vec3 Scene::GetPrimaryCameraPosition()
+	static const glm::vec3 s_PositionZero { 0.0f };
+	const glm::vec3& Scene::GetPrimaryCameraPosition()
 	{
 #if PROTON_EDITOR
 		if (m_SceneState != SceneState::Edit) {
 #endif
-			return m_PrimaryCameraEntity == entt::null ? glm::vec3{ 0.0f }
+			return m_PrimaryCameraEntity == entt::null ? s_PositionZero
 				: m_Registry.get<TransformComponent>(m_PrimaryCameraEntity).Position;
 #if PROTON_EDITOR
 		} 

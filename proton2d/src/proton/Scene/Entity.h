@@ -90,9 +90,12 @@ namespace proton {
 			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
-		Scene* GetScene() { return m_Scene; }
+		Entity CopyEntity(Scene* dstScene);
 
+		Scene* GetScene() { return m_Scene; }
 		UUID GetUUID() const;
+		const std::string& GetTag() const;
+
 		bool IsValid();
 		void Destroy();
 		void AddChildEntity(Entity child);

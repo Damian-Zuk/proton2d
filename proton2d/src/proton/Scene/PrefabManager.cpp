@@ -7,17 +7,33 @@
 
 namespace proton {
 
-	PrefabManager& PrefabManager::Get()
+	PrefabManager* PrefabManager::s_Instance = nullptr;
+
+	void PrefabManager::Init()
 	{
-		static PrefabManager manager;
-		return manager;
+		if (!s_Instance)
+		{
+			s_Instance = new PrefabManager();
+			s_Instance->ReloadAllPrefabs();
+		}
 	}
 
 	void PrefabManager::ReloadAllPrefabs()
 	{
-		m_PrefabsJsonData.clear();
+		s_Instance->m_PrefabsJsonData.clear();
 		for (auto prefabFile : GetFilesFromDirectory("prefabs", "prefab"))
 			LoadPrefab(prefabFile);
+	}
+
+	void PrefabManager::SaveAsPrefab(Entity entity)
+	{
+		SceneSerializer serializer(entity.GetScene());
+		json jsonData = serializer.SerializeEntity(entity);
+		std::string tag = jsonData["Tag"];
+		s_Instance->m_PrefabsJsonData[tag] = jsonData;
+		std::ofstream file("prefabs/" + tag + ".prefab");
+		file << jsonData.dump(4);
+		file.close();
 	}
 
 	bool PrefabManager::LoadPrefab(const std::string& prefabName)
@@ -27,21 +43,10 @@ namespace proton {
 		{
 			json jsonData = json::parse(rawData);
 			if (jsonData.contains("Tag"))
-				m_PrefabsJsonData[jsonData["Tag"]] = jsonData;
+				s_Instance->m_PrefabsJsonData[jsonData["Tag"]] = jsonData;
 			return true;
 		}
 		return false;
-	}
-
-	void PrefabManager::SavePrefab(Entity entity)
-	{
-		SceneSerializer serializer(entity.GetScene());
-		json jsonData = serializer.SerializeEntity(entity, false);
-		std::string tag = jsonData["Tag"];
-		m_PrefabsJsonData[tag] = jsonData;
-		std::ofstream file("prefabs/" + tag + ".prefab");
-		file << jsonData.dump(4);
-		file.close();
 	}
 
 	bool PrefabManager::DeletePrefab(const std::string& prefabName)
@@ -50,23 +55,28 @@ namespace proton {
 		{
 			if (remove(("prefabs/" + prefabName + ".prefab").c_str()) == 0)
 			{
-				m_PrefabsJsonData.erase(prefabName);
+				s_Instance->m_PrefabsJsonData.erase(prefabName);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	bool PrefabManager::Exists(const std::string& prefabName) const
-	{
-		return m_PrefabsJsonData.find(prefabName) != m_PrefabsJsonData.end();
-	}
-
-	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabName) const
+	json PrefabManager::GetJsonData(const std::string& prefabName)
 	{
 		assert(Exists(prefabName) && "Prefab not found");
+		return s_Instance->m_PrefabsJsonData.at(prefabName);
+	}
+
+	bool PrefabManager::Exists(const std::string& prefabName)
+	{
+		return s_Instance->m_PrefabsJsonData.find(prefabName) != s_Instance->m_PrefabsJsonData.end();
+	}
+
+	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabName)
+	{
 		SceneSerializer serializer(scene);
-		return serializer.DeserializeEntity(m_PrefabsJsonData.at(prefabName), false);
+		return serializer.DeserializeEntity(GetJsonData(prefabName), false);
 	}
 
 }

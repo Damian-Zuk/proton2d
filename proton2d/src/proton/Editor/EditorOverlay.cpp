@@ -81,6 +81,7 @@ namespace proton {
 			glm::vec2 offset = m_CameraMoveClickPosition - mousePos;
 			m_Camera.m_Position.x += offset.x;
 			m_Camera.m_Position.y += offset.y;
+			ImGui::SetMouseCursor(7);
 		}
 	}
 
@@ -154,9 +155,15 @@ namespace proton {
 			if (!m_ActiveScene || ImGui::GetIO().WantCaptureMouse)
 				return false;
 
-			// Select entity on mouse pressed event (Button 0)
-			if (e.GetMouseButton() == Mouse::Button0)
+			if (e.GetMouseButton() == Mouse::Button1 && !m_MovingCamera)
 			{
+				// Move editor camera on mouse pressed event (Button 1)
+				m_CameraMoveClickPosition = m_ActiveScene->GetMouseWorldPosition();
+				m_MovingCamera = true;
+			}
+			else if (e.GetMouseButton() == Mouse::Button0)
+			{
+				// Select entity on mouse pressed event (Button 0)
 				std::vector<Entity> entities = m_ActiveScene->GetEntitiesOnMousePosition();
 				Entity target; float transformMaxZ = 0.0f;
 
@@ -177,12 +184,8 @@ namespace proton {
 					m_SelectionMouseOffset = glm::vec2{ transform.Position.x, transform.Position.y } - mousePos;
 				}
 
+				
 				SetInspectorContext(target);
-			}
-			else if (e.GetMouseButton() == Mouse::Button1 && !m_MovingCamera)
-			{
-				m_CameraMoveClickPosition = m_ActiveScene->GetMouseWorldPosition();
-				m_MovingCamera = true;
 			}
 			return true;
 		});
@@ -200,6 +203,7 @@ namespace proton {
 				m_MovingSelection = false;
 			if (e.GetMouseButton() == Mouse::Button1)
 				m_MovingCamera = false;
+
 			ImGui::SetMouseCursor(0);
 			return true;
 		});
@@ -278,7 +282,7 @@ namespace proton {
 		bool saveAs = false;
 		if (ImGui::Button("Save", { 100, 25 }))
 			if (m_ActiveScene->m_SceneFilepath != "<Unsaved scene>")
-				m_ActiveScene->SaveAsFile(SceneManager::s_Instance->m_ActiveSceneName);
+				m_ActiveScene->SaveAsFile(SceneManager::GetActiveSceneFilepath());
 			else
 				saveAs = true;
 		
@@ -328,17 +332,17 @@ namespace proton {
 		ImGui::Begin("Prefabs");
 
 		if (ImGui::Button("Reload all##prefab_panel"))
-			PrefabManager::Get().ReloadAllPrefabs();
+			PrefabManager::ReloadAllPrefabs();
 		
 		ImGui::Dummy({ 0.0f, 5.0f });
-		for (auto& [tag, jsonData] : PrefabManager::Get().m_PrefabsJsonData)
+		for (auto& [tag, jsonData] : PrefabManager::s_Instance->m_PrefabsJsonData)
 		{
 			ImGui::Separator();
 			ImGui::Text(tag.c_str());
 			ImGui::SameLine(ImGui::GetWindowWidth() - 140);
 			if (ImGui::Button(("Spawn##prefab_panel" + tag).c_str(), {60, 25}))
 			{
-				Entity entity = PrefabManager::Get().SpawnPrefab(m_ActiveScene, tag);
+				Entity entity = PrefabManager::SpawnPrefab(m_ActiveScene, tag);
 				auto& transform = entity.GetComponent<TransformComponent>();
 				glm::vec2 cameraPos = m_ActiveScene->GetPrimaryCameraPosition();
 				transform.Position.x = cameraPos.x;
@@ -347,10 +351,17 @@ namespace proton {
 			ImGui::SameLine();
 			if (ImGui::Button(("Delete##prefab_panel_" + tag).c_str(), {60, 25}))
 			{
-				PrefabManager::Get().DeletePrefab(tag);
+				PrefabManager::DeletePrefab(tag);
 			}
 		}
 		ImGui::Separator();
+		ImGui::End();
+	}
+
+	void EditorOverlay::DrawAssetsPanel()
+	{
+		ImGui::Begin("Assets");
+
 		ImGui::End();
 	}
 
