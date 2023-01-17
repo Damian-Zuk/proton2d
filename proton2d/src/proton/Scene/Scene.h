@@ -108,6 +108,9 @@ namespace proton {
 		b2World* m_World = nullptr;
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
 
+		int m_PhysicsVelocityIterations = 5;
+		int m_PhysicsPositionIterations = 5;
+
 		class PhysicsContactListener : public b2ContactListener
 		{
 		public:

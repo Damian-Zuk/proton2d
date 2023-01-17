@@ -214,6 +214,8 @@ namespace proton {
 		jsonObj["SceneName"] = m_Scene->m_SceneName;
 		jsonObj["EnablePhysics"] = m_Scene->m_EnablePhysics;
 		jsonObj["GravityForce"] = m_Scene->m_WorldGravity;
+		jsonObj["VelocityIterations"] = m_Scene->m_PhysicsVelocityIterations;
+		jsonObj["PositionIterations"] = m_Scene->m_PhysicsPositionIterations;
 		const auto& c = m_Scene->m_ClearColor;
 		jsonObj["ScreenClearColor"] = { c.r, c.g, c.b, c.a };
 
@@ -248,13 +250,15 @@ namespace proton {
 
 	bool SceneSerializer::Deserialize(const std::string& filepath)
 	{
-		std::string jsonData = ReadFileBinary(filepath);
+		std::string jsonData = Utils::ReadFile(filepath);
 		if (jsonData.size())
 		{
 			json jsonObj = json::parse(jsonData);
 			m_Scene->m_SceneName = jsonObj["SceneName"];
 			m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
 			m_Scene->m_WorldGravity = jsonObj["GravityForce"];
+			m_Scene->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
+			m_Scene->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
 			json& c = jsonObj["ScreenClearColor"];
 			m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
 		

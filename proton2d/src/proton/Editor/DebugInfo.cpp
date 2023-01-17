@@ -2,6 +2,8 @@
 #include "proton/Editor/DebugInfo.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Editor/EditorOverlay.h"
+#include "proton/Assets/AssetsManager.h"
+#include "proton/Core/Application.h"
 
 #include "imgui.h"
 
@@ -43,6 +45,7 @@ namespace proton {
 
 		if (ImGui::TreeNodeEx("Settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::DragFloat("Time scale", &Application::Get().m_TimeScale, 0.01f);
 			ImGui::Checkbox("Show selection outline", &EditorOverlay::s_Instance->m_ShowSelectionOutline);
 			ImGui::Checkbox("Show selection collider", &EditorOverlay::s_Instance->m_ShowSelectionCollider);
 			ImGui::Checkbox("Show all colliders", &EditorOverlay::s_Instance->m_ShowAllColliders);

@@ -21,7 +21,7 @@ namespace proton {
 	void PrefabManager::ReloadAllPrefabs()
 	{
 		s_Instance->m_PrefabsJsonData.clear();
-		for (auto prefabFile : GetFilesFromDirectory("prefabs", "prefab"))
+		for (auto prefabFile : Utils::GetFilesFromDirectory("prefabs", { ".prefab" }, false))
 			LoadPrefab(prefabFile);
 	}
 
@@ -38,7 +38,7 @@ namespace proton {
 
 	bool PrefabManager::LoadPrefab(const std::string& prefabName)
 	{
-		std::string rawData = ReadFileBinary("prefabs/" + prefabName + ".prefab");
+		std::string rawData = Utils::ReadFile("prefabs/" + prefabName + ".prefab");
 		if (rawData.size())
 		{
 			json jsonData = json::parse(rawData);

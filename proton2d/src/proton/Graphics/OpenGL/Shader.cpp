@@ -20,8 +20,8 @@ namespace proton {
 	Shader::Shader(const std::string& filePath)
 		: m_Name(std::filesystem::path(filePath).stem().string())
 	{
-		std::string vertexSource = ReadFileBinary(filePath + ".vert");
-		std::string fragmentSource = ReadFileBinary(filePath + ".frag");
+		std::string vertexSource = Utils::ReadFile(filePath + ".vert");
+		std::string fragmentSource = Utils::ReadFile(filePath + ".frag");
 
 		Compile({ {GL_VERTEX_SHADER, vertexSource}, {GL_FRAGMENT_SHADER, fragmentSource} });
 	}

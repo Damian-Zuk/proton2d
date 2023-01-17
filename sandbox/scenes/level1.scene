@@ -8,6 +8,8 @@
         0.1599999964237213,
         1.0
     ],
+    "VelocityIterations": 5,
+    "PositionIterations": 5,
     "PrimaryCameraEntity": 13581737169537590351,
     "Entities": [
         {

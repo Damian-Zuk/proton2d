@@ -4,9 +4,16 @@
 #include <filesystem>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace proton
-{
-	std::string ReadFileBinary(const std::string& filepath)
+#ifdef PROTON_PLATFORM_WINDOWS
+#define DIR_SLASH "\\"
+#else
+#define DIR_SLASH "/"
+#endif
+
+
+namespace proton { namespace Utils {
+
+	std::string ReadFile(const std::string& filepath)
 	{
 		std::string result;
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
@@ -30,17 +37,56 @@ namespace proton
 		return result;
 	}
 
-	std::vector<std::string> GetFilesFromDirectory(const std::string& directory, const std::string& extension)
+	std::vector<std::string> GetFilesFromDirectory(const std::string& directory,
+		std::initializer_list<std::string> extensionsFilter, bool returnExtensions)
 	{
 		std::vector<std::string> files;
 		for (const auto& entry : std::filesystem::directory_iterator(directory))
 		{
-			files.emplace_back(entry.path().stem().generic_string());
+			const auto& path = entry.path();
+			auto extension = path.extension().string();
+			for (const std::string& ext : extensionsFilter)
+			{
+				if (extension == ext)
+				{
+					std::string filepath = path.string();
+					if (!returnExtensions)
+						filepath = filepath.substr(0, filepath.size() - extension.size());
+					files.push_back(filepath.substr(filepath.find_first_of(DIR_SLASH) + 1));
+					break;
+				}
+			}
 		}
 		return files;
 	}
 
-	glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation)
+	std::vector<std::string> GetFilesFromDirectoryRecursive(const std::string& directory,
+		std::initializer_list<std::string> extensionsFilter, bool returnExtensions)
+	{
+		std::vector<std::string> files;
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(directory)) {
+			if (entry.is_regular_file()) 
+			{
+				const auto& path = entry.path();
+				auto extension = path.extension().string();
+				for (const std::string& ext : extensionsFilter)
+				{
+					if (extension == ext) 
+					{
+						std::string filepath = path.string();
+						if (!returnExtensions)
+							filepath = filepath.substr(0, filepath.size() - extension.size());
+						files.push_back(filepath.substr(filepath.find_first_of(DIR_SLASH) + 1));
+						break;
+					}
+				}
+			}
+		}
+		return files;
+	}
+
+} 
+	glm::mat4 Math::GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation)
 	{
 		return glm::translate(glm::mat4(1.0f), position)
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })

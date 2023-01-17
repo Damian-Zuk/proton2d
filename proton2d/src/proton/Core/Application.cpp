@@ -45,7 +45,7 @@ namespace proton {
 		if (std::filesystem::exists("app.config.json"))
 		{
 			// Load config file
-			std::string configData = ReadFileBinary("app.config.json");
+			std::string configData = Utils::ReadFile("app.config.json");
 			json jsonObj = jsonObj.parse(configData);
 			windowWidth = jsonObj["Window_Width"];
 			windowHeight = jsonObj["Window_Height"];
@@ -118,11 +118,11 @@ namespace proton {
 					{
 						PROFILE_SCOPE("app_layers_on_update");
 						for (AppLayer* layer : m_AppLayers)
-							layer->OnUpdate(m_FrameTime);
+							layer->OnUpdate(m_FrameTime * m_TimeScale);
 					}
 					Scene* activeScene = SceneManager::GetActiveScene();
 					if (activeScene)
-						activeScene->OnUpdate(m_FrameTime);
+						activeScene->OnUpdate(m_FrameTime * m_TimeScale);
 				}
 
 				#if PROTON_EDITOR
@@ -159,6 +159,11 @@ namespace proton {
 	{
 		m_AppLayers.emplace_back(layer);
 		layer->OnCreate();
+	}
+
+	void Application::SetTimeScale(float timeScale)
+	{
+		m_TimeScale;
 	}
 
 	void Application::OnEvent(Event& event)

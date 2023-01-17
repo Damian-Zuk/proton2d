@@ -20,6 +20,8 @@ namespace proton {
 		void PushLayer(AppLayer* layer);
 		void PushOverlay(AppLayer* layer);
 
+		void SetTimeScale(float timeScale);
+
 		static Application& Get() { return *s_Instance; }
 		Window& GetWindow() { return *m_Window; }
 
@@ -33,12 +35,15 @@ namespace proton {
 		bool m_IsRunning = false;
 		bool m_WindowMinimized = false;
 		float m_FrameTime = 0.0f;
+		float m_TimeScale = 1.0f;
 		std::string m_AppName;
 		
 		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;
 		EditorOverlay* m_EditorOverlay;
 		bool m_ShowEditorOverlay = true;
+
+		friend class DebugInfo;
 	};
 
 }

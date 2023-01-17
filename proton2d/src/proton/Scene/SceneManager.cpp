@@ -38,7 +38,7 @@ namespace proton {
 #if PROTON_EDITOR
 		scene->m_SceneState = SceneState::Edit;
 #else
-		scene->m_SceneState = SceneState::Paused;
+		scene->m_SceneState = SceneState::Play;
 #endif
 		s_Instance->m_Scenes[sceneName] = scene;
 		return scene;
@@ -51,7 +51,7 @@ namespace proton {
 #if PROTON_EDITOR
 		scene->m_SceneState = SceneState::Edit;
 #else
-		scene->m_SceneState = SceneState::Paused;
+		scene->m_SceneState = SceneState::Play;
 #endif
 		SceneSerializer serializer(scene);
 		if (!serializer.Deserialize("scenes/" + sceneName))

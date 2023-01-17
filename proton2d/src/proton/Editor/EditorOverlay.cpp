@@ -130,18 +130,18 @@ namespace proton {
 			}
 
 			//************************************
-			//   Other panels
+			//   Draw other panels
 			//************************************
 			m_DebugInfo.m_EntitiesCount = m_ActiveScene->GetEntitiesCount();
 			m_DebugInfo.m_ScriptedEntitiesCount = m_ActiveScene->GetScriptedEntitiesCount();
 
 			m_Inspector.OnImGuiRender();
 			m_DebugInfo.OnImGuiRender();
+
 			DrawSceneSerializationPanel();
 			DrawCollidersAndSelectionOutline();
 			DrawPrefabPanel();
 		}
-
 		ImGui::End();
 	}
 
@@ -254,7 +254,7 @@ namespace proton {
 
 	void EditorOverlay::DrawSceneSerializationPanel()
 	{
-		ImGui::Begin("Scene##serialization_panel");
+		ImGui::Begin("Scene");
 
 		ImGui::Dummy({ 0, 2.0f });
 		ImGui::Text("Scene: %s", m_ActiveScene->m_SceneFilepath.c_str());
@@ -331,7 +331,7 @@ namespace proton {
 	{
 		ImGui::Begin("Prefabs");
 
-		if (ImGui::Button("Reload all##prefab_panel"))
+		if (ImGui::Button("Reload all"))
 			PrefabManager::ReloadAllPrefabs();
 		
 		ImGui::Dummy({ 0.0f, 5.0f });
@@ -340,7 +340,7 @@ namespace proton {
 			ImGui::Separator();
 			ImGui::Text(tag.c_str());
 			ImGui::SameLine(ImGui::GetWindowWidth() - 140);
-			if (ImGui::Button(("Spawn##prefab_panel" + tag).c_str(), {60, 25}))
+			if (ImGui::Button(("Spawn##" + tag).c_str(), {60, 25}))
 			{
 				Entity entity = PrefabManager::SpawnPrefab(m_ActiveScene, tag);
 				auto& transform = entity.GetComponent<TransformComponent>();
@@ -349,19 +349,12 @@ namespace proton {
 				transform.Position.y = cameraPos.y;
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(("Delete##prefab_panel_" + tag).c_str(), {60, 25}))
+			if (ImGui::Button(("Delete##" + tag).c_str(), {60, 25}))
 			{
 				PrefabManager::DeletePrefab(tag);
 			}
 		}
 		ImGui::Separator();
-		ImGui::End();
-	}
-
-	void EditorOverlay::DrawAssetsPanel()
-	{
-		ImGui::Begin("Assets");
-
 		ImGui::End();
 	}
 
@@ -380,10 +373,11 @@ namespace proton {
 			if (m_ShowAllColliders || drawSelected)
 			{
 				float zPos = (m_ShowAllColliders && drawSelected) ? 0.205f : 0.2f;
-				glm::vec4 color = (m_ShowAllColliders && drawSelected) ? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
+				glm::vec4 color = (m_ShowAllColliders && drawSelected) 
+					? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
 				glm::vec3 position = { transform.Position.x + bc.Offset.x, transform.Position.y + bc.Offset.y, zPos };
 				glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
-				glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
+				glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
 
 				Renderer::DrawQuad(transformMatrix, color);
 			}
@@ -398,7 +392,7 @@ namespace proton {
 			float padding = glm::sqrt(m_ActiveScene->GetPrimaryCamera()->GetZoomLevel()) * 0.05f;
 			glm::vec3 position = { transform.Position.x, transform.Position.y, 0.21f };
 			glm::vec3 scale = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
-			glm::mat4 transformMatrix = GetTransform(position, scale, transform.Rotation);
+			glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
 
 			glm::vec4 color = m_ShowSelectionOutline && m_MovingSelection
 				? glm::vec4{ 0.8f, 0.8f, 0.2f, 1.0f } : glm::vec4{ 1.0f };
@@ -416,22 +410,24 @@ namespace proton {
 
 	void EditorOverlay::SetSceneContext(Scene* context)
 	{
-	#if PROTON_EDITOR
+#if PROTON_EDITOR
 		s_Instance->m_ActiveScene = context;
 		s_Instance->m_Inspector.m_ActiveScene = context;
-	#endif
+#endif
 	}
 
 	void EditorOverlay::SetInspectorContext(Entity entity)
 	{
-	#if PROTON_EDITOR
+#if PROTON_EDITOR
 		s_Instance->m_Inspector.SetSelectionContext(entity);
-	#endif
+#endif
 	}
 
 	Entity EditorOverlay::GetInspectorContext()
 	{
+#if PROTON_EDITOR
 		return s_Instance->m_Inspector.m_SelectedEntity;
+#endif
 	}
 
 	void EditorOverlay::BeginImGuiRender()

@@ -6,11 +6,18 @@
 #include <fstream>
 #include <glm/glm.hpp>
 
-namespace proton {
+namespace proton { namespace Utils {
 
-	std::string ReadFileBinary(const std::string& filepath);
-	
-	std::vector<std::string> GetFilesFromDirectory(const std::string& directory, const std::string& extension = std::string());
+	std::string ReadFile(const std::string& filepath);
 
+	std::vector<std::string> GetFilesFromDirectory(const std::string& directory,
+		std::initializer_list<std::string> extensionsFilter = {}, bool returnExtensions = true);
+	std::vector<std::string> GetFilesFromDirectoryRecursive(const std::string& directory,
+		std::initializer_list<std::string> extensionsFilter = {}, bool returnExtensions = true);
+
+} 
+
+namespace Math {
 	glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation = 0.0f);
+}
 }

@@ -26,8 +26,6 @@ namespace proton {
 		{
 			if (m_SelectedEntity)
 			{
-				ImGui::Text("ID: %u", m_SelectedEntity.GetUUID());
-
 				// *********************
 				// Add component
 				// *********************
@@ -59,7 +57,7 @@ namespace proton {
 				}
 
 				// *********************
-				// Destroy entity
+				// Destroy entity, Entity ID, Create prefab
 				// *********************
 
 				ImGui::SameLine();
@@ -68,6 +66,11 @@ namespace proton {
 					m_SelectedEntity.Destroy();
 				}
 				ImGui::Dummy({ 0.0f, 5.0f });
+
+				ImGui::Dummy({ 3,0 }); ImGui::SameLine();
+				ImGui::Text("UUID: %u", m_SelectedEntity.GetUUID());
+				ImGui::SameLine(ImGui::GetWindowWidth() - 175.0f);
+
 				if (ImGui::Button("Create prefab", { 165.0f, 25.0f }))
 				{
 					PrefabManager::SaveAsPrefab(m_SelectedEntity);
@@ -153,30 +156,36 @@ namespace proton {
 							if (ImGui::Selectable("Fill color"))
 								sprite = nullptr;
 
-							for (auto& kv : AssetsManager::s_Instance->m_Textures)
+							for (auto& path : AssetsManager::s_Instance->m_TexturesFilepathList)
 							{
-								bool isSelected = kv.first == textureFilename;
-
-								if (ImGui::Selectable(kv.first.c_str(), isSelected))
+								bool isSelected = path == textureFilename;
+								bool isSpritesheet = AssetsManager::SpriteSheetExists(path);
+								ImGui::PushStyleColor(ImGuiCol_Text, isSpritesheet ?
+									ImVec4(0.0f, 0.9f, 0.3f, 1.0f) : ImVec4(0.9f, 0.8f, 0.1f, 1.0f));
+								if (ImGui::Selectable(path.c_str(), isSelected))
 								{
-									if (AssetsManager::SpriteSheetExists(kv.first))
+									if (isSpritesheet)
 									{
-										auto& spriteSheet = AssetsManager::GetSpriteSheet(kv.first);
+										auto& spriteSheet = AssetsManager::GetSpriteSheet(path);
 										sprite = CreateShared<Sprite>(spriteSheet);
 									}
 									else
 									{
-										auto& texture = AssetsManager::GetTexture(kv.first);
+										auto& texture = AssetsManager::GetTexture(path);
 										if (texture)
 											sprite = CreateShared<Sprite>(texture);
 									}
 								}
+								ImGui::PopStyleColor();
 
 								if (isSelected)
 									ImGui::SetItemDefaultFocus();
 							}
 							ImGui::EndCombo();
 						}
+						if (ImGui::IsItemClicked())
+							AssetsManager::ReloadAssetsList();
+
 						ImGui::Dummy({ 0.0f, 10.0f });
 
 						// Tint color control
@@ -490,12 +499,20 @@ namespace proton {
 				if (ImGui::InputText("Scene name", m_SceneNameBuffer, 256))
 					m_ActiveScene->m_SceneName = m_SceneNameBuffer;
 
-				ImGui::DragFloat("World gravity", &m_ActiveScene->m_WorldGravity, 0.1f);
-				ImGui::Checkbox("Enable physics", &m_ActiveScene->m_EnablePhysics);
 				ImGui::Dummy({ 0.0f, 5.0f });
 				ImGui::Text("Screen clear color");
 				if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(m_ActiveScene->m_ClearColor)))
 					Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
+
+				ImGui::Dummy({ 0.0f, 5.0f });
+				ImGui::Checkbox("Enable physics", &m_ActiveScene->m_EnablePhysics);
+				ImGui::DragFloat("World gravity", &m_ActiveScene->m_WorldGravity, 0.1f);
+				int* vi = &m_ActiveScene->m_PhysicsVelocityIterations;
+				int* pi = &m_ActiveScene->m_PhysicsPositionIterations;
+				if (ImGui::DragInt("Velocity iterations", vi))
+					*vi = glm::max(*vi, 1);
+				if (ImGui::DragInt("Position iterations", pi))
+					*pi = glm::max(*pi, 1);
 			}
 		}
 

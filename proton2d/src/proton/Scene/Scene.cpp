@@ -21,9 +21,6 @@
 
 namespace proton {
 
-	constexpr static int32_t s_PhysicsVelocityIterations = 5;
-	constexpr static int32_t s_PhysicsPositionIterations = 5;
-
 	Scene::Scene(const std::string& name)
 		: m_SceneName(name), m_DefaultCamera(CreateShared<Camera>()), m_ContactListener(this)
 	{
@@ -189,7 +186,7 @@ namespace proton {
 			if (m_EnablePhysics)
 			{
 				PROFILE_SCOPE("update_physics");
-				m_World->Step(ts, s_PhysicsVelocityIterations, s_PhysicsPositionIterations);
+				m_World->Step(ts, m_PhysicsVelocityIterations, m_PhysicsPositionIterations);
 				auto view = m_Registry.view<IDComponent, TransformComponent, RigidbodyComponent>();
 				for (auto entity : view)
 				{
@@ -289,7 +286,7 @@ namespace proton {
 			if (sprite.Sprite)
 				outputScale.x *= (float)sprite.Sprite->m_Width_px / (float)sprite.Sprite->m_Height_px;
 
-			glm::mat4 transformMatrix = GetTransform(transform.Position, outputScale, transform.Rotation);
+			glm::mat4 transformMatrix = Math::GetTransform(transform.Position, outputScale, transform.Rotation);
 
 			if (sprite.Sprite)
 				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color, sprite.TilingFactor);
@@ -311,7 +308,7 @@ namespace proton {
 
 			if (spritesheet)
 			{
-				glm::mat4 transformMatrix = GetTransform(transform.Position, glm::vec2{1.0f}, transform.Rotation);
+				glm::mat4 transformMatrix = Math::GetTransform(transform.Position, glm::vec2{1.0f}, transform.Rotation);
 
 				uint32_t x = 0, y = 0;
 				for (auto& column : sprite.m_Tilemap)
@@ -321,7 +318,7 @@ namespace proton {
 						if (tile != TILEMAP_BLANK_TILE)
 						{
 							// Tile local transform matrix
-							glm::mat4 tileTransformMatrix = GetTransform({
+							glm::mat4 tileTransformMatrix = Math::GetTransform({
 									(x - sprite.m_Width / 2.0f + 0.5f) * nsc.TileScale.x,
 									(y - sprite.m_Height / 2.0f + 0.5f) * nsc.TileScale.y, 0
 								}, nsc.TileScale);
