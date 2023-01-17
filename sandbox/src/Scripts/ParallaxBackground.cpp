@@ -3,17 +3,16 @@
 
 #include <cmath>
 
-constexpr float TILING_FACTOR = 3.0f;
-
 void ParallaxBackground::OnRegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "ParallaxFactor", &m_ParallaxFactor);
+	RegisterField(ScriptFieldType::Float, "TilingFactor", &m_TilingFactor);
 }
 
 void ParallaxBackground::OnCreate()
 {
 	auto& sprite = GetComponent<SpriteComponent>();
-	sprite.TilingFactor = TILING_FACTOR;
+	sprite.TilingFactor = m_TilingFactor;
 	sprite.Sprite->GetTexture()
 		->SetWrapMode(TextureWrapMode::Repeat, TextureWrapMode::ClampToBorder);
 }
@@ -31,6 +30,6 @@ void ParallaxBackground::OnUpdate(float ts)
 	auto& transform = GetTransform();
 	transform.Position.x = cameraPos.x - offset;
 	transform.Position.y = cameraPos.y + viewSize;
-	transform.Scale.x = viewSize * TILING_FACTOR;
-	transform.Scale.y = viewSize * TILING_FACTOR;
+	transform.Scale.x = viewSize * m_TilingFactor;
+	transform.Scale.y = viewSize * m_TilingFactor;
 }

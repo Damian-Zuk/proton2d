@@ -94,6 +94,7 @@ namespace proton {
 		{
 			auto& camera = entity.GetComponent<CameraComponent>();
 			jsonObj["Camera"]["ZoomLevel"] = camera.Camera->GetZoomLevel();
+			jsonObj["Camera"]["PositionOffset"] = { camera.PositionOffset.x, camera.PositionOffset.y };
 		}
 
 		// Serialize RigidbodyComponent
@@ -346,7 +347,9 @@ namespace proton {
 		if (jsonObj.contains("Camera"))
 		{
 			auto& camera = entity.AddComponent<CameraComponent>();
-			camera.Camera->SetZoomLevel(jsonObj["Camera"]["ZoomLevel"]);
+			json& cameraJson = jsonObj["Camera"];
+			camera.Camera->SetZoomLevel(cameraJson["ZoomLevel"]);
+			camera.PositionOffset = { cameraJson["PositionOffset"][0], cameraJson["PositionOffset"][1] };
 		}
 
 		// Deserialize RigidbodyComponent

@@ -1,0 +1,17 @@
+[
+    {
+        "Filepath": "player-sheet.png",
+        "TileWidth": 120,
+        "TileHeight": 80
+    },
+    {
+        "Filepath": "level-sheet-1.png",
+        "TileWidth": 32,
+        "TileHeight": 32
+    },
+    {
+        "Filepath": "skeleton-sheet.png",
+        "TileWidth": 150,
+        "TileHeight": 150
+    }
+]

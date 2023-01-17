@@ -56,7 +56,7 @@ namespace proton {
 	const TextureCoords& SpriteSheet::GetTextureCoords(uint32_t x, uint32_t y) const
 	{
 		assert(x < m_MaxTilesX && y < m_MaxTilesY && "Tile position out of bounds!");
-		return m_TextureCoords[x][y];
+		return m_TextureCoords[x % m_MaxTilesX][y % m_MaxTilesY];
 	}
 
 	Sprite::Sprite(const Shared<Texture>& texture)

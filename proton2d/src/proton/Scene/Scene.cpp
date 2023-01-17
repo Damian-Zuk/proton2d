@@ -380,6 +380,32 @@ namespace proton {
 		};
 	}
 
+	bool Scene::IsMouseOverEntity(Entity entity)
+	{
+		auto& transform = entity.GetComponent<TransformComponent>();
+
+		// Apply entity rotation to point (mouse position)
+		// so we can easliy check after if point is inside rectangle
+		float sinus = sin(glm::radians(-transform.Rotation));
+		float cosinus = cos(glm::radians(-transform.Rotation));
+		glm::vec2 point = GetMouseWorldPosition();
+		if (transform.Rotation)
+		{
+			glm::vec2 rotationCenter = { transform.Position.x, transform.Position.y };
+			point -= rotationCenter;
+			point = {
+				point.x * cosinus - point.y * sinus + rotationCenter.x,
+				point.x * sinus + point.y * cosinus + rotationCenter.y
+			};
+		}
+
+		// Check if point is inside entity bounding box
+		const glm::vec3& position = transform.Position;
+		const glm::vec2& scale = transform.Scale;
+		return point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
+			&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f;
+	}
+
 	std::vector<Entity> Scene::GetEntitiesOnMousePosition()
 	{
 		const glm::vec2& mousePos = GetMouseWorldPosition();
@@ -439,14 +465,19 @@ namespace proton {
 		return Entity{};
 	}
 
-	static const glm::vec3 s_PositionZero { 0.0f };
-	const glm::vec3& Scene::GetPrimaryCameraPosition()
+	glm::vec3 Scene::GetPrimaryCameraPosition()
 	{
 #if PROTON_EDITOR
 		if (m_SceneState != SceneState::Edit) {
 #endif
-			return m_PrimaryCameraEntity == entt::null ? s_PositionZero
-				: m_Registry.get<TransformComponent>(m_PrimaryCameraEntity).Position;
+			if (m_PrimaryCameraEntity == entt::null)
+				return glm::vec3{ 0.0f };
+
+			auto [transform, camera] = m_Registry.get<TransformComponent, CameraComponent>(m_PrimaryCameraEntity);
+			glm::vec3 pos = transform.Position;
+			pos.x += camera.PositionOffset.x;
+			pos.y += camera.PositionOffset.y;
+			return pos;
 #if PROTON_EDITOR
 		} 
 		return EditorOverlay::Get()->m_Camera.GetPosition();

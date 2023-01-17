@@ -7,14 +7,6 @@ namespace proton {
 
 	using json = nlohmann::ordered_json;
 
-	enum class AssetType { Texture = 0, Spritesheet };
-
-	struct AssetInfo
-	{
-		AssetType Type;
-		std::string Filepath;
-	};
-
 	class AssetsManager
 	{
 	public:
@@ -30,7 +22,7 @@ namespace proton {
 		// Delete texture and freess memory
 		static bool UnloadTexture(const std::string& filepath);
 
-		static Shared<SpriteSheet> LoadSpriteSheet(const std::string& filepath, uint32_t tileWidth, uint32_t tileHeight);
+		static Shared<SpriteSheet> LoadSpriteSheet(const std::string& filepath);
 		static Shared<SpriteSheet> GetSpriteSheet(const std::string& filepath);
 		static bool UnloadSpritesheet(const std::string& filepath);
 
@@ -43,6 +35,8 @@ namespace proton {
 		std::unordered_map<std::string, Shared<SpriteSheet>> m_Spritesheets;
 
 		std::vector<std::string> m_TexturesFilepathList;
+		//std::vector<SpritesheetInfo> m_SpritesheetList;
+		std::unordered_map<std::string, glm::uvec2> m_SpritesheetList;
 
 		friend class Inspector;
 	};

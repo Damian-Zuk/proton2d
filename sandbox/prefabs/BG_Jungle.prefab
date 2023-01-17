@@ -1,5 +1,6 @@
 {
-    "Tag": "Background",
+    "ID": 9525770612640737988,
+    "Tag": "BG_Jungle",
     "Transform": {
         "Position": [
             0.0,
@@ -29,7 +30,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "background-jungle/plx-5.png",
+                "Texture": "bg-jungle/plx-5.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -70,7 +71,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "background-jungle/plx-4.png",
+                "Texture": "bg-jungle/plx-4.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -111,7 +112,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "background-jungle/plx-3.png",
+                "Texture": "bg-jungle/plx-3.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -152,7 +153,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "background-jungle/plx-2.png",
+                "Texture": "bg-jungle/plx-2.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -193,7 +194,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "background-jungle/plx-1.png",
+                "Texture": "bg-jungle/plx-1.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,

@@ -14,4 +14,5 @@ public:
 	virtual void OnUpdate(float ts) override;
 private:
 	float m_ParallaxFactor = 1.0f;
+	float m_TilingFactor = 3.0f;
 };

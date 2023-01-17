@@ -164,6 +164,17 @@ namespace proton {
 			else if (e.GetMouseButton() == Mouse::Button0)
 			{
 				// Select entity on mouse pressed event (Button 0)
+				glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
+				Entity& selectedEntity = m_Inspector.m_SelectedEntity;
+
+				if (selectedEntity && m_ActiveScene->IsMouseOverEntity(selectedEntity))
+				{
+					auto& transform = selectedEntity.GetComponent<TransformComponent>();
+					m_SelectionMouseOffset = glm::vec2{ transform.Position.x, transform.Position.y } - mousePos;
+					m_MovingSelection = true;
+					return true;
+				}
+
 				std::vector<Entity> entities = m_ActiveScene->GetEntitiesOnMousePosition();
 				Entity target; float transformMaxZ = 0.0f;
 
@@ -176,15 +187,13 @@ namespace proton {
 						transformMaxZ = transform.Position.z;
 					}
 				}
-				if (target && target == m_Inspector.m_SelectedEntity)
+				if (target && target == selectedEntity)
 				{
 					m_MovingSelection = true;
-					glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
-					auto& transform = m_Inspector.m_SelectedEntity.GetComponent<TransformComponent>();
+					auto& transform = selectedEntity.GetComponent<TransformComponent>();
 					m_SelectionMouseOffset = glm::vec2{ transform.Position.x, transform.Position.y } - mousePos;
 				}
 
-				
 				SetInspectorContext(target);
 			}
 			return true;

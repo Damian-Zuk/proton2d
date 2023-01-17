@@ -45,7 +45,9 @@ namespace proton {
 
 		if (ImGui::TreeNodeEx("Settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::PushItemWidth(150.0f);
 			ImGui::DragFloat("Time scale", &Application::Get().m_TimeScale, 0.01f);
+			ImGui::PopItemWidth();
 			ImGui::Checkbox("Show selection outline", &EditorOverlay::s_Instance->m_ShowSelectionOutline);
 			ImGui::Checkbox("Show selection collider", &EditorOverlay::s_Instance->m_ShowSelectionCollider);
 			ImGui::Checkbox("Show all colliders", &EditorOverlay::s_Instance->m_ShowAllColliders);

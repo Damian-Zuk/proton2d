@@ -9,14 +9,7 @@ using namespace proton;
 
 void GameLayer::OnCreate()
 {
-	//AssetsManager::LoadSpriteSheet("skeleton-sheet.png", 150, 150);
-	AssetsManager::LoadSpriteSheet("player-sheet.png", 120, 80);
-	AssetsManager::LoadSpriteSheet("level-sheet-1.png", 32, 32);
-	AssetsManager::LoadTexture("background-jungle/plx-1.png");
-	AssetsManager::LoadTexture("background-jungle/plx-2.png");
-	AssetsManager::LoadTexture("background-jungle/plx-3.png");
-	AssetsManager::LoadTexture("background-jungle/plx-4.png");
-	AssetsManager::LoadTexture("background-jungle/plx-5.png");
+
 }
 
 void GameLayer::OnUpdate(float ts)

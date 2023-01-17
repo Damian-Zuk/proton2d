@@ -28,9 +28,9 @@ namespace proton {
 
 	struct TransformComponent
 	{
-		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-		float Rotation = { 0.0f };
-		glm::vec2 Scale = { 1.0f, 1.0f };
+		glm::vec3 Position { 0.0f, 0.0f, 0.0f };
+		float Rotation { 0.0f };
+		glm::vec2 Scale { 1.0f, 1.0f };
 	};
 
 	struct RelationshipComponent
@@ -53,7 +53,7 @@ namespace proton {
 	struct NineSliceSpriteComponent
 	{
 		NineSliceSprite NineSliceSprite;
-		glm::vec2 TileScale = { 1.0f, 1.0f };
+		glm::vec2 TileScale { 1.0f, 1.0f };
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
@@ -68,6 +68,7 @@ namespace proton {
 	struct CameraComponent
 	{
 		Shared<Camera> Camera = nullptr;
+		glm::vec2 PositionOffset { 0.0f, 0.0f };
 	};
 
 	struct RigidbodyComponent
@@ -78,8 +79,8 @@ namespace proton {
 
 	struct BoxColliderComponent
 	{
-		glm::vec2 Size = { 1.0f, 1.0f };
-		glm::vec2 Offset = { 0.0f, 0.0f };
+		glm::vec2 Size { 1.0f, 1.0f };
+		glm::vec2 Offset { 0.0f, 0.0f };
 		PhysicsMaterial Material;
 		bool IsSensor = false;
 		b2Filter Filter;

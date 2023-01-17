@@ -62,10 +62,11 @@ namespace proton {
 		void SetPrimaryCameraEntity(Entity entity);
 		Shared<Camera> GetPrimaryCamera();
 		Entity GetPrimaryCameraEntity();
-		const glm::vec3& GetPrimaryCameraPosition();
+		glm::vec3 GetPrimaryCameraPosition();
 
 		glm::vec2 GetMouseWorldPosition();
-		std::vector<Entity> GetEntitiesOnMousePosition(); // todo: add default argument "useCollider"
+		bool IsMouseOverEntity(Entity entity);
+		std::vector<Entity> GetEntitiesOnMousePosition();
 
 		// TODO: implement
 		Entity DuplicateEntity(Entity entity);

@@ -6,6 +6,15 @@ namespace proton {
 
 	AssetsManager* AssetsManager::s_Instance = nullptr;
 
+	void AssetsManager::Init()
+	{
+		if (!s_Instance)
+		{
+			s_Instance = new AssetsManager();
+			ReloadAssetsList();
+		}
+	}
+
 	Shared<Texture> AssetsManager::LoadTexture(const std::string& filepath)
 	{
 		auto texture = CreateShared<Texture>(filepath);
@@ -20,27 +29,22 @@ namespace proton {
 		return texture;
 	}
 
-	Shared<SpriteSheet> AssetsManager::LoadSpriteSheet(const std::string& filepath, uint32_t tileWidth, uint32_t tileHeight)
+	Shared<SpriteSheet> AssetsManager::LoadSpriteSheet(const std::string& filepath)
 	{
 		auto texture = GetTexture(filepath);
-		if (!texture) 
+		if (!texture)
+			return nullptr;
+		
+		auto& spritesheetList = s_Instance->m_SpritesheetList;
+		if (spritesheetList.find(filepath) == spritesheetList.end())
 		{
-			LOG_ERROR("[AssetsManager] Couldn't load spritesheet:", filepath);
+			LOG_ERROR("Spritesheet not found in assets/spritesheets.json");
 			return nullptr;
 		}
 
-		auto spriteSheet = CreateShared<SpriteSheet>(texture, tileWidth, tileHeight);
-		s_Instance->m_Spritesheets[filepath] = spriteSheet;
-		return spriteSheet;
-	}
-
-	void AssetsManager::Init()
-	{
-		if (!s_Instance)
-		{
-			s_Instance = new AssetsManager();
-			ReloadAssetsList();
-		}
+		const auto& size = spritesheetList.at(filepath);
+		LOG_INFO("[AssetsManager] Loaded spritesheet", filepath, "size:", size.x, "x", size.y);
+		return CreateShared<SpriteSheet>(texture, size.x, size.y);
 	}
 
 	bool AssetsManager::TextureExists(const std::string& filepath)
@@ -64,7 +68,23 @@ namespace proton {
 			return nullptr;
 		}
 
-		return s_Instance->m_Textures[filepath];
+		return s_Instance->m_Textures.at(filepath);
+	}
+
+	Shared<SpriteSheet> AssetsManager::GetSpriteSheet(const std::string& filepath)
+	{
+		if (!SpriteSheetExists(filepath))
+		{
+			auto spritesheet = LoadSpriteSheet(filepath);
+			if (!spritesheet)
+			{
+				LOG_ERROR("[AssetsManager] Spritesheet not found:", filepath);
+				return nullptr;
+			}
+			s_Instance->m_Spritesheets[filepath] = spritesheet;
+		}
+
+		return s_Instance->m_Spritesheets.at(filepath);
 	}
 
 	bool AssetsManager::UnloadTexture(const std::string& filepath)
@@ -74,17 +94,6 @@ namespace proton {
 
 		s_Instance->m_Textures.erase(filepath);
 		return true;
-	}
-
-	Shared<SpriteSheet> AssetsManager::GetSpriteSheet(const std::string& filepath)
-	{
-		if (!SpriteSheetExists(filepath))
-		{
-			LOG_ERROR("[AssetsManager] Spritesheet not found:", filepath);
-			return nullptr;
-		}
-
-		return s_Instance->m_Spritesheets[filepath];
 	}
 
 	bool AssetsManager::UnloadSpritesheet(const std::string& filepath)
@@ -98,9 +107,24 @@ namespace proton {
 
 	void AssetsManager::ReloadAssetsList()
 	{
-		s_Instance->m_TexturesFilepathList.clear();
-		s_Instance->m_TexturesFilepathList =
-			Utils::GetFilesFromDirectoryRecursive("assets",
-				{ ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd", ".gif" });
+		auto& textureList = s_Instance->m_TexturesFilepathList;
+		auto& spritesheetList = s_Instance->m_SpritesheetList;
+
+		textureList.clear();
+		spritesheetList.clear();
+
+		textureList = Utils::GetFilesFromDirectoryRecursive("assets",
+			{ ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd", ".gif" });
+
+		for (auto& s : json::parse(Utils::ReadFile("assets/spritesheets.json")))
+		{
+			std::string filepath = s["Filepath"];
+			uint32_t width = s["TileWidth"], height = s["TileHeight"];
+			spritesheetList[filepath] = glm::uvec2{ width, height };
+			textureList.erase(
+				std::remove(textureList.begin(), textureList.end(), filepath),
+				textureList.end()
+			);
+		}
 	}
 }
