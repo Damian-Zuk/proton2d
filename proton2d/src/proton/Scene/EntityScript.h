@@ -76,7 +76,7 @@ namespace proton {
 			return m_Entity.GetComponent<TransformComponent>();
 		}
 
-		Shared<Sprite> GetSprite()
+		Sprite& GetSprite()
 		{
 			return m_Entity.GetComponent<SpriteComponent>().Sprite;
 		}

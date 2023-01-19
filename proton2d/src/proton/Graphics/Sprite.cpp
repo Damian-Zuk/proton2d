@@ -53,6 +53,7 @@ namespace proton {
 	void Sprite::SetTexture(const Shared<Texture>& texture)
 	{
 		m_Texture = texture;
+		m_SpriteSheet = nullptr;
 		m_PixelSize = { texture->GetWidth(), texture->GetHeight() };
 	}
 
@@ -84,30 +85,15 @@ namespace proton {
 		SetTile(m_TilePos.x, y);
 	}
 
-	void Sprite::NextTile(uint32_t posY, uint32_t sizeX, uint32_t sizeY)
-	{
-		SetTile(m_TilePos.x + 1, posY, sizeX, sizeY);
-	}
-
-	void Sprite::PrevTile(uint32_t posY, uint32_t sizeX, uint32_t sizeY)
-	{
-		SetTile(m_TilePos.x - 1, posY, sizeX, sizeY);
-	}
-
 	void Sprite::MirrorFlip(bool mirror_x, bool mirror_y)
 	{
 		m_MirrorFlipX = mirror_x, m_MirrorFlipY = mirror_y;
 	}
 
-	Shared<Texture> Sprite::GetTexture()
-	{
-		return m_Texture;
-	}
-
 	static TextureCoords s_FullTextureCoords
 		= { {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} };
 
-	const TextureCoords& Sprite::GetTextureCoords()
+	const TextureCoords& Sprite::GetTextureCoords() const
 	{
 		if (m_SpriteSheet)
 			return m_SpriteSheet->GetTextureCoords(m_TilePos.x, m_TilePos.y);

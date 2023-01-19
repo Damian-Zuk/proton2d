@@ -33,10 +33,10 @@ namespace proton {
 		std::vector<std::vector<TextureCoords>> m_TextureCoords;
 		Shared<Texture> m_Texture;
 
-		glm::uvec2 m_SheetSize; // pixels
-		glm::uvec2 m_TileSize; // pixels
-		glm::uvec2 m_TileCount; // sheet size / tile size
-		glm::vec2 m_TileScale; // 0.0 - 1.0
+		glm::uvec2 m_SheetSize = { 0, 0 }; // pixels
+		glm::uvec2 m_TileSize  = { 0, 0 }; // pixels
+		glm::uvec2 m_TileCount = { 0, 0 }; // sheet size / tile size
+		glm::vec2 m_TileScale  = { 0, 0 }; // 0.0f - 1.0f
 
 		friend class Inspector;
 		friend class Sprite;
@@ -50,33 +50,39 @@ namespace proton {
 		Sprite() = default;
 		Sprite(const Shared<Texture>& texture);
 		Sprite(const Shared<SpriteSheet>& spriteSheet);
-		Sprite(const Sprite& other);
 
+		// Sets pointer to texture object, use AssetManager to get texture
 		void SetTexture(const Shared<Texture>& texture);
+		// Sets pointer to spritesheet object, use AssetManager to get spritesheet
 		void SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet);
 
+		// Sets spritesheet tile position
 		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		// Sets spritesheet tile X position
 		void SetTileX(uint32_t x, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		// Sets spritesheet tile Y position
 		void SetTileY(uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		// Returns spritesheet tile position
 		const glm::uvec2& GetTilePos() const { return m_TilePos; }
 
-		void NextTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
-		void PrevTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
-
+		// Sets sprite mirror flip
 		void MirrorFlip(bool mirror_x, bool mirror_y);
 
-		Shared<Texture> GetTexture();
+		// Returns pointer to OpenGL texture object
+		const Shared<Texture> GetTexture() const { return m_Texture; };
+
+		operator bool() const { return m_Texture != nullptr; }
 
 	private:
-		const TextureCoords& GetTextureCoords();
+		const TextureCoords& GetTextureCoords() const;
 		
 	private:
 		Shared<Texture> m_Texture = nullptr;
 		Shared<SpriteSheet> m_SpriteSheet = nullptr;
 		
-		glm::uvec2 m_PixelSize;
-		glm::uvec2 m_TilePos;
-		glm::uvec2 m_TileSize;
+		glm::uvec2 m_PixelSize = { 0, 0 };
+		glm::uvec2 m_TilePos   = { 0, 0 };
+		glm::uvec2 m_TileSize  = { 1, 1 };
 		bool m_MirrorFlipX = false, m_MirrorFlipY = false;
 
 		friend class Renderer;

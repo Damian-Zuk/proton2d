@@ -3,12 +3,12 @@
 
 namespace proton {
 
-    Flipbook::Flipbook(const Shared<Sprite>& sprite)
+    Flipbook::Flipbook(Sprite* sprite)
         : m_Sprite(sprite)
     {
     }
 
-    void Flipbook::SetSprite(const Shared<Sprite>& sprite)
+    void Flipbook::SetSprite(Sprite* sprite)
     {
         m_Sprite = sprite;
     }

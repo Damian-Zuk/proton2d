@@ -415,7 +415,7 @@ namespace proton {
 			{
 				auto& sprite = selectedEntity.GetComponent<SpriteComponent>();
 				if (sprite.Sprite)
-					scale.x *= (float)sprite.Sprite->m_PixelSize.x / (float)sprite.Sprite->m_PixelSize.y;
+					scale.x *= (float)sprite.Sprite.m_PixelSize.x / (float)sprite.Sprite.m_PixelSize.y;
 			}
 			Renderer::SetLineWidth(glm::min(50.0f * padding, 1.0f));
 			Renderer::DrawRect(transformMatrix, color);

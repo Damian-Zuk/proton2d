@@ -278,13 +278,13 @@ namespace proton {
 			
 			// Sprite flip
 			glm::vec3 outputScale = sprite.Sprite ? glm::vec3{
-				transform.Scale.x * (sprite.Sprite->m_MirrorFlipX ? -1.0f : 1.0f),
-				transform.Scale.y * (sprite.Sprite->m_MirrorFlipY ? -1.0f : 1.0f), 1.0f
+				transform.Scale.x * (sprite.Sprite.m_MirrorFlipX ? -1.0f : 1.0f),
+				transform.Scale.y * (sprite.Sprite.m_MirrorFlipY ? -1.0f : 1.0f), 1.0f
 			} : glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f };
 
 			// Sprite aspect ratio
 			if (sprite.Sprite)
-				outputScale.x *= (float)sprite.Sprite->m_PixelSize.x / (float)sprite.Sprite->m_PixelSize.y;
+				outputScale.x *= (float)sprite.Sprite.m_PixelSize.x / (float)sprite.Sprite.m_PixelSize.y;
 
 			glm::mat4 transformMatrix = Math::GetTransform(transform.Position, outputScale, transform.Rotation);
 

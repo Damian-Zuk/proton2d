@@ -24,7 +24,7 @@ namespace proton {
 		static void Flush();
 
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor = 1.0f);
-		static void DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, const glm::vec4& tintColor = glm::vec4(1.0f), float tilingFactor = 1.0f);
+		static void DrawQuad(const glm::mat4& transform, const Sprite& sprite, const glm::vec4& tintColor = glm::vec4(1.0f), float tilingFactor = 1.0f);
 		static void DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture, const TextureCoords& textureCoords, const glm::vec4& tintColor, float tilingFactor = 1.0f);
 
 		static void DrawLine(const glm::vec3& p0, glm::vec3& p1, const glm::vec4& color);

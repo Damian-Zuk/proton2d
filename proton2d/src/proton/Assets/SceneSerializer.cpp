@@ -9,7 +9,7 @@
 
 #include <fstream>
 
-#define PROTON_SERIALIZER_INDENT_JSON 1
+#define PROTON_SERIALIZER_INDENT_JSON 0
 
 namespace proton {
 
@@ -58,14 +58,14 @@ namespace proton {
 
 			if (sprite)
 			{
-				jsonObj["Sprite"]["Texture"] = sprite->GetTexture()->GetPath();
-				jsonObj["Sprite"]["FilterMode"] = sprite->GetTexture()->GetFilterMode();
-				jsonObj["Sprite"]["Flip"] = { sprite->m_MirrorFlipX, sprite->m_MirrorFlipY };
+				jsonObj["Sprite"]["Texture"] = sprite.GetTexture()->GetPath();
+				jsonObj["Sprite"]["FilterMode"] = sprite.GetTexture()->GetFilterMode();
+				jsonObj["Sprite"]["Flip"] = { sprite.m_MirrorFlipX, sprite.m_MirrorFlipY };
 
-				if (sprite->m_SpriteSheet)
+				if (sprite.m_SpriteSheet)
 				{
-					jsonObj["Sprite"]["TilePos"] = { sprite->m_TilePos.x, sprite->m_TilePos.y };
-					jsonObj["Sprite"]["TileSize"] = { sprite->m_TileSize.x, sprite->m_TileSize.y };
+					jsonObj["Sprite"]["TilePos"] = { sprite.m_TilePos.x, sprite.m_TilePos.y };
+					jsonObj["Sprite"]["TileSize"] = { sprite.m_TileSize.x, sprite.m_TileSize.y };
 				}
 			}
 
@@ -306,22 +306,21 @@ namespace proton {
 			{
 				if (sprite.contains("TilePos"))
 				{
-					spriteComponent.Sprite = CreateShared<Sprite>(
-						AssetsManager::GetSpriteSheet(sprite["Texture"]));
+					spriteComponent.Sprite = Sprite(AssetsManager::GetSpriteSheet(sprite["Texture"]));
 
-					spriteComponent.Sprite->SetTile(
+					spriteComponent.Sprite.SetTile(
 						sprite["TilePos"][0], sprite["TilePos"][1],
 						sprite["TileSize"][0], sprite["TileSize"][1]);
 				} 
 				else
 				{
 					spriteComponent.Sprite 
-						= CreateShared<Sprite>(AssetsManager::GetTexture(sprite["Texture"]));
+						= Sprite(AssetsManager::GetTexture(sprite["Texture"]));
 				}
 
-				spriteComponent.Sprite->GetTexture()->m_FilterMode = sprite["FilterMode"];
-				spriteComponent.Sprite->m_MirrorFlipX = sprite["Flip"][0];
-				spriteComponent.Sprite->m_MirrorFlipX = sprite["Flip"][1];
+				spriteComponent.Sprite.GetTexture()->m_FilterMode = sprite["FilterMode"];
+				spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][0];
+				spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][1];
 			}
 			
 			json& color = jsonObj["Sprite"]["Color"];

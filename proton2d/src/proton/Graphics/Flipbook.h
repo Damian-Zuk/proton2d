@@ -15,9 +15,9 @@ namespace proton {
 	{
 	public:
 		Flipbook() = default;
-		Flipbook(const Shared<Sprite>& sprite);
+		Flipbook(Sprite* sprite);
 
-		void SetSprite(const Shared<Sprite>& sprite);
+		void SetSprite(Sprite* sprite);
 
 		// index - spritesheet Y tile pos (from image bottom)
 		void CreateAnimation(uint16_t index, uint16_t frameCount);
@@ -37,7 +37,7 @@ namespace proton {
 	private:
 		void PlayFrame(float ts);
 
-		Shared<Sprite> m_Sprite = nullptr;
+		Sprite* m_Sprite;
 		
 		std::unordered_map<uint16_t, uint16_t> m_AnimationsFrameCount;
 		uint16_t m_CurrentAnimationIndex = -1;

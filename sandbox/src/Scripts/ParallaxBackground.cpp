@@ -13,7 +13,7 @@ void ParallaxBackground::OnCreate()
 {
 	auto& sprite = GetComponent<SpriteComponent>();
 	sprite.TilingFactor = m_TilingFactor;
-	sprite.Sprite->GetTexture()
+	sprite.Sprite.GetTexture()
 		->SetWrapMode(TextureWrapMode::Repeat, TextureWrapMode::ClampToBorder);
 }
 

@@ -170,9 +170,9 @@ namespace proton {
 				{
 					DrawComponentUI<SpriteComponent>("Sprite", [&](auto& component)
 					{
-						Shared<Sprite>& sprite = component.Sprite;
+						Sprite& sprite = component.Sprite;
 
-						std::string textureFilename = sprite ? sprite->GetTexture()->GetPath() : "Fill color";
+						std::string textureFilename = sprite ? sprite.GetTexture()->GetPath() : "Fill color";
 
 						// Select texture
 						ImGui::Text("Texture:");
@@ -180,7 +180,7 @@ namespace proton {
 						if (ImGui::BeginCombo("##sprite_comp_select_texture", textureFilename.c_str()))
 						{
 							if (ImGui::Selectable("Fill color"))
-								sprite = nullptr;
+								sprite.SetTexture(nullptr);
 
 							// Spritesheets
 							for (auto& kv : AssetsManager::s_Instance->m_SpritesheetList)
@@ -191,7 +191,7 @@ namespace proton {
 								{
 									auto& spritesheet = AssetsManager::GetSpriteSheet(kv.first);
 									if (spritesheet)
-										sprite = CreateShared<Sprite>(spritesheet);
+										sprite = Sprite(spritesheet);
 								}
 								ImGui::PopStyleColor();
 								if (isSelected)
@@ -206,7 +206,7 @@ namespace proton {
 								{
 									auto& texture = AssetsManager::GetTexture(path);
 									if (texture)
-										sprite = CreateShared<Sprite>(texture);
+										sprite = Sprite(texture);
 								}
 								ImGui::PopStyleColor();
 								if (isSelected)
@@ -232,7 +232,7 @@ namespace proton {
 						if (sprite)
 						{
 							ImGui::Text("Filter mode:"); ImGui::SameLine();
-							uint32_t filterMode = (uint32_t)sprite->GetTexture()->GetFilterMode();
+							uint32_t filterMode = (uint32_t)sprite.GetTexture()->GetFilterMode();
 							const char* filterModes[] = { "Nearest", "Linear" };
 
 							if (ImGui::BeginCombo("##Texture_Filter", filterModes[filterMode]))
@@ -242,7 +242,7 @@ namespace proton {
 									const bool isSelected = (filterMode == i);
 									if (ImGui::Selectable(filterModes[i], isSelected) && filterMode != i)
 									{
-										sprite->GetTexture()->SetFilterMode((TextureFilterMode)i);
+										sprite.GetTexture()->SetFilterMode((TextureFilterMode)i);
 										filterMode = i;
 									}
 
@@ -254,9 +254,9 @@ namespace proton {
 							ImGui::Dummy({ 0.0f, 10.0f });
 							ImGui::Text("Mirror flip: ");
 							ImGui::SameLine();
-							ImGui::Checkbox("X##Flip", &sprite->m_MirrorFlipX);
+							ImGui::Checkbox("X##Flip", &sprite.m_MirrorFlipX);
 							ImGui::SameLine();
-							ImGui::Checkbox("Y##Flip", &sprite->m_MirrorFlipY);
+							ImGui::Checkbox("Y##Flip", &sprite.m_MirrorFlipY);
 							ImGui::Dummy({ 0.0f, 10.0f });
 
 							// Tiling factor
@@ -265,10 +265,10 @@ namespace proton {
 						}
 
 						// Check if texture is spritesheet
-						if (sprite && sprite->m_SpriteSheet)
+						if (sprite && sprite.m_SpriteSheet)
 						{
-							int tileX = (int)sprite->m_TilePos.x, tileY = (int)sprite->m_TilePos.y;
-							const auto& count = sprite->m_SpriteSheet->GetTileCount();
+							int tileX = (int)sprite.m_TilePos.x, tileY = (int)sprite.m_TilePos.y;
+							const auto& count = sprite.m_SpriteSheet->GetTileCount();
 
 							ImGui::Text("Spritesheet tile coordinates:");
 							ImGui::Dummy({ 0.0f, 4.0f });
@@ -278,8 +278,8 @@ namespace proton {
 							ImGui::NextColumn();
 
 							// Tile coords X position field
-							if (ImGui::InputInt("##Tile_Pos_X", &tileX, 1, 1) && tileX != sprite->m_TilePos.x)
-								sprite->SetTile((uint32_t)((tileX + count.x) % count.x), sprite->m_TilePos.y);
+							if (ImGui::InputInt("##Tile_Pos_X", &tileX, 1, 1) && tileX != sprite.m_TilePos.x)
+								sprite.SetTile((uint32_t)((tileX + count.x) % count.x), sprite.m_TilePos.y);
 
 							ImGui::Columns(1);
 							ImGui::Columns(2);
@@ -288,8 +288,8 @@ namespace proton {
 							ImGui::NextColumn();
 								
 							// Tile coords Y position field
-							if (ImGui::InputInt("##Tile_Pos_Y", &tileY, 1, 1) && tileY != sprite->m_TilePos.y)
-								sprite->SetTile(0, (uint32_t)((tileY + count.y) % count.y));
+							if (ImGui::InputInt("##Tile_Pos_Y", &tileY, 1, 1) && tileY != sprite.m_TilePos.y)
+								sprite.SetTile(0, (uint32_t)((tileY + count.y) % count.y));
 
 							ImGui::Columns(1);
 							ImGui::Dummy({ 0.0f, 10.0f });

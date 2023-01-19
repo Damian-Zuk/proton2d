@@ -51,10 +51,10 @@ namespace proton {
 			assert(!HasComponent<FlipbookAnimationComponent>() && "Entity already have component!");
 			assert(HasComponent<SpriteComponent>() && "Entity must have sprite component");
 			auto& sprite = GetComponent<SpriteComponent>().Sprite;
-			assert(sprite && sprite->m_SpriteSheet && "Entity must have spritesheet texture");
+			assert(sprite.m_SpriteSheet && "Entity must have spritesheet texture");
 
 			auto& fb = m_Scene->m_Registry.emplace<FlipbookAnimationComponent>(m_Handle);
-			fb.Flipbook = CreateShared<Flipbook>(sprite);
+			fb.Flipbook = CreateShared<Flipbook>(&sprite);
 			return fb;
 		}
 

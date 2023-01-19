@@ -246,9 +246,9 @@ namespace proton {
 		data.QuadIndexCount += 6;
 	}
 
-	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Sprite>& sprite, const glm::vec4& tintColor, float tilingFactor)
+	void Renderer::DrawQuad(const glm::mat4& transform, const Sprite& sprite, const glm::vec4& tintColor, float tilingFactor)
 	{
-		DrawQuad(transform, sprite->GetTexture(), sprite->GetTextureCoords(), tintColor, tilingFactor);
+		DrawQuad(transform, sprite.GetTexture(), sprite.GetTextureCoords(), tintColor, tilingFactor);
 	}
 
 	void Renderer::DrawQuad(const glm::mat4& transform, const Shared<Texture>& texture,

@@ -57,6 +57,15 @@ void GameLayer::OnEvent(Event& e)
 				t.Position.x = m.x;
 				t.Position.y = m.y;
 			}
+
+			if (event.GetKeyCode() == Key::T)
+			{
+				Entity e = PrefabManager::SpawnPrefab(scene, "Box");
+				auto& t = e.GetTransform();
+				auto m = scene->GetMouseWorldPosition();
+				t.Position.x = m.x;
+				t.Position.y = m.y;
+			}
 			//if (event.GetKeyCode() == Key::R)
 			//{
 			//	glm::vec2 cursorPos = scene->GetMouseWorldPosition();
