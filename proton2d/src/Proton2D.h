@@ -5,7 +5,7 @@
 #include "proton/Core/Input.h"
 #include "proton/Core/Random.h"
 
-#include "proton/Assets/AssetsManager.h"
+#include "proton/Assets/AssetManager.h"
 
 #include "proton/Events/KeyEvents.h"
 #include "proton/Events/MouseEvents.h"

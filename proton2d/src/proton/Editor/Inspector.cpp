@@ -2,7 +2,7 @@
 #include "proton/Editor/Inspector.h"
 #include "proton/Editor/EditorOverlay.h"
 #include "proton/Scene/ScriptFactory.h"
-#include "proton/Assets/AssetsManager.h"
+#include "proton/Assets/AssetManager.h"
 #include "proton/Scene/Components.h"
 #include "proton/Core/Utils.h"
 #include "proton/Scene/EntityScript.h"
@@ -183,13 +183,13 @@ namespace proton {
 								sprite.SetTexture(nullptr);
 
 							// Spritesheets
-							for (auto& kv : AssetsManager::s_Instance->m_SpritesheetList)
+							for (auto& kv : AssetManager::s_Instance->m_SpritesheetList)
 							{
 								bool isSelected = kv.first == textureFilename;
 								ImGui::PushStyleColor(ImGuiCol_Text, { 0.0f, 0.9f, 0.3f, 1.0f });
 								if (ImGui::Selectable(kv.first.c_str(), isSelected))
 								{
-									auto& spritesheet = AssetsManager::GetSpriteSheet(kv.first);
+									auto& spritesheet = AssetManager::GetSpritesheet(kv.first);
 									if (spritesheet)
 										sprite = Sprite(spritesheet);
 								}
@@ -198,13 +198,13 @@ namespace proton {
 									ImGui::SetItemDefaultFocus();
 							}
 							// Textures
-							for (auto& path : AssetsManager::s_Instance->m_TexturesFilepathList)
+							for (auto& path : AssetManager::s_Instance->m_TexturesFilepathList)
 							{
 								bool isSelected = path == textureFilename;
 								ImGui::PushStyleColor(ImGuiCol_Text, { 0.9f, 0.8f, 0.1f, 1.0f });
 								if (ImGui::Selectable(path.c_str(), isSelected))
 								{
-									auto& texture = AssetsManager::GetTexture(path);
+									auto& texture = AssetManager::GetTexture(path);
 									if (texture)
 										sprite = Sprite(texture);
 								}
@@ -215,7 +215,7 @@ namespace proton {
 							ImGui::EndCombo();
 						}
 						if (ImGui::IsItemClicked())
-							AssetsManager::ReloadAssetsList();
+							AssetManager::ReloadAssetsList();
 						ImGui::PopItemWidth();
 
 						ImGui::Dummy({ 0.0f, 10.0f });
@@ -265,10 +265,10 @@ namespace proton {
 						}
 
 						// Check if texture is spritesheet
-						if (sprite && sprite.m_SpriteSheet)
+						if (sprite && sprite.m_Spritesheet)
 						{
 							int tileX = (int)sprite.m_TilePos.x, tileY = (int)sprite.m_TilePos.y;
-							const auto& count = sprite.m_SpriteSheet->GetTileCount();
+							const auto& count = sprite.m_Spritesheet->GetTileCount();
 
 							ImGui::Text("Spritesheet tile coordinates:");
 							ImGui::Dummy({ 0.0f, 4.0f });
@@ -312,13 +312,13 @@ namespace proton {
 							ImGui::Text("Spritesheet:");
 							if (ImGui::BeginCombo("##nine_slice_select_spritesheet", filename.c_str()))
 							{
-								for (auto& kv : AssetsManager::s_Instance->m_SpritesheetList)
+								for (auto& kv : AssetManager::s_Instance->m_SpritesheetList)
 								{
 									bool isSelected = filename == kv.first;
 
 									if (ImGui::Selectable(kv.first.c_str(), isSelected))
 									{
-										spritesheet = AssetsManager::GetSpriteSheet(kv.first);
+										spritesheet = AssetManager::GetSpritesheet(kv.first);
 										sprite.SetSpritesheet(spritesheet);
 									}
 
@@ -328,7 +328,7 @@ namespace proton {
 								ImGui::EndCombo();
 							}
 							if (ImGui::IsItemClicked())
-								AssetsManager::ReloadAssetsList();
+								AssetManager::ReloadAssetsList();
 
 							ImGui::Dummy({ 0.0f, 5.0f });
 							float tileScale = sprite.m_TileScale;

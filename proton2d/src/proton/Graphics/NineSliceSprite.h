@@ -32,8 +32,8 @@ namespace proton {
 	public:
 		NineSliceSprite() = default;
 
-		void SetSpritesheet(const Shared<SpriteSheet>& spritesheet);
-		Shared<SpriteSheet> GetSpritesheet();
+		void SetSpritesheet(const Shared<Spritesheet>& spritesheet);
+		Shared<Spritesheet> GetSpritesheet();
 
 		// If size, block borders or position offset has changed
 		// regenerated sprite data
@@ -59,7 +59,7 @@ namespace proton {
 		void GenerateTilePositions(std::vector<std::vector<glm::uvec2>>& tilemap);
 
 		TransformComponent* m_Transform = nullptr;
-		Shared<SpriteSheet> m_Spritesheet = nullptr;
+		Shared<Spritesheet> m_Spritesheet = nullptr;
 		uint32_t m_Width = 0, m_Height = 0;
 		float m_TileScale = 1.0f;
 

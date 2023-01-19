@@ -2,7 +2,7 @@
 #include "proton/Editor/DebugInfo.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Editor/EditorOverlay.h"
-#include "proton/Assets/AssetsManager.h"
+#include "proton/Assets/AssetManager.h"
 #include "proton/Core/Application.h"
 
 #include "imgui.h"

@@ -12,10 +12,10 @@ namespace proton {
 	// [3] - top left (0,1)
 	using TextureCoords = std::array<glm::vec2, 4>;
 
-	class SpriteSheet
+	class Spritesheet
 	{
 	public:
-		SpriteSheet(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight);
+		Spritesheet(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight);
 
 		// Returns pointer to OpenGL texture object
 		Shared<Texture> GetTexture();
@@ -49,12 +49,12 @@ namespace proton {
 	public:
 		Sprite() = default;
 		Sprite(const Shared<Texture>& texture);
-		Sprite(const Shared<SpriteSheet>& spriteSheet);
+		Sprite(const Shared<Spritesheet>& spritesheet);
 
 		// Sets pointer to texture object, use AssetManager to get texture
 		void SetTexture(const Shared<Texture>& texture);
 		// Sets pointer to spritesheet object, use AssetManager to get spritesheet
-		void SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet);
+		void SetSpritesheet(const Shared<Spritesheet>& spritesheet);
 
 		// Sets spritesheet tile position
 		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
@@ -78,7 +78,7 @@ namespace proton {
 		
 	private:
 		Shared<Texture> m_Texture = nullptr;
-		Shared<SpriteSheet> m_SpriteSheet = nullptr;
+		Shared<Spritesheet> m_Spritesheet = nullptr;
 		
 		glm::uvec2 m_PixelSize = { 0, 0 };
 		glm::uvec2 m_TilePos   = { 0, 0 };

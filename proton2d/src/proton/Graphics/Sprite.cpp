@@ -3,7 +3,7 @@
 
 namespace proton {
 
-	SpriteSheet::SpriteSheet(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight)
+	Spritesheet::Spritesheet(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight)
 		: m_SheetSize({ texture->GetWidth(), texture->GetHeight() }),
 		m_TileSize(tileWidth, tileHeight), m_Texture(texture)
 	{
@@ -28,12 +28,12 @@ namespace proton {
 		}
 	}
 
-	Shared<Texture> SpriteSheet::GetTexture()
+	Shared<Texture> Spritesheet::GetTexture()
 	{
 		return m_Texture;
 	}
 
-	const TextureCoords& SpriteSheet::GetTextureCoords(uint32_t x, uint32_t y) const
+	const TextureCoords& Spritesheet::GetTextureCoords(uint32_t x, uint32_t y) const
 	{
 		assert(x < m_TileCount.x && y < m_TileCount.y && "Tile position out of bounds!");
 		return m_TextureCoords[x % m_TileCount.x][y % m_TileCount.y];
@@ -44,32 +44,32 @@ namespace proton {
 	{
 	}
 
-	Sprite::Sprite(const Shared<SpriteSheet>& spriteSheet)
-		: m_SpriteSheet(spriteSheet), m_Texture(spriteSheet->GetTexture()),
-		m_PixelSize(spriteSheet->m_TileSize)
+	Sprite::Sprite(const Shared<Spritesheet>& spritesheet)
+		: m_Spritesheet(spritesheet), m_Texture(spritesheet->GetTexture()),
+		m_PixelSize(spritesheet->m_TileSize)
 	{
 	}
 
 	void Sprite::SetTexture(const Shared<Texture>& texture)
 	{
 		m_Texture = texture;
-		m_SpriteSheet = nullptr;
+		m_Spritesheet = nullptr;
 		m_PixelSize = { texture->GetWidth(), texture->GetHeight() };
 	}
 
-	void Sprite::SetSpriteSheet(const Shared<SpriteSheet>& spriteSheet)
+	void Sprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
 	{
-		m_SpriteSheet = spriteSheet;
-		m_Texture = spriteSheet->GetTexture();
-		m_PixelSize = m_TileSize * spriteSheet->m_TileSize;
+		m_Spritesheet = spritesheet;
+		m_Texture = spritesheet->GetTexture();
+		m_PixelSize = m_TileSize * spritesheet->m_TileSize;
 		SetTile(0, 0);
 	}
 
 	void Sprite::SetTile(uint32_t x, uint32_t y, uint32_t sizeX, uint32_t sizeY)
 	{
-		assert(m_SpriteSheet && "Sprite doesn't have spritesheet attached!");
+		assert(m_Spritesheet && "Sprite doesn't have spritesheet attached!");
 
-		glm::uvec2 count = m_SpriteSheet->GetTileCount();
+		glm::uvec2 count = m_Spritesheet->GetTileCount();
 		x %= count.x; y %= count.y;
 		m_TilePos = { x, y };
 		m_TileSize = { sizeX, sizeY };
@@ -95,8 +95,8 @@ namespace proton {
 
 	const TextureCoords& Sprite::GetTextureCoords() const
 	{
-		if (m_SpriteSheet)
-			return m_SpriteSheet->GetTextureCoords(m_TilePos.x, m_TilePos.y);
+		if (m_Spritesheet)
+			return m_Spritesheet->GetTextureCoords(m_TilePos.x, m_TilePos.y);
 
 		// If spritesheet not attached then return full texture coordinates
 		return s_FullTextureCoords;

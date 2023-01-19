@@ -10,7 +10,7 @@ namespace proton {
 		m_Transform = transform;
 	}
 
-	void NineSliceSprite::SetSpritesheet(const Shared<SpriteSheet>& spritesheet)
+	void NineSliceSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
 	{
 		m_Spritesheet = spritesheet;
 	}
@@ -292,7 +292,7 @@ namespace proton {
 		}
 	}
 
-	Shared<SpriteSheet> NineSliceSprite::GetSpritesheet()
+	Shared<Spritesheet> NineSliceSprite::GetSpritesheet()
 	{
 		return m_Spritesheet;
 	}

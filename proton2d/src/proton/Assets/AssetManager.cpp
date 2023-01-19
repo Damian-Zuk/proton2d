@@ -1,35 +1,35 @@
 #include "pch.h"
-#include "proton/Assets/AssetsManager.h"
+#include "proton/Assets/AssetManager.h"
 #include "proton/Core/Utils.h"
 
 namespace proton {
 
-	AssetsManager* AssetsManager::s_Instance = nullptr;
+	AssetManager* AssetManager::s_Instance = nullptr;
 
-	void AssetsManager::Init()
+	void AssetManager::Init()
 	{
 		if (!s_Instance)
 		{
-			s_Instance = new AssetsManager();
+			s_Instance = new AssetManager();
 			ReloadAssetsList();
 		}
 	}
 
-	Shared<Texture> AssetsManager::LoadTexture(const std::string& filepath)
+	Shared<Texture> AssetManager::LoadTexture(const std::string& filepath)
 	{
 		auto texture = CreateShared<Texture>(filepath);
 		if (!texture->IsLoaded()) 
 		{
-			LOG_ERROR("[AssetsManager] Couldn't load texture:", filepath);
+			LOG_ERROR("[AssetManager] Couldn't load texture:", filepath);
 			return nullptr;
 		}
 
-		LOG_INFO("[AssetsManager] Loaded texture:", filepath);
+		LOG_INFO("[AssetManager] Loaded texture:", filepath);
 		s_Instance->m_Textures[filepath] = texture;
 		return texture;
 	}
 
-	Shared<SpriteSheet> AssetsManager::LoadSpriteSheet(const std::string& filepath)
+	Shared<Spritesheet> AssetManager::LoadSpritesheet(const std::string& filepath)
 	{
 		auto texture = GetTexture(filepath);
 		if (!texture)
@@ -43,42 +43,42 @@ namespace proton {
 		}
 
 		const auto& size = spritesheetList.at(filepath);
-		LOG_INFO("[AssetsManager] Loaded spritesheet", filepath, "size:", size.x, "x", size.y);
-		return CreateShared<SpriteSheet>(texture, size.x, size.y);
+		LOG_INFO("[AssetManager] Loaded spritesheet", filepath, "size:", size.x, "x", size.y);
+		return CreateShared<Spritesheet>(texture, size.x, size.y);
 	}
 
-	bool AssetsManager::TextureExists(const std::string& filepath)
+	bool AssetManager::IsTextureLoaded(const std::string& filepath)
 	{
 		return s_Instance->m_Textures.find(filepath) != s_Instance->m_Textures.end();
 	}
 
-	bool AssetsManager::SpriteSheetExists(const std::string& filepath)
+	bool AssetManager::IsSpritesheetLoaded(const std::string& filepath)
 	{
 		return s_Instance->m_Spritesheets.find(filepath) != s_Instance->m_Spritesheets.end();
 	}
 
-	Shared<Texture> AssetsManager::GetTexture(const std::string& filepath)
+	Shared<Texture> AssetManager::GetTexture(const std::string& filepath)
 	{
-		if (!TextureExists(filepath))
+		if (!IsTextureLoaded(filepath))
 		{
 			if (LoadTexture(filepath))
 				return s_Instance->m_Textures[filepath];
 
-			LOG_ERROR("[AssetsManager] Texture not found:", filepath);
+			LOG_ERROR("[AssetManager] Texture not found:", filepath);
 			return nullptr;
 		}
 
 		return s_Instance->m_Textures.at(filepath);
 	}
 
-	Shared<SpriteSheet> AssetsManager::GetSpriteSheet(const std::string& filepath)
+	Shared<Spritesheet> AssetManager::GetSpritesheet(const std::string& filepath)
 	{
-		if (!SpriteSheetExists(filepath))
+		if (!IsSpritesheetLoaded(filepath))
 		{
-			auto spritesheet = LoadSpriteSheet(filepath);
+			auto spritesheet = LoadSpritesheet(filepath);
 			if (!spritesheet)
 			{
-				LOG_ERROR("[AssetsManager] Spritesheet not found:", filepath);
+				LOG_ERROR("[AssetManager] Spritesheet not found:", filepath);
 				return nullptr;
 			}
 			s_Instance->m_Spritesheets[filepath] = spritesheet;
@@ -87,25 +87,25 @@ namespace proton {
 		return s_Instance->m_Spritesheets.at(filepath);
 	}
 
-	bool AssetsManager::UnloadTexture(const std::string& filepath)
+	bool AssetManager::UnloadTexture(const std::string& filepath)
 	{
-		if (!TextureExists(filepath))
+		if (!IsTextureLoaded(filepath))
 			return false;
 
 		s_Instance->m_Textures.erase(filepath);
 		return true;
 	}
 
-	bool AssetsManager::UnloadSpritesheet(const std::string& filepath)
+	bool AssetManager::UnloadSpritesheet(const std::string& filepath)
 	{
-		if (!SpriteSheetExists(filepath))
+		if (!IsSpritesheetLoaded(filepath))
 			return false;
 
 		s_Instance->m_Spritesheets.erase(filepath);
 		return true;
 	}
 
-	void AssetsManager::ReloadAssetsList()
+	void AssetManager::ReloadAssetsList()
 	{
 		auto& textureList = s_Instance->m_TexturesFilepathList;
 		auto& spritesheetList = s_Instance->m_SpritesheetList;

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "proton/Assets/SceneSerializer.h"
-#include "proton/Assets/AssetsManager.h"
+#include "proton/Assets/AssetManager.h"
 #include "proton/Scene/EntityScript.h"
 #include "proton/Scene/ScriptFactory.h"
 #include "proton/Scene/Scene.h"
@@ -62,7 +62,7 @@ namespace proton {
 				jsonObj["Sprite"]["FilterMode"] = sprite.GetTexture()->GetFilterMode();
 				jsonObj["Sprite"]["Flip"] = { sprite.m_MirrorFlipX, sprite.m_MirrorFlipY };
 
-				if (sprite.m_SpriteSheet)
+				if (sprite.m_Spritesheet)
 				{
 					jsonObj["Sprite"]["TilePos"] = { sprite.m_TilePos.x, sprite.m_TilePos.y };
 					jsonObj["Sprite"]["TileSize"] = { sprite.m_TileSize.x, sprite.m_TileSize.y };
@@ -306,7 +306,7 @@ namespace proton {
 			{
 				if (sprite.contains("TilePos"))
 				{
-					spriteComponent.Sprite = Sprite(AssetsManager::GetSpriteSheet(sprite["Texture"]));
+					spriteComponent.Sprite = Sprite(AssetManager::GetSpritesheet(sprite["Texture"]));
 
 					spriteComponent.Sprite.SetTile(
 						sprite["TilePos"][0], sprite["TilePos"][1],
@@ -315,7 +315,7 @@ namespace proton {
 				else
 				{
 					spriteComponent.Sprite 
-						= Sprite(AssetsManager::GetTexture(sprite["Texture"]));
+						= Sprite(AssetManager::GetTexture(sprite["Texture"]));
 				}
 
 				spriteComponent.Sprite.GetTexture()->m_FilterMode = sprite["FilterMode"];
@@ -337,7 +337,7 @@ namespace proton {
 			sprite.m_TileScale = jsonData["TileScale"];
 
 			if (jsonData.contains("Spritesheet"))
-				sprite.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonData["Spritesheet"]));
+				sprite.SetSpritesheet(AssetManager::GetSpritesheet(jsonData["Spritesheet"]));
 
 			sprite.Refresh();
 		}

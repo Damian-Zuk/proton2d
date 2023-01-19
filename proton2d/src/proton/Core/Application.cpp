@@ -5,7 +5,7 @@
 #include "proton/Events/KeyEvents.h"
 #include "proton/Graphics/Renderer.h"
 #include "proton/Scene/ScriptFactory.h"
-#include "proton/Assets/AssetsManager.h"
+#include "proton/Assets/AssetManager.h"
 #include "proton/Scene/SceneManager.h"
 #include "proton/Scene/PrefabManager.h"
 #include "proton/Core/Utils.h"
@@ -98,7 +98,7 @@ namespace proton {
 			return;
 
 		Logger::Init();
-		AssetsManager::Init();
+		AssetManager::Init();
 		SceneManager::Init();
 		PrefabManager::Init();
 		Renderer::Init();
