@@ -46,15 +46,15 @@ namespace proton {
 		}
 
 		template<>
-		FlipbookAnimationComponent& AddComponent() const
+		SpriteAnimationComponent& AddComponent() const
 		{
-			assert(!HasComponent<FlipbookAnimationComponent>() && "Entity already have component!");
+			assert(!HasComponent<SpriteAnimationComponent>() && "Entity already have component!");
 			assert(HasComponent<SpriteComponent>() && "Entity must have sprite component");
 			auto& sprite = GetComponent<SpriteComponent>().Sprite;
 			assert(sprite.m_Spritesheet && "Entity must have spritesheet texture");
 
-			auto& fb = m_Scene->m_Registry.emplace<FlipbookAnimationComponent>(m_Handle);
-			fb.Flipbook = Flipbook(&sprite);
+			auto& fb = m_Scene->m_Registry.emplace<SpriteAnimationComponent>(m_Handle);
+			fb.SpriteAnimation = SpriteAnimation(&sprite);
 			return fb;
 		}
 

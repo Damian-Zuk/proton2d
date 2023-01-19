@@ -1,24 +1,24 @@
 #include "pch.h"
-#include "proton/Graphics/Flipbook.h"
+#include "proton/Graphics/SpriteAnimation.h"
 
 namespace proton {
 
-    Flipbook::Flipbook(Sprite* sprite)
+    SpriteAnimation::SpriteAnimation(Sprite* sprite)
         : m_Sprite(sprite)
     {
     }
 
-    void Flipbook::SetSprite(Sprite* sprite)
+    void SpriteAnimation::SetSprite(Sprite* sprite)
     {
         m_Sprite = sprite;
     }
 
-    void Flipbook::CreateAnimation(uint16_t index, uint16_t frameCount)
+    void SpriteAnimation::CreateAnimation(uint16_t index, uint16_t frameCount)
     {
         m_AnimationsFrameCount[index] = frameCount;
     }
 
-    void Flipbook::SetAnimation(uint16_t index, bool mirror_x, bool mirror_y)
+    void SpriteAnimation::SetAnimation(uint16_t index, bool mirror_x, bool mirror_y)
     {
         assert(m_AnimationsFrameCount.find(index) != m_AnimationsFrameCount.end() && "Animation not found");
         
@@ -35,31 +35,31 @@ namespace proton {
         SetMirrorFlip(mirror_x, mirror_y);
     }
 
-    void Flipbook::SetMirrorFlip(bool mirror_x, bool mirror_y)
+    void SpriteAnimation::SetMirrorFlip(bool mirror_x, bool mirror_y)
     {
         m_Sprite->MirrorFlip(mirror_x, mirror_y);
     }
 
-    void Flipbook::SetPlayMode(FlipbookPlayMode mode)
+    void SpriteAnimation::SetPlayMode(AnimationPlayMode mode)
     {
         m_PlayMode = mode;
         Replay();
     }
 
-    void Flipbook::Replay()
+    void SpriteAnimation::Replay()
     {
         m_Sprite->SetTile(0, m_CurrentAnimationIndex);
         m_CurrentFrame = 0;
     }
 
-    float Flipbook::GetProgress()
+    float SpriteAnimation::GetProgress()
     {
         if (!m_CurrentAnimationFrameCount)
             return 0.0f;
         return (float)m_CurrentFrame / m_CurrentAnimationFrameCount;
     }
 
-    void Flipbook::PlayFrame(float ts)
+    void SpriteAnimation::PlayFrame(float ts)
     {
         if (!m_Sprite || !m_CurrentAnimationFrameCount)
             return;
@@ -68,12 +68,12 @@ namespace proton {
 
         if (m_ElapsedTime >= m_FrameTime)
         {
-            if (m_PlayMode == FlipbookPlayMode::REPEAT)
+            if (m_PlayMode == AnimationPlayMode::REPEAT)
             {
                 m_CurrentFrame %= m_CurrentAnimationFrameCount;
                 m_Sprite->SetTile(m_CurrentFrame, m_Sprite->GetTilePos().y);
             }
-            else // if (m_PlayMode == FlipbookPlayMode::PLAY_ONCE)
+            else // if (m_PlayMode == AnimationPlayMode::PLAY_ONCE)
             {
                 if (m_CurrentFrame < m_CurrentAnimationFrameCount)
                     m_Sprite->SetTile(m_CurrentFrame, m_Sprite->GetTilePos().y);
@@ -86,12 +86,12 @@ namespace proton {
         }
     }
 
-    bool Flipbook::FinishedPlaying()
+    bool SpriteAnimation::FinishedPlaying()
     {
         return m_CurrentFrame == m_CurrentAnimationFrameCount;
     }
 
-    void Flipbook::SetFPS(uint16_t fps)
+    void SpriteAnimation::SetFPS(uint16_t fps)
     {
         m_FPS = fps;
         m_FrameTime = 1.0f / fps;

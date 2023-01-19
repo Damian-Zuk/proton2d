@@ -162,6 +162,11 @@ namespace proton {
 		m_SceneState = pause ? SceneState::Paused : SceneState::Play;
 	}
 
+	void Scene::SetScreenClearColor(const glm::vec4& color)
+	{
+		m_ClearColor = color;
+	}
+
 	void Scene::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
@@ -209,9 +214,9 @@ namespace proton {
 			}
 
 			// Update animations
-			auto view = m_Registry.view<FlipbookAnimationComponent>();
+			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
-				view.get<FlipbookAnimationComponent>(entity).Flipbook.PlayFrame(ts);
+				view.get<SpriteAnimationComponent>(entity).SpriteAnimation.PlayFrame(ts);
 		}
 
 		// Render scene
@@ -363,7 +368,7 @@ namespace proton {
 		};
 	}
 
-	bool Scene::IsMouseOverEntity(Entity entity)
+	bool Scene::IsMouseHoveringEntity(Entity entity)
 	{
 		auto& transform = entity.GetComponent<TransformComponent>();
 

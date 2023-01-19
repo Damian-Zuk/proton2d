@@ -17,6 +17,6 @@
 #include "proton/Scene/SceneManager.h"
 #include "proton/Scene/PrefabManager.h"
 
-#include "proton/Graphics/Flipbook.h"
+#include "proton/Graphics/SpriteAnimation.h"
 
 #include <imgui/imgui.h>

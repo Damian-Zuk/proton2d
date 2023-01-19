@@ -1,7 +1,7 @@
 #pragma once
 
 #include <proton/Scene/EntityScript.h>
-#include <proton/Graphics/Flipbook.h>
+#include <proton/Graphics/SpriteAnimation.h>
 #include <proton/Core/UUID.h>
 
 #include <box2d/include/box2d/b2_body.h>
@@ -28,7 +28,7 @@ public:
 	virtual void OnUpdate(float ts) override;
 
 private:
-	Flipbook* m_Flipbook;
+	SpriteAnimation* m_SpriteAnimation;
 	PlayerDirection m_Direction = Right;
 
 	float m_PlayerSpeed = 5.0f;

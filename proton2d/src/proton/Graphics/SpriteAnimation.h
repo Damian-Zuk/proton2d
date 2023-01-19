@@ -6,16 +6,16 @@
 
 namespace proton {
 
-	enum class FlipbookPlayMode
+	enum class AnimationPlayMode
 	{
 		REPEAT = 0, PLAY_ONCE
 	};
 
-	class Flipbook
+	class SpriteAnimation
 	{
 	public:
-		Flipbook() = default;
-		Flipbook(Sprite* sprite);
+		SpriteAnimation() = default;
+		SpriteAnimation(Sprite* sprite);
 
 		void SetSprite(Sprite* sprite);
 
@@ -24,11 +24,11 @@ namespace proton {
 		// index - spritesheet Y tile pos (from image bottom)
 		void SetAnimation(uint16_t index, bool mirror_x = false, bool mirror_y = false);
 		void SetMirrorFlip(bool mirror_x = false, bool mirror_y = false);
-		void SetPlayMode(FlipbookPlayMode mode);
+		void SetPlayMode(AnimationPlayMode mode);
 		void Replay();
 
 		float GetProgress();
-		// Use for FlipbookPlayMode::PLAY_ONCE
+		// Used for AnimationPlayMode::PLAY_ONCE
 		bool FinishedPlaying();
 		
 		void SetFPS(uint16_t fps);
@@ -43,7 +43,7 @@ namespace proton {
 		uint16_t m_CurrentAnimationIndex = -1;
 		uint16_t m_CurrentAnimationFrameCount = 0;
 
-		FlipbookPlayMode m_PlayMode = FlipbookPlayMode::REPEAT;
+		AnimationPlayMode m_PlayMode = AnimationPlayMode::REPEAT;
 
 		uint16_t m_FPS = 60;
 		uint16_t m_CurrentFrame = 0;

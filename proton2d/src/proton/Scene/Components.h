@@ -4,7 +4,7 @@
 #include "proton/Graphics/Sprite.h"
 #include "proton/Graphics/NineSliceSprite.h"
 #include "proton/Graphics/Camera.h"
-#include "proton/Graphics/Flipbook.h"
+#include "proton/Graphics/SpriteAnimation.h"
 #include "proton/Scene/Physics.h"
 
 #include <entt/entity/entity.hpp>
@@ -86,8 +86,8 @@ namespace proton {
 		PhysicsContactCallback ContactCallback;
 	};
 
-	struct FlipbookAnimationComponent
+	struct SpriteAnimationComponent
 	{
-		Flipbook Flipbook;
+		SpriteAnimation SpriteAnimation;
 	};
 }

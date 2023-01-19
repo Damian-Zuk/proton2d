@@ -30,9 +30,6 @@ namespace proton {
 		void BeginPlay();
 
 		void Pause(bool pause = true);
-
-		// Call this function in your AppLayer OnUpdate function to update and render scene.
-		void OnUpdate(float ts);
 		
 		// Create entitiy with random identifier
 		Entity CreateEntity(const std::string& name = "Unnamed entity");
@@ -70,7 +67,7 @@ namespace proton {
 		glm::vec3 GetPrimaryCameraPosition();
 
 		glm::vec2 GetMouseWorldPosition();
-		bool IsMouseOverEntity(Entity entity);
+		bool IsMouseHoveringEntity(Entity entity);
 		std::vector<Entity> GetEntitiesOnMousePosition();
 
 		// Copies entity to destination scene
@@ -81,7 +78,10 @@ namespace proton {
 
 		SceneState GetSceneState() const { return m_SceneState; }
 	
+		void SetScreenClearColor(const glm::vec4& color);
+
 	private:
+		void OnUpdate(float ts);
 		void EndPlay();
 		void RenderScene(const Camera& camera);
 
@@ -123,6 +123,7 @@ namespace proton {
 
 		bool m_SkipUpdate = false;
 
+		friend class Application;
 		friend class Entity;
 		friend class EditorOverlay;
 		friend class Inspector;

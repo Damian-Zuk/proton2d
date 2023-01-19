@@ -165,7 +165,7 @@ namespace proton {
 				glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
 				Entity& selectedEntity = m_Inspector.m_SelectedEntity;
 
-				if (selectedEntity && m_ActiveScene->IsMouseOverEntity(selectedEntity))
+				if (selectedEntity && m_ActiveScene->IsMouseHoveringEntity(selectedEntity))
 				{
 					auto& transform = selectedEntity.GetComponent<TransformComponent>();
 					m_SelectionMouseOffset = glm::vec2{ transform.Position.x, transform.Position.y } - mousePos;

@@ -20,13 +20,13 @@ void PlayerScript::OnCreate()
 {
 	m_Body = GetBox2DRigidbody();
 	// Create animations flipbook
-	m_Flipbook = &AddComponent<FlipbookAnimationComponent>().Flipbook;
-	m_Flipbook->SetFPS(10);
-	m_Flipbook->CreateAnimation(Idle, 10);
-	m_Flipbook->CreateAnimation(Run, 10);
-	m_Flipbook->CreateAnimation(Attack, 10);
-	m_Flipbook->CreateAnimation(Jump, 3);
-	m_Flipbook->SetAnimation(Idle, Right);
+	m_SpriteAnimation = &AddComponent<SpriteAnimationComponent>().SpriteAnimation;
+	m_SpriteAnimation->SetFPS(10);
+	m_SpriteAnimation->CreateAnimation(Idle, 10);
+	m_SpriteAnimation->CreateAnimation(Run, 10);
+	m_SpriteAnimation->CreateAnimation(Attack, 10);
+	m_SpriteAnimation->CreateAnimation(Jump, 3);
+	m_SpriteAnimation->SetAnimation(Idle, Right);
 
 	m_FootSensor = GetScene()->FindByTag("FootSensor");
 	if (m_FootSensor)
@@ -61,24 +61,24 @@ void PlayerScript::OnUpdate(float ts)
 	if (m_IsAttacking)
 	{
 		bool space = Input::IsKeyPressed(Key::Space);
-		if (!space && m_Flipbook->GetProgress() >= 0.5f)
+		if (!space && m_SpriteAnimation->GetProgress() >= 0.5f)
 		{
 			// Stop attacking
-			m_Flipbook->SetAnimation(Idle, m_Direction);
-			m_Flipbook->SetPlayMode(FlipbookPlayMode::REPEAT);
+			m_SpriteAnimation->SetAnimation(Idle, m_Direction);
+			m_SpriteAnimation->SetPlayMode(AnimationPlayMode::REPEAT);
 			m_IsAttacking = false;
 		}
-		else if (space && m_Flipbook->FinishedPlaying())
-			m_Flipbook->Replay();
+		else if (space && m_SpriteAnimation->FinishedPlaying())
+			m_SpriteAnimation->Replay();
 	}
 	if (!m_IsAttacking)
 	{
 		if (Input::IsKeyPressed(Key::Space))
 		{
 			// Begin attacking
-			m_Flipbook->SetAnimation(Attack, m_Direction);
-			m_Flipbook->SetPlayMode(FlipbookPlayMode::PLAY_ONCE);
-			m_Flipbook->Replay();
+			m_SpriteAnimation->SetAnimation(Attack, m_Direction);
+			m_SpriteAnimation->SetPlayMode(AnimationPlayMode::PLAY_ONCE);
+			m_SpriteAnimation->Replay();
 			m_IsAttacking = true;
 		}
 	} 
@@ -90,12 +90,12 @@ void PlayerScript::OnUpdate(float ts)
 		if (m_IsAttacking) // Walking while attacking
 		{
 			SetVelocityX(m_PlayerSpeed / 2);
-			m_Flipbook->SetMirrorFlip(Right);
+			m_SpriteAnimation->SetMirrorFlip(Right);
 		}
 		else // Running
 		{
 			SetVelocityX(m_PlayerSpeed);
-			m_Flipbook->SetAnimation(Run, Right);
+			m_SpriteAnimation->SetAnimation(Run, Right);
 		}
 	}
 	else if (Input::IsKeyPressed(Key::A))
@@ -104,19 +104,19 @@ void PlayerScript::OnUpdate(float ts)
 		if (m_IsAttacking) // Walking while attacking
 		{
 			SetVelocityX(-m_PlayerSpeed / 2);
-			m_Flipbook->SetMirrorFlip(Left);
+			m_SpriteAnimation->SetMirrorFlip(Left);
 		}
 		else // Running
 		{
 			SetVelocityX(-m_PlayerSpeed);
-			m_Flipbook->SetAnimation(Run, Left);
+			m_SpriteAnimation->SetAnimation(Run, Left);
 		}
 	}
 	else  
 	{
 		SetVelocityX(0.0f);
 		if (!m_IsAttacking) // Idle
-			m_Flipbook->SetAnimation(Idle, m_Direction);
+			m_SpriteAnimation->SetAnimation(Idle, m_Direction);
 	}
 
 	// Jumping
