@@ -54,7 +54,7 @@ namespace proton {
 			assert(sprite.m_SpriteSheet && "Entity must have spritesheet texture");
 
 			auto& fb = m_Scene->m_Registry.emplace<FlipbookAnimationComponent>(m_Handle);
-			fb.Flipbook = CreateShared<Flipbook>(&sprite);
+			fb.Flipbook = Flipbook(&sprite);
 			return fb;
 		}
 

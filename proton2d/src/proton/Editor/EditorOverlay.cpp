@@ -136,7 +136,7 @@ namespace proton {
 			m_Inspector.OnImGuiRender();
 			m_DebugInfo.OnImGuiRender();
 
-			DrawSceneSerializationPanel();
+			DrawScenePanel();
 			DrawCollidersAndSelectionOutline();
 			DrawPrefabPanel();
 		}
@@ -199,8 +199,8 @@ namespace proton {
 
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 			{
-				if (e.GetKeyCode() == Key::T)
-					m_ActiveScene->DuplicateEntity(GetInspectorContext());
+				if (e.GetKeyCode() == Key::P)
+					m_ActiveScene->CopyEntity(GetInspectorContext(), m_ActiveScene);
 				return true;
 			});
 
@@ -254,17 +254,49 @@ namespace proton {
 	{
 		std::size_t pos = filepath.find("scenes");
 		if (pos != std::string::npos) {
-			return filepath.substr(pos + 7);
+			std::string filename = filepath.substr(pos + 7);
+			std::size_t posExt = filepath.find(".scene");
+			if (posExt != std::string::npos) 
+				return filename.substr(0, filename.size() - 6);
+			return filename;
 		}
 		return std::string();
 	}
 
-	void EditorOverlay::DrawSceneSerializationPanel()
+	void EditorOverlay::DrawScenePanel()
 	{
 		ImGui::Begin("Scene");
 
 		ImGui::Dummy({ 0, 1.0f });
-		ImGui::Text("Scene: %s", m_ActiveScene->m_SceneFilepath.c_str());
+		std::string sceneNameText = "Scene: " + m_ActiveScene->m_SceneFilepath;
+		ImGui::Text(sceneNameText.c_str());
+		float textWidth = ImGui::CalcItemWidth();
+		ImGui::SameLine();
+		float size = 75.0f;
+		float avail = ImGui::GetContentRegionAvail().x;
+
+		float off = (avail - size) * 0.5f;
+		if (off > 0.0f)
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+
+		if (m_ActiveScene->m_SceneState == SceneState::Play)
+		{
+			if (ImGui::Button("Stop", { 75, 30 }))
+			{
+				std::string filepath = m_ActiveScene->GetFilepath();
+				if (filepath.size())
+				{
+					SceneManager::Load(filepath);
+					SceneManager::SetActiveScene(filepath);
+				}
+			}
+		}
+		else
+		{
+			if (ImGui::Button("Play", { 75, 30 }))
+				m_ActiveScene->BeginPlay();
+		}
+
 		ImGui::Dummy({ 0, 5.0f }); ImGui::Separator(); ImGui::Dummy({ 0, 5.0f });
 
 		// Center buttons
@@ -295,7 +327,7 @@ namespace proton {
 
 		if (ImGui::Button("Save", { 100, 25 }))
 			if (m_ActiveScene->m_SceneFilepath != "<Unsaved scene>")
-				m_ActiveScene->SaveAsFile(SceneManager::GetActiveSceneFilepath());
+				SceneManager::SaveActiveSceneAs(SceneManager::GetActiveSceneFilepath());
 			else
 				saveAs = true;
 		
@@ -308,35 +340,48 @@ namespace proton {
 		{
 			std::string sceneFile = GetSceneFilename(FileDialogs::SaveFile(".scene"));
 			if (sceneFile.size())
-				m_ActiveScene->SaveAsFile(sceneFile);
-		}
-
-		ImGui::Dummy({ 0, 5.0f }); ImGui::Separator(); ImGui::Dummy({ 0, 5.0f });
-
-		ImGuiStyle& style = ImGui::GetStyle();
-
-		float size = 75.0f;
-		float avail = ImGui::GetContentRegionAvail().x;
-
-		float off = (avail - size) * 0.5f;
-		if (off > 0.0f)
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
-
-		if (m_ActiveScene->m_SceneState == SceneState::Play)
-		{
-			if (ImGui::Button("Stop", { 75, 30 }))
 			{
-				std::string filepath = m_ActiveScene->GetFilepath();
-				if (filepath.size())
-					m_ActiveScene->LoadFromFilepath(filepath);
+				SceneManager::SaveActiveSceneAs(sceneFile + ".scene");
+				if (m_ActiveScene->m_SceneFilepath == "<Unsaved scene>")
+					m_ActiveScene->m_SceneFilepath = sceneFile;
 			}
 		}
-		else
-		{
-			if (ImGui::Button("Play", { 75, 30 }))
-				m_ActiveScene->OnBeginPlay();
-		}
+
+		//ImGui::Dummy({ 0, 5.0f }); ImGui::Separator(); ImGui::Dummy({ 0, 5.0f });
+
 		
+
+		ImGui::Dummy({ 0, 5 });
+		ImGui::Separator();
+		ImGui::Dummy({ 0, 2 });
+		if (ImGui::TreeNodeEx("Scenes loaded in memory", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+			for (auto& [sceneName, scenePtr] : SceneManager::s_Instance->m_Scenes)
+			{
+				ImGui::Text(sceneName.c_str());
+				bool isActive = m_ActiveScene == scenePtr;
+
+				ImGui::SameLine(ImGui::GetWindowWidth() - (isActive ? 140 : 160));
+				if (!isActive && ImGui::Button(("Set active##" + sceneName).c_str()))
+					SceneManager::SetActiveScene(sceneName, true);
+
+				if (isActive)
+				{
+					ImGui::PushStyleColor(ImGuiCol_Text, { 0.0f, 1.0f, 0.2f, 1.0f });
+					ImGui::Text("Currenty active");
+					ImGui::PopStyleColor();
+					ImGui::Dummy({ 0, 2 });
+				}
+				else
+				{
+					ImGui::SameLine();
+					if (ImGui::Button(("Unload##" + sceneName).c_str()))
+						SceneManager::Unload(sceneName);
+				}
+			}
+			ImGui::TreePop();
+		}
 		ImGui::End();
 	}
 

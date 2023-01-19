@@ -20,7 +20,7 @@ void PlayerScript::OnCreate()
 {
 	m_Body = GetBox2DRigidbody();
 	// Create animations flipbook
-	m_Flipbook = AddComponent<FlipbookAnimationComponent>().Flipbook;
+	m_Flipbook = &AddComponent<FlipbookAnimationComponent>().Flipbook;
 	m_Flipbook->SetFPS(10);
 	m_Flipbook->CreateAnimation(Idle, 10);
 	m_Flipbook->CreateAnimation(Run, 10);

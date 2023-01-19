@@ -37,7 +37,7 @@ namespace proton {
 	private:
 		void PlayFrame(float ts);
 
-		Sprite* m_Sprite;
+		Sprite* m_Sprite = nullptr;
 		
 		std::unordered_map<uint16_t, uint16_t> m_AnimationsFrameCount;
 		uint16_t m_CurrentAnimationIndex = -1;

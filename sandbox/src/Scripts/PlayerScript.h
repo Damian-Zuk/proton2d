@@ -28,7 +28,7 @@ public:
 	virtual void OnUpdate(float ts) override;
 
 private:
-	Shared<Flipbook> m_Flipbook;
+	Flipbook* m_Flipbook;
 	PlayerDirection m_Direction = Right;
 
 	float m_PlayerSpeed = 5.0f;

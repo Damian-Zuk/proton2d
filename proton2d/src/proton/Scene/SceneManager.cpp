@@ -38,34 +38,35 @@ namespace proton {
 #if PROTON_EDITOR
 		scene->m_SceneState = SceneState::Edit;
 #else
-		scene->m_SceneState = SceneState::Play;
+		scene->m_SceneState = SceneState::Paused;
 #endif
 		s_Instance->m_Scenes[sceneName] = scene;
 		return scene;
 	}
 
-	void SceneManager::Load(const std::string& sceneName)
+	Scene* SceneManager::Load(const std::string& sceneName)
 	{
 		Scene* scene = new Scene(sceneName);
 
 #if PROTON_EDITOR
 		scene->m_SceneState = SceneState::Edit;
 #else
-		scene->m_SceneState = SceneState::Play;
+		scene->m_SceneState = SceneState::Paused;
 #endif
 		SceneSerializer serializer(scene);
-		if (!serializer.Deserialize("scenes/" + sceneName))
+		if (!serializer.Deserialize("scenes/" + sceneName + ".scene"))
 		{
-			LOG_ERROR("[SceneManager] File not found ", sceneName);
-			return;
+			LOG_ERROR("[SceneManager::Load] File not found ", sceneName + ".scene");
+			return nullptr;
 		}
 
 		scene->m_SceneFilepath = sceneName;
-		if (s_Instance->m_Scenes.find(sceneName) != s_Instance->m_Scenes.end())
+		if (IsLoaded(sceneName))
 			delete s_Instance->m_Scenes[sceneName];
 
 		s_Instance->m_Scenes[sceneName] = scene;
-		LOG_INFO("[SceneManager] Loaded", sceneName)
+		LOG_INFO("[SceneManager::Load] Loaded", sceneName)
+		return scene;
 }
 
 	void SceneManager::Unload(const std::string& sceneName)
@@ -74,25 +75,64 @@ namespace proton {
 		s_Instance->m_Scenes.erase(sceneName);
 	}
 
-	void SceneManager::SetActiveScene(const std::string& sceneName)
+	bool SceneManager::IsLoaded(const std::string& sceneName)
 	{
-		if (s_Instance->m_ActiveScene && s_Instance->m_ActiveScene->GetSceneState() == SceneState::Play)
-			s_Instance->m_ActiveScene->OnEndPlay();
+		return s_Instance->m_Scenes.find(sceneName) != s_Instance->m_Scenes.end();
+	}
+
+	void SceneManager::SaveSceneAs(const std::string& sceneName, const std::string& filepath)
+	{
+		if (!IsLoaded(sceneName))
+		{
+			LOG_ERROR("[SceneManager::SaveSceneAs] Error: scene not loaded!");
+			return;
+		}
+
+		SceneSerializer serializer(s_Instance->m_Scenes.at(sceneName));
+		serializer.Serialize("scenes/" + filepath + ".scene");
+	}
+
+	void SceneManager::SaveActiveSceneAs(const std::string& filepath)
+	{
+		SaveSceneAs(s_Instance->m_ActiveScene->m_SceneFilepath, filepath);
+	}
+
+	Scene* SceneManager::SetActiveScene(const std::string& sceneName, bool endCurrentScene)
+	{
+		if (!IsLoaded(sceneName))
+		{
+			LOG_ERROR("[SceneManager::SetActiveScene] Error: scene not loaded!");
+			return nullptr;
+		}
+
+		if (endCurrentScene && s_Instance->m_ActiveScene &&
+			s_Instance->m_ActiveScene->GetSceneState() == SceneState::Play)
+			s_Instance->m_ActiveScene->EndPlay();
+		else if (s_Instance->m_ActiveScene)
+			s_Instance->m_ActiveScene->m_SkipUpdate = true;
 
 		s_Instance->m_ActiveScene = s_Instance->m_Scenes.at(sceneName);
 
 #if PROTON_EDITOR
 		EditorOverlay::SetSceneContext(s_Instance->m_ActiveScene);
 		EditorOverlay::SetInspectorContext(Entity{});
-#else
-		s_Instance->m_ActiveScene->OnBeginPlay();
 #endif
+
 		Renderer::SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
+
+		return s_Instance->m_ActiveScene;
 	}
 
 	Scene* SceneManager::GetActiveScene()
 	{
 		return s_Instance->m_ActiveScene;
+	}
+
+	Scene* SceneManager::GetScene(const std::string& sceneName)
+	{
+		if (IsLoaded(sceneName))
+			return nullptr;
+		return s_Instance->m_Scenes.at(sceneName);
 	}
 
 	const std::string& SceneManager::GetActiveSceneFilepath()

@@ -4,6 +4,9 @@
 #include "proton/Core/Utils.h"
 
 #include <fstream>
+#if PROTON_EDITOR
+#include "proton/Editor/EditorOverlay.h"
+#endif
 
 namespace proton {
 
@@ -77,6 +80,11 @@ namespace proton {
 	{
 		SceneSerializer serializer(scene);
 		Entity entity = serializer.DeserializeEntity(GetJsonData(prefabName), false);
+#if PROTON_EDITOR
+		Entity selected = EditorOverlay::GetInspectorContext();
+		if (selected)
+			selected.AddChildEntity(entity);
+#endif
 		auto camera = scene->GetPrimaryCameraPosition();
 		auto& transform = entity.GetComponent<TransformComponent>();
 		transform.Position.x = camera.x;

@@ -26,6 +26,11 @@ namespace proton {
 		Scene(const Scene& other);
 		~Scene();
 
+		// Call this function to start playing scene
+		void BeginPlay();
+
+		void Pause(bool pause = true);
+
 		// Call this function in your AppLayer OnUpdate function to update and render scene.
 		void OnUpdate(float ts);
 		
@@ -68,15 +73,8 @@ namespace proton {
 		bool IsMouseOverEntity(Entity entity);
 		std::vector<Entity> GetEntitiesOnMousePosition();
 
-		// TODO: implement
-		Entity DuplicateEntity(Entity entity);
+		// Copies entity to destination scene
 		Entity CopyEntity(Entity entity, Scene* dstScene);
-
-		// Serialize scene to specified file (JSON format)
-		void SaveAsFile(const std::string& filepath);
-
-		// Deserialize scene to specified file (JSON format)
-		void LoadFromFilepath(const std::string& filepath);
 
 		// Get scene filepath. If scene is unsaved returns empty string
 		const std::string& GetFilepath() const { return m_SceneFilepath; }
@@ -84,8 +82,7 @@ namespace proton {
 		SceneState GetSceneState() const { return m_SceneState; }
 	
 	private:
-		void OnBeginPlay();
-		void OnEndPlay();
+		void EndPlay();
 		void RenderScene(const Camera& camera);
 
 		uint32_t GetEntitiesCount() const;
@@ -123,6 +120,8 @@ namespace proton {
 		private:
 			Scene* m_Scene;
 		} m_ContactListener;
+
+		bool m_SkipUpdate = false;
 
 		friend class Entity;
 		friend class EditorOverlay;

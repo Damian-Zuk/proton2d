@@ -88,6 +88,6 @@ namespace proton {
 
 	struct FlipbookAnimationComponent
 	{
-		Shared<Flipbook> Flipbook = nullptr;
+		Flipbook Flipbook;
 	};
 }

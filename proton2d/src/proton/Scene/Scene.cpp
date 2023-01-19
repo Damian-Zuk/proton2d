@@ -44,33 +44,8 @@ namespace proton {
 
 	Scene::~Scene()
 	{
-		OnEndPlay();
+		EndPlay();
 		DestroyAll();
-	}
-
-	void Scene::SaveAsFile(const std::string& filepath)
-	{
-		SceneSerializer serializer(this);
-		serializer.Serialize("scenes/" + filepath);
-		m_SceneFilepath = filepath;
-	}
-
-	void Scene::LoadFromFilepath(const std::string& filepath)
-	{
-		if (m_SceneState == SceneState::Play)
-		{
-			OnEndPlay();
-#if PROTON_EDITOR
-			m_SceneState = SceneState::Edit;
-#else
-			OnBeginPlay();
-#endif
-		}
-
-		DestroyAll();
-		SceneSerializer serializer(this);
-		serializer.Deserialize("scenes/" + filepath);
-		m_SceneFilepath = filepath;
 	}
 
 	b2Body* Scene::CreateBox2DRuntimeBody(Entity entity)
@@ -115,8 +90,14 @@ namespace proton {
 		return body;
 	}
 
-	void Scene::OnBeginPlay()
+	void Scene::BeginPlay()
 	{	
+		if (m_SceneState == SceneState::Play)
+		{
+			LOG_WARN("[OnBeginPlay] Scene", m_SceneName, "is currenty being played!");
+			return;
+		}
+
 		// Initialize physics world
 		m_SceneState = SceneState::Play;
 		m_World = new b2World({ 0.0f, -m_WorldGravity });
@@ -125,7 +106,7 @@ namespace proton {
 			CreateBox2DRuntimeBody(Entity{ this, entity });
 	}
 
-	void Scene::OnEndPlay()
+	void Scene::EndPlay()
 	{
 		if (m_World)
 		{
@@ -176,12 +157,23 @@ namespace proton {
 		});
 	}
 
+	void Scene::Pause(bool pause)
+	{
+		m_SceneState = pause ? SceneState::Paused : SceneState::Play;
+	}
+
 	void Scene::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
 
 		if (m_SceneState == SceneState::Play)
 		{
+			if (m_SkipUpdate)
+			{
+				m_SkipUpdate = false;
+				return;
+			}
+
 			// Update physics
 			if (m_EnablePhysics)
 			{
@@ -219,7 +211,7 @@ namespace proton {
 			// Update animations
 			auto view = m_Registry.view<FlipbookAnimationComponent>();
 			for (auto entity : view)
-				view.get<FlipbookAnimationComponent>(entity).Flipbook->PlayFrame(ts);
+				view.get<FlipbookAnimationComponent>(entity).Flipbook.PlayFrame(ts);
 		}
 
 		// Render scene
@@ -432,11 +424,6 @@ namespace proton {
 			}
 		}
 		return entities;
-	}
-
-	Entity Scene::DuplicateEntity(Entity entity)
-	{
-		return CopyEntity(entity, this);
 	}
 
 	Entity Scene::CopyEntity(Entity entity, Scene* dstScene)

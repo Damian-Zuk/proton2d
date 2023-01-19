@@ -10,16 +10,20 @@ namespace proton {
 		SceneManager() = default;
 		~SceneManager();
 
-		static void Init();
-
 		static Scene* CreateNewEmptyScene(const std::string& sceneName);
-		static void Load(const std::string& sceneName);
-		static void Unload(const std::string& sceneName);
-		static void SetActiveScene(const std::string& sceneName);
+		static Scene* Load(const std::string& sceneName);
+		static Scene* SetActiveScene(const std::string& sceneName, bool endCurrentScene = false);
 		static Scene* GetActiveScene();
+		static Scene* GetScene(const std::string& sceneName);
+		static void Unload(const std::string& sceneName);
+		static bool IsLoaded(const std::string& sceneName);
+		// filepath without .scene extension
+		static void SaveSceneAs(const std::string& sceneName, const std::string& filepath);
+		static void SaveActiveSceneAs(const std::string& filepath);
 		static const std::string& GetActiveSceneFilepath();
 
 	private:
+		static void Init();
 		static SceneManager* s_Instance;
 
 		Scene* m_ActiveScene = nullptr;
