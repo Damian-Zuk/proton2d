@@ -17,7 +17,17 @@ namespace proton { namespace Utils {
 
 } 
 
+namespace FileDialogs {
+
+	// Implementation per platform
+	std::string OpenFile(const char* filter);
+	std::string SaveFile(const char* filter);
+
+}
+
 namespace Math {
+
 	glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation = 0.0f);
+
 }
 }

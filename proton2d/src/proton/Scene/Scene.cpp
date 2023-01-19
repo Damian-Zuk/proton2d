@@ -278,13 +278,13 @@ namespace proton {
 			
 			// Sprite flip
 			glm::vec3 outputScale = sprite.Sprite ? glm::vec3{
-				transform.Scale.x * (sprite.Sprite->m_FlipX ? -1.0f : 1.0f),
-				transform.Scale.y * (sprite.Sprite->m_FlipY ? -1.0f : 1.0f), 1.0f
+				transform.Scale.x * (sprite.Sprite->m_MirrorFlipX ? -1.0f : 1.0f),
+				transform.Scale.y * (sprite.Sprite->m_MirrorFlipY ? -1.0f : 1.0f), 1.0f
 			} : glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f };
 
 			// Sprite aspect ratio
 			if (sprite.Sprite)
-				outputScale.x *= (float)sprite.Sprite->m_Width_px / (float)sprite.Sprite->m_Height_px;
+				outputScale.x *= (float)sprite.Sprite->m_PixelSize.x / (float)sprite.Sprite->m_PixelSize.y;
 
 			glm::mat4 transformMatrix = Math::GetTransform(transform.Position, outputScale, transform.Rotation);
 
@@ -306,30 +306,21 @@ namespace proton {
 			auto& sprite = nsc.NineSliceSprite;
 			auto& spritesheet = sprite.m_Spritesheet;
 
-			if (spritesheet)
+			if (!spritesheet)
+				continue;
+
+			glm::mat4 transformMatrix = Math::GetTransform(transform.Position, glm::vec2{1.0f}, transform.Rotation);
+			
+			uint32_t x = 0, y = 0;
+			for (auto& column : sprite.m_Tilemap)
 			{
-				glm::mat4 transformMatrix = Math::GetTransform(transform.Position, glm::vec2{1.0f}, transform.Rotation);
-
-				uint32_t x = 0, y = 0;
-				for (auto& column : sprite.m_Tilemap)
+				for (auto& tile : column)
 				{
-					for (auto& tile : column)
-					{
-						if (tile != TILEMAP_BLANK_TILE)
-						{
-							// Tile local transform matrix
-							glm::mat4 tileTransformMatrix = Math::GetTransform({
-									(x - sprite.m_Width / 2.0f + 0.5f) * nsc.TileScale.x,
-									(y - sprite.m_Height / 2.0f + 0.5f) * nsc.TileScale.y, 0
-								}, nsc.TileScale);
-
-							Renderer::DrawQuad(transformMatrix * tileTransformMatrix, spritesheet->GetTexture(),
-								spritesheet->GetTextureCoords(tile.x, tile.y), nsc.Color);
-						}
-						y++;
-					}
-					y = 0; x++;
+					Renderer::DrawQuad(transformMatrix * tile.LocalTransform,
+						spritesheet->GetTexture(), tile.Coords, nsc.Color);
+					y++;
 				}
+				x++; y = 0;
 			}
 		}
 
@@ -357,7 +348,7 @@ namespace proton {
 			return m_PrimaryCamera ? m_PrimaryCamera : m_DefaultCamera;
 #if PROTON_EDITOR
 		}
-		return EditorOverlay::Get()->m_Camera.GetCamera();
+		return EditorOverlay::GetCamera().GetCamera();
 #endif
 	}
 
@@ -480,7 +471,7 @@ namespace proton {
 			return pos;
 #if PROTON_EDITOR
 		} 
-		return EditorOverlay::Get()->m_Camera.GetPosition();
+		return EditorOverlay::GetCamera().GetPosition();
 #endif
 	}
 

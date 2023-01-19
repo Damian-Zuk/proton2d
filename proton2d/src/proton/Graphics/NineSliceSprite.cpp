@@ -1,11 +1,13 @@
 #include "pch.h"
 #include "proton/Graphics/NineSliceSprite.h"
+#include "proton/Scene/Components.h"
+#include "proton/Core/Utils.h"
 
 namespace proton {
 
-	NineSliceSprite::NineSliceSprite()
+	void NineSliceSprite::SetTransform(TransformComponent* transform)
 	{
-		SetSize(1, 1);
+		m_Transform = transform;
 	}
 
 	void NineSliceSprite::SetSpritesheet(const Shared<SpriteSheet>& spritesheet)
@@ -13,146 +15,271 @@ namespace proton {
 		m_Spritesheet = spritesheet;
 	}
 
-	void NineSliceSprite::SetSize(uint32_t width, uint32_t height)
+	void NineSliceSprite::Refresh()
 	{
-		if (width != m_Width || height != m_Height)
+		if (!m_Transform)
 		{
-			m_Width = width; m_Height = height;
-			m_Tilemap.resize(width);
-			for (auto& column : m_Tilemap)
-				column.resize(height, TILEMAP_BLANK_TILE);
-
-			GenerateSliceScaledSprite();
+			LOG_ERROR("NineSliceSprite refresh failed! TransformComponent pointer not set!");
+			return;
 		}
+
+		if (m_TileScale < 0.01f)
+			m_TileScale = 0.01f;
+
+		if (m_Transform->Scale.x < 0.0f || m_Transform->Scale.y < 0.0f)
+		{
+			m_Tilemap.clear();
+			m_Width = 0; m_Height = 0;
+			return;
+		}
+
+		m_Width = std::max((uint32_t)ceil(m_Transform->Scale.x / m_TileScale), 2u);
+		m_Height = std::max((uint32_t)ceil(m_Transform->Scale.y / m_TileScale), 2u);
+
+		m_Tilemap.resize(m_Width);
+		for (auto& column : m_Tilemap)
+			column.resize(m_Height);
+
+		GenerateSprite();
 	}
 
-	void NineSliceSprite::GenerateSliceScaledSprite()
+	void NineSliceSprite::SetTileScale(float tileScale)
 	{
-		uint16_t sx = m_SlicedSpritePos.x, sy = m_SlicedSpritePos.y;
+		m_TileScale = tileScale;
+		Refresh();
+	}
 
-		// 1x1 Size
-		if (m_Width == 1 && m_Height == 1)
-		{
-			m_Tilemap[0][0] = { sx + 4, sx + 4 };
-			return;
-		}
-
-		using uv2 = glm::uvec2;
-
-		// 1xN size
-		if (m_Width == 1)
-		{
-			for (uint32_t y = 1; y < m_Height - 1; y++)
-				m_Tilemap[0][y] = m_BlockBorders & (BlockBorder_Left | BlockBorder_Right) ?
-					uv2{ sx + 4, sy + 1 } : uv2{ sx + 1, sy + 1 };
-			
-			m_Tilemap[0][0] = m_BlockBorders & BlockBorder_Bottom ?
-				uv2{ sx + 4, sy } : uv2{ sx + 1, sy + 1 };
-
-			m_Tilemap[0][m_Height - 1] = m_BlockBorders & BlockBorder_Top ?
-				uv2{ sx + 4, sy + 2} : uv2{sx + 1, sy + 1};
-
-			return;
-		}
-
-		// Nx1 size
-		if (m_Height == 1)
-		{
-			for (uint32_t x = 1; x < m_Width - 1; x++)
-				m_Tilemap[x][0] = m_BlockBorders & (BlockBorder_Top | BlockBorder_Bottom) ? 
-					uv2{ sx + 1, sy + 4 } : uv2{ sx + 1, sy + 1 };
-
-			m_Tilemap[0][0] = m_BlockBorders & BlockBorder_Left ?
-				uv2{ sx, sy + 4 } : uv2{ sx + 1, sy + 1 };
-
-			m_Tilemap[m_Width - 1][0] = m_BlockBorders & BlockBorder_Right ?
-				uv2{ sx + 2, sy + 4} : uv2{ sx + 1, sy + 1 };
-
-			return;
-		}
-
-		// NxN size ...
+	void NineSliceSprite::GenerateTilePositions(std::vector<std::vector<glm::uvec2>>& tilemap)
+	{
+		uint16_t sx = m_PositionOffset.x, sy = m_PositionOffset.y;
 
 		// Fill whole tilemap with center slices
 		for (uint32_t y = 0; y < m_Height; y++)
 			for (uint32_t x = 0; x < m_Width; x++)
-				m_Tilemap[x][y] = { sx + 1, sy + 1 };
+				tilemap[x][y] = { sx + 1, sy + 1 };
 
 		// Top left corner
 		if (m_BlockBorders & BlockBorder_TopLeft)
 		{
-			m_Tilemap[0][m_Height - 1] = { sx, sy + 2 };
+			tilemap[0][m_Height - 1] = { sx, sy + 2 };
 
 			if (!(m_BlockBorders & BlockBorder_Left))
-				m_Tilemap[0][m_Height - 1] = { sx + 1, sy + 2 };
+				tilemap[0][m_Height - 1] = { sx + 1, sy + 2 };
 
 			if (!(m_BlockBorders & BlockBorder_Top))
-				m_Tilemap[0][m_Height - 1] = { sx, sy + 2 - 1 };
+				tilemap[0][m_Height - 1] = { sx, sy + 2 - 1 };
 		}
 
 		// Top right corner
 		if (m_BlockBorders & BlockBorder_TopRight)
 		{
-			m_Tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 2 };
+			tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 2 };
 
 			if (!(m_BlockBorders & BlockBorder_Right))
-				m_Tilemap[m_Width - 1][m_Height - 1] = { sx + 1, sy + 2 };
+				tilemap[m_Width - 1][m_Height - 1] = { sx + 1, sy + 2 };
 
 			if (!(m_BlockBorders & BlockBorder_Top))
-				m_Tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 1 };
+				tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 1 };
 		}
 
 		// Bottom left corner
 		if (m_BlockBorders & BlockBorder_BottomLeft)
 		{
-			m_Tilemap[0][0] = { sx, sy };
+			tilemap[0][0] = { sx, sy };
 
 			if (!(m_BlockBorders & BlockBorder_Left))
-				m_Tilemap[0][0] = { sx + 1, sy };
+				tilemap[0][0] = { sx + 1, sy };
 
 			if (!(m_BlockBorders & BlockBorder_Bottom))
-				m_Tilemap[0][0] = { sx, sy + 1 };
+				tilemap[0][0] = { sx, sy + 1 };
 		}
 
 		// Bottom right corner
 		if (m_BlockBorders & BlockBorder_BottomRight)
 		{
-			m_Tilemap[m_Width - 1][0] = { sx + 2, sy };
+			tilemap[m_Width - 1][0] = { sx + 2, sy };
 
 			if (!(m_BlockBorders & BlockBorder_Right))
-				m_Tilemap[m_Width - 1][0] = { sx + 1, sy };
+				tilemap[m_Width - 1][0] = { sx + 1, sy };
 
 			if (!(m_BlockBorders & BlockBorder_Bottom))
-				m_Tilemap[m_Width - 1][0] = { sx + 2, sy + 1};
+				tilemap[m_Width - 1][0] = { sx + 2, sy + 1};
 		}
 
 		// Left border
 		if (m_BlockBorders & BlockBorder_Left)
 			for (uint32_t y = 1; y < m_Height - 1; y++)
-				m_Tilemap[0][y] = { sx, sy + 1 };
+				tilemap[0][y] = { sx, sy + 1 };
 
 		// Right border
 		if (m_BlockBorders & BlockBorder_Right)
 			for (uint32_t y = 1; y < m_Height - 1; y++)
-				m_Tilemap[m_Width - 1][y] = { sx + 2, sy + 1 };
+				tilemap[m_Width - 1][y] = { sx + 2, sy + 1 };
 
 		// Top border
 		if (m_BlockBorders & BlockBorder_Top)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
-				m_Tilemap[x][m_Height - 1] = { sx + 1, sy + 2 };
+				tilemap[x][m_Height - 1] = { sx + 1, sy + 2 };
 
 		// Bottom border
 		if (m_BlockBorders & BlockBorder_Bottom)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
-				m_Tilemap[x][0] = { sx + 1, sy };
+				tilemap[x][0] = { sx + 1, sy };
 	}
 
-	void NineSliceSprite::SetSlicedSpritePosition(const glm::uvec2& position)
+	void NineSliceSprite::GenerateSprite()
 	{
-		if (position != m_SlicedSpritePos)
+		if (!m_Transform) {
+			LOG_ERROR("NineSliceSprite generation failed! TransformComponent pointer not set.");
+			return;
+		}
+
+		// width, height tile count (with fraction)
+		float width = (*m_Transform).Scale.x / m_TileScale;
+		float height = (*m_Transform).Scale.y / m_TileScale;
+		glm::uvec2 tileCount = { (uint32_t)ceil(width), (uint32_t)ceil(height) };
+		
+		// Offset means the size of a cut of the penultimate tile
+		// If transform scale.x is for example: 4.85 and tilescale.x is 1.0
+		// then offset.x will be equal to 0.15
+		glm::vec2 offset = {
+			fmod((1.0f - (width - (int)width)), 1.0f),
+			fmod((1.0f - (height - (int)height)), 1.0f)
+		};
+
+		// Fix offset values for sprites with width or height < 2.0
+		if (width < 2.0f)
 		{
-			m_SlicedSpritePos = position;
-			GenerateSliceScaledSprite();
+			offset.x /= 2.0f;
+		}
+		if (width <= 1.0f)
+		{
+			tileCount.x = 2;
+			offset.x = 0.5f + (1.0f - width) / 2.0f;
+		}
+		if (height < 2.0f)
+		{
+			offset.y /= 2.0f;
+		}
+		if (height <= 1.0f)
+		{
+			tileCount.y = 2;
+			offset.y = 0.5f + (1.0f - height) / 2.0f;
+		}
+
+		// Calculate texture coords offset
+		glm::vec2 coordOffset = {
+			m_Spritesheet->m_TileScale.x * offset.x,
+			m_Spritesheet->m_TileScale.x * offset.y
+		};
+
+		// Generate spritesheet tile positions
+		std::vector<std::vector<glm::uvec2>> coordsMap;
+		coordsMap.resize(m_Width);
+		for (auto& column : coordsMap)
+			column.resize(m_Height);
+		GenerateTilePositions(coordsMap);
+
+		for (uint32_t y = 0; y < tileCount.y; y++)
+		{
+			for (uint32_t x = 0; x < tileCount.x; x++)
+			{
+				// Tile position (in spritesheet)
+				const glm::uvec2& tp = coordsMap[x][y];
+				TextureCoords& coords = m_Tilemap[x][y].Coords;
+				coords = m_Spritesheet->GetTextureCoords(tp.x, tp.y);
+				glm::vec2 scale = { m_TileScale, m_TileScale };
+				glm::vec2 pos = {
+					(-width / 2.0f + x) * scale.x + 0.5f * m_TileScale,
+					(-height / 2.0f + y) * scale.y + 0.5f * m_TileScale
+				};
+				// ^^^ Above are default position, scale, coords values
+				// If offset is != 0.0 then some tiles must be cut, code below VVV
+
+				// ========= X axis =========
+				// Width > 2.0
+				if (offset.x && width > 2.0f)
+				{
+					if (x == tileCount.x - 2) // One before last
+					{
+						coords[1].x -= coordOffset.x;
+						coords[2].x -= coordOffset.x;
+						scale.x *= (1.0f - offset.x);
+						pos.x -= offset.x / 2.0f * m_TileScale;
+					}
+					else if (x == tileCount.x - 1) // Last
+					{
+						pos.x -= offset.x * m_TileScale;
+					}
+				}
+				// Width < 2.0
+				if (offset.x && width < 2.0f)
+				{
+					if (x == 0) // First
+					{
+						coords[1].x -= coordOffset.x;
+						coords[2].x -= coordOffset.x;
+						scale.x *= (1.0f - offset.x);
+						pos.x -= offset.x / 2.0f * m_TileScale;
+					}
+					else // Second
+					{
+						coords[0].x += coordOffset.x;
+						coords[3].x += coordOffset.x;
+						scale.x *= (1.0f - offset.x);
+						pos.x -= offset.x * 1.5f * m_TileScale;
+					}
+				}
+
+				// ========= Y axis =========
+				// Height > 2.0
+				if (offset.y && height > 2.0f)
+				{
+					if (y == tileCount.y - 2) // One before last
+					{
+						coords[0].y += coordOffset.y;
+						coords[1].y += coordOffset.y;
+						scale.y *= (1.0f - offset.y);
+						pos.y -= offset.y / 2.0f * m_TileScale;
+					}
+					else if (y == tileCount.y - 1) // Last
+					{
+						pos.y -= offset.y * m_TileScale;
+					}
+				}
+				// Height < 2.0
+				else if (offset.y && height < 2.0f)
+				{
+					if (y == 0) // First
+					{
+						coords[2].y -= coordOffset.y;
+						coords[3].y -= coordOffset.y;
+						scale.y *= (1.0f - offset.y);
+						pos.y -= offset.y / 2.0f * m_TileScale;
+					}
+					else // Second
+					{
+						coords[0].y += coordOffset.y;
+						coords[1].y += coordOffset.y;
+						scale.y *= (1.0f - offset.y);
+						pos.y -= offset.y * 1.5f * m_TileScale;
+					}
+				}
+
+				// Store glm::mat4 tile transform matrix
+				m_Tilemap[x][y].LocalTransform = Math::GetTransform(
+					{ pos.x, pos.y, 0 }, { scale.x, scale.y }
+				);
+			}
+		}
+	}
+
+	void NineSliceSprite::SetPositionOffset(const glm::uvec2& position)
+	{
+		if (position != m_PositionOffset)
+		{
+			m_PositionOffset = position;
+			GenerateSprite();
 		}
 	}
 
@@ -161,18 +288,13 @@ namespace proton {
 		if (borders != m_BlockBorders)
 		{
 			m_BlockBorders = borders;
-			GenerateSliceScaledSprite();
+			GenerateSprite();
 		}
 	}
 
 	Shared<SpriteSheet> NineSliceSprite::GetSpritesheet()
 	{
 		return m_Spritesheet;
-	}
-
-	std::pair<uint32_t, uint32_t> NineSliceSprite::GetSize() const
-	{
-		return std::make_pair(m_Width, m_Height);
 	}
 
 	BlockBorders NineSliceSprite::GetBlockBorders()

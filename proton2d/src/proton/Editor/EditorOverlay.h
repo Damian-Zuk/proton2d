@@ -25,6 +25,7 @@ namespace proton {
 		static void SetSceneContext(Scene* context);
 		static void SetInspectorContext(Entity entity);
 		static Entity GetInspectorContext();
+		static const EditorCamera& GetCamera() { return s_Instance->m_Camera; }
 
 	private:
 		void BeginImGuiRender();
@@ -34,6 +35,8 @@ namespace proton {
 		void DrawSceneSerializationPanel();
 		void DrawPrefabPanel();
 		void DrawCollidersAndSelectionOutline();
+
+		void ResetCameraPosition();
 
 	private:
 		static EditorOverlay* s_Instance;
@@ -50,13 +53,12 @@ namespace proton {
 		EditorCamera m_Camera;
 
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
-		glm::vec2 m_CameraMoveClickPosition = { 0.0f, 0.0f };
+		glm::vec2 m_CameraDragPosition = { 0.0f, 0.0f };
 
 		Scene* m_ActiveScene = nullptr;
 
 		friend class Application;
 		friend class Inspector;
-		friend class Scene;
 		friend class DebugInfo;
 		friend class EditorCamera;
 	};

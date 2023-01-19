@@ -76,7 +76,12 @@ namespace proton {
 	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabName)
 	{
 		SceneSerializer serializer(scene);
-		return serializer.DeserializeEntity(GetJsonData(prefabName), false);
+		Entity entity = serializer.DeserializeEntity(GetJsonData(prefabName), false);
+		auto camera = scene->GetPrimaryCameraPosition();
+		auto& transform = entity.GetComponent<TransformComponent>();
+		transform.Position.x = camera.x;
+		transform.Position.y = camera.y;
+		return entity;
 	}
 
 }

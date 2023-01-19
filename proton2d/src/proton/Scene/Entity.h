@@ -29,6 +29,14 @@ namespace proton {
 		}
 
 		template<>
+		NineSliceSpriteComponent& AddComponent() const
+		{
+			auto& sprite = m_Scene->m_Registry.emplace<NineSliceSpriteComponent>(m_Handle);
+			sprite.NineSliceSprite.SetTransform(&GetComponent<TransformComponent>());
+			return sprite;
+		}
+
+		template<>
 		CameraComponent& AddComponent() const
 		{
 			assert(!HasComponent<CameraComponent>() && "Entity already have component!");
@@ -67,6 +75,8 @@ namespace proton {
 			return scriptInstance;
 		}
 
+		void RemoveScript(const std::string& scriptClassName);
+
 		template <typename T>
 		void RemoveComponent()
 		{
@@ -89,6 +99,8 @@ namespace proton {
 		{
 			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
+
+		TransformComponent& GetTransform();
 
 		Entity CopyEntity(Scene* dstScene);
 

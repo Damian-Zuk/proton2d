@@ -28,14 +28,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
-                "Height": 2,
+                "Height": 3,
                 "BlockBorders": 0,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             }
         },
         {
@@ -54,14 +51,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
-                "Height": 1,
+                "Height": 3,
                 "BlockBorders": 200,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -99,14 +93,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 2,
-                "Height": 3,
+                "Height": 2,
                 "BlockBorders": 21,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -144,14 +135,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
                 "Height": 3,
                 "BlockBorders": 0,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             }
         },
         {
@@ -170,14 +158,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
-                "Height": 4,
+                "Height": 3,
                 "BlockBorders": 38,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -215,14 +200,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 9,
-                "Height": 2,
+                "Height": 9,
                 "BlockBorders": 254,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -260,14 +242,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 6,
-                "Height": 2,
+                "Height": 6,
                 "BlockBorders": 221,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -305,14 +284,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 6,
-                "Height": 2,
+                "Height": 6,
                 "BlockBorders": 254,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -350,14 +326,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
                 "Height": 3,
                 "BlockBorders": 93,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -395,14 +368,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 31,
-                "Height": 4,
+                "Height": 31,
                 "BlockBorders": 125,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -456,14 +426,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 4,
                 "Height": 4,
                 "BlockBorders": 238,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -501,14 +468,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
                 "Height": 3,
                 "BlockBorders": 93,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -546,14 +510,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 4,
-                "Height": 11,
+                "Height": 4,
                 "BlockBorders": 183,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -670,14 +631,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 4,
                 "Height": 4,
                 "BlockBorders": 93,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -715,14 +673,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
-                "Height": 5,
+                "Height": 3,
                 "BlockBorders": 183,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -760,14 +715,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 2,
-                "Height": 3,
+                "Height": 2,
                 "BlockBorders": 55,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -805,14 +757,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 4,
-                "Height": 32,
+                "Height": 4,
                 "BlockBorders": 255,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -850,14 +799,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 15,
-                "Height": 3,
+                "Height": 15,
                 "BlockBorders": 190,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -895,14 +841,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 4,
-                "Height": 12,
+                "Height": 4,
                 "BlockBorders": 255,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -940,14 +883,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 23,
-                "Height": 3,
+                "Height": 23,
                 "BlockBorders": 238,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,

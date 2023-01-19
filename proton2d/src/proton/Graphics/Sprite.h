@@ -6,6 +6,10 @@
 
 namespace proton {
 
+	// [0] - bottom left (0,0)
+	// [1] - bottom right (1,0)
+	// [2] - top right (1,1)
+	// [3] - top left (0,1)
 	using TextureCoords = std::array<glm::vec2, 4>;
 
 	class SpriteSheet
@@ -13,14 +17,15 @@ namespace proton {
 	public:
 		SpriteSheet(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight);
 
+		// Returns pointer to OpenGL texture object
 		Shared<Texture> GetTexture();
 
 		// Get sheet size in pixels
-		std::pair<uint32_t, uint32_t> GetSheetSize() const;
+		const glm::uvec2& GetSheetSize() const { return m_SheetSize; }
 		// Get tile size in pixels
-		std::pair<uint32_t, uint32_t> GetTileSize() const;
+		const glm::uvec2& GetTileSize() const { return m_TileSize; }
 		// Get max tiles count that can fit into spritesheet
-		std::pair<uint32_t, uint32_t> GetMaxTilesCount() const;
+		const glm::uvec2& GetTileCount() const { return m_TileCount; }
 
 	private:
 		const TextureCoords& GetTextureCoords(uint32_t x, uint32_t y) const;
@@ -28,12 +33,14 @@ namespace proton {
 		std::vector<std::vector<TextureCoords>> m_TextureCoords;
 		Shared<Texture> m_Texture;
 
-		uint32_t m_SheetWidth = 0, m_SheetHeight = 0;
-		uint32_t m_TileWidth = 0, m_TileHeight = 0;
-		uint32_t m_MaxTilesX = 0, m_MaxTilesY = 0;
+		glm::uvec2 m_SheetSize; // pixels
+		glm::uvec2 m_TileSize; // pixels
+		glm::uvec2 m_TileCount; // sheet size / tile size
+		glm::vec2 m_TileScale; // 0.0 - 1.0
 
 		friend class Inspector;
 		friend class Sprite;
+		friend class NineSliceSprite;
 		friend class Scene;
 	};
 
@@ -51,7 +58,7 @@ namespace proton {
 		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void SetTileX(uint32_t x, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void SetTileY(uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
-		glm::uvec2 GetTilePos() { return glm::uvec2{m_PosX, m_PosY}; };
+		const glm::uvec2& GetTilePos() const { return m_TilePos; }
 
 		void NextTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
 		void PrevTile(uint32_t posY = 0, uint32_t sizeX = 1, uint32_t sizeY = 1);
@@ -66,11 +73,11 @@ namespace proton {
 	private:
 		Shared<Texture> m_Texture = nullptr;
 		Shared<SpriteSheet> m_SpriteSheet = nullptr;
-
-		uint32_t m_Width_px = 1, m_Height_px = 1;
-		uint32_t m_PosX = 0, m_PosY = 0;
-		uint32_t m_SizeX = 1, m_SizeY = 1;
-		bool m_FlipX = false, m_FlipY = false;
+		
+		glm::uvec2 m_PixelSize;
+		glm::uvec2 m_TilePos;
+		glm::uvec2 m_TileSize;
+		bool m_MirrorFlipX = false, m_MirrorFlipY = false;
 
 		friend class Renderer;
 		friend class Scene;

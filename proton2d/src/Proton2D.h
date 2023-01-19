@@ -15,6 +15,7 @@
 #include "proton/Scene/Components.h"
 #include "proton/Scene/EntityScript.h"
 #include "proton/Scene/SceneManager.h"
+#include "proton/Scene/PrefabManager.h"
 
 #include "proton/Graphics/Flipbook.h"
 

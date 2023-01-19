@@ -1,22 +1,24 @@
 {
-    "SceneName": "Sample scene",
+    "SceneName": "Unnamed scene",
     "EnablePhysics": true,
-    "GravityForce": 18.0,
+    "GravityForce": 9.800000190734863,
+    "VelocityIterations": 5,
+    "PositionIterations": 5,
     "ScreenClearColor": [
         0.10000000149011612,
         0.11999999731779099,
         0.1599999964237213,
         1.0
     ],
-    "PrimaryCameraEntity": 17511075397661609954,
+    "PrimaryCameraEntity": 11487440110132760067,
     "Entities": [
         {
-            "ID": 3185442608332620130,
-            "Tag": "Background",
+            "ID": 5203684917486259262,
+            "Tag": "BG_Moutains",
             "Transform": {
                 "Position": [
-                    10.48067,
-                    1.87902,
+                    -11.3773,
+                    1.83871,
                     0.0
                 ],
                 "Rotation": 0.0,
@@ -27,13 +29,13 @@
             },
             "Entities": [
                 {
-                    "ID": 3209907199090167696,
-                    "Tag": "bg-5",
+                    "ID": 18271686925127046831,
+                    "Tag": "bg-6",
                     "Transform": {
                         "Position": [
-                            0.0,
-                            0.0,
-                            -0.1
+                            3.82722,
+                            2.78578,
+                            -0.099
                         ],
                         "Rotation": 0.0,
                         "Scale": [
@@ -42,7 +44,7 @@
                         ]
                     },
                     "Sprite": {
-                        "Texture": "background-jungle/plx-5.png",
+                        "Texture": "bg-moutains\\plx-6.png",
                         "FilterMode": 0,
                         "Flip": [
                             false,
@@ -60,8 +62,57 @@
                             "ClassName": "ParallaxBackground",
                             "Fields": [
                                 {
+                                    "FieldName": "TilingFactor",
+                                    "Value": 3.0
+                                },
+                                {
                                     "FieldName": "ParallaxFactor",
-                                    "Value": 0.2199999988079071
+                                    "Value": 0.41999998688697815
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": 3209907199090167696,
+                    "Tag": "bg-5",
+                    "Transform": {
+                        "Position": [
+                            2.42722,
+                            2.76156,
+                            -0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Texture": "bg-moutains\\plx-5.png",
+                        "FilterMode": 0,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "ParallaxBackground",
+                            "Fields": [
+                                {
+                                    "FieldName": "TilingFactor",
+                                    "Value": 3.0
+                                },
+                                {
+                                    "FieldName": "ParallaxFactor",
+                                    "Value": 0.11999999731779099
                                 }
                             ]
                         }
@@ -72,8 +123,8 @@
                     "Tag": "bg-4",
                     "Transform": {
                         "Position": [
-                            0.0,
-                            0.0,
+                            1.16289,
+                            2.76733,
                             -0.101
                         ],
                         "Rotation": 0.0,
@@ -83,7 +134,7 @@
                         ]
                     },
                     "Sprite": {
-                        "Texture": "background-jungle/plx-4.png",
+                        "Texture": "bg-moutains\\plx-4.png",
                         "FilterMode": 0,
                         "Flip": [
                             false,
@@ -101,8 +152,12 @@
                             "ClassName": "ParallaxBackground",
                             "Fields": [
                                 {
+                                    "FieldName": "TilingFactor",
+                                    "Value": 3.0
+                                },
+                                {
                                     "FieldName": "ParallaxFactor",
-                                    "Value": 0.17000000178813934
+                                    "Value": 0.07000000029802322
                                 }
                             ]
                         }
@@ -113,8 +168,8 @@
                     "Tag": "bg-3",
                     "Transform": {
                         "Position": [
-                            0.0,
-                            0.0,
+                            0.136,
+                            2.788,
                             -0.102
                         ],
                         "Rotation": 0.0,
@@ -124,7 +179,7 @@
                         ]
                     },
                     "Sprite": {
-                        "Texture": "background-jungle/plx-3.png",
+                        "Texture": "bg-moutains\\plx-3.png",
                         "FilterMode": 0,
                         "Flip": [
                             false,
@@ -142,8 +197,12 @@
                             "ClassName": "ParallaxBackground",
                             "Fields": [
                                 {
+                                    "FieldName": "TilingFactor",
+                                    "Value": 3.0
+                                },
+                                {
                                     "FieldName": "ParallaxFactor",
-                                    "Value": 0.0949999988079071
+                                    "Value": 0.05000000074505806
                                 }
                             ]
                         }
@@ -154,8 +213,8 @@
                     "Tag": "bg-2",
                     "Transform": {
                         "Position": [
-                            0.0,
-                            0.0,
+                            -0.83867,
+                            2.77667,
                             -0.103
                         ],
                         "Rotation": 0.0,
@@ -165,7 +224,7 @@
                         ]
                     },
                     "Sprite": {
-                        "Texture": "background-jungle/plx-2.png",
+                        "Texture": "bg-moutains\\plx-2.png",
                         "FilterMode": 0,
                         "Flip": [
                             false,
@@ -183,8 +242,12 @@
                             "ClassName": "ParallaxBackground",
                             "Fields": [
                                 {
+                                    "FieldName": "TilingFactor",
+                                    "Value": 3.0
+                                },
+                                {
                                     "FieldName": "ParallaxFactor",
-                                    "Value": 0.04500000178813934
+                                    "Value": 0.029999999329447746
                                 }
                             ]
                         }
@@ -195,8 +258,8 @@
                     "Tag": "bg-1",
                     "Transform": {
                         "Position": [
-                            0.0,
-                            0.0,
+                            -2.20867,
+                            2.67367,
                             -0.104
                         ],
                         "Rotation": 0.0,
@@ -206,7 +269,7 @@
                         ]
                     },
                     "Sprite": {
-                        "Texture": "background-jungle/plx-1.png",
+                        "Texture": "bg-moutains\\plx-1.png",
                         "FilterMode": 0,
                         "Flip": [
                             false,
@@ -224,8 +287,12 @@
                             "ClassName": "ParallaxBackground",
                             "Fields": [
                                 {
+                                    "FieldName": "TilingFactor",
+                                    "Value": 3.0
+                                },
+                                {
                                     "FieldName": "ParallaxFactor",
-                                    "Value": 1.0
+                                    "Value": 0.0
                                 }
                             ]
                         }
@@ -234,575 +301,12 @@
             ]
         },
         {
-            "ID": 8011558218177762518,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    7.93,
-                    18.11,
-                    0.004
-                ],
-                "Rotation": 30.4,
-                "Scale": [
-                    3.0,
-                    2.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 3,
-                "Height": 2,
-                "BlockBorders": 0,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "ID": 1915228456423080042,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    8.93,
-                    17.6,
-                    0.002
-                ],
-                "Rotation": -143.60001,
-                "Scale": [
-                    3.0,
-                    1.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 3,
-                "Height": 1,
-                "BlockBorders": 200,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.9399999976158142,
-                    0.5799999833106995
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 15398765556540635735,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    21.64,
-                    16.64,
-                    0.003
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    2.0,
-                    3.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 2,
-                "Height": 3,
-                "BlockBorders": 21,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    1.0,
-                    1.0
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 2532598187967653791,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    8.78,
-                    9.46,
-                    0.004
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    3.0,
-                    3.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 3,
-                "Height": 3,
-                "BlockBorders": 0,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "ID": 15229200256242713098,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    8.17,
-                    11.57,
-                    0.002
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    3.0,
-                    4.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 3,
-                "Height": 4,
-                "BlockBorders": 38,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.9100000262260437,
-                    0.8899999856948853
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 14848298641626316124,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    12.16,
-                    19.05,
-                    0.002
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    9.0,
-                    2.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 9,
-                "Height": 2,
-                "BlockBorders": 254,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    1.0,
-                    0.6700000166893005
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 7273984787446570091,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    17.11,
-                    13.55,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    6.0,
-                    2.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 6,
-                "Height": 2,
-                "BlockBorders": 221,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    1.0,
-                    0.7099999785423279
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 14226632216527913695,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    13.44,
-                    8.56,
-                    0.003
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    6.0,
-                    2.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 6,
-                "Height": 2,
-                "BlockBorders": 254,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.9700000286102295,
-                    0.800000011920929
-                ],
-                "Offset": [
-                    -0.10999999940395355,
-                    -0.12999999523162842
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 5355693384686505424,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    21.22,
-                    5.79,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    3.0,
-                    3.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 3,
-                "Height": 3,
-                "BlockBorders": 93,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    1.0,
-                    0.7699999809265137
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 11408318901811252360,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    7.24,
-                    28.48,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    31.0,
-                    4.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 31,
-                "Height": 4,
-                "BlockBorders": 125,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    1.0,
-                    0.8299999833106995
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 5002818924433962294,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "ID": 10350254501954566046,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    8.9,
-                    9.51,
-                    0.002
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    4.0,
-                    4.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 4,
-                "Height": 4,
-                "BlockBorders": 238,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.8999999761581421,
-                    0.9399999976158142
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 9783218249449273734,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    3.88,
-                    16.31,
-                    0.001
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    3.0,
-                    3.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 3,
-                "Height": 3,
-                "BlockBorders": 93,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.8299999833106995,
-                    0.8199999928474426
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 17237932787934215230,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    6.11,
-                    14.55,
-                    0.001
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    4.0,
-                    11.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 4,
-                "Height": 11,
-                "BlockBorders": 183,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.9200000166893005,
-                    0.9300000071525574
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 17511075397661609954,
+            "ID": 11487440110132760067,
             "Tag": "Player",
             "Transform": {
                 "Position": [
-                    3.73001,
-                    4.56302,
+                    -14.85652,
+                    0.78149,
                     0.0
                 ],
                 "Rotation": 0.0,
@@ -834,7 +338,11 @@
                 ]
             },
             "Camera": {
-                "ZoomLevel": 2.5
+                "ZoomLevel": 2.5,
+                "PositionOffset": [
+                    0.0,
+                    4.0
+                ]
             },
             "Rigidbody": {
                 "Type": 2,
@@ -865,7 +373,7 @@
                         },
                         {
                             "FieldName": "JumpForce",
-                            "Value": 5.0
+                            "Value": 2.0
                         }
                     ]
                 }
@@ -909,29 +417,26 @@
             ]
         },
         {
-            "ID": 8249321413363697644,
-            "Tag": "Unnamed entity",
+            "ID": 9058477520374733212,
+            "Tag": "Block",
             "Transform": {
                 "Position": [
-                    20.72,
-                    14.57,
-                    0.0
+                    -31.22897,
+                    1.13063,
+                    0.054
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    4.0,
-                    4.0
+                    2.0,
+                    9.0
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 4,
-                "Height": 4,
-                "BlockBorders": 93,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "Spritesheet": "level-sheet.png",
+                "Width": 2,
+                "Height": 2,
+                "BlockBorders": 119,
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -939,8 +444,8 @@
             },
             "BoxCollider": {
                 "Size": [
-                    0.8700000047683716,
-                    0.8600000143051147
+                    0.9399999976158142,
+                    0.8999999761581421
                 ],
                 "Offset": [
                     0.0,
@@ -954,13 +459,13 @@
             }
         },
         {
-            "ID": 4184612299543310716,
-            "Tag": "Unnamed entity",
+            "ID": 14949417986560527498,
+            "Tag": "Block",
             "Transform": {
                 "Position": [
-                    16.08,
-                    2.53,
-                    0.007
+                    14.02857,
+                    -0.90111,
+                    0.054
                 ],
                 "Rotation": 0.0,
                 "Scale": [
@@ -969,59 +474,11 @@
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
+                "Spritesheet": "level-sheet.png",
                 "Width": 3,
-                "Height": 5,
-                "BlockBorders": 183,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.9800000190734863,
-                    0.8600000143051147
-                ],
-                "Offset": [
-                    0.07000000029802322,
-                    0.009999999776482582
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 17198748723466642269,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    12.16,
-                    1.6,
-                    0.008
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    2.0,
-                    3.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 2,
                 "Height": 3,
                 "BlockBorders": 55,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -1029,8 +486,8 @@
             },
             "BoxCollider": {
                 "Size": [
-                    0.7900000214576721,
-                    0.8399999737739563
+                    0.9399999976158142,
+                    0.8999999761581421
                 ],
                 "Offset": [
                     0.0,
@@ -1044,74 +501,26 @@
             }
         },
         {
-            "ID": 16938172434331193527,
-            "Tag": "Unnamed entity",
+            "ID": 11112685139580678864,
+            "Tag": "Block",
             "Transform": {
                 "Position": [
-                    23.38,
-                    14.53,
-                    0.0
+                    7.59999,
+                    -1.93234,
+                    0.054
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    4.0,
-                    32.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 4,
-                "Height": 32,
-                "BlockBorders": 255,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.8700000047683716,
-                    0.9800000190734863
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 17300330692052434970,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    2.17,
-                    8.96,
-                    0.001
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    15.0,
+                    5.0,
                     3.0
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 15,
-                "Height": 3,
-                "BlockBorders": 190,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "Spritesheet": "level-sheet.png",
+                "Width": 5,
+                "Height": 5,
+                "BlockBorders": 55,
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -1119,8 +528,8 @@
             },
             "BoxCollider": {
                 "Size": [
-                    0.9800000190734863,
-                    0.8500000238418579
+                    0.9399999976158142,
+                    0.8999999761581421
                 ],
                 "Offset": [
                     0.0,
@@ -1134,29 +543,26 @@
             }
         },
         {
-            "ID": 8327610645231503740,
-            "Tag": "Unnamed entity",
+            "ID": 1786821309747432907,
+            "Tag": "Block",
             "Transform": {
                 "Position": [
-                    -5.93,
-                    4.41,
-                    0.0
+                    -0.17556,
+                    -3.05467,
+                    0.054
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    4.0,
-                    12.0
+                    64.0,
+                    2.0
                 ]
             },
             "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 4,
-                "Height": 12,
+                "Spritesheet": "level-sheet.png",
+                "Width": 64,
+                "Height": 64,
                 "BlockBorders": 255,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
+                "TileScale": 1.0
             },
             "Rigidbody": {
                 "Type": 0,
@@ -1164,53 +570,8 @@
             },
             "BoxCollider": {
                 "Size": [
-                    1.0,
-                    0.9700000286102295
-                ],
-                "Offset": [
-                    0.0,
-                    0.0
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 1.0,
-                "IsSensor": false
-            }
-        },
-        {
-            "ID": 15150570906218397037,
-            "Tag": "Unnamed entity",
-            "Transform": {
-                "Position": [
-                    6.06,
-                    0.0,
-                    0.004
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    23.0,
-                    3.0
-                ]
-            },
-            "NineSliceSprite": {
-                "Spritesheet": "level-sheet-1.png",
-                "Width": 23,
-                "Height": 3,
-                "BlockBorders": 238,
-                "TileScale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 0,
-                "FixedRotation": false
-            },
-            "BoxCollider": {
-                "Size": [
-                    1.0,
-                    0.8299999833106995
+                    0.9399999976158142,
+                    0.8999999761581421
                 ],
                 "Offset": [
                     0.0,

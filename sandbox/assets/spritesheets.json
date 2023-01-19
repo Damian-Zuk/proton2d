@@ -5,7 +5,12 @@
         "TileHeight": 80
     },
     {
-        "Filepath": "level-sheet-1.png",
+        "Filepath": "level-sheet.png",
+        "TileWidth": 32,
+        "TileHeight": 32
+    },
+    {
+        "Filepath": "test.png",
         "TileWidth": 32,
         "TileHeight": 32
     },

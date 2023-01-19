@@ -129,7 +129,6 @@ namespace proton {
 				if (m_ShowEditorOverlay)
 				{
 					PROFILE_SCOPE("on_imgui_render")
-					m_EditorOverlay->m_DebugInfo.m_FrameTime = m_FrameTime;
 					m_EditorOverlay->BeginImGuiRender();
 
 					for (AppLayer* layer : m_AppLayers)

@@ -53,7 +53,6 @@ namespace proton {
 	struct NineSliceSpriteComponent
 	{
 		NineSliceSprite NineSliceSprite;
-		glm::vec2 TileScale { 1.0f, 1.0f };
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 	};

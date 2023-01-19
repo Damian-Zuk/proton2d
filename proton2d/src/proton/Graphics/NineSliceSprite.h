@@ -19,37 +19,54 @@ namespace proton {
 	};
 
 	using BlockBorders = uint8_t;
+	struct TransformComponent;
+
+	struct NineSliceTile
+	{
+		glm::mat4 LocalTransform;
+		TextureCoords Coords;
+	};
 
 	class NineSliceSprite
 	{
 	public:
-		NineSliceSprite();
+		NineSliceSprite() = default;
 
 		void SetSpritesheet(const Shared<SpriteSheet>& spritesheet);
 		Shared<SpriteSheet> GetSpritesheet();
 
-		// Set size in tile count
-		void SetSize(uint32_t width, uint32_t height);
-		std::pair<uint32_t, uint32_t> GetSize() const;
+		// If size, block borders or position offset has changed
+		// regenerated sprite data
+		void Refresh();
+
+		// Sets scale of indivudual tiles
+		void SetTileScale(float tileScale);
+		float GetTileScale() const { return m_TileScale; }
 
 		// Set sliced sprite position inside spritesheet 
 		// Bottom left corner is (0, 0)
-		void SetSlicedSpritePosition(const glm::uvec2& position);
-		const glm::uvec2& GetSlicedSpritePosition() const { return m_SlicedSpritePos; };
-
-		void GenerateSliceScaledSprite();
+		void SetPositionOffset(const glm::uvec2& position);
+		const glm::uvec2& GetPositionOffset() const { return m_PositionOffset; };
 
 		void SetBlockBorders(BlockBorders borders);
 		BlockBorders GetBlockBorders();
 
-	private:
-		Shared<SpriteSheet> m_Spritesheet = nullptr;
-		uint32_t m_Width = 1, m_Height = 1;
+		// This function is automaticlly called when component is added
+		void SetTransform(TransformComponent* transform);
 
-		std::vector<std::vector<glm::uvec2>> m_Tilemap; // [x][y]
+	private:
+		void GenerateSprite();
+		void GenerateTilePositions(std::vector<std::vector<glm::uvec2>>& tilemap);
+
+		TransformComponent* m_Transform = nullptr;
+		Shared<SpriteSheet> m_Spritesheet = nullptr;
+		uint32_t m_Width = 0, m_Height = 0;
+		float m_TileScale = 1.0f;
+
+		std::vector<std::vector<NineSliceTile>> m_Tilemap; // [x][y]
 
 		// Slice scaled sprites
-		glm::uvec2 m_SlicedSpritePos = { 0, 0 };
+		glm::uvec2 m_PositionOffset = { 0, 0 };
 		BlockBorders m_BlockBorders = BlockBorder_All;
 
 		friend class Scene;

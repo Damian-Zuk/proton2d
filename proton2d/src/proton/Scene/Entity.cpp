@@ -11,6 +11,20 @@ namespace proton
 	{
 	}
 
+	void Entity::RemoveScript(const std::string& scriptClassName)
+	{
+		auto& component = GetComponent<ScriptComponent>();
+		delete component.Scripts.at(scriptClassName);
+		component.Scripts.erase(scriptClassName);
+		if (!component.Scripts.size())
+			RemoveComponent<ScriptComponent>();
+	}
+
+	TransformComponent& Entity::GetTransform()
+	{
+		return GetComponent<TransformComponent>();
+	}
+
 	Entity Entity::CopyEntity(Scene* dstScene)
 	{
 		return m_Scene->CopyEntity(*this, dstScene);

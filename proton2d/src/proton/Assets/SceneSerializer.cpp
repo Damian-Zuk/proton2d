@@ -60,12 +60,12 @@ namespace proton {
 			{
 				jsonObj["Sprite"]["Texture"] = sprite->GetTexture()->GetPath();
 				jsonObj["Sprite"]["FilterMode"] = sprite->GetTexture()->GetFilterMode();
-				jsonObj["Sprite"]["Flip"] = { sprite->m_FlipX, sprite->m_FlipY };
+				jsonObj["Sprite"]["Flip"] = { sprite->m_MirrorFlipX, sprite->m_MirrorFlipY };
 
 				if (sprite->m_SpriteSheet)
 				{
-					jsonObj["Sprite"]["TilePos"] = { sprite->m_PosX, sprite->m_PosY };
-					jsonObj["Sprite"]["TileSize"] = { sprite->m_SizeX, sprite->m_SizeY };
+					jsonObj["Sprite"]["TilePos"] = { sprite->m_TilePos.x, sprite->m_TilePos.y };
+					jsonObj["Sprite"]["TileSize"] = { sprite->m_TileSize.x, sprite->m_TileSize.y };
 				}
 			}
 
@@ -82,11 +82,10 @@ namespace proton {
 			if (spritesheet)
 				jsonObj["NineSliceSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
 
-			auto [width, height] = sprite.GetSize();
-			jsonObj["NineSliceSprite"]["Width"] = width;
-			jsonObj["NineSliceSprite"]["Height"] = height;
+			jsonObj["NineSliceSprite"]["Width"] = sprite.m_Width;
+			jsonObj["NineSliceSprite"]["Height"] = sprite.m_Width;
 			jsonObj["NineSliceSprite"]["BlockBorders"] = sprite.GetBlockBorders();
-			jsonObj["NineSliceSprite"]["TileScale"] = { component.TileScale.x, component.TileScale.y };
+			jsonObj["NineSliceSprite"]["TileScale"] = sprite.m_TileScale;
 		}
 
 		// Serialize CameraComponent
@@ -321,8 +320,8 @@ namespace proton {
 				}
 
 				spriteComponent.Sprite->GetTexture()->m_FilterMode = sprite["FilterMode"];
-				spriteComponent.Sprite->m_FlipX = sprite["Flip"][0];
-				spriteComponent.Sprite->m_FlipX = sprite["Flip"][1];
+				spriteComponent.Sprite->m_MirrorFlipX = sprite["Flip"][0];
+				spriteComponent.Sprite->m_MirrorFlipX = sprite["Flip"][1];
 			}
 			
 			json& color = jsonObj["Sprite"]["Color"];
@@ -335,12 +334,13 @@ namespace proton {
 			json& jsonData = jsonObj["NineSliceSprite"];
 			auto& component = entity.AddComponent<NineSliceSpriteComponent>();
 			auto& sprite = component.NineSliceSprite;
-			sprite.SetSize(jsonData["Width"], jsonData["Height"]);
-			sprite.SetBlockBorders(jsonData["BlockBorders"]);
-			component.TileScale = { jsonData["TileScale"][0], jsonData["TileScale"][1] };
+			sprite.m_BlockBorders = jsonData["BlockBorders"];
+			sprite.m_TileScale = jsonData["TileScale"];
 
 			if (jsonData.contains("Spritesheet"))
 				sprite.SetSpritesheet(AssetsManager::GetSpriteSheet(jsonData["Spritesheet"]));
+
+			sprite.Refresh();
 		}
 
 		// Deserialize CameraComponent

@@ -13,6 +13,8 @@ namespace proton {
 
 	void DebugInfo::OnImGuiRender()
 	{
+		m_FrameTime = Application::Get().m_FrameTime;
+
 		if (m_RefreshStatsTimer <= 0.0f)
 		{
 			m_FrameTimeDisplay = m_FrameTime;
@@ -45,6 +47,8 @@ namespace proton {
 
 		if (ImGui::TreeNodeEx("Settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			if (ImGui::Button("Reset editor camera"))
+				EditorOverlay::s_Instance->ResetCameraPosition();
 			ImGui::PushItemWidth(150.0f);
 			ImGui::DragFloat("Time scale", &Application::Get().m_TimeScale, 0.01f);
 			ImGui::PopItemWidth();
@@ -61,7 +65,7 @@ namespace proton {
 		for (uint32_t i = 0; i < s_FrameTimePlotValuesCount; i++)
 			max = m_FrameTimeHistory[i] > max ? m_FrameTimeHistory[i] : max;
 
-		ImGui::Text(" max (s):\n%f\n avg (s):\n%f", max, m_AvgFrameTime);
+		ImGui::Text("   max:\n%f\n   avg:\n%f", max, m_AvgFrameTime);
 		ImGui::SameLine();
 		ImGui::PlotLines("##Frame_Time", m_FrameTimeHistory, s_FrameTimePlotValuesCount, m_FrameTimeValuesOffset, NULL, 0.0f, glm::max(max * 1.1f, 1.0f / 60.0f), ImVec2(0, 80));
 		ImGui::Dummy({ 0.0f, 2.0f });

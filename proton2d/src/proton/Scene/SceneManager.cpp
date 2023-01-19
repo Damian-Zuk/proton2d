@@ -83,6 +83,7 @@ namespace proton {
 
 #if PROTON_EDITOR
 		EditorOverlay::SetSceneContext(s_Instance->m_ActiveScene);
+		EditorOverlay::SetInspectorContext(Entity{});
 #else
 		s_Instance->m_ActiveScene->OnBeginPlay();
 #endif

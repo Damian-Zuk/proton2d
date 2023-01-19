@@ -12,8 +12,6 @@
 #include "proton/Core/Utils.h"
 #include "proton/Scene/PrefabManager.h"
 
-#include "proton/Platform/Windows/FileDialogs.h"
-
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
@@ -78,7 +76,7 @@ namespace proton {
 		if (m_MovingCamera)
 		{
 			glm::vec2 mousePos = m_ActiveScene->GetMouseWorldPosition();
-			glm::vec2 offset = m_CameraMoveClickPosition - mousePos;
+			glm::vec2 offset = m_CameraDragPosition - mousePos;
 			m_Camera.m_Position.x += offset.x;
 			m_Camera.m_Position.y += offset.y;
 			ImGui::SetMouseCursor(7);
@@ -87,7 +85,7 @@ namespace proton {
 
 	void EditorOverlay::OnImGuiRender()
 	{
-		ImGui::ShowDemoWindow(); // Demo window for reference
+		//ImGui::ShowDemoWindow(); // Demo window for reference
 
 		//************************************
 		//   Entity Hierarchy 
@@ -158,7 +156,7 @@ namespace proton {
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MovingCamera)
 			{
 				// Move editor camera on mouse pressed event (Button 1)
-				m_CameraMoveClickPosition = m_ActiveScene->GetMouseWorldPosition();
+				m_CameraDragPosition = m_ActiveScene->GetMouseWorldPosition();
 				m_MovingCamera = true;
 			}
 			else if (e.GetMouseButton() == Mouse::Button0)
@@ -265,9 +263,12 @@ namespace proton {
 	{
 		ImGui::Begin("Scene");
 
-		ImGui::Dummy({ 0, 2.0f });
+		ImGui::Dummy({ 0, 1.0f });
 		ImGui::Text("Scene: %s", m_ActiveScene->m_SceneFilepath.c_str());
 		ImGui::Dummy({ 0, 5.0f }); ImGui::Separator(); ImGui::Dummy({ 0, 5.0f });
+
+		// Center buttons
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 105);
 
 		if (ImGui::Button("New scene", { 100, 25 }))
 		{
@@ -287,8 +288,11 @@ namespace proton {
 		}
 
 		ImGui::Dummy({ 0, 5.0f });
-
 		bool saveAs = false;
+
+		// Center buttons
+		ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 - 105);
+
 		if (ImGui::Button("Save", { 100, 25 }))
 			if (m_ActiveScene->m_SceneFilepath != "<Unsaved scene>")
 				m_ActiveScene->SaveAsFile(SceneManager::GetActiveSceneFilepath());
@@ -343,12 +347,13 @@ namespace proton {
 		if (ImGui::Button("Reload all"))
 			PrefabManager::ReloadAllPrefabs();
 		
+		std::string deletePrefabTag;
 		ImGui::Dummy({ 0.0f, 5.0f });
 		for (auto& [tag, jsonData] : PrefabManager::s_Instance->m_PrefabsJsonData)
 		{
 			ImGui::Separator();
 			ImGui::Text(tag.c_str());
-			ImGui::SameLine(ImGui::GetWindowWidth() - 140);
+			ImGui::SameLine(ImGui::GetWindowWidth() - 150);
 			if (ImGui::Button(("Spawn##" + tag).c_str(), {60, 25}))
 			{
 				Entity entity = PrefabManager::SpawnPrefab(m_ActiveScene, tag);
@@ -359,10 +364,10 @@ namespace proton {
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(("Delete##" + tag).c_str(), {60, 25}))
-			{
-				PrefabManager::DeletePrefab(tag);
-			}
+				deletePrefabTag = tag;
 		}
+		if (deletePrefabTag.size())
+			PrefabManager::DeletePrefab(deletePrefabTag);
 		ImGui::Separator();
 		ImGui::End();
 	}
@@ -409,12 +414,18 @@ namespace proton {
 			if (selectedEntity.HasComponent<SpriteComponent>())
 			{
 				auto& sprite = selectedEntity.GetComponent<SpriteComponent>();
-				scale.x *= (float)sprite.Sprite->m_Width_px / (float)sprite.Sprite->m_Height_px;
+				if (sprite.Sprite)
+					scale.x *= (float)sprite.Sprite->m_PixelSize.x / (float)sprite.Sprite->m_PixelSize.y;
 			}
 			Renderer::SetLineWidth(glm::min(50.0f * padding, 1.0f));
 			Renderer::DrawRect(transformMatrix, color);
 		}
 		Renderer::EndScene();
+	}
+
+	void EditorOverlay::ResetCameraPosition()
+	{
+		m_Camera.m_Position = { 0.0f, 0.0f, 0.0f };
 	}
 
 	void EditorOverlay::SetSceneContext(Scene* context)

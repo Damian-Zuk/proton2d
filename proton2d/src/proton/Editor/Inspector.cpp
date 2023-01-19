@@ -77,9 +77,11 @@ namespace proton {
 				ImGui::Dummy({ 0.0f, 5.0f });
 
 				ImGui::Dummy({ 3,0 }); ImGui::SameLine();
-				ImGui::Text("UUID: %s", HexUUID(m_SelectedEntity.GetUUID()).c_str());
+				std::string uuid = "UUID: " + HexUUID(m_SelectedEntity.GetUUID());
+				ImGui::Text(uuid.c_str());
 				ImGui::SameLine(ImGui::GetWindowWidth() - 140.0f);
 
+				ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + ImGui::CalcTextSize(uuid.c_str()).x - 140);
 				if (ImGui::Button("Create prefab", { 120.0f, 25.0f }))
 				{
 					PrefabManager::SaveAsPrefab(m_SelectedEntity);
@@ -107,7 +109,7 @@ namespace proton {
 				// ****************************
 				if (m_SelectedEntity.HasComponent<TransformComponent>())
 				{
-					DrawComponentUI<TransformComponent>("Transform", [](auto& component)
+					DrawComponentUI<TransformComponent>("Transform", [&](auto& component)
 					{
 						// Draw position control
 						ImGui::Columns(2); ImGui::SetColumnWidth(0, 75.0f);
@@ -129,10 +131,24 @@ namespace proton {
 						ImGui::Text("Scale");
 						ImGui::NextColumn();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##S_X", &component.Scale.x, 0.01f, 0.0f, 0.0f, "%.3f");
+						if (ImGui::DragFloat("##S_X", &component.Scale.x, 0.01f, 0.0f, 0.0f, "%.3f"))
+						{
+							if (m_SelectedEntity.HasComponent<NineSliceSpriteComponent>())
+							{
+								auto& nsc = m_SelectedEntity.GetComponent<NineSliceSpriteComponent>();
+								nsc.NineSliceSprite.Refresh();
+							}
+						}
 						ImGui::SameLine();
 						ImGui::PushItemWidth(75.0f);
-						ImGui::DragFloat("##S_Y", &component.Scale.y, 0.01f, 0.0f, 0.0f, "%.3f");
+						if(ImGui::DragFloat("##S_Y", &component.Scale.y, 0.01f, 0.0f, 0.0f, "%.3f"))
+						{
+							if (m_SelectedEntity.HasComponent<NineSliceSpriteComponent>())
+							{
+								auto& nsc = m_SelectedEntity.GetComponent<NineSliceSpriteComponent>();
+								nsc.NineSliceSprite.Refresh();
+							}
+						}
 						ImGui::Columns(1);
 
 						// Draw Rotation control
@@ -238,9 +254,9 @@ namespace proton {
 							ImGui::Dummy({ 0.0f, 10.0f });
 							ImGui::Text("Mirror flip: ");
 							ImGui::SameLine();
-							ImGui::Checkbox("X##Flip", &sprite->m_FlipX);
+							ImGui::Checkbox("X##Flip", &sprite->m_MirrorFlipX);
 							ImGui::SameLine();
-							ImGui::Checkbox("Y##Flip", &sprite->m_FlipY);
+							ImGui::Checkbox("Y##Flip", &sprite->m_MirrorFlipY);
 							ImGui::Dummy({ 0.0f, 10.0f });
 
 							// Tiling factor
@@ -251,8 +267,8 @@ namespace proton {
 						// Check if texture is spritesheet
 						if (sprite && sprite->m_SpriteSheet)
 						{
-							int tileX = (int)sprite->m_PosX, tileY = (int)sprite->m_PosY;
-							auto& [maxX, maxY] = sprite->m_SpriteSheet->GetMaxTilesCount();
+							int tileX = (int)sprite->m_TilePos.x, tileY = (int)sprite->m_TilePos.y;
+							const auto& count = sprite->m_SpriteSheet->GetTileCount();
 
 							ImGui::Text("Spritesheet tile coordinates:");
 							ImGui::Dummy({ 0.0f, 4.0f });
@@ -262,8 +278,8 @@ namespace proton {
 							ImGui::NextColumn();
 
 							// Tile coords X position field
-							if (ImGui::InputInt("##Tile_Pos_X", &tileX, 1, 1) && tileX != sprite->m_PosX)
-								sprite->SetTile((uint32_t)((tileX + maxX) % maxX), sprite->m_PosY);
+							if (ImGui::InputInt("##Tile_Pos_X", &tileX, 1, 1) && tileX != sprite->m_TilePos.x)
+								sprite->SetTile((uint32_t)((tileX + count.x) % count.x), sprite->m_TilePos.y);
 
 							ImGui::Columns(1);
 							ImGui::Columns(2);
@@ -272,8 +288,8 @@ namespace proton {
 							ImGui::NextColumn();
 								
 							// Tile coords Y position field
-							if (ImGui::InputInt("##Tile_Pos_Y", &tileY, 1, 1) && tileY != sprite->m_PosY)
-								sprite->SetTile(0, (uint32_t)((tileY + maxY) % maxY));
+							if (ImGui::InputInt("##Tile_Pos_Y", &tileY, 1, 1) && tileY != sprite->m_TilePos.y)
+								sprite->SetTile(0, (uint32_t)((tileY + count.y) % count.y));
 
 							ImGui::Columns(1);
 							ImGui::Dummy({ 0.0f, 10.0f });
@@ -303,7 +319,7 @@ namespace proton {
 									if (ImGui::Selectable(kv.first.c_str(), isSelected))
 									{
 										spritesheet = AssetsManager::GetSpriteSheet(kv.first);
-										sprite.GenerateSliceScaledSprite();
+										sprite.SetSpritesheet(spritesheet);
 									}
 
 									if (isSelected)
@@ -314,34 +330,14 @@ namespace proton {
 							if (ImGui::IsItemClicked())
 								AssetsManager::ReloadAssetsList();
 
-							ImGui::Dummy({ 10.0f, 0.0f });
-
-							// Width and height controls
-							int width = sprite.m_Width;
-							if (ImGui::InputInt("Width", &width))
+							ImGui::Dummy({ 0.0f, 5.0f });
+							float tileScale = sprite.m_TileScale;
+							if (ImGui::DragFloat("Tile scale", &tileScale, 0.001f))
 							{
-								sprite.SetSize(std::max(width, 1), sprite.m_Height);
-								auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-								transform.Scale = { component.TileScale.x * sprite.m_Width, component.TileScale.y * sprite.m_Height };
+								sprite.SetTileScale(tileScale);
 							}
-
-							int height = sprite.m_Height;
-							if (ImGui::InputInt("Height", &height))
-							{
-								sprite.SetSize(sprite.m_Width, std::max(height, 1));
-								auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-								transform.Scale = { component.TileScale.x * sprite.m_Width, component.TileScale.y * sprite.m_Height };
-							}
-
-							ImGui::Dummy({ 10.0f, 0.0f });
-							ImGui::Text("Tile scale"); ImGui::SameLine();
-							if (ImGui::DragFloat2("##tile_scale", glm::value_ptr(component.TileScale), 0.01f))
-							{
-								auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-								transform.Scale = { component.TileScale.x * sprite.m_Width, component.TileScale.y * sprite.m_Height};
-
-							}
-							ImGui::Dummy({ 10.0f, 0.0f });
+							ImGui::DragInt2("Spritesheet offset", (int*)glm::value_ptr(sprite.m_PositionOffset));
+							ImGui::Dummy({ 0.0f, 5.0f });
 
 							bool left        = sprite.m_BlockBorders & 1;
 							bool right       = sprite.m_BlockBorders & 2;
@@ -352,8 +348,8 @@ namespace proton {
 							bool bottomLeft  = sprite.m_BlockBorders & 64;
 							bool bottomRight = sprite.m_BlockBorders & 128;
 
-							// Change edges and corners texture
-							ImGui::Text("Toggle edges texture: ");
+							// Toggle texture borders and corners
+							ImGui::Text("Toggle texture borders:");
 							ImGui::Checkbox("##tb_top_left_corner", &topLeft);
 							ImGui::SameLine();
 							ImGui::Checkbox("##tb_top_edge", &top);
@@ -437,6 +433,7 @@ namespace proton {
 						ImGui::Checkbox("Fixed rotation", &component.FixedRotation);
 					});
 				}
+
 				// ****************************
 				// BoxColliderComponent UI
 				// ****************************
@@ -455,18 +452,29 @@ namespace proton {
 					});
 				}
 
+				// ****************************
 				// Script Component UI
+				// ****************************
 				if (m_SelectedEntity.HasComponent<ScriptComponent>())
 				{
-					DrawComponentUI<ScriptComponent>("Script", [&](auto& component)
+					auto& component = m_SelectedEntity.GetComponent<ScriptComponent>();
+					for (auto& [scriptClassName, scriptInstance] : component.Scripts)
 					{
-						for (auto& [scriptClassName, scriptInstance] : component.Scripts)
-						{
-							ImGui::Text(scriptClassName.c_str());
+						if (!scriptInstance)
+							continue;
 							
-							if (!scriptInstance)
-								continue;
+						ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
+							| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 
+						std::string title = scriptClassName + " (Script)";
+						bool opened = ImGui::TreeNodeEx(scriptClassName.c_str(), treeNodeFlags, title.c_str());
+
+						ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
+						bool removeScript = ImGui::Button(("Remove##" + scriptClassName).c_str());
+
+						if (opened)
+						{
+							ImGui::Dummy({ 0.0f, 3.0f });
 							for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
 							{
 								switch (fieldData.Type)
@@ -502,9 +510,13 @@ namespace proton {
 									break;
 								}
 							}
-							ImGui::Dummy({ 0.0f, 10.0f });
+							ImGui::TreePop();
 						}
-					});
+
+						if (removeScript)
+							m_SelectedEntity.RemoveScript(scriptClassName);
+						ImGui::Dummy({ 0.0f, 10.0f });
+					}
 				}
 			}
 			else
@@ -514,10 +526,11 @@ namespace proton {
 				// *********************
 				ImGui::Text("Scene proporties");
 				ImGui::Separator();
-				ImGui::Dummy({ 0.0f, 5.0f });
+				ImGui::Dummy({ 0.0f, 3.0f });
 
+				ImGui::Text("Scene name");
 				strcpy_s(m_SceneNameBuffer, m_ActiveScene->m_SceneName.c_str());
-				if (ImGui::InputText("Scene name", m_SceneNameBuffer, 256))
+				if (ImGui::InputText("##scene_name", m_SceneNameBuffer, 256))
 					m_ActiveScene->m_SceneName = m_SceneNameBuffer;
 
 				ImGui::Dummy({ 0.0f, 5.0f });
@@ -527,8 +540,10 @@ namespace proton {
 				ImGui::Dummy({ 0.0f, 5.0f });
 
 				ImGui::Text("Scene physics settings");
+				ImGui::Dummy({ 0.0f, 3.0f });
 				ImGui::Separator();
-				ImGui::Checkbox("Enable physics", &m_ActiveScene->m_EnablePhysics);
+				ImGui::Checkbox("Enable physics simulation", &m_ActiveScene->m_EnablePhysics);
+				ImGui::Dummy({ 0,5 });
 				ImGui::PushItemWidth(100.0f);
 				ImGui::DragFloat("World gravity", &m_ActiveScene->m_WorldGravity, 0.1f);
 				int* vi = &m_ActiveScene->m_PhysicsVelocityIterations;
