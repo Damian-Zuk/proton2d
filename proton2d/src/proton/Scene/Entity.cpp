@@ -167,4 +167,56 @@ namespace proton
 		parentComponent.First = child.m_Handle;
 		parentComponent.ChildrenCount++;
 	}
+
+	void Entity::PopHierarchy()
+	{
+		auto& rc = GetComponent<RelationshipComponent>();
+		if (rc.Parent != entt::null)
+		{
+			Entity parent{ m_Scene, rc.Parent };
+			Entity prev{ m_Scene, rc.Prev };
+			Entity next{ m_Scene, rc.Next };
+
+			auto& parentRc = parent.GetComponent<RelationshipComponent>();
+			parentRc.ChildrenCount--;
+			if (parentRc.First == *this)
+				parentRc.First = rc.Next;
+
+			if (prev)
+			{
+				auto& prc = prev.GetComponent<RelationshipComponent>();
+				prc.Next = rc.Next;
+			}
+			if (next)
+			{
+				auto& nrc = next.GetComponent<RelationshipComponent>();
+				nrc.Prev = rc.Prev;
+			}
+			rc.Next = entt::null;
+			rc.Prev = entt::null;
+			rc.Parent = entt::null;
+		}
+	}
+
+	bool Entity::IsParentOf(Entity entity)
+	{
+		auto& rc = GetComponent<RelationshipComponent>();
+		if (!rc.ChildrenCount)
+			return false;
+
+		Entity current{ m_Scene, rc.First };
+		while (current)
+		{
+			if (current == entity)
+				return true;
+
+			auto& rc = current.GetComponent<RelationshipComponent>();
+			if (rc.ChildrenCount && current.IsParentOf(entity))
+				return true;
+
+			current = Entity{ m_Scene, rc.Next };
+		}
+
+		return false;
+	}
 }

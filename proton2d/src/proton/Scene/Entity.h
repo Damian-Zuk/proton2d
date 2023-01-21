@@ -14,6 +14,7 @@ namespace proton {
 
 		virtual ~Entity() = default;
 
+		// Returns specified component of entity
 		template <typename T>
 		T& GetComponent() const
 		{
@@ -21,6 +22,7 @@ namespace proton {
 			return m_Scene->m_Registry.get<T>(m_Handle);
 		}
 
+		// Adds component to entity
 		template <typename T, typename... Types>
 		T& AddComponent(Types&& ...args) const
 		{
@@ -58,6 +60,7 @@ namespace proton {
 			return fb;
 		}
 
+		// Adds script to entity and returns it's instance
 		template <typename TScriptClass>
 		EntityScript* AddScript() const
 		{
@@ -75,8 +78,10 @@ namespace proton {
 			return scriptInstance;
 		}
 
+		// Removes script from entity
 		void RemoveScript(const std::string& scriptClassName);
 
+		// Removes component from entity
 		template <typename T>
 		void RemoveComponent()
 		{
@@ -85,33 +90,56 @@ namespace proton {
 			if (std::is_base_of<ScriptComponent, T>::value)
 				DeleteAllScriptInstances();
 
+			if (std::is_base_of<CameraComponent, T>::value
+				&& m_Scene->m_PrimaryCameraEntity == *this)
+			{
+				m_Scene->m_PrimaryCameraEntity = entt::null;
+				m_Scene->m_PrimaryCamera = nullptr;
+			}
+
 			m_Scene->m_Registry.remove<T>(m_Handle);
 		}
 
+		// Checks if entity has given component
 		template <typename T>
 		bool HasComponent() const
 		{
 			return m_Scene->m_Registry.any_of<T>(m_Handle);
 		}
 
+		// Checks if entity has specified set of components
 		template <typename... TComponents>
 		bool HasComponents() const
 		{
 			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
+		// Returns TransformComponent
 		TransformComponent& GetTransform();
 
+		// Copies entity to destination scene
 		Entity CopyEntity(Scene* dstScene);
 
+		// Returns pointer to scene
 		Scene* GetScene() { return m_Scene; }
+		// Returns entity unique identifier
 		UUID GetUUID() const;
+		// Returns entity tag stored in TagComponent
 		const std::string& GetTag() const;
 
+		// Checks if entity is valid
 		bool IsValid();
+		// Destroys entity and it's child entities
 		void Destroy();
-		void AddChildEntity(Entity child);
+		// Destroys all child entities 
 		void DestroyChildEntities();
+
+		// Adds child entity given as parameter
+		void AddChildEntity(Entity child);
+		// Detaches entity from parent and moves to scene root
+		void PopHierarchy();
+		// Checks if entity is parent of given entity
+		bool IsParentOf(Entity entity);
 
 		// Requires RigidbodyComponent
 		b2Body* GetBox2DRigidbody();

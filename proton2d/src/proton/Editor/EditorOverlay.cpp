@@ -113,6 +113,13 @@ namespace proton {
 			if (ImGui::IsItemClicked())
 				m_Inspector.SetSelectionContext(Entity{});
 
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (ImGui::AcceptDragDropPayload("Entity"))
+					m_DraggingEntity.PopHierarchy();
+				ImGui::EndDragDropTarget();
+			}
+
 			if (opened)
 			{
 				m_ActiveScene->m_Registry.each([&](auto id)
@@ -230,6 +237,24 @@ namespace proton {
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetComponent<TagComponent>().Tag.c_str());
+
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
+		{
+			ImGui::BeginDragDropSource();
+			ImGui::SetDragDropPayload("Entity", (void*)&m_DraggingEntity, sizeof(Entity));
+			ImGui::EndDragDropSource();
+			m_DraggingEntity = entity;
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (!m_DraggingEntity.IsParentOf(entity) && ImGui::AcceptDragDropPayload("Entity"))
+			{
+				m_DraggingEntity.PopHierarchy();
+				entity.AddChildEntity(m_DraggingEntity);
+			}
+			ImGui::EndDragDropTarget();
+		}
 
 		if (ImGui::IsItemClicked())
 			m_Inspector.SetSelectionContext(entity);

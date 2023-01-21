@@ -53,6 +53,7 @@ namespace proton {
 
 		EditorCamera m_Camera;
 
+		Entity m_DraggingEntity;
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
 		glm::vec2 m_CameraDragPosition = { 0.0f, 0.0f };
 
