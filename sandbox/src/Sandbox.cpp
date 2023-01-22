@@ -1,3 +1,4 @@
+#include "pcheader.h"
 #include "GameLayer.h"
 
 class Sandbox : public proton::Application
@@ -14,8 +15,4 @@ public:
 	}
 };
 
-int main(int argc, char** argv) 
-{
-	Sandbox app("Proton Engine");
-	app.Run();
-}
+PROTON_APPLICATION_ENTRY_POINT(Sandbox, "Proton Engine");

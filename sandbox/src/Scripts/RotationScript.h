@@ -1,18 +1,17 @@
 #pragma once
 
-#include <proton/Scene/EntityScript.h>
-#include <box2d/include/box2d/b2_body.h>
+#include <Proton2D.h>
 
 using namespace proton;
 
-class RotationScript : public EntityScript
+class RotationScript : public proton::EntityScript
 {
 public:
 	ENTITY_SCRIPT_CLASS(RotationScript)
 
 	virtual void RegisterFields()
 	{
-		RegisterField(ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
+		RegisterField(proton::ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
 	}
 
 	virtual void OnCreate()
@@ -22,8 +21,13 @@ public:
 
 	virtual void OnUpdate(float ts) override
 	{
-		m_Body->SetTransform(m_Body->GetPosition(),
-			m_Body->GetAngle() + m_RotationSpeed * b2_pi * ts);
+		if (m_Body) 
+		{
+			m_Body->SetTransform(m_Body->GetPosition(),
+				m_Body->GetAngle() + m_RotationSpeed * b2_pi * ts);
+		}
+		else
+			GetTransform().Rotation += m_RotationSpeed;
 	}
 
 private:

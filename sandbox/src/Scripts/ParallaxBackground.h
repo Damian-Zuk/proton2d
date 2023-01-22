@@ -2,9 +2,7 @@
 
 #include "proton/Scene/EntityScript.h"
 
-using namespace proton;
-
-class ParallaxBackground : public EntityScript
+class ParallaxBackground : public proton::EntityScript
 {
 public:
 	ENTITY_SCRIPT_CLASS(ParallaxBackground)
@@ -18,7 +16,7 @@ private:
 
 	float m_SpriteAspectRatio = 1.0f;
 	uint32_t m_CopiesCount = 3;
-	TransformComponent* m_Transform;
-	std::vector<TransformComponent*> m_Copies;
-	Entity m_FirstCopy;
+	proton::TransformComponent* m_Transform;
+	std::vector<proton::TransformComponent*> m_Copies;
+	proton::Entity m_FirstCopy;
 };

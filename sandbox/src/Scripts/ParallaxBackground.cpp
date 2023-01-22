@@ -1,7 +1,7 @@
-#include "pch.h"
+#include "pcheader.h"
 #include "ParallaxBackground.h"
 
-#include <cmath>
+using namespace proton;
 
 void ParallaxBackground::OnRegisterFields()
 {

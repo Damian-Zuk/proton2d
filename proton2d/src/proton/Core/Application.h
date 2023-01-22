@@ -13,8 +13,6 @@ namespace proton {
 		Application(const std::string& appName);
 		virtual ~Application();
 
-		// Call this function to run application
-		// after you created Application derivative instance
 		void Run();
 		
 		void PushLayer(AppLayer* layer);
@@ -47,3 +45,24 @@ namespace proton {
 	};
 
 }
+
+#ifdef PROTON_DISTRIBUTION
+#ifdef PROTON_PLATFORM_WINDOWS
+#include <Windows.h>
+#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass, WindowTitle)\
+	int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)\
+	{\
+		ApplcationClass app(WindowTitle);\
+		app.Run();\
+	}
+#endif
+#else
+#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass, WindowTitle)\
+	int main(int argc, char** argv)\
+	{\
+		ApplcationClass app(WindowTitle);\
+		app.Run();\
+	}
+#endif
+
+	

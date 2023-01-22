@@ -110,6 +110,9 @@ project "sandbox"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "pcheader.h"
+	pchsource "%{prj.location}/src/pcheader.cpp"
+
 	files
 	{
 		"%{prj.name}/src/**.h",
@@ -119,6 +122,7 @@ project "sandbox"
 	includedirs
 	{
 		"proton2d/src",
+		"%{prj.name}/src",
 		"vendor",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
@@ -153,3 +157,7 @@ project "sandbox"
 		defines "PROTON_DISTRIBUTION"
 		runtime "Release"
 		optimize "on"
+		kind "WindowedApp"
+	
+	filter {"configurations:Distribution", "system:windows"}
+		entrypoint "WinMainCRTStartup"

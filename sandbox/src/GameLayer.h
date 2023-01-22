@@ -1,13 +1,9 @@
 #pragma once
 
-#include <Proton2D.h>
-
-using namespace proton;
-
-class GameLayer : public AppLayer
+class GameLayer : public proton::AppLayer
 {
 public:
 	virtual void OnCreate() override;
 	virtual void OnUpdate(float ts) override;
-	virtual void OnEvent(Event& e);
+	virtual void OnEvent(proton::Event& e);
 };

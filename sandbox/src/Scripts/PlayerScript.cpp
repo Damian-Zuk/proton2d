@@ -1,12 +1,5 @@
-#include "pch.h" // todo: make own precompiled header for sandbox
+#include "pcheader.h"
 #include "PlayerScript.h"
-
-#include <proton/Core/Input.h>
-
-#include <box2d/b2_contact.h>
-#include <box2d/b2_world_callbacks.h>
-
-#include <glm/gtc/type_ptr.hpp>
 
 using namespace proton;
 

@@ -1,16 +1,18 @@
+#include "pcheader.h"
 #include "GameLayer.h"
-#include "Scripts/PlayerScript.h"
-#include "Scripts/RotationScript.h"
-#include "Scripts/ParallaxBackground.h"
-
-#include <random>
+#include "Scripts/RotationScript.h" // script with only header file must be compiled somewhere
 
 using namespace proton;
 
 void GameLayer::OnCreate()
 {
+#if PROTON_DISTRIBUTION
+	SceneManager::Load("level_1");
+	SceneManager::SetActiveScene("level_1")->BeginPlay();
+#else
 	SceneManager::Load("level_1");
 	SceneManager::SetActiveScene("level_1");
+#endif
 }
 
 void GameLayer::OnUpdate(float ts)
@@ -29,7 +31,7 @@ void GameLayer::OnEvent(Event& e)
 		if (event.GetKeyCode() == Key::R)
 		{
 			glm::vec2 cursorPos = scene->GetMouseWorldPosition();
-			Entity entity = scene->CreateEntity("Box");
+			Entity entity = scene->CreateEntity("Random Box");
 			entity.AddComponent<RigidbodyComponent>().Type = b2_dynamicBody;
 			entity.AddComponent<BoxColliderComponent>();
 			auto& sprite = entity.AddComponent<SpriteComponent>();
@@ -37,8 +39,7 @@ void GameLayer::OnEvent(Event& e)
 			transform.Position = { cursorPos.x, cursorPos.y, 0 };
 			transform.Rotation = Random::Float(0.0f, 80.0f);
 			float scale = Random::Float(1.0f, 1.5f);
-			transform.Scale.x = scale;
-			transform.Scale.y = scale;
+			transform.Scale = { scale, scale };
 			sprite.Color.r = Random::Float(0.0f, 1.0f);
 			sprite.Color.g = Random::Float(0.0f, 1.0f);
 			sprite.Color.b = Random::Float(0.0f, 1.0f);
