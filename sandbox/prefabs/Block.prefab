@@ -1,23 +1,27 @@
 {
+    "ID": 7546317364494050524,
     "Tag": "Block",
     "Transform": {
         "Position": [
-            -7.69276,
-            2.35388,
-            0.054
+            27.83043,
+            -2.49177,
+            0.061
         ],
         "Rotation": 0.0,
         "Scale": [
-            5.0,
-            5.0
+            4.0,
+            3.0
         ]
     },
     "NineSliceSprite": {
-        "Spritesheet": "level-sheet-1.png",
-        "Width": 5,
-        "Height": 5,
+        "Spritesheet": "level-sheet.png",
+        "Width": 4,
+        "Height": 4,
         "BlockBorders": 255,
-        "TileScale": [
+        "TileScale": 1.0,
+        "Color": [
+            1.0,
+            1.0,
             1.0,
             1.0
         ]

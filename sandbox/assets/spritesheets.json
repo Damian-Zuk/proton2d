@@ -10,13 +10,8 @@
         "TileHeight": 32
     },
     {
-        "Filepath": "test.png",
-        "TileWidth": 32,
-        "TileHeight": 32
-    },
-    {
-        "Filepath": "skeleton-sheet.png",
-        "TileWidth": 150,
-        "TileHeight": 150
+        "Filepath": "portal-sheet.png",
+        "TileWidth": 64,
+        "TileHeight": 64
     }
 ]
