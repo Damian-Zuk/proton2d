@@ -19,30 +19,38 @@ void PlayerScript::OnRegisterFields()
 void PlayerScript::OnCreate()
 {
 	m_Body = GetBox2DRigidbody();
-	// Create animations flipbook
-	m_SpriteAnimation = &AddComponent<SpriteAnimationComponent>().SpriteAnimation;
-	m_SpriteAnimation->SetFPS(10);
-	m_SpriteAnimation->CreateAnimation(Idle, 10);
-	m_SpriteAnimation->CreateAnimation(Run, 10);
-	m_SpriteAnimation->CreateAnimation(Attack, 10);
-	m_SpriteAnimation->CreateAnimation(Jump, 3);
-	m_SpriteAnimation->SetAnimation(Idle, Right);
+	// Create animations
+	m_Animation = AddComponent<SpriteAnimationComponent>().SpriteAnimation;
+	m_Animation->SetFPS(10);
+	m_Animation->AddAnimation(Idle, 10);
+	m_Animation->AddAnimation(Run, 10);
+	m_Animation->AddAnimation(Attack, 10);
+	m_Animation->AddAnimation(Jump, 3);
+	m_Animation->SetAnimation(Idle, Right);
+
+	proton::UUID playerUUID = m_Entity.GetUUID();
 
 	m_FootSensor = GetScene()->FindByTag("FootSensor");
 	if (m_FootSensor)
 	{
 		auto& bc = m_FootSensor.GetComponent<BoxColliderComponent>();
 
-		bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContactInfo info)
+		bc.ContactCallback.OnBeginContactFunction = [&, playerUUID](PhysicsContactInfo info)
 		{
-			m_ContactCount++;
-			LOG("BeginContact", info.OtherUUID);
+			if (info.OtherUUID != playerUUID)
+			{
+				LOG("Begin", info.OtherUUID);
+				m_ContactCount++;
+			}
 		};
 
-		bc.ContactCallback.OnEndContactFunction = [&](PhysicsContactInfo info)
+		bc.ContactCallback.OnEndContactFunction = [&, playerUUID](PhysicsContactInfo info)
 		{
-			m_ContactCount--;
-			LOG("EndContact", info.OtherUUID);
+			if (info.OtherUUID != playerUUID && m_ContactCount > 0)
+			{
+				LOG("End", info.OtherUUID);
+				m_ContactCount--;
+			}
 		};
 	}
 }
@@ -61,24 +69,24 @@ void PlayerScript::OnUpdate(float ts)
 	if (m_IsAttacking)
 	{
 		bool space = Input::IsKeyPressed(Key::Space);
-		if (!space && m_SpriteAnimation->GetProgress() >= 0.5f)
+		if (!space && m_Animation->GetProgress() >= 0.5f)
 		{
 			// Stop attacking
-			m_SpriteAnimation->SetAnimation(Idle, m_Direction);
-			m_SpriteAnimation->SetPlayMode(AnimationPlayMode::REPEAT);
+			m_Animation->StartAnimation(Idle, m_Direction);
+			m_Animation->SetPlayMode(AnimationPlayMode::REPEAT);
 			m_IsAttacking = false;
 		}
-		else if (space && m_SpriteAnimation->FinishedPlaying())
-			m_SpriteAnimation->Replay();
+		else if (space && m_Animation->FinishedPlaying())
+			m_Animation->Replay();
 	}
 	if (!m_IsAttacking)
 	{
-		if (Input::IsKeyPressed(Key::Space))
+		if (!m_IsJumping && Input::IsKeyPressed(Key::Space))
 		{
 			// Begin attacking
-			m_SpriteAnimation->SetAnimation(Attack, m_Direction);
-			m_SpriteAnimation->SetPlayMode(AnimationPlayMode::PLAY_ONCE);
-			m_SpriteAnimation->Replay();
+			m_Animation->StartAnimation(Attack, m_Direction);
+			m_Animation->SetPlayMode(AnimationPlayMode::PLAY_ONCE);
+			m_Animation->Replay();
 			m_IsAttacking = true;
 		}
 	} 
@@ -90,12 +98,14 @@ void PlayerScript::OnUpdate(float ts)
 		if (m_IsAttacking) // Walking while attacking
 		{
 			SetVelocityX(m_PlayerSpeed / 2);
-			m_SpriteAnimation->SetMirrorFlip(Right);
+			m_Animation->SetMirrorFlip(false);
 		}
 		else // Running
 		{
 			SetVelocityX(m_PlayerSpeed);
-			m_SpriteAnimation->SetAnimation(Run, Right);
+			if (!m_IsJumping)
+				m_Animation->StartAnimation(Run);
+			m_Animation->SetMirrorFlip(false);
 		}
 	}
 	else if (Input::IsKeyPressed(Key::A))
@@ -104,27 +114,43 @@ void PlayerScript::OnUpdate(float ts)
 		if (m_IsAttacking) // Walking while attacking
 		{
 			SetVelocityX(-m_PlayerSpeed / 2);
-			m_SpriteAnimation->SetMirrorFlip(Left);
+			m_Animation->SetMirrorFlip(true);
 		}
 		else // Running
 		{
 			SetVelocityX(-m_PlayerSpeed);
-			m_SpriteAnimation->SetAnimation(Run, Left);
+			if (!m_IsJumping)
+				m_Animation->StartAnimation(Run);
+			m_Animation->SetMirrorFlip(true);
 		}
 	}
 	else  
 	{
 		SetVelocityX(0.0f);
-		if (!m_IsAttacking) // Idle
-			m_SpriteAnimation->SetAnimation(Idle, m_Direction);
+		if (!m_IsAttacking && !m_IsJumping) // Idle
+			m_Animation->SetAnimation(Idle, m_Direction);
 	}
 
 	// Jumping
-	if (Input::IsKeyPressed(Key::W))
+	if (!m_IsAttacking && Input::IsKeyPressed(Key::W))
 	{
-		if (m_ContactCount > 0)
+		if (m_ContactCount > 0 && m_JumpThreshold == 0.0f)
 		{
+			m_IsJumping = true;
 			ApplyImpulse({ 0.0f,  m_JumpForce });
+			m_JumpThreshold = 0.5f;
 		}
-	}	
+	}
+	if (m_IsJumping || m_ContactCount == 0)
+	{
+		m_Animation->SetAnimation(Jump, m_Direction);
+		m_IsJumping = true;
+	}
+	if (m_IsJumping && m_JumpThreshold == 0.0f && m_ContactCount > 0)
+	{
+		m_Animation->SetAnimation(Idle, m_Direction);
+		m_IsJumping = false;
+	}
+
+	m_JumpThreshold = std::max(m_JumpThreshold - ts, 0.0f);
 }

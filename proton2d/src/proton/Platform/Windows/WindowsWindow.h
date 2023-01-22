@@ -1,3 +1,6 @@
+/*
+* From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.h
+*/
 #pragma once
 
 #include "proton/Core/Window.h"
@@ -31,6 +34,8 @@ namespace proton {
 
 	private:
 		GLFWwindow* m_Window;
+		// For disabling fullscreen and restoring previous width and height
+		unsigned int m_PreviousWidth, m_PreviousHeight;
 
 		struct WindowData
 		{

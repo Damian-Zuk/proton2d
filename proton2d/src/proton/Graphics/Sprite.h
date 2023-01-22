@@ -15,7 +15,7 @@ namespace proton {
 	class Spritesheet
 	{
 	public:
-		Spritesheet(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight);
+		Spritesheet(Shared<Texture> texture, uint32_t tileWidth, uint32_t tileHeight);
 
 		// Returns pointer to OpenGL texture object
 		Shared<Texture> GetTexture();
@@ -48,13 +48,13 @@ namespace proton {
 	{
 	public:
 		Sprite() = default;
-		Sprite(const Shared<Texture>& texture);
-		Sprite(const Shared<Spritesheet>& spritesheet);
+		Sprite(Shared<Texture> texture);
+		Sprite(Shared<Spritesheet> spritesheet);
 
 		// Sets pointer to texture object, use AssetManager to get texture
-		void SetTexture(const Shared<Texture>& texture);
+		void SetTexture(Shared<Texture> texture);
 		// Sets pointer to spritesheet object, use AssetManager to get spritesheet
-		void SetSpritesheet(const Shared<Spritesheet>& spritesheet);
+		void SetSpritesheet(Shared<Spritesheet> spritesheet);
 
 		// Sets spritesheet tile position
 		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
@@ -70,6 +70,8 @@ namespace proton {
 
 		// Returns pointer to OpenGL texture object
 		const Shared<Texture> GetTexture() const { return m_Texture; };
+
+		float GetAspectRatio() const { return (float)m_PixelSize.x / (float)m_PixelSize.y; }
 
 		operator bool() const { return m_Texture != nullptr; }
 

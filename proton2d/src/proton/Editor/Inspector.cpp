@@ -84,7 +84,7 @@ namespace proton {
 				ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + ImGui::CalcTextSize(uuid.c_str()).x - 140);
 				if (ImGui::Button("Create prefab", { 120.0f, 25.0f }))
 				{
-					PrefabManager::SaveAsPrefab(m_SelectedEntity);
+					PrefabManager::CreatePrefabFromEntity(m_SelectedEntity);
 				}
 				ImGui::Dummy({ 0.0f, 5.0f });
 
@@ -191,7 +191,13 @@ namespace proton {
 								{
 									auto& spritesheet = AssetManager::GetSpritesheet(kv.first);
 									if (spritesheet)
+									{
 										sprite = Sprite(spritesheet);
+										auto& scale = m_SelectedEntity.GetTransform().Scale;
+										float ratio = sprite.GetAspectRatio();
+										if (scale.x / scale.y != ratio)
+											scale.x = scale.y * ratio;
+									}
 								}
 								ImGui::PopStyleColor();
 								if (isSelected)
@@ -206,7 +212,13 @@ namespace proton {
 								{
 									auto& texture = AssetManager::GetTexture(path);
 									if (texture)
+									{
 										sprite = Sprite(texture);
+										auto& scale = m_SelectedEntity.GetTransform().Scale;
+										float ratio = sprite.GetAspectRatio();
+										if (scale.x / scale.y != ratio)
+											scale.x = scale.y * ratio;
+									}
 								}
 								ImGui::PopStyleColor();
 								if (isSelected)
@@ -514,7 +526,12 @@ namespace proton {
 						}
 
 						if (removeScript)
+						{
+							bool breakLoop = scriptInstance->m_ScriptFields.size() == 1;
 							m_SelectedEntity.RemoveScript(scriptClassName);
+							if (breakLoop)
+								break;
+						}
 						ImGui::Dummy({ 0.0f, 10.0f });
 					}
 				}

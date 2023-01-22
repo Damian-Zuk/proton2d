@@ -13,9 +13,24 @@ namespace proton {
         m_Sprite = sprite;
     }
 
-    void SpriteAnimation::CreateAnimation(uint16_t index, uint16_t frameCount)
+    void SpriteAnimation::AddAnimation(uint16_t index, uint16_t frameCount)
     {
         m_AnimationsFrameCount[index] = frameCount;
+    }
+
+    void SpriteAnimation::StartAnimation(uint16_t index, bool mirror_x, bool mirror_y)
+    {
+        if (!m_Sprite)
+            return;
+
+        if (index != m_CurrentAnimationIndex)
+        {
+            m_CurrentAnimationIndex = index;
+            m_CurrentAnimationFrameCount = m_AnimationsFrameCount[index];
+            m_Sprite->SetTile(0, index);
+        }
+
+        SetMirrorFlip(mirror_x, mirror_y);
     }
 
     void SpriteAnimation::SetAnimation(uint16_t index, bool mirror_x, bool mirror_y)
@@ -29,7 +44,8 @@ namespace proton {
         {
             m_CurrentAnimationIndex = index;
             m_CurrentAnimationFrameCount = m_AnimationsFrameCount[index];
-            m_Sprite->SetTile(0, index);
+            m_CurrentFrame %= m_CurrentAnimationFrameCount;
+            m_Sprite->SetTile(m_CurrentFrame, index);
         }
 
         SetMirrorFlip(mirror_x, mirror_y);

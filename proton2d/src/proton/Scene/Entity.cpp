@@ -53,24 +53,6 @@ namespace proton
 		return true;
 	}
 
-	void Entity::DestroyChildEntities()
-	{
-		auto& rc = GetComponent<RelationshipComponent>();
-		entt::entity current = rc.First;
-
-		for (uint32_t i = 0; i < rc.ChildrenCount; i++)
-		{
-			Entity childEntity = { m_Scene, current };
-			auto& childRC = childEntity.GetComponent<RelationshipComponent>();
-			entt::entity next = childRC.Next;
-
-			childEntity.DestroyChildEntities();
-			m_Scene->DestroyEntity(childEntity);
-
-			current = next;
-		}
-	}
-
 	b2Body* Entity::GetBox2DRigidbody()
 	{
 		if (!HasComponent<RigidbodyComponent>())
@@ -124,30 +106,13 @@ namespace proton
 
 	void Entity::Destroy()
 	{
-		auto& rc = GetComponent<RelationshipComponent>();
-
-		DestroyChildEntities();
-
-		if (rc.Parent != entt::null)
-		{
-			Entity parent { m_Scene, rc.Parent };
-			Entity prev   { m_Scene, rc.Prev   };
-			Entity next   { m_Scene, rc.Next   };
-
-			auto& parentReletions = parent.GetComponent<RelationshipComponent>();
-			parentReletions.ChildrenCount--;
-
-			if (prev)
-				prev.GetComponent<RelationshipComponent>().Next = next.m_Handle;
-			else
-				parentReletions.First = rc.Next;
-
-			if (next)
-				next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
-		}
-
 		m_Scene->DestroyEntity(*this);
 		m_Handle = entt::null;
+	}
+
+	void Entity::DestroyChildEntities()
+	{
+		m_Scene->DestroyChildEntities(*this);
 	}
 
 	void Entity::AddChildEntity(Entity child)

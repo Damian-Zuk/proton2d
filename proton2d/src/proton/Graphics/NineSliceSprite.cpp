@@ -49,8 +49,13 @@ namespace proton {
 		Refresh();
 	}
 
-	void NineSliceSprite::GenerateTilePositions(std::vector<std::vector<glm::uvec2>>& tilemap)
+	std::vector<std::vector<glm::uvec2>> NineSliceSprite::GenerateTilePositions()
 	{
+		std::vector<std::vector<glm::uvec2>> tilemap;
+		tilemap.resize(m_Width);
+		for (auto& column : tilemap)
+			column.resize(m_Height);
+
 		uint16_t sx = m_PositionOffset.x, sy = m_PositionOffset.y;
 
 		// Fill whole tilemap with center slices
@@ -125,6 +130,8 @@ namespace proton {
 		if (m_BlockBorders & BlockBorder_Bottom)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
 				tilemap[x][0] = { sx + 1, sy };
+
+		return tilemap;
 	}
 
 	void NineSliceSprite::GenerateSprite()
@@ -174,20 +181,17 @@ namespace proton {
 		};
 
 		// Generate spritesheet tile positions
-		std::vector<std::vector<glm::uvec2>> coordsMap;
-		coordsMap.resize(m_Width);
-		for (auto& column : coordsMap)
-			column.resize(m_Height);
-		GenerateTilePositions(coordsMap);
+		std::vector<std::vector<glm::uvec2>> spritesheetTilePositions = GenerateTilePositions();
 
 		for (uint32_t y = 0; y < tileCount.y; y++)
 		{
 			for (uint32_t x = 0; x < tileCount.x; x++)
 			{
 				// Tile position (in spritesheet)
-				const glm::uvec2& tp = coordsMap[x][y];
+				const glm::uvec2& tp = spritesheetTilePositions[x][y];
 				TextureCoords& coords = m_Tilemap[x][y].Coords;
 				coords = m_Spritesheet->GetTextureCoords(tp.x, tp.y);
+
 				glm::vec2 scale = { m_TileScale, m_TileScale };
 				glm::vec2 pos = {
 					(-width / 2.0f + x) * scale.x + 0.5f * m_TileScale,

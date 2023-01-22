@@ -113,7 +113,7 @@ namespace proton {
 		textureList.clear();
 		spritesheetList.clear();
 
-		textureList = Utils::GetFilesFromDirectoryRecursive("assets",
+		textureList = Utils::ScanDirectoryRecursive("assets",
 			{ ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd" });
 
 		for (auto& s : json::parse(Utils::ReadFile("assets/spritesheets.json")))

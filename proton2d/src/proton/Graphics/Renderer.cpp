@@ -137,8 +137,8 @@ namespace proton {
 		// Init texture slots vector, shaders and camera uniform buffer
 		data.TextureSlots.resize(data.MaxTextureSlots);
 		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true); // white texture
-		data.QuadShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "/shaders/Quad2D.glsl");
-		data.LineShader          = CreateShared<Shader>(PROTON_ENGINE_ASSETS_DIR "/shaders/Line2D.glsl");
+		data.QuadShader          = CreateShared<Shader>("shaders/Quad2D.glsl");
+		data.LineShader          = CreateShared<Shader>("shaders/Line2D.glsl");
 		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
 	
 		SetClearColor(DEFAULT_CLEAR_COLOR);

@@ -110,6 +110,7 @@ namespace proton {
 			m_IsRunning = true;
 			while (m_IsRunning) 
 			{
+				PROFILE_SCOPE("Application_Loop");
 				auto start = std::chrono::high_resolution_clock::now();
 
 				if (!m_WindowMinimized) 
@@ -123,20 +124,19 @@ namespace proton {
 					Scene* activeScene = SceneManager::GetActiveScene();
 					if (activeScene)
 						activeScene->OnUpdate(m_FrameTime * m_TimeScale);
+#if PROTON_EDITOR
+					if (m_ShowEditorOverlay)
+					{
+						PROFILE_SCOPE("on_imgui_render");
+						m_EditorOverlay->BeginImGuiRender();
+
+						for (AppLayer* layer : m_AppLayers)
+							layer->OnImGuiRender();
+
+						m_EditorOverlay->EndImGuiRender();
+					}
+#endif
 				}
-
-				#if PROTON_EDITOR
-				if (m_ShowEditorOverlay)
-				{
-					PROFILE_SCOPE("on_imgui_render")
-					m_EditorOverlay->BeginImGuiRender();
-
-					for (AppLayer* layer : m_AppLayers)
-						layer->OnImGuiRender();
-
-					m_EditorOverlay->EndImGuiRender();
-				}
-				#endif
 
 				m_Window->OnUpdate();
 				
@@ -169,20 +169,25 @@ namespace proton {
 	{
 		EventDispatcher dispatcher(event);
 
-		#if PROTON_EDITOR
+		
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
-			if (e.GetKeyCode() == Key::F3)
-			m_ShowEditorOverlay = !m_ShowEditorOverlay;
+#if PROTON_EDITOR
+			if (e.GetKeyCode() == Key::F4)
+				m_ShowEditorOverlay = !m_ShowEditorOverlay;
+#endif
+			if (e.GetKeyCode() == Key::F11)
+				m_Window->SetFullscreen(!m_Window->IsFullscreen());
+
 			return true;
 		});
-		#endif
+		
 
 		dispatcher.Dispatch<WindowClosedEvent>([&](WindowClosedEvent& e)
-			{
-				m_IsRunning = false;
-		return true;
-			});
+		{
+			m_IsRunning = false;
+			return true;
+		});
 
 		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& e)
 		{
@@ -191,6 +196,9 @@ namespace proton {
 			{
 				m_WindowMinimized = false;
 				Renderer::SetViewport(0, 0, width, height);
+
+				for (auto& kv : SceneManager::s_Instance->m_Scenes)
+					kv.second->OnViewportResize(width, height);
 			}
 			else 
 				m_WindowMinimized = true;

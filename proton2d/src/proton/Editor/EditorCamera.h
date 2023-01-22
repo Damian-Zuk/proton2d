@@ -14,8 +14,8 @@ namespace proton {
 		void OnUpdate(float ts);
 		void OnEvent(Event& e);
 
-		Shared<Camera> GetCamera() { return m_Camera; }
-		const Shared<Camera>& GetCamera() const { return m_Camera; }
+		Shared<Camera> GetBaseCamera() { return m_Camera; }
+		const Shared<Camera>& GetBaseCamera() const { return m_Camera; }
 
 		const glm::vec3& GetPosition() const { return m_Position; }
 
@@ -30,5 +30,6 @@ namespace proton {
 		float m_CameraZoomSpeed = 0.10f;
 
 		friend class EditorOverlay;
+		friend class SceneSerializer;
 	};
 }

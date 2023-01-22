@@ -4,30 +4,44 @@ namespace proton {
 
 	class Scene;
 
+	/*
+	* SceneManager class methods use scene filepaths - "scenePath" 
+	* (realative to "scenes" directory) without ".scene" extension
+	* as scene identifiers (keys in map storage)
+	*/
 	class SceneManager
 	{
 	public:
 		SceneManager() = default;
 		~SceneManager();
 
-		static Scene* CreateNewEmptyScene(const std::string& sceneName);
-		static Scene* Load(const std::string& sceneName);
-		static Scene* SetActiveScene(const std::string& sceneName, bool endCurrentScene = false);
+		static bool IsLoaded(const std::string& scenePath);
+
+		static Scene* Load(const std::string& scenePath);
+		static void Unload(const std::string& scenePath);
+
+		static Scene* SetActiveScene(const std::string& scenePath);
 		static Scene* GetActiveScene();
-		static Scene* GetScene(const std::string& sceneName);
-		static void Unload(const std::string& sceneName);
-		static bool IsLoaded(const std::string& sceneName);
-		// filepath without .scene extension
-		static void SaveSceneAs(const std::string& sceneName, const std::string& filepath);
-		static void SaveActiveSceneAs(const std::string& filepath);
+
+		static Scene* GetScene(const std::string& scenePath);
+
+		static void SaveSceneAs(const std::string& scenePath, const std::string& mewSenePath);
+		static void SaveActiveSceneAs(const std::string& scenePath);
+		static void SaveActiveScene();
+
 		static const std::string& GetActiveSceneFilepath();
 
 	private:
 		static void Init();
+		static Scene* LoadFromCache(const std::string& scenePath);
+		static Scene* CreateEmptyScene(const std::string& scenePath);
+
+		Scene* Deserialize(const std::string& scenePath, const std::string& fullFilepath);
+	private:
 		static SceneManager* s_Instance;
 
 		Scene* m_ActiveScene = nullptr;
-		std::unordered_map<std::string, Scene*> m_Scenes;
+		std::map<std::string, Scene*> m_Scenes;
 
 		friend class Application;
 		friend class EditorOverlay;

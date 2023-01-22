@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <map>
+#include <unordered_map>
 
 #if PROTON_PLATFORM_WINDOWS
 #include <Windows.h>

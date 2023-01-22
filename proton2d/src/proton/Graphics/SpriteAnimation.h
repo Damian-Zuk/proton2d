@@ -17,11 +17,11 @@ namespace proton {
 		SpriteAnimation() = default;
 		SpriteAnimation(Sprite* sprite);
 
-		void SetSprite(Sprite* sprite);
 
 		// index - spritesheet Y tile pos (from image bottom)
-		void CreateAnimation(uint16_t index, uint16_t frameCount);
+		void AddAnimation(uint16_t index, uint16_t frameCount);
 		// index - spritesheet Y tile pos (from image bottom)
+		void StartAnimation(uint16_t index, bool mirror_x = false, bool mirror_y = false);
 		void SetAnimation(uint16_t index, bool mirror_x = false, bool mirror_y = false);
 		void SetMirrorFlip(bool mirror_x = false, bool mirror_y = false);
 		void SetPlayMode(AnimationPlayMode mode);
@@ -30,11 +30,12 @@ namespace proton {
 		float GetProgress();
 		// Used for AnimationPlayMode::PLAY_ONCE
 		bool FinishedPlaying();
-		
+
 		void SetFPS(uint16_t fps);
 		uint16_t GetFPS() const { return m_FPS; }
 
 	private:
+		void SetSprite(Sprite* sprite);
 		void PlayFrame(float ts);
 
 		Sprite* m_Sprite = nullptr;
@@ -52,5 +53,6 @@ namespace proton {
 		float m_ElapsedTime = 0.0f;
 
 		friend class Scene;
+		friend class Entity;
 	};
 }

@@ -26,22 +26,6 @@ namespace proton {
 	{
 	}
 
-	Scene::Scene(const Scene& other)
-		: m_SceneName(other.m_SceneName), m_DefaultCamera(CreateShared<Camera>()), m_ContactListener(this)
-	{
-		std::unordered_map<UUID, Entity> enttMap;
-
-		// Create entities in new scene
-		auto idView = other.m_Registry.view<IDComponent>();
-		for (auto e : idView)
-		{
-			UUID uuid = other.m_Registry.get<IDComponent>(e).ID;
-			const auto& name = other.m_Registry.get<TagComponent>(e).Tag;
-			Entity newEntity = CreateEntityWithID(uuid, name);
-			enttMap[uuid] = newEntity;
-		}
-	}
-
 	Scene::~Scene()
 	{
 		EndPlay();
@@ -92,11 +76,16 @@ namespace proton {
 
 	void Scene::BeginPlay()
 	{	
-		if (m_SceneState == SceneState::Play)
-		{
-			LOG_WARN("[OnBeginPlay] Scene", m_SceneName, "is currenty being played!");
+		if (m_World)
 			return;
-		}
+
+#if PROTON_EDITOR
+		// Create editor backup scene
+		SceneSerializer serializer(this);
+		std::string filepath = m_SceneFilepath == "<Unsaved scene>" ?
+			"unsaved_scene" : m_SceneFilepath;
+		serializer.Serialize("cache/" + filepath + ".scene");
+#endif
 
 		// Initialize physics world
 		m_SceneState = SceneState::Play;
@@ -113,8 +102,8 @@ namespace proton {
 			delete m_World;
 			m_World = nullptr;
 		}
-
 		m_RuntimeBodies.clear();
+		m_SkipFirstPhysicsUpdate = true;
 	}
 	 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -133,7 +122,7 @@ namespace proton {
 		return entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity)
+	void Scene::DestroyEntity(Entity entity, bool skipHierarchyCheck)
 	{
 		if (entity.HasComponent<ScriptComponent>())
 		{
@@ -142,6 +131,42 @@ namespace proton {
 				kv.second->OnDestroy();
 
 			entity.DeleteAllScriptInstances();
+		}
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			if (m_World)
+			{
+				UUID uuid = entity.GetUUID();
+				m_World->DestroyBody(m_RuntimeBodies.at(uuid));
+				m_RuntimeBodies.erase(uuid);
+			}
+		}
+		if (m_PrimaryCameraEntity == entity)
+		{
+			m_PrimaryCameraEntity = entt::null;
+			m_PrimaryCamera = nullptr;
+		}
+
+		auto& rc = entity.GetComponent<RelationshipComponent>();
+
+		DestroyChildEntities(entity);
+
+		if (!skipHierarchyCheck && rc.Parent != entt::null)
+		{
+			Entity parent{ this, rc.Parent };
+			Entity prev{ this, rc.Prev };
+			Entity next{ this, rc.Next };
+
+			auto& prc = parent.GetComponent<RelationshipComponent>();
+			prc.ChildrenCount--;
+
+			if (prev)
+				prev.GetComponent<RelationshipComponent>().Next = next.m_Handle;
+			else
+				prc.First = rc.Next;
+
+			if (next)
+				next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
 		}
 			
 		m_EntityMap.erase(entity.GetUUID());
@@ -173,14 +198,8 @@ namespace proton {
 
 		if (m_SceneState == SceneState::Play)
 		{
-			if (m_SkipUpdate)
-			{
-				m_SkipUpdate = false;
-				return;
-			}
-
 			// Update physics
-			if (m_EnablePhysics)
+			if (m_EnablePhysics || m_SkipFirstPhysicsUpdate)
 			{
 				PROFILE_SCOPE("update_physics");
 				m_World->Step(ts, m_PhysicsVelocityIterations, m_PhysicsPositionIterations);
@@ -193,6 +212,7 @@ namespace proton {
 					transform.Position.y = body->GetPosition().y;
 					transform.Rotation = glm::degrees(body->GetAngle());
 				}
+				m_SkipFirstPhysicsUpdate = false;
 			}
 
 			// Update scripts
@@ -216,7 +236,7 @@ namespace proton {
 			// Update animations
 			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
-				view.get<SpriteAnimationComponent>(entity).SpriteAnimation.PlayFrame(ts);
+				view.get<SpriteAnimationComponent>(entity).SpriteAnimation->PlayFrame(ts);
 		}
 
 		// Render scene
@@ -267,23 +287,19 @@ namespace proton {
 		// ***************************************************
 		// Render entities with SpriteComponent
 		// ***************************************************
-		auto renderableSprite = m_Registry.group<SpriteComponent>(entt::get<TransformComponent, RelationshipComponent>);
+		auto renderableSprite = m_Registry.view<SpriteComponent, TransformComponent>();
 		for (auto e : renderableSprite)
 		{
 			PROFILE_SCOPE("entity_render_sprite");
-			auto [transform, sprite, relationship] = renderableSprite.get<TransformComponent, SpriteComponent, RelationshipComponent>(e);
+			auto [transform, sprite] = renderableSprite.get<TransformComponent, SpriteComponent>(e);
 			
-			// Sprite flip
-			glm::vec3 outputScale = sprite.Sprite ? glm::vec3{
+			// Sprite mirror flip
+			glm::vec3 scale = {
 				transform.Scale.x * (sprite.Sprite.m_MirrorFlipX ? -1.0f : 1.0f),
 				transform.Scale.y * (sprite.Sprite.m_MirrorFlipY ? -1.0f : 1.0f), 1.0f
-			} : glm::vec3{ transform.Scale.x, transform.Scale.y, 1.0f };
+			};
 
-			// Sprite aspect ratio
-			if (sprite.Sprite)
-				outputScale.x *= (float)sprite.Sprite.m_PixelSize.x / (float)sprite.Sprite.m_PixelSize.y;
-
-			glm::mat4 transformMatrix = Math::GetTransform(transform.Position, outputScale, transform.Rotation);
+			glm::mat4 transformMatrix = Math::GetTransform(transform.Position, scale, transform.Rotation);
 
 			if (sprite.Sprite)
 				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color, sprite.TilingFactor);
@@ -295,7 +311,7 @@ namespace proton {
 		// ***************************************************
 		// Render entities with NineSliceSpriteComponent
 		// ***************************************************
-		auto renderableNineSlice = m_Registry.group<NineSliceSpriteComponent>(entt::get<TransformComponent>);
+		auto renderableNineSlice = m_Registry.view<TransformComponent, NineSliceSpriteComponent>();
 		for (auto e : renderableNineSlice)
 		{
 			PROFILE_SCOPE("entity_render_nine_slice_sprite");
@@ -306,22 +322,41 @@ namespace proton {
 			if (!spritesheet)
 				continue;
 
-			glm::mat4 transformMatrix = Math::GetTransform(transform.Position, glm::vec2{1.0f}, transform.Rotation);
+			glm::mat4 transformMatrix = Math::GetTransform(transform.Position,
+				glm::vec2{1.0f}, transform.Rotation);
 			
-			uint32_t x = 0, y = 0;
-			for (auto& column : sprite.m_Tilemap)
-			{
-				for (auto& tile : column)
+			for (const auto& column : sprite.m_Tilemap)
+				for (const auto& tile : column)
 				{
 					Renderer::DrawQuad(transformMatrix * tile.LocalTransform,
 						spritesheet->GetTexture(), tile.Coords, nsc.Color);
-					y++;
 				}
-				x++; y = 0;
-			}
 		}
 
 		Renderer::EndScene();
+	}
+
+	void Scene::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto entity : view)
+		{
+			auto& camera = view.get<CameraComponent>(entity);
+			camera.Camera->SetAspectRatio((float)width / float(height));
+		}
+	}
+
+	void Scene::DestroyChildEntities(Entity entity)
+	{
+		auto& rc = entity.GetComponent<RelationshipComponent>();
+		Entity current = { this, rc.First };
+
+		while (current)
+		{
+			entt::entity next = current.GetComponent<RelationshipComponent>().Next;
+			DestroyEntity(current);
+			current = Entity{ this, next };
+		}
 	}
 
 	void Scene::SetPrimaryCameraEntity(Entity entity)
@@ -339,13 +374,14 @@ namespace proton {
 
 	Shared<Camera> Scene::GetPrimaryCamera()
 	{
+		PROFILE_SCOPE("GetPrimaryCamera");
 #if PROTON_EDITOR
 		if (m_SceneState != SceneState::Edit) {
 #endif
 			return m_PrimaryCamera ? m_PrimaryCamera : m_DefaultCamera;
 #if PROTON_EDITOR
 		}
-		return EditorOverlay::GetCamera().GetCamera();
+		return EditorOverlay::GetCamera().GetBaseCamera();
 #endif
 	}
 
@@ -457,10 +493,10 @@ namespace proton {
 				return glm::vec3{ 0.0f };
 
 			auto [transform, camera] = m_Registry.get<TransformComponent, CameraComponent>(m_PrimaryCameraEntity);
-			glm::vec3 pos = transform.Position;
-			pos.x += camera.PositionOffset.x;
-			pos.y += camera.PositionOffset.y;
-			return pos;
+			return glm::vec3{
+				transform.Position.x + camera.PositionOffset.x,
+				transform.Position.y + camera.PositionOffset.y, 0
+			};
 #if PROTON_EDITOR
 		} 
 		return EditorOverlay::GetCamera().GetPosition();

@@ -18,7 +18,7 @@ namespace proton {
 		size_t m_EntitiesCount = 0;
 		size_t m_ScriptedEntitiesCount = 0;
 
-		static constexpr uint32_t s_FrameTimePlotValuesCount = 100;
+		static constexpr uint32_t s_FrameTimePlotValuesCount = 200;
 		float m_FrameTimeHistory[s_FrameTimePlotValuesCount] = {};
 		uint32_t m_FrameTimeValuesOffset = 0;
 

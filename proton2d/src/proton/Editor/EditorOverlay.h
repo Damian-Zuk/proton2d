@@ -25,7 +25,7 @@ namespace proton {
 		static void SetSceneContext(Scene* context);
 		static void SetInspectorContext(Entity entity);
 		static Entity GetInspectorContext();
-		static const EditorCamera& GetCamera() { return s_Instance->m_Camera; }
+		static EditorCamera& GetCamera() { return s_Instance->m_Camera; }
 
 	private:
 		void BeginImGuiRender();
@@ -42,22 +42,24 @@ namespace proton {
 	private:
 		static EditorOverlay* s_Instance;
 
-		bool m_ShowSelectionOutline = true;
-		bool m_ShowSelectionCollider = true;
-		bool m_ShowAllColliders = false;
-		bool m_MovingSelection = false;
-		bool m_MovingCamera = false;
+		Scene* m_ActiveScene = nullptr;
 
 		Inspector m_Inspector;
 		DebugInfo m_DebugInfo;
-
 		EditorCamera m_Camera;
 
-		Entity m_DraggingEntity;
-		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
-		glm::vec2 m_CameraDragPosition = { 0.0f, 0.0f };
+		Entity m_DraggedEntity;
 
-		Scene* m_ActiveScene = nullptr;
+		bool m_ShowSelectionOutline = true;
+		bool m_ShowSelectionCollider = true;
+		bool m_ShowAllColliders = false;
+
+		bool m_MovingSelection = false;
+		bool m_MovingCamera = false;
+		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
+		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
+
+		float m_SavedSceneTextTimer = 0.0f;
 
 		friend class Application;
 		friend class Inspector;

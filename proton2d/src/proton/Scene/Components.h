@@ -44,7 +44,7 @@ namespace proton {
 
 	struct SpriteComponent
 	{
-		Sprite Sprite;
+		proton::Sprite Sprite;
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 		float TilingFactor = 1.0f;
@@ -88,6 +88,6 @@ namespace proton {
 
 	struct SpriteAnimationComponent
 	{
-		SpriteAnimation SpriteAnimation;
+		Shared<SpriteAnimation> SpriteAnimation;
 	};
 }

@@ -3,7 +3,7 @@
 
 namespace proton {
 
-	Spritesheet::Spritesheet(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight)
+	Spritesheet::Spritesheet(Shared<Texture> texture, uint32_t tileWidth, uint32_t tileHeight)
 		: m_SheetSize({ texture->GetWidth(), texture->GetHeight() }),
 		m_TileSize(tileWidth, tileHeight), m_Texture(texture)
 	{
@@ -39,25 +39,27 @@ namespace proton {
 		return m_TextureCoords[x % m_TileCount.x][y % m_TileCount.y];
 	}
 
-	Sprite::Sprite(const Shared<Texture>& texture)
+	Sprite::Sprite(Shared<Texture> texture)
 		: m_Texture(texture), m_PixelSize({ texture->GetWidth(), texture->GetHeight() })
 	{
 	}
 
-	Sprite::Sprite(const Shared<Spritesheet>& spritesheet)
+	Sprite::Sprite(Shared<Spritesheet> spritesheet)
 		: m_Spritesheet(spritesheet), m_Texture(spritesheet->GetTexture()),
 		m_PixelSize(spritesheet->m_TileSize)
 	{
 	}
 
-	void Sprite::SetTexture(const Shared<Texture>& texture)
+	void Sprite::SetTexture(Shared<Texture> texture)
 	{
+		if (!texture)
+			return;
 		m_Texture = texture;
 		m_Spritesheet = nullptr;
 		m_PixelSize = { texture->GetWidth(), texture->GetHeight() };
 	}
 
-	void Sprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
+	void Sprite::SetSpritesheet(Shared<Spritesheet> spritesheet)
 	{
 		m_Spritesheet = spritesheet;
 		m_Texture = spritesheet->GetTexture();

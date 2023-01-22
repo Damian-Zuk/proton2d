@@ -14,5 +14,11 @@ public:
 	virtual void OnUpdate(float ts) override;
 private:
 	float m_ParallaxFactor = 1.0f;
-	float m_TilingFactor = 3.0f;
+	float m_PositionOffset = 0.0f;
+
+	float m_SpriteAspectRatio = 1.0f;
+	uint32_t m_CopiesCount = 3;
+	TransformComponent* m_Transform;
+	std::vector<TransformComponent*> m_Copies;
+	Entity m_FirstCopy;
 };

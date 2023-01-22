@@ -37,7 +37,7 @@ namespace proton { namespace Utils {
 		return result;
 	}
 
-	std::vector<std::string> GetFilesFromDirectory(const std::string& directory,
+	std::vector<std::string> ScanDirectory(const std::string& directory,
 		std::initializer_list<std::string> extensionsFilter, bool returnExtensions)
 	{
 		std::vector<std::string> files;
@@ -60,7 +60,7 @@ namespace proton { namespace Utils {
 		return files;
 	}
 
-	std::vector<std::string> GetFilesFromDirectoryRecursive(const std::string& directory,
+	std::vector<std::string> ScanDirectoryRecursive(const std::string& directory,
 		std::initializer_list<std::string> extensionsFilter, bool returnExtensions)
 	{
 		std::vector<std::string> files;

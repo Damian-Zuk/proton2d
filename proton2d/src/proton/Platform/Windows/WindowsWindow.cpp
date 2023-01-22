@@ -1,3 +1,7 @@
+/*
+* From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.cpp
+*/
+
 #include "pch.h"
 #include "Proton/Platform/Windows/WindowsWindow.h"
 #include "Proton/Events/WindowEvents.h"
@@ -20,6 +24,9 @@ namespace proton {
 		m_Data.Title = title;
 		m_Data.Width = width;
 		m_Data.Height = height;
+		m_Data.Fullscreen = false;
+		m_PreviousWidth = width;
+		m_PreviousHeight = height;
 
 		LOG_INFO("Creating window", title, "(", width, height, ")");
 
@@ -152,6 +159,7 @@ namespace proton {
 
 	void WindowsWindow::OnUpdate()
 	{
+		PROFILE_FUNCTION();
 		glfwPollEvents();
 		glfwSwapBuffers(m_Window);
 	}
@@ -177,11 +185,15 @@ namespace proton {
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 		if (fullscreen)
 		{
+			m_PreviousWidth = m_Data.Width;
+			m_PreviousHeight = m_Data.Height;
 			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 			glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 		}
 		else
 		{
+			m_Data.Width = m_PreviousWidth;
+			m_Data.Height = m_PreviousWidth;
 			glfwSetWindowMonitor(m_Window, NULL, 100, 100, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
 		}
 	}

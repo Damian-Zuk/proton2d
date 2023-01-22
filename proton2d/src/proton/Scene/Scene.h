@@ -23,7 +23,6 @@ namespace proton {
 	{
 	public:
 		Scene(const std::string& name = "Unnamed scene");
-		Scene(const Scene& other);
 		~Scene();
 
 		// Call this function to start playing scene
@@ -38,7 +37,7 @@ namespace proton {
 		Entity CreateEntityWithID(UUID id, const std::string& name = "Unnamed entity");
 
 		// Destroy specified entity
-		void DestroyEntity(Entity entity);
+		void DestroyEntity(Entity entity, bool skipHierarchyCheck = false);
 
 		// Remove all entities from scene
 		void DestroyAll();
@@ -84,12 +83,18 @@ namespace proton {
 		void OnUpdate(float ts);
 		void EndPlay();
 		void RenderScene(const Camera& camera);
+		void OnViewportResize(uint32_t width, uint32_t height);
+		void DestroyChildEntities(Entity entity);
 
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
 
 	private:
-		SceneState m_SceneState = SceneState::Play;
+#if PROTON_EDITOR
+		SceneState m_SceneState = SceneState::Edit;
+#else
+		SceneState m_SceneState = SceneState::Paused;
+#endif
 		std::string m_SceneName;
 		std::string m_SceneFilepath = "<Unsaved scene>";
 		glm::vec4 m_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
@@ -105,6 +110,7 @@ namespace proton {
 		float m_WorldGravity = 9.8f;
 		b2World* m_World = nullptr;
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
+		bool m_SkipFirstPhysicsUpdate = true;
 
 		int m_PhysicsVelocityIterations = 5;
 		int m_PhysicsPositionIterations = 5;
@@ -121,7 +127,6 @@ namespace proton {
 			Scene* m_Scene;
 		} m_ContactListener;
 
-		bool m_SkipUpdate = false;
 
 		friend class Application;
 		friend class Entity;

@@ -56,7 +56,7 @@ namespace proton {
 			assert(sprite.m_Spritesheet && "Entity must have spritesheet texture");
 
 			auto& fb = m_Scene->m_Registry.emplace<SpriteAnimationComponent>(m_Handle);
-			fb.SpriteAnimation = SpriteAnimation(&sprite);
+			fb.SpriteAnimation = CreateShared<SpriteAnimation>(&sprite);
 			return fb;
 		}
 
@@ -131,11 +131,11 @@ namespace proton {
 		bool IsValid();
 		// Destroys entity and it's child entities
 		void Destroy();
-		// Destroys all child entities 
-		void DestroyChildEntities();
 
 		// Adds child entity given as parameter
 		void AddChildEntity(Entity child);
+		// Destroys all child entities
+		void DestroyChildEntities();
 		// Detaches entity from parent and moves to scene root
 		void PopHierarchy();
 		// Checks if entity is parent of given entity

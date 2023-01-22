@@ -28,23 +28,17 @@ public:
 	virtual void OnUpdate(float ts) override;
 
 private:
-	SpriteAnimation* m_SpriteAnimation;
-	PlayerDirection m_Direction = Right;
-
 	float m_PlayerSpeed = 5.0f;
 	float m_JumpForce = 5.0f;
+
+	Shared<SpriteAnimation> m_Animation;
+	PlayerDirection m_Direction = Right;
+
 	bool m_IsAttacking = false;
+	bool m_IsJumping = true;
+	float m_JumpThreshold = 0.0f;
 
-	// Field serialization test
-	//glm::vec2 test1;
-	//glm::vec3 test2;
-	//glm::vec4 test3;
-	//glm::vec2 test4;
-	//glm::vec3 test5;
-	//glm::vec4 test6;
-	//bool test7;
-
+	b2Body* m_Body = nullptr;
 	Entity m_FootSensor;
 	uint32_t m_ContactCount = 0;
-	b2Body* m_Body = nullptr;
 };

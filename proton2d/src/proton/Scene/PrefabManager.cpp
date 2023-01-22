@@ -24,11 +24,11 @@ namespace proton {
 	void PrefabManager::ReloadAllPrefabs()
 	{
 		s_Instance->m_PrefabsJsonData.clear();
-		for (auto prefabFile : Utils::GetFilesFromDirectory("prefabs", { ".prefab" }, false))
+		for (const auto& prefabFile : Utils::ScanDirectoryRecursive("prefabs", { ".prefab" }, false))
 			LoadPrefab(prefabFile);
 	}
 
-	void PrefabManager::SaveAsPrefab(Entity entity)
+	void PrefabManager::CreatePrefabFromEntity(Entity entity)
 	{
 		SceneSerializer serializer(entity.GetScene());
 		json jsonData = serializer.SerializeEntity(entity);
@@ -39,47 +39,43 @@ namespace proton {
 		file.close();
 	}
 
-	bool PrefabManager::LoadPrefab(const std::string& prefabName)
+	bool PrefabManager::LoadPrefab(const std::string& prefabPath)
 	{
-		std::string rawData = Utils::ReadFile("prefabs/" + prefabName + ".prefab");
+		std::string rawData = Utils::ReadFile("prefabs/" + prefabPath + ".prefab");
 		if (rawData.size())
 		{
 			json jsonData = json::parse(rawData);
 			if (jsonData.contains("Tag"))
-				s_Instance->m_PrefabsJsonData[jsonData["Tag"]] = jsonData;
+				s_Instance->m_PrefabsJsonData[prefabPath] = jsonData;
 			return true;
 		}
 		return false;
 	}
 
-	bool PrefabManager::DeletePrefab(const std::string& prefabName)
+	bool PrefabManager::DeletePrefab(const std::string& prefabPath)
 	{
-		if (Exists(prefabName))
+		if (Exists(prefabPath))
 		{
-			if (remove(("prefabs/" + prefabName + ".prefab").c_str()) == 0)
+			if (remove(("prefabs/" + prefabPath + ".prefab").c_str()) == 0)
 			{
-				s_Instance->m_PrefabsJsonData.erase(prefabName);
+				s_Instance->m_PrefabsJsonData.erase(prefabPath);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	json PrefabManager::GetJsonData(const std::string& prefabName)
+	bool PrefabManager::Exists(const std::string& prefabPath)
 	{
-		assert(Exists(prefabName) && "Prefab not found");
-		return s_Instance->m_PrefabsJsonData.at(prefabName);
+		return s_Instance->m_PrefabsJsonData.find(prefabPath) != s_Instance->m_PrefabsJsonData.end();
 	}
 
-	bool PrefabManager::Exists(const std::string& prefabName)
+	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabPath)
 	{
-		return s_Instance->m_PrefabsJsonData.find(prefabName) != s_Instance->m_PrefabsJsonData.end();
-	}
-
-	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabName)
-	{
+		assert(Exists(prefabPath) && "Prefab not loaded");
 		SceneSerializer serializer(scene);
-		Entity entity = serializer.DeserializeEntity(GetJsonData(prefabName), false);
+		const json& prefabData = s_Instance->m_PrefabsJsonData.at(prefabPath);
+		Entity entity = serializer.DeserializeEntity(prefabData, false);
 #if PROTON_EDITOR
 		Entity selected = EditorOverlay::GetInspectorContext();
 		if (selected)

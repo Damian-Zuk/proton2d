@@ -56,7 +56,7 @@ namespace proton {
 
 	private:
 		void GenerateSprite();
-		void GenerateTilePositions(std::vector<std::vector<glm::uvec2>>& tilemap);
+		std::vector<std::vector<glm::uvec2>> GenerateTilePositions();
 
 		TransformComponent* m_Transform = nullptr;
 		Shared<Spritesheet> m_Spritesheet = nullptr;
