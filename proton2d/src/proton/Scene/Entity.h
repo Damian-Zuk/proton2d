@@ -117,9 +117,6 @@ namespace proton {
 		// Returns TransformComponent
 		TransformComponent& GetTransform();
 
-		// Copies entity to destination scene
-		Entity CopyEntity(Scene* dstScene);
-
 		// Returns pointer to scene
 		Scene* GetScene() { return m_Scene; }
 		// Returns entity unique identifier

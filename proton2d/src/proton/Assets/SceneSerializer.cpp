@@ -50,19 +50,19 @@ namespace proton {
 			jsonObj["PrimaryCameraEntity"] = id;
 		}
 
-#if PROTON_EDITOR
-		const auto& camera = EditorOverlay::Get()->GetCamera();
-		const auto& cameraPos = camera.GetPosition();
-		jsonObj["EditorCameraPosition"] = { cameraPos.x, cameraPos.y };
-		jsonObj["EditorCameraZoom"] = camera.GetBaseCamera()->GetZoomLevel();
-#endif
+//#if PROTON_EDITOR
+//		const auto& camera = EditorOverlay::Get()->GetCamera();
+//		const auto& cameraPos = camera.GetPosition();
+//		jsonObj["EditorCameraPosition"] = { cameraPos.x, cameraPos.y };
+//		jsonObj["EditorCameraZoom"] = camera.GetBaseCamera()->GetZoomLevel();
+//#endif
 
 		m_Scene->m_Registry.each([&](auto id)
 			{
 				Entity entity{ m_Scene, id };
-		auto& relationship = entity.GetComponent<RelationshipComponent>();
-		if (relationship.Parent == entt::null)
-			jsonObj["Entities"].push_back(SerializeEntity(entity));
+				auto& relationship = entity.GetComponent<RelationshipComponent>();
+				if (relationship.Parent == entt::null)
+					jsonObj["Entities"].push_back(SerializeEntity(entity));
 			});
 
 		std::ofstream out(filepath);
@@ -332,9 +332,8 @@ namespace proton {
 				{
 					spriteComponent.Sprite.SetSpritesheet(AssetManager::GetSpritesheet(sprite["Texture"]));
 
-					spriteComponent.Sprite.SetTile(
-						sprite["TilePos"][0], sprite["TilePos"][1],
-						sprite["TileSize"][0], sprite["TileSize"][1]);
+					spriteComponent.Sprite.SetTile(sprite["TilePos"][0], sprite["TilePos"][1]);
+					spriteComponent.Sprite.SetTileSize(sprite["TileSize"][0], sprite["TileSize"][1]);
 				} 
 				else
 					spriteComponent.Sprite.SetTexture(AssetManager::GetTexture(sprite["Texture"]));

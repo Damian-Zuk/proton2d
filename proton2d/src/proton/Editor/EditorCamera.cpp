@@ -18,7 +18,8 @@ namespace proton {
 
 	void EditorCamera::OnUpdate(float ts)
 	{
-		if (EditorOverlay::Get()->m_ActiveScene->m_SceneState != SceneState::Edit)
+		if (EditorOverlay::Get()->m_ActiveScene->m_SceneState != SceneState::Edit
+			&& !EditorOverlay::s_Instance->m_UseEditorCameraInRuntime)
 			return;
 
 		float zoomLevel = m_Camera->GetZoomLevel();
@@ -38,13 +39,14 @@ namespace proton {
 		Scene* activeScene = EditorOverlay::Get()->m_ActiveScene;
 		if (activeScene && !ImGui::GetIO().WantCaptureMouse)
 		{
-			if (activeScene->m_SceneState == SceneState::Edit)
+			if (activeScene->m_SceneState == SceneState::Edit
+				|| EditorOverlay::s_Instance->m_UseEditorCameraInRuntime)
 			{
 				dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
 				{
 					float zoomOffset = m_CameraZoomSpeed * -event.GetYOffset();
 					m_ZoomLevelTarget += round(zoomOffset * round(m_ZoomLevelTarget * 10.0f) * 1000.0f) / 10000.0f;
-					m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.2f), 10.0f);
+					m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.2f), 30.0f);
 					return false;
 				});
 			}

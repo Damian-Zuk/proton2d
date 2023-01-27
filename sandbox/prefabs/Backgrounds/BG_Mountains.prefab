@@ -1,6 +1,6 @@
 {
     "ID": 920952361774126507,
-    "Tag": "BG_Moutains",
+    "Tag": "BG_Mountains",
     "Transform": {
         "Position": [
             9.403,
@@ -30,7 +30,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "bg-moutains\\plx-6.png",
+                "Texture": "bg-mountains\\plx-6.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -48,8 +48,12 @@
                     "ClassName": "ParallaxBackground",
                     "Fields": [
                         {
+                            "FieldName": "PositionOffset",
+                            "Value": 0.0
+                        },
+                        {
                             "FieldName": "ParallaxFactor",
-                            "Value": 0.25
+                            "Value": 0.10000000149011612
                         }
                     ]
                 }
@@ -71,7 +75,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "bg-moutains\\plx-5.png",
+                "Texture": "bg-mountains\\plx-5.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -89,8 +93,12 @@
                     "ClassName": "ParallaxBackground",
                     "Fields": [
                         {
+                            "FieldName": "PositionOffset",
+                            "Value": 0.0
+                        },
+                        {
                             "FieldName": "ParallaxFactor",
-                            "Value": 0.15000000596046448
+                            "Value": 0.03999999910593033
                         }
                     ]
                 }
@@ -112,37 +120,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "bg-moutains\\plx-4.png",
-                "FilterMode": 0,
-                "Flip": [
-                    false,
-                    false
-                ],
-                "Color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "ID": 9213539649923076364,
-            "Tag": "bg-3",
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    -0.104
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    0.6,
-                    1.0
-                ]
-            },
-            "Sprite": {
-                "Texture": "bg-moutains\\plx-3.png",
+                "Texture": "bg-mountains\\plx-4.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -160,8 +138,57 @@
                     "ClassName": "ParallaxBackground",
                     "Fields": [
                         {
+                            "FieldName": "PositionOffset",
+                            "Value": 0.0
+                        },
+                        {
                             "FieldName": "ParallaxFactor",
-                            "Value": 0.07999999821186066
+                            "Value": 0.02500000037252903
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "ID": 9213539649923076364,
+            "Tag": "bg-3",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    -0.104
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.6,
+                    1.0
+                ]
+            },
+            "Sprite": {
+                "Texture": "bg-mountains\\plx-3.png",
+                "FilterMode": 0,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Scripts": [
+                {
+                    "ClassName": "ParallaxBackground",
+                    "Fields": [
+                        {
+                            "FieldName": "PositionOffset",
+                            "Value": 0.0
+                        },
+                        {
+                            "FieldName": "ParallaxFactor",
+                            "Value": 0.009999999776482582
                         }
                     ]
                 }
@@ -183,7 +210,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "bg-moutains\\plx-2.png",
+                "Texture": "bg-mountains\\plx-2.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -201,8 +228,12 @@
                     "ClassName": "ParallaxBackground",
                     "Fields": [
                         {
+                            "FieldName": "PositionOffset",
+                            "Value": 0.0
+                        },
+                        {
                             "FieldName": "ParallaxFactor",
-                            "Value": 0.04500000178813934
+                            "Value": 0.003000000026077032
                         }
                     ]
                 }
@@ -224,7 +255,7 @@
                 ]
             },
             "Sprite": {
-                "Texture": "bg-moutains\\plx-1.png",
+                "Texture": "bg-mountains\\plx-1.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -241,6 +272,10 @@
                 {
                     "ClassName": "ParallaxBackground",
                     "Fields": [
+                        {
+                            "FieldName": "PositionOffset",
+                            "Value": -6.0
+                        },
                         {
                             "FieldName": "ParallaxFactor",
                             "Value": 0.0

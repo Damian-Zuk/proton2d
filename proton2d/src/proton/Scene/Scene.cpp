@@ -32,27 +32,16 @@ namespace proton {
 		DestroyAll();
 	}
 
-	b2Body* Scene::CreateBox2DRuntimeBody(Entity entity)
+	void Scene::AddFixtureToBox2DBody(b2Body* body, Entity entity)
 	{
-		auto& uuid = entity.GetComponent<IDComponent>().ID;
-		auto& transform = entity.GetComponent<TransformComponent>();
-		auto& rb = entity.GetComponent<RigidbodyComponent>();
-
-		// Create body definition
-		b2BodyDef bodyDef;
-		bodyDef.type = rb.Type;
-		bodyDef.position.Set(transform.Position.x, transform.Position.y);
-		bodyDef.angle = glm::radians(transform.Rotation);
-		bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&uuid);
-
-		// Create box2d body
-		b2Body* body = m_World->CreateBody(&bodyDef);
-		body->SetFixedRotation(rb.FixedRotation);
-
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
 			auto& bc = entity.GetComponent<BoxColliderComponent>();
+			auto& transform = entity.GetComponent<TransformComponent>();
+			auto& uuid = entity.GetComponent<IDComponent>().ID;
+			
 			b2FixtureDef fixtureDef; b2PolygonShape shape;
+			m_FixturesUserData.push_back(CreateUnique<UUID>(uuid));
 
 			shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
 				bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
@@ -66,10 +55,27 @@ namespace proton {
 			fixtureDef.density = material.Density;
 			fixtureDef.isSensor = bc.IsSensor;
 			fixtureDef.filter = bc.Filter;
-			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(&uuid);
+			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(m_FixturesUserData.back().get());
 			body->CreateFixture(&fixtureDef);
 		}
+	}
 
+	b2Body* Scene::CreateBox2DRuntimeBody(Entity entity)
+	{
+		auto& uuid = entity.GetComponent<IDComponent>().ID;
+		auto& transform = entity.GetComponent<TransformComponent>();
+		auto& rb = entity.GetComponent<RigidbodyComponent>();
+
+		// Create body definition
+		b2BodyDef bodyDef;
+		bodyDef.type = rb.Type;
+		bodyDef.position.Set(transform.Position.x, transform.Position.y);
+		bodyDef.angle = glm::radians(transform.Rotation);
+
+		// Create box2d body
+		b2Body* body = m_World->CreateBody(&bodyDef);
+		body->SetFixedRotation(rb.FixedRotation);
+		AddFixtureToBox2DBody(body, entity);
 		m_RuntimeBodies[entity.GetUUID()] = body;
 		return body;
 	}
@@ -84,6 +90,7 @@ namespace proton {
 		SceneSerializer serializer(this);
 		std::string filepath = m_SceneFilepath == "<Unsaved scene>" ?
 			"unsaved_scene" : m_SceneFilepath;
+		std::replace(filepath.begin(), filepath.end(), '\\', '_');
 		serializer.Serialize("cache/" + filepath + ".scene");
 #endif
 
@@ -93,6 +100,21 @@ namespace proton {
 		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 		for (entt::entity entity : m_Registry.view<RigidbodyComponent>())
 			CreateBox2DRuntimeBody(Entity{ this, entity });
+
+		for (entt::entity e : m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>))
+		{
+			Entity entity{ this, e };
+			auto& rc = entity.GetComponent<RelationshipComponent>();
+			if (rc.Parent != entt::null)
+			{
+				Entity parent{ this, rc.Parent };
+				if (parent.HasComponent<RigidbodyComponent>())
+				{
+					b2Body* body = GetBox2DRuntimeBody(parent.GetUUID());
+					AddFixtureToBox2DBody(body, entity);
+				}
+			}
+		}
 	}
 
 	void Scene::EndPlay()
@@ -103,7 +125,7 @@ namespace proton {
 			m_World = nullptr;
 		}
 		m_RuntimeBodies.clear();
-		m_SkipFirstPhysicsUpdate = true;
+		m_FixturesUserData.clear();
 	}
 	 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -124,6 +146,9 @@ namespace proton {
 
 	void Scene::DestroyEntity(Entity entity, bool skipHierarchyCheck)
 	{
+		if (!entity.IsValid())
+			return;
+
 		if (entity.HasComponent<ScriptComponent>())
 		{
 			auto& scriptComponent = entity.GetComponent<ScriptComponent>();
@@ -199,7 +224,7 @@ namespace proton {
 		if (m_SceneState == SceneState::Play)
 		{
 			// Update physics
-			if (m_EnablePhysics || m_SkipFirstPhysicsUpdate)
+			if (m_EnablePhysics)
 			{
 				PROFILE_SCOPE("update_physics");
 				m_World->Step(ts, m_PhysicsVelocityIterations, m_PhysicsPositionIterations);
@@ -212,7 +237,6 @@ namespace proton {
 					transform.Position.y = body->GetPosition().y;
 					transform.Rotation = glm::degrees(body->GetAngle());
 				}
-				m_SkipFirstPhysicsUpdate = false;
 			}
 
 			// Update scripts
@@ -350,13 +374,13 @@ namespace proton {
 	{
 		auto& rc = entity.GetComponent<RelationshipComponent>();
 		Entity current = { this, rc.First };
-
 		while (current)
 		{
 			entt::entity next = current.GetComponent<RelationshipComponent>().Next;
-			DestroyEntity(current);
+			DestroyEntity(current, true);
 			current = Entity{ this, next };
 		}
+		rc.ChildrenCount = 0;
 	}
 
 	void Scene::SetPrimaryCameraEntity(Entity entity)
@@ -376,7 +400,8 @@ namespace proton {
 	{
 		PROFILE_SCOPE("GetPrimaryCamera");
 #if PROTON_EDITOR
-		if (m_SceneState != SceneState::Edit) {
+		if (m_SceneState != SceneState::Edit
+			&& !EditorOverlay::UsingCameraEditorInRuntime()) {
 #endif
 			return m_PrimaryCamera ? m_PrimaryCamera : m_DefaultCamera;
 #if PROTON_EDITOR
@@ -467,27 +492,11 @@ namespace proton {
 		return entities;
 	}
 
-	Entity Scene::CopyEntity(Entity entity, Scene* dstScene)
-	{
-		//const auto& tag = entity.GetTag();
-		//Entity newEntity = dstScene != this ?
-		//	CreateEntity(tag) : CreateEntityWithID(entity.GetUUID(), tag);
-
-		//auto& transform = m_Registry.get<TransformComponent>(entity);
-		//m_Registry.emplace_or_replace<TransformComponent>(newEntity, transform);
-
-		//if (entity.HasComponent<SpriteComponent>())
-		//{
-		//	auto& src = m_Registry.get<SpriteComponent>(entity);
-		//	m_Registry.emplace_or_replace<SpriteComponent>(newEntity, src);
-		//}
-		return Entity{};
-	}
-
 	glm::vec3 Scene::GetPrimaryCameraPosition()
 	{
 #if PROTON_EDITOR
-		if (m_SceneState != SceneState::Edit) {
+		if (m_SceneState != SceneState::Edit
+			&& !EditorOverlay::UsingCameraEditorInRuntime()) {
 #endif
 			if (m_PrimaryCameraEntity == entt::null)
 				return glm::vec3{ 0.0f };

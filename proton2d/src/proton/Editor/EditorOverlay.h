@@ -26,6 +26,7 @@ namespace proton {
 		static void SetInspectorContext(Entity entity);
 		static Entity GetInspectorContext();
 		static EditorCamera& GetCamera() { return s_Instance->m_Camera; }
+		static bool UsingCameraEditorInRuntime() { return s_Instance->m_UseEditorCameraInRuntime; }
 
 	private:
 		void BeginImGuiRender();
@@ -50,6 +51,7 @@ namespace proton {
 
 		Entity m_DraggedEntity;
 
+		bool m_UseEditorCameraInRuntime = false;
 		bool m_ShowSelectionOutline = true;
 		bool m_ShowSelectionCollider = true;
 		bool m_ShowAllColliders = false;

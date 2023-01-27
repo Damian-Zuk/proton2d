@@ -39,7 +39,7 @@ namespace proton {
 
 		auto& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;// | ImGuiConfigFlags_ViewportsEnable;
-		io.Fonts->AddFontFromFileTTF(PROTON_ENGINE_ASSETS_DIR "/Roboto.ttf", 18);
+		io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FrameRounding = 7.0f;
@@ -214,8 +214,9 @@ namespace proton {
 
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
-			if (e.GetKeyCode() == Key::P)
-				m_ActiveScene->CopyEntity(GetInspectorContext(), m_ActiveScene);
+			if (ImGui::GetIO().WantTextInput)
+				return false;
+
 			if (e.GetKeyCode() == Key::F1)
 				m_ShowSelectionOutline = !m_ShowSelectionOutline;
 			if (e.GetKeyCode() == Key::F2)
@@ -430,7 +431,7 @@ namespace proton {
 			if (m_ActiveScene->m_SceneFilepath != "<Unsaved scene>")
 			{
 				SceneManager::SaveActiveScene();
-				m_SavedSceneTextTimer = 1.5f;
+				//m_SavedSceneTextTimer = 1.5f;
 			}
 			else
 				saveAs = true;
@@ -462,7 +463,7 @@ namespace proton {
 		{
 			Scene* scene = SceneManager::CreateEmptyScene("<Unsaved scene>");
 			SceneManager::s_Instance->m_ActiveScene = scene;
-			m_ActiveScene = scene;
+			SetSceneContext(scene);
 		}
 
 		// ****************************************************
@@ -493,7 +494,10 @@ namespace proton {
 				{
 					ImGui::SameLine();
 					if (ImGui::Button(("Unload##" + sceneName).c_str()))
+					{
 						SceneManager::Unload(sceneName);
+						break;
+					}
 				}
 			}
 			ImGui::TreePop();

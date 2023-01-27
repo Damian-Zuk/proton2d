@@ -76,11 +76,6 @@ namespace proton {
 		SceneSerializer serializer(scene);
 		const json& prefabData = s_Instance->m_PrefabsJsonData.at(prefabPath);
 		Entity entity = serializer.DeserializeEntity(prefabData, false);
-#if PROTON_EDITOR
-		Entity selected = EditorOverlay::GetInspectorContext();
-		if (selected)
-			selected.AddChildEntity(entity);
-#endif
 		auto camera = scene->GetPrimaryCameraPosition();
 		auto& transform = entity.GetComponent<TransformComponent>();
 		transform.Position.x = camera.x;

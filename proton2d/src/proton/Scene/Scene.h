@@ -30,7 +30,7 @@ namespace proton {
 
 		void Pause(bool pause = true);
 		
-		// Create entitiy with random identifier
+		// @brief Create entitiy with random identifier
 		Entity CreateEntity(const std::string& name = "Unnamed entity");
 
 		// Create entitiy with specific identifier
@@ -58,6 +58,7 @@ namespace proton {
 		// Use this function to retrive Box2D body from game world during game runtime.
 		// Entity must have RigidbodyComponent.
 		b2Body* GetBox2DRuntimeBody(UUID id);
+		void AddFixtureToBox2DBody(b2Body* body, Entity entity);
 
 		// Enitity is required to have CameraComponent
 		void SetPrimaryCameraEntity(Entity entity);
@@ -68,9 +69,6 @@ namespace proton {
 		glm::vec2 GetMouseWorldPosition();
 		bool IsMouseHoveringEntity(Entity entity);
 		std::vector<Entity> GetEntitiesOnMousePosition();
-
-		// Copies entity to destination scene
-		Entity CopyEntity(Entity entity, Scene* dstScene);
 
 		// Get scene filepath. If scene is unsaved returns empty string
 		const std::string& GetFilepath() const { return m_SceneFilepath; }
@@ -103,11 +101,12 @@ namespace proton {
 		Shared<Camera> m_PrimaryCamera;
 		Shared<Camera> m_DefaultCamera;
 
+		// Box2d physics related
 		bool m_EnablePhysics = true;
 		float m_WorldGravity = 9.8f;
 		b2World* m_World = nullptr;
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
-		bool m_SkipFirstPhysicsUpdate = true;
+		std::vector<Unique<UUID>> m_FixturesUserData;
 
 		int m_PhysicsVelocityIterations = 5;
 		int m_PhysicsPositionIterations = 5;

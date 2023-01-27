@@ -21,8 +21,8 @@ void PlayerScript::OnCreate()
 	m_Animation->AddAnimation(Jump, 3);
 	m_Animation->SetAnimation(Idle, Right);
 
+	// Foot sensor detects if player is on the ground
 	proton::UUID playerUUID = m_Entity.GetUUID();
-
 	m_FootSensor = GetScene()->FindByTag("FootSensor");
 	if (m_FootSensor)
 	{
@@ -31,37 +31,23 @@ void PlayerScript::OnCreate()
 		bc.ContactCallback.OnBeginContactFunction = [&, playerUUID](PhysicsContactInfo info)
 		{
 			if (info.OtherUUID != playerUUID)
-			{
-				LOG("Begin", info.OtherUUID);
 				m_ContactCount++;
-			}
 		};
 
 		bc.ContactCallback.OnEndContactFunction = [&, playerUUID](PhysicsContactInfo info)
 		{
-			if (info.OtherUUID != playerUUID && m_ContactCount > 0)
-			{
-				LOG("End", info.OtherUUID);
+			if (info.OtherUUID != playerUUID)
 				m_ContactCount--;
-			}
 		};
 	}
 }
 
 void PlayerScript::OnUpdate(float ts)
 {
-	auto& position = GetTransform().Position;
-	if (m_FootSensor)
-	{
-		b2Body* sensorBody = m_FootSensor.GetBox2DRigidbody();
-		sensorBody->SetTransform({ position.x, position.y }, 0.0f);
-		sensorBody->SetLinearVelocity({0.0f, 0.0f});
-	}
-
-	// Attack
+	// === Attack (Space) ===
+	bool space = Input::IsKeyPressed(Key::Space);
 	if (m_IsAttacking)
 	{
-		bool space = Input::IsKeyPressed(Key::Space);
 		if (!space && m_Animation->GetProgress() >= 0.5f)
 		{
 			// Stop attacking
@@ -74,7 +60,7 @@ void PlayerScript::OnUpdate(float ts)
 	}
 	if (!m_IsAttacking)
 	{
-		if (!m_IsJumping && Input::IsKeyPressed(Key::Space))
+		if (space && !m_IsJumping)
 		{
 			// Begin attacking
 			m_Animation->StartAnimation(Attack, m_Direction);
@@ -84,7 +70,7 @@ void PlayerScript::OnUpdate(float ts)
 		}
 	} 
 
-	// Movement
+	// === Movement (A, D) ===
 	if (Input::IsKeyPressed(Key::D))
 	{
 		m_Direction = Right;
@@ -124,26 +110,31 @@ void PlayerScript::OnUpdate(float ts)
 			m_Animation->SetAnimation(Idle, m_Direction);
 	}
 
-	// Jumping
+	// === Jumping (W) ===
+
+	// Check if jumping / falling ended
+	if (m_IsJumping && m_JumpDelay == 0.0f && m_ContactCount > 0)
+	{
+		m_IsJumping = false;
+		m_JumpDelay = 0.1f;
+		m_Animation->SetAnimation(Idle, m_Direction);
+	}
+	// Try jump
 	if (!m_IsAttacking && Input::IsKeyPressed(Key::W))
 	{
-		if (m_ContactCount > 0 && m_JumpThreshold == 0.0f)
+		if (m_ContactCount > 0 && m_JumpDelay == 0.0f)
 		{
 			m_IsJumping = true;
+			m_JumpDelay = 0.1f;
 			ApplyImpulse({ 0.0f,  m_JumpForce });
-			m_JumpThreshold = 0.5f;
 		}
 	}
+	// Set jumping / falling animation
 	if (m_IsJumping || m_ContactCount == 0)
 	{
 		m_Animation->SetAnimation(Jump, m_Direction);
 		m_IsJumping = true;
 	}
-	if (m_IsJumping && m_JumpThreshold == 0.0f && m_ContactCount > 0)
-	{
-		m_Animation->SetAnimation(Idle, m_Direction);
-		m_IsJumping = false;
-	}
 
-	m_JumpThreshold = std::max(m_JumpThreshold - ts, 0.0f);
+	m_JumpDelay = glm::max(m_JumpDelay - ts, 0.0f);
 }

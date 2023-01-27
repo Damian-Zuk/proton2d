@@ -9,12 +9,12 @@ class RotationScript : public proton::EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(RotationScript)
 
-	virtual void RegisterFields()
+	virtual void OnRegisterFields() override
 	{
 		RegisterField(proton::ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
 	}
 
-	virtual void OnCreate()
+	virtual void OnCreate() override
 	{
 		m_Body = GetBox2DRigidbody();
 	}

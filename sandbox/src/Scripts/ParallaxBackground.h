@@ -1,7 +1,5 @@
 #pragma once
 
-#include "proton/Scene/EntityScript.h"
-
 class ParallaxBackground : public proton::EntityScript
 {
 public:
@@ -16,7 +14,5 @@ private:
 
 	float m_SpriteAspectRatio = 1.0f;
 	uint32_t m_CopiesCount = 3;
-	proton::TransformComponent* m_Transform;
-	std::vector<proton::TransformComponent*> m_Copies;
-	proton::Entity m_FirstCopy;
+	std::vector<proton::Entity> m_Copies;
 };

@@ -49,7 +49,8 @@ namespace proton {
 	{
 		Scene* scene = new Scene(scenePath);
 		std::string filepath = "cache/" + 
-			(scenePath == "<Unsaved scene>" ? "unsaved_scene" : scenePath) + ".scene";;
+			(scenePath == "<Unsaved scene>" ? "unsaved_scene" : scenePath) + ".scene";
+		std::replace(filepath.begin(), filepath.end(), '\\', '_');
 
 		return s_Instance->Deserialize(scenePath, filepath);
 	}
@@ -90,7 +91,7 @@ namespace proton {
 		if (IsLoaded("<Unsaved scene>"))
 		{
 			Scene* scene = GetScene("<Unsaved scene>");
-			if (!scene->m_Registry.size())
+			if (!scene->m_Registry.size() && s_Instance->m_Scenes.size() > 1)
 				Unload("<Unsaved scene>");
 		}
 #endif

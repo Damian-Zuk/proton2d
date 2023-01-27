@@ -25,11 +25,6 @@ namespace proton
 		return GetComponent<TransformComponent>();
 	}
 
-	Entity Entity::CopyEntity(Scene* dstScene)
-	{
-		return m_Scene->CopyEntity(*this, dstScene);
-	}
-
 	UUID Entity::GetUUID() const
 	{
 		return GetComponent<IDComponent>().ID;

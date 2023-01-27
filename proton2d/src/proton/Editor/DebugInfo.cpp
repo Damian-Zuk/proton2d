@@ -47,11 +47,17 @@ namespace proton {
 
 		if (ImGui::TreeNodeEx("Settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (ImGui::Button("Reset editor camera"))
-				EditorOverlay::s_Instance->ResetCameraPosition();
 			ImGui::PushItemWidth(150.0f);
-			ImGui::DragFloat("Time scale", &Application::Get().m_TimeScale, 0.01f);
+			float timeScale = Application::Get().m_TimeScale;
+			if (ImGui::DragFloat("Time scale", &timeScale, 0.01f, 0.0f)
+				&& timeScale >= 0.0f)
+			{
+				Application::Get().m_TimeScale = timeScale;
+			}
 			ImGui::PopItemWidth();
+			if (ImGui::Button("Reset editor camera position"))
+				EditorOverlay::s_Instance->ResetCameraPosition();
+			ImGui::Checkbox("Runtime editor camera", &EditorOverlay::s_Instance->m_UseEditorCameraInRuntime);
 			ImGui::Checkbox("Show selection outline", &EditorOverlay::s_Instance->m_ShowSelectionOutline);
 			ImGui::Checkbox("Show selection collider", &EditorOverlay::s_Instance->m_ShowSelectionCollider);
 			ImGui::Checkbox("Show all colliders", &EditorOverlay::s_Instance->m_ShowAllColliders);

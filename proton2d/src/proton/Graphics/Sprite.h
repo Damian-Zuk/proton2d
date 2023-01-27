@@ -57,13 +57,18 @@ namespace proton {
 		void SetSpritesheet(Shared<Spritesheet> spritesheet);
 
 		// Sets spritesheet tile position
-		void SetTile(uint32_t x, uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		void SetTile(uint32_t x, uint32_t y);
 		// Sets spritesheet tile X position
-		void SetTileX(uint32_t x, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		void SetTileX(uint32_t x);
 		// Sets spritesheet tile Y position
-		void SetTileY(uint32_t y, uint32_t sizeX = 1, uint32_t sizeY = 1);
+		void SetTileY(uint32_t y);
 		// Returns spritesheet tile position
 		const glm::uvec2& GetTilePos() const { return m_TilePos; }
+
+		// Sets size in source texture (spritesheet) in tile count
+		void SetTileSize(uint32_t tilesWidth, uint32_t tilesHeight);
+
+		const glm::uvec2& GetTileSize() const { return m_TileSize; }
 
 		// Sets sprite mirror flip
 		void MirrorFlip(bool mirror_x, bool mirror_y);
@@ -76,11 +81,13 @@ namespace proton {
 		operator bool() const { return m_Texture != nullptr; }
 
 	private:
+		void CalculateTextureCoords();
 		const TextureCoords& GetTextureCoords() const;
 		
 	private:
 		Shared<Texture> m_Texture = nullptr;
 		Shared<Spritesheet> m_Spritesheet = nullptr;
+		TextureCoords m_TextureCoords;
 		
 		glm::uvec2 m_PixelSize = { 0, 0 };
 		glm::uvec2 m_TilePos   = { 0, 0 };

@@ -9,7 +9,6 @@ public:
 
 	virtual bool OnCreate() override
 	{
-		GetWindow().SetVSync(false);
 		PushLayer(new GameLayer());
 		return true;
 	}

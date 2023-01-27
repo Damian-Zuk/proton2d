@@ -13,6 +13,7 @@ namespace proton {
 	void NineSliceSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
 	{
 		m_Spritesheet = spritesheet;
+		Refresh();
 	}
 
 	void NineSliceSprite::Refresh()

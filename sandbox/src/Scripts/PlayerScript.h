@@ -28,7 +28,7 @@ private:
 
 	bool m_IsAttacking = false;
 	bool m_IsJumping = true;
-	float m_JumpThreshold = 0.0f;
+	float m_JumpDelay = 0.0f;
 
 	b2Body* m_Body = nullptr;
 	proton::Entity m_FootSensor;

@@ -31,7 +31,7 @@ namespace proton {
 		ImGui::Begin("Inspector");
 		if (m_ActiveScene)
 		{
-			if (m_SelectedEntity)
+			if (m_SelectedEntity.IsValid())
 			{
 				// *********************
 				// Add component
@@ -230,7 +230,7 @@ namespace proton {
 							AssetManager::ReloadAssetsList();
 						ImGui::PopItemWidth();
 
-						ImGui::Dummy({ 0.0f, 10.0f });
+						ImGui::Dummy({ 0.0f, 5.0f });
 
 						// Tint color control
 						ImGui::Text("Tint color:");
@@ -238,7 +238,7 @@ namespace proton {
 						ImGui::PushItemWidth(260.0f);
 						ImGui::ColorEdit4("##Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
 						ImGui::PopItemWidth();
-						ImGui::Dummy({ 0.0f, 10.0f });
+						ImGui::Dummy({ 0.0f, 5.0f });
 
 						// Texture filter mode
 						if (sprite)
@@ -263,48 +263,40 @@ namespace proton {
 								}
 								ImGui::EndCombo();
 							}
-							ImGui::Dummy({ 0.0f, 10.0f });
+							ImGui::Dummy({ 0.0f, 5.0f });
 							ImGui::Text("Mirror flip: ");
 							ImGui::SameLine();
 							ImGui::Checkbox("X##Flip", &sprite.m_MirrorFlipX);
 							ImGui::SameLine();
 							ImGui::Checkbox("Y##Flip", &sprite.m_MirrorFlipY);
-							ImGui::Dummy({ 0.0f, 10.0f });
+							ImGui::Dummy({ 0.0f, 5.0f });
 
 							// Tiling factor
 							ImGui::DragFloat("Tiling factor", &component.TilingFactor, 0.1f);
-							ImGui::Dummy({ 0.0f, 10.0f });
+							ImGui::Dummy({ 0.0f, 5.0f });
 						}
 
 						// Check if texture is spritesheet
 						if (sprite && sprite.m_Spritesheet)
 						{
-							int tileX = (int)sprite.m_TilePos.x, tileY = (int)sprite.m_TilePos.y;
-							const auto& count = sprite.m_Spritesheet->GetTileCount();
+							ImGui::Dummy({ 0, 5 });
+							ImGui::Separator();
+							ImGui::Text("Spritesheet proporties");
+							ImGui::Dummy({ 0, 5 });
 
-							ImGui::Text("Spritesheet tile coordinates:");
-							ImGui::Dummy({ 0.0f, 4.0f });
-							ImGui::Columns(2);
-							ImGui::SetColumnWidth(0, 35.0f);
-							ImGui::Text("X");
-							ImGui::NextColumn();
+							glm::ivec2 tilePos = (glm::ivec2)sprite.m_TilePos;
+							if (ImGui::DragInt2("Tile coords", glm::value_ptr(tilePos), 1, 0))
+							{
+								if (tilePos.x >= 0 && tilePos.y >= 0)
+									sprite.SetTile(tilePos.x, tilePos.y);
+							}
 
-							// Tile coords X position field
-							if (ImGui::InputInt("##Tile_Pos_X", &tileX, 1, 1) && tileX != sprite.m_TilePos.x)
-								sprite.SetTile((uint32_t)((tileX + count.x) % count.x), sprite.m_TilePos.y);
-
-							ImGui::Columns(1);
-							ImGui::Columns(2);
-							ImGui::SetColumnWidth(0, 35.0f);
-							ImGui::Text("Y");
-							ImGui::NextColumn();
-								
-							// Tile coords Y position field
-							if (ImGui::InputInt("##Tile_Pos_Y", &tileY, 1, 1) && tileY != sprite.m_TilePos.y)
-								sprite.SetTile(0, (uint32_t)((tileY + count.y) % count.y));
-
-							ImGui::Columns(1);
-							ImGui::Dummy({ 0.0f, 10.0f });
+							glm::ivec2 tileSize = (glm::ivec2)sprite.m_TileSize;
+							if (ImGui::DragInt2("Size (tiles)", glm::value_ptr(tileSize), 0.2f, 1))
+							{
+								if (tileSize.x > 0 && tileSize.y > 0)
+									sprite.SetTileSize((uint32_t)tileSize.x, (uint32_t)tileSize.y);
+							}
 						}
 					});
 				}
@@ -501,7 +493,10 @@ namespace proton {
 									ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
 									break;
 								case ScriptFieldType::Float4:
-									ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+									if (fieldName.find("Color") != fieldName.npos)
+										ImGui::ColorEdit4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue);
+									else
+										ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
 									break;
 
 								case ScriptFieldType::Int:
