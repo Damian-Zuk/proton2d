@@ -21,4 +21,3 @@ namespace proton {
         return { (float)x, (float)y };
     }
 }
-

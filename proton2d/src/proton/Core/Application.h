@@ -64,5 +64,3 @@ namespace proton {
 		app.Run();\
 	}
 #endif
-
-	
