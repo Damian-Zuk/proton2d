@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proton/Graphics/OpenGL/Texture.h"
+#include "proton/Graphics/Renderer/Texture.h"
 
 #include <glm/glm.hpp>
 

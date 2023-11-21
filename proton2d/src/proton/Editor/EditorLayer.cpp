@@ -6,7 +6,7 @@
 #include "proton/Editor/Panels/ScenePanel.h"
 #include "proton/Editor/Panels/PrefabPanel.h"
 
-#include "proton/Graphics/Renderer.h"
+#include "proton/Graphics/Renderer/Renderer.h"
 #include "proton/Core/Application.h"
 #include "proton/Core/Window.h"
 #include "proton/Utils/Utils.h"

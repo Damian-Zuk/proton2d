@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "proton/Editor/Panels/MiscellaneousPanel.h"
-#include "proton/Graphics/Renderer.h"
+#include "proton/Graphics/Renderer/Renderer.h"
 #include "proton/Editor/EditorLayer.h"
 #include "proton/Assets/AssetManager.h"
 #include "proton/Core/Application.h"

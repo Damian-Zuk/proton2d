@@ -3,7 +3,7 @@
 #include "proton/Scene/Scene.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Application.h"
-#include "proton/Graphics/Renderer.h"
+#include "proton/Graphics/Renderer/Renderer.h"
 
 #if PROTON_EDITOR
 #include "proton/Editor/EditorLayer.h"

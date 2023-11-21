@@ -7,7 +7,7 @@
 */
 
 #include "pch.h"
-#include "proton/Graphics/OpenGL/VertexArray.h"
+#include "proton/Graphics/Renderer/VertexArray.h"
 
 #include <glad/glad.h>
 

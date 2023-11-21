@@ -9,7 +9,7 @@
 #pragma once
 
 #include "proton/Core/Base.h"
-#include "proton/Graphics/OpenGL/Buffer.h"
+#include "proton/Graphics/Renderer/Buffer.h"
 
 namespace proton {
 

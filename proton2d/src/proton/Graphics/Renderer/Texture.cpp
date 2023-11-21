@@ -7,7 +7,7 @@
 */
 
 #include "pch.h"
-#include "proton/Graphics/OpenGL/Texture.h"
+#include "proton/Graphics/Renderer/Texture.h"
 
 #include <glad/glad.h>
 #include <stb_image.h>

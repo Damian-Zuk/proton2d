@@ -7,7 +7,7 @@
 */
 
 #include "pch.h"
-#include "proton/Graphics/OpenGL/UniformBuffer.h"
+#include "proton/Graphics/Renderer/UniformBuffer.h"
 
 #include <glad/glad.h>
 

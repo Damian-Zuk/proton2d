@@ -3,7 +3,7 @@
 #include "proton/Core/Input.h"
 #include "proton/Events/WindowEvents.h"
 #include "proton/Events/KeyEvents.h"
-#include "proton/Graphics/Renderer.h"
+#include "proton/Graphics/Renderer/Renderer.h"
 #include "proton/Scene/ScriptFactory.h"
 #include "proton/Assets/AssetManager.h"
 #include "proton/Scene/SceneManager.h"

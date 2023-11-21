@@ -7,7 +7,7 @@
 */
 
 #include "pch.h"
-#include "proton/Graphics/OpenGL/Shader.h"
+#include "proton/Graphics/Renderer/Shader.h"
 #include "proton/Utils/Utils.h"
 
 #include <filesystem>

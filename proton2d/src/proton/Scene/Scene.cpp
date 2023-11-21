@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "proton/Scene/Scene.h"
 #include "proton/Scene/Entity.h"
-#include "proton/Graphics/Renderer.h"
+#include "proton/Graphics/Renderer/Renderer.h"
 #include "proton/Core/Application.h"
 #include "proton/Scene/EntityScript.h"
 #include "proton/Assets/SceneSerializer.h"
