@@ -1,21 +1,21 @@
 #include "pch.h"
-#include "proton/Graphics/NineSliceSprite.h"
+#include "proton/Graphics/ResizableSprite.h"
 #include "proton/Scene/Components.h"
 #include "proton/Utils/Utils.h"
 
 namespace proton {
 
-	void NineSliceSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
+	void ResizableSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
 	{
 		m_Spritesheet = spritesheet;
-		Refresh();
+		Generate();
 	}
 
-	void NineSliceSprite::Refresh()
+	void ResizableSprite::Generate()
 	{
 		if (!m_Transform)
 		{
-			LOG_ERROR("NineSliceSprite::Refresh: TransformComponent pointer not set!");
+			LOG_ERROR("ResizableSprite::Refresh: TransformComponent pointer not set!");
 			return;
 		}
 
@@ -36,17 +36,17 @@ namespace proton {
 		for (auto& column : m_Tilemap)
 			column.resize(m_Height);
 
-		CalculateTilesLocalTransform();
+		UpdateTileTransforms();
 	}
 
-	void NineSliceSprite::SetTileScale(float tileScale)
+	void ResizableSprite::SetTileScale(float tileScale)
 	{
 		m_TileScale = tileScale;
-		Refresh();
+		Generate();
 	}
 
 	// Generate tile index positions
-	std::vector<std::vector<glm::uvec2>> NineSliceSprite::CalculateTilePositions()
+	std::vector<std::vector<glm::uvec2>> ResizableSprite::DetermineTilePositions()
 	{
 		std::vector<std::vector<glm::uvec2>> tilemap;
 		tilemap.resize(m_Width);
@@ -131,10 +131,10 @@ namespace proton {
 		return tilemap;
 	}
 
-	void NineSliceSprite::CalculateTilesLocalTransform()
+	void ResizableSprite::UpdateTileTransforms()
 	{
 		if (!m_Transform) {
-			LOG_ERROR("NineSliceSprite::GenerateSprite: TransformComponent pointer not set.");
+			LOG_ERROR("ResizableSprite::GenerateSprite: TransformComponent pointer not set.");
 			return;
 		}
 
@@ -178,7 +178,7 @@ namespace proton {
 		};
 
 		// Generate spritesheet tile positions
-		std::vector<std::vector<glm::uvec2>> spritesheetTilePositions = CalculateTilePositions();
+		std::vector<std::vector<glm::uvec2>> spritesheetTilePositions = DetermineTilePositions();
 
 		for (uint32_t y = 0; y < tileCount.y; y++)
 		{
@@ -275,30 +275,30 @@ namespace proton {
 		}
 	}
 
-	void NineSliceSprite::SetPositionOffset(const glm::uvec2& position)
+	void ResizableSprite::SetPositionOffset(const glm::uvec2& position)
 	{
 		if (position != m_PositionOffset)
 		{
 			m_PositionOffset = position;
-			CalculateTilesLocalTransform();
+			UpdateTileTransforms();
 		}
 	}
 
-	void NineSliceSprite::SetEdges(Edges borders)
+	void ResizableSprite::SetEdges(uint8_t borders)
 	{
 		if (borders != m_Edges)
 		{
 			m_Edges = borders;
-			CalculateTilesLocalTransform();
+			UpdateTileTransforms();
 		}
 	}
 
-	Shared<Spritesheet> NineSliceSprite::GetSpritesheet()
+	Shared<Spritesheet> ResizableSprite::GetSpritesheet()
 	{
 		return m_Spritesheet;
 	}
 
-	Edges NineSliceSprite::GetEdges()
+	uint8_t ResizableSprite::GetEdges()
 	{
 		return m_Edges;
 	}

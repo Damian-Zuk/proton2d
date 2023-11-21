@@ -40,7 +40,7 @@ namespace proton {
 
 		friend class InspectorPanel;
 		friend class Sprite;
-		friend class NineSliceSprite;
+		friend class ResizableSprite;
 		friend class Scene;
 	};
 

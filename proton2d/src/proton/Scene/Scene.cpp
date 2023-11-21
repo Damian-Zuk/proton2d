@@ -334,14 +334,14 @@ namespace proton {
 		}
 
 		// ***************************************************
-		// Render entities with NineSliceSpriteComponent
+		// Render entities with ResizableSpriteComponent
 		// ***************************************************
-		auto renderableNineSlice = m_Registry.view<TransformComponent, NineSliceSpriteComponent>();
-		for (auto e : renderableNineSlice)
+		auto renderableRS = m_Registry.view<TransformComponent, ResizableSpriteComponent>();
+		for (auto e : renderableRS)
 		{
-			PROFILE_SCOPE("entity_render_nine_slice_sprite");
-			auto [transform, nsc] = renderableNineSlice.get<TransformComponent, NineSliceSpriteComponent>(e);
-			auto& sprite = nsc.NineSliceSprite;
+			PROFILE_SCOPE("entity_render_resizable_sprite");
+			auto [transform, nsc] = renderableRS.get<TransformComponent, ResizableSpriteComponent>(e);
+			auto& sprite = nsc.ResizableSprite;
 			auto& spritesheet = sprite.m_Spritesheet;
 
 			if (!spritesheet)

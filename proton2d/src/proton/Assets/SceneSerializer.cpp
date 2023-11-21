@@ -167,22 +167,22 @@ namespace proton {
 			jsonObj["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
 		}
 		
-		// Serialize NineSliceSpriteComponent
-		if (entity.HasComponent<NineSliceSpriteComponent>())
+		// Serialize ResizableSpriteComponent
+		if (entity.HasComponent<ResizableSpriteComponent>())
 		{
-			auto& component = entity.GetComponent<NineSliceSpriteComponent>();
-			auto& sprite = component.NineSliceSprite;
+			auto& component = entity.GetComponent<ResizableSpriteComponent>();
+			auto& sprite = component.ResizableSprite;
 			auto& spritesheet = sprite.GetSpritesheet();
 			
 			if (spritesheet)
-				jsonObj["NineSliceSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
+				jsonObj["ResizableSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
 
-			jsonObj["NineSliceSprite"]["Width"] = sprite.m_Width;
-			jsonObj["NineSliceSprite"]["Height"] = sprite.m_Width;
-			jsonObj["NineSliceSprite"]["Edges"] = sprite.GetEdges();
-			jsonObj["NineSliceSprite"]["TileScale"] = sprite.m_TileScale;
+			jsonObj["ResizableSprite"]["Width"] = sprite.m_Width;
+			jsonObj["ResizableSprite"]["Height"] = sprite.m_Width;
+			jsonObj["ResizableSprite"]["Edges"] = sprite.GetEdges();
+			jsonObj["ResizableSprite"]["TileScale"] = sprite.m_TileScale;
 			const auto& c = component.Color;
-			jsonObj["NineSliceSprite"]["Color"] = { c.r, c.g, c.b, c.a };
+			jsonObj["ResizableSprite"]["Color"] = { c.r, c.g, c.b, c.a };
 			
 		}
 
@@ -347,12 +347,12 @@ namespace proton {
 			spriteComponent.Color = { color[0], color[1], color[2], color[3] };
 		}
 
-		// Deserialize NineSliceSpriteComponent
-		if (jsonObj.contains("NineSliceSprite"))
+		// Deserialize ResizableSpriteComponent
+		if (jsonObj.contains("ResizableSprite"))
 		{
-			json& jsonData = jsonObj["NineSliceSprite"];
-			auto& component = entity.AddComponent<NineSliceSpriteComponent>();
-			auto& sprite = component.NineSliceSprite;
+			json& jsonData = jsonObj["ResizableSprite"];
+			auto& component = entity.AddComponent<ResizableSpriteComponent>();
+			auto& sprite = component.ResizableSprite;
 			sprite.m_Edges = jsonData["Edges"];
 			sprite.m_TileScale = jsonData["TileScale"];
 			auto& c = jsonData["Color"];
@@ -361,7 +361,7 @@ namespace proton {
 			if (jsonData.contains("Spritesheet"))
 				sprite.SetSpritesheet(AssetManager::GetSpritesheet(jsonData["Spritesheet"]));
 
-			sprite.Refresh();
+			sprite.Generate();
 		}
 
 		// Deserialize CameraComponent

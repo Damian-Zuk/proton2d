@@ -1,9 +1,10 @@
 #pragma once
 #include "proton/Graphics/Sprite.h"
 
-#define TILEMAP_BLANK_TILE glm::uvec2{ -1, -1 }
 
 namespace proton {
+
+	constexpr glm::uvec2 TILEMAP_BLANK_TILE = glm::uvec2{ -1, -1 };
 
 	enum Edge : uint16_t
 	{
@@ -18,28 +19,28 @@ namespace proton {
 		Edge_All         = 0xFF
 	};
 
-	using Edges = uint8_t;
 	struct TransformComponent;
 
-	struct NineSliceTile
+	struct ResizableSpriteTile
 	{
-		glm::mat4 LocalTransform;
 		TextureCoords Coords;
+		glm::mat4 LocalTransform;
 	};
 
-	class NineSliceSprite
+	class ResizableSprite
 	{
 	public:
-		NineSliceSprite() = default;
+		ResizableSprite() = default;
 
 		void SetSpritesheet(const Shared<Spritesheet>& spritesheet);
 		Shared<Spritesheet> GetSpritesheet();
 
-		// If size, block borders or position offset has changed
-		// regenerated sprite data
-		void Refresh();
+		// Generate sprite tilemap representing for each tile
+		// - texture coords from source image (spritesheet)
+		// - local transformation matrix (glm::mat4) for Renderer
+		void Generate();
 
-		// Sets scale of indivudual tiles
+		// Set scale of indivudual tiles
 		void SetTileScale(float tileScale);
 		float GetTileScale() const { return m_TileScale; }
 
@@ -48,18 +49,20 @@ namespace proton {
 		void SetPositionOffset(const glm::uvec2& position);
 		const glm::uvec2& GetPositionOffset() const { return m_PositionOffset; };
 
-		void SetEdges(Edges borders);
-		Edges GetEdges();
+		// Toggle sprite edges to be rendered as center pieces
+		// Use Edge Enum to toggle specific bits representing edge/corner
+		void SetEdges(uint8_t borders);
+		uint8_t GetEdges();
 
 	private:
-		// Calculate tile positions and local transformation matrix for each tile
-		void CalculateTilesLocalTransform();
+		// Calculate local transformation matrix for each tile
+		void UpdateTileTransforms();
 
 		// Calculate tile index positions from source spirtesheet
-		std::vector<std::vector<glm::uvec2>> CalculateTilePositions();
+		std::vector<std::vector<glm::uvec2>> DetermineTilePositions();
 
 	private:
-		std::vector<std::vector<NineSliceTile>> m_Tilemap; // [x][y]
+		std::vector<std::vector<ResizableSpriteTile>> m_Tilemap; // [x][y]
 
 		TransformComponent* m_Transform = nullptr;
 		Shared<Spritesheet> m_Spritesheet = nullptr;
@@ -68,7 +71,7 @@ namespace proton {
 
 		// Slice scaled sprites
 		glm::uvec2 m_PositionOffset = { 0, 0 };
-		Edges m_Edges = Edge_All;
+		uint8_t m_Edges = Edge_All;
 
 		friend class Scene;
 		friend class InspectorPanel;

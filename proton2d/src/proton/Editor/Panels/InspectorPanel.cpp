@@ -44,7 +44,7 @@ namespace proton {
 
 			ADD_COMPONENT_POPUP_MENU_ITEM(TransformComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(SpriteComponent);
-			ADD_COMPONENT_POPUP_MENU_ITEM(NineSliceSpriteComponent);
+			ADD_COMPONENT_POPUP_MENU_ITEM(ResizableSpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CameraComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(RigidbodyComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(BoxColliderComponent);
@@ -132,20 +132,20 @@ namespace proton {
 				ImGui::PushItemWidth(75.0f);
 				if (ImGui::DragFloat("##S_X", &component.Scale.x, 0.01f, 0.0f, 0.0f, "%.3f"))
 				{
-					if (m_SelectedEntity.HasComponent<NineSliceSpriteComponent>())
+					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
-						auto& nsc = m_SelectedEntity.GetComponent<NineSliceSpriteComponent>();
-						nsc.NineSliceSprite.Refresh();
+						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
+						nsc.ResizableSprite.Generate();
 					}
 				}
 				ImGui::SameLine();
 				ImGui::PushItemWidth(75.0f);
 				if(ImGui::DragFloat("##S_Y", &component.Scale.y, 0.01f, 0.0f, 0.0f, "%.3f"))
 				{
-					if (m_SelectedEntity.HasComponent<NineSliceSpriteComponent>())
+					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
-						auto& nsc = m_SelectedEntity.GetComponent<NineSliceSpriteComponent>();
-						nsc.NineSliceSprite.Refresh();
+						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
+						nsc.ResizableSprite.Generate();
 					}
 				}
 				ImGui::Columns(1);
@@ -300,19 +300,19 @@ namespace proton {
 		}
 
 		// ******************************************************
-		// NineSliceSpriteComponent UI
+		// ResizableSpriteComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<NineSliceSpriteComponent>())
+		if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
 		{
-			DrawComponentUI<NineSliceSpriteComponent>("Nine Slice Sprite", [&](auto& component)
+			DrawComponentUI<ResizableSpriteComponent>("ResizableSprite", [&](auto& component)
 				{
-					auto& spritesheet = component.NineSliceSprite.m_Spritesheet;
-					auto& sprite = component.NineSliceSprite;
+					auto& spritesheet = component.ResizableSprite.m_Spritesheet;
+					auto& sprite = component.ResizableSprite;
 					std::string filename = spritesheet ? spritesheet->GetTexture()->GetPath() : "Select...";
 
 					// Select spritesheet
 					ImGui::Text("Spritesheet:");
-					if (ImGui::BeginCombo("##nine_slice_select_spritesheet", filename.c_str()))
+					if (ImGui::BeginCombo("##source_select", filename.c_str()))
 					{
 						for (auto& kv : AssetManager::s_Instance->m_SpritesheetList)
 						{
@@ -350,8 +350,8 @@ namespace proton {
 					bool bottomLeft  = sprite.m_Edges & 64;
 					bool bottomRight = sprite.m_Edges & 128;
 
-					// Toggle texture borders and corners
-					ImGui::Text("Toggle texture borders:");
+					// Toggle sprite edges texture
+					ImGui::Text("Toggle sprite edges texture:");
 					ImGui::Checkbox("##tb_top_left_corner", &topLeft);
 					ImGui::SameLine();
 					ImGui::Checkbox("##tb_top_edge", &top);

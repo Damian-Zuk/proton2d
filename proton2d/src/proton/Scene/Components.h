@@ -2,7 +2,7 @@
 
 #include "proton/Core/UUID.h"
 #include "proton/Graphics/Sprite.h"
-#include "proton/Graphics/NineSliceSprite.h"
+#include "proton/Graphics/ResizableSprite.h"
 #include "proton/Graphics/Camera.h"
 #include "proton/Graphics/SpriteAnimation.h"
 #include "proton/Scene/PhysicsCommon.h"
@@ -50,9 +50,9 @@ namespace proton {
 		float TilingFactor = 1.0f;
 	};
 
-	struct NineSliceSpriteComponent
+	struct ResizableSpriteComponent
 	{
-		NineSliceSprite NineSliceSprite;
+		ResizableSprite ResizableSprite;
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 	};

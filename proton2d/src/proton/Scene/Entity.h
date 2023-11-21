@@ -30,14 +30,14 @@ namespace proton {
 			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward<Types>(args)...);
 		}
 
-		// NineSliceSpriteComponent override of AddComponent
+		// ResizableSpriteComponent override of AddComponent
 		template<>
-		NineSliceSpriteComponent& AddComponent() const
+		ResizableSpriteComponent& AddComponent() const
 		{
-			assert(!HasComponent<NineSliceSpriteComponent>() && "Entity already have component!");
+			assert(!HasComponent<ResizableSpriteComponent>() && "Entity already have component!");
 			assert(HasComponent<TransformComponent>() && "Entity must have TransformComponent!");
-			auto& sprite = m_Scene->m_Registry.emplace<NineSliceSpriteComponent>(m_Handle);
-			sprite.NineSliceSprite.m_Transform = &GetComponent<TransformComponent>();
+			auto& sprite = m_Scene->m_Registry.emplace<ResizableSpriteComponent>(m_Handle);
+			sprite.ResizableSprite.m_Transform = &GetComponent<TransformComponent>();
 			return sprite;
 		}
 
