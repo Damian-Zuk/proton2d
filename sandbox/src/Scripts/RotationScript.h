@@ -16,7 +16,7 @@ public:
 
 	virtual void OnCreate() override
 	{
-		m_Body = GetRuntimeBody();
+		m_Body = m_Entity.GetRuntimeBody();
 	}
 
 	virtual void OnUpdate(float ts) override
@@ -27,7 +27,7 @@ public:
 				m_Body->GetAngle() + m_RotationSpeed * b2_pi * ts);
 		}
 		else
-			GetTransform().Rotation += m_RotationSpeed;
+			m_Entity.GetTransform().Rotation += m_RotationSpeed;
 	}
 
 private:
