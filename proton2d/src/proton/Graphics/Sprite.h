@@ -38,7 +38,7 @@ namespace proton {
 		glm::uvec2 m_TileCount = { 0, 0 }; // sheet size / tile size
 		glm::vec2 m_TileScale  = { 0, 0 }; // 0.0f - 1.0f
 
-		friend class Inspector;
+		friend class InspectorPanel;
 		friend class Sprite;
 		friend class NineSliceSprite;
 		friend class Scene;
@@ -96,8 +96,8 @@ namespace proton {
 
 		friend class Renderer;
 		friend class Scene;
-		friend class Inspector;
-		friend class EditorOverlay;
+		friend class InspectorPanel;
+		friend class EditorLayer;
 		friend class SceneSerializer;
 		friend class Entity;
 	};

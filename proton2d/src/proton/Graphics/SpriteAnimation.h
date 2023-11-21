@@ -17,7 +17,6 @@ namespace proton {
 		SpriteAnimation() = default;
 		SpriteAnimation(Sprite* sprite);
 
-
 		// index - spritesheet Y tile pos (from image bottom)
 		void AddAnimation(uint16_t index, uint16_t frameCount);
 		// index - spritesheet Y tile pos (from image bottom)

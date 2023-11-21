@@ -1,18 +1,17 @@
 #pragma once
+#include "proton/Editor/EditorCamera.h"
 #include "proton/Core/AppLayer.h"
 #include "proton/Scene/Entity.h"
 
-#include "proton/Editor/Inspector.h"
-#include "proton/Editor/DebugInfo.h"
-#include "proton/Editor/EditorCamera.h"
-
 namespace proton {
 
-	class EditorOverlay : AppLayer
+	class EditorPanel;
+
+	class EditorLayer : AppLayer
 	{
 	public:
-		EditorOverlay();
-		virtual ~EditorOverlay() = default;
+		EditorLayer();
+		virtual ~EditorLayer() = default;
 
 		virtual void OnCreate() override;
 		virtual void OnDestroy() override;
@@ -20,11 +19,11 @@ namespace proton {
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& event) override;
 
-		static EditorOverlay* Get() { return s_Instance; }
+		static EditorLayer* Get() { return s_Instance; }
 
-		static void SetSceneContext(Scene* context);
-		static void SetInspectorContext(Entity entity);
-		static Entity GetInspectorContext();
+		static void SetActiveScene(Scene* scene);
+		static void SelectEntity(Entity entity);
+
 		static EditorCamera& GetCamera() { return s_Instance->m_Camera; }
 		static bool UsingCameraEditorInRuntime() { return s_Instance->m_UseEditorCameraInRuntime; }
 
@@ -32,40 +31,35 @@ namespace proton {
 		void BeginImGuiRender();
 		void EndImGuiRender();
 
-		void DrawEntityTreeNode(Entity entity);
+		void PushEditorPanel(const std::string& name, EditorPanel* panel);
+		void PopEditorPanel(const std::string& name);
 
-		void DrawScenePanel();
-		void DrawPrefabPanel();
 		void DrawCollidersAndSelectionOutline();
-
 		void ResetCameraPosition();
 
 	private:
-		static EditorOverlay* s_Instance;
-
+		static EditorLayer* s_Instance;
 		Scene* m_ActiveScene = nullptr;
+		Entity m_SelectedEntity;
 
-		Inspector m_Inspector;
-		DebugInfo m_DebugInfo;
+		std::vector<std::pair<std::string, EditorPanel*>> m_EditorPanels;
 		EditorCamera m_Camera;
 
-		Entity m_DraggedEntity;
-
+		// Editor options
 		bool m_UseEditorCameraInRuntime = false;
 		bool m_ShowSelectionOutline = true;
 		bool m_ShowSelectionCollider = true;
 		bool m_ShowAllColliders = false;
 
-		bool m_MovingSelection = false;
-		bool m_MovingCamera = false;
+		// Entity selection
+		bool m_MoveSelectedEntity = false;
+		bool m_MoveEditorCamera = false;
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
 		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
 
-		float m_SavedSceneTextTimer = 0.0f;
-
 		friend class Application;
-		friend class Inspector;
-		friend class DebugInfo;
+		friend class InspectorPanel;
+		friend class MiscellaneousPanel;
 		friend class EditorCamera;
 	};
 

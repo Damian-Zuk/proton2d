@@ -11,7 +11,7 @@ void PlayerScript::OnRegisterFields()
 
 void PlayerScript::OnCreate()
 {
-	m_Body = GetBox2DRigidbody();
+	m_Body = GetRuntimeBody();
 	// Create animations
 	m_Animation = AddComponent<SpriteAnimationComponent>().SpriteAnimation;
 	m_Animation->SetFPS(10);

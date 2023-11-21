@@ -3,7 +3,7 @@
 #include "proton/Core/Application.h"
 #include "proton/Core/Logger.h"
 #include "proton/Core/Input.h"
-#include "proton/Core/Random.h"
+#include "proton/Utils/Random.h"
 
 #include "proton/Assets/AssetManager.h"
 

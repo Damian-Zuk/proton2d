@@ -3,7 +3,7 @@
 #include "proton/Graphics/Camera.h"
 #include "proton/Events/Event.h"
 #include "proton/Core/UUID.h"
-#include "proton/Scene/Physics.h"
+#include "proton/Scene/PhysicsCommon.h"
 
 #include <entt/entt.hpp>
 
@@ -16,7 +16,7 @@ namespace proton {
 
 	enum class SceneState
 	{
-		Edit, Play, Paused
+		Stop, Play, Paused
 	};
 
 	class Scene
@@ -25,21 +25,22 @@ namespace proton {
 		Scene(const std::string& name = "Unnamed scene");
 		~Scene();
 
-		// Call this function to start playing scene
+		// Call this function to start playing the scene
 		void BeginPlay();
 
+		// Pause the scene
 		void Pause(bool pause = true);
 		
-		// @brief Create entitiy with random identifier
+		// Create entitiy with random identifier (UUID)
 		Entity CreateEntity(const std::string& name = "Unnamed entity");
 
-		// Create entitiy with specific identifier
+		// Create entitiy with specific identifier (UUID)
 		Entity CreateEntityWithID(UUID id, const std::string& name = "Unnamed entity");
 
 		// Destroy specified entity
-		void DestroyEntity(Entity entity, bool skipHierarchyCheck = false);
+		void DestroyEntity(Entity entity, bool popHierachy = true);
 
-		// Remove all entities from scene
+		// Destroy all entities on the scene
 		void DestroyAll();
 
 		// Find entity by id (UUID)
@@ -50,27 +51,25 @@ namespace proton {
 
 		// Find all entities that have specified tag
 		std::vector<Entity> FindAllByTag(const std::string& tag);
-		
-		// Use this function to create Box2D body in game world during game runtime.
-		// Entity must have RigidbodyComponent.
-		b2Body* CreateBox2DRuntimeBody(Entity entity);
 
-		// Use this function to retrive Box2D body from game world during game runtime.
-		// Entity must have RigidbodyComponent.
-		b2Body* GetBox2DRuntimeBody(UUID id);
-		void AddFixtureToBox2DBody(b2Body* body, Entity entity);
+		// Use this function to retrive Box2D body from game world 
+		// during game runtime (SceneState::Play || SceneState::Paused)
+		// Entity must have RigidbodyComponent
+		b2Body* GetRuntimeBody(UUID id);
 
+		// Camera stuff
 		// Enitity is required to have CameraComponent
 		void SetPrimaryCameraEntity(Entity entity);
 		Shared<Camera> GetPrimaryCamera();
 		Entity GetPrimaryCameraEntity();
 		glm::vec3 GetPrimaryCameraPosition();
 
-		glm::vec2 GetMouseWorldPosition();
-		bool IsMouseHoveringEntity(Entity entity);
-		std::vector<Entity> GetEntitiesOnMousePosition();
+		// Cursor
+		glm::vec2 GetCursorWorldPosition();
+		bool IsCursorOverEntity(Entity entity);
+		std::vector<Entity> GetEntitiesOnCursor();
 
-		// Get scene filepath. If scene is unsaved returns empty string
+		// Get scene filepath (relative to "scenes" directory)
 		const std::string& GetFilepath() const { return m_SceneFilepath; }
 
 		SceneState GetSceneState() const { return m_SceneState; }
@@ -79,7 +78,7 @@ namespace proton {
 
 	private:
 		void OnUpdate(float ts);
-		void EndPlay();
+		void DestroyPhysicsWorld();
 		void RenderScene(const Camera& camera);
 		void OnViewportResize(uint32_t width, uint32_t height);
 		void DestroyChildEntities(Entity entity);
@@ -87,16 +86,22 @@ namespace proton {
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
 
-	private:
-		SceneState m_SceneState = SceneState::Edit;
+		b2Body* CreateBox2DRuntimeBody(Entity entity);
+		void AddFixtureToBox2DBody(b2Body* body, Entity entity);
 
+	private:
+		SceneState m_SceneState = SceneState::Stop;
+
+		// General
 		std::string m_SceneName;
 		std::string m_SceneFilepath = "<Unsaved scene>";
 		glm::vec4 m_ClearColor = { 0.1f, 0.12f, 0.16f, 1.0f };
 
+		// ECS
 		entt::registry m_Registry;
 		std::unordered_map<UUID, Entity> m_EntityMap;
 
+		// Camera stuff
 		entt::entity m_PrimaryCameraEntity = entt::null;
 		Shared<Camera> m_PrimaryCamera;
 		Shared<Camera> m_DefaultCamera;
@@ -126,8 +131,11 @@ namespace proton {
 
 		friend class Application;
 		friend class Entity;
-		friend class EditorOverlay;
-		friend class Inspector;
+		friend class EditorLayer;
+		friend class MiscellaneousPanel;
+		friend class InspectorPanel;
+		friend class SceneHierarchyPanel;
+		friend class ScenePanel;
 		friend class EditorCamera;
 		friend class SceneSerializer;
 		friend class SceneManager;

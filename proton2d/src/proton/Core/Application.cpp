@@ -8,7 +8,7 @@
 #include "proton/Assets/AssetManager.h"
 #include "proton/Scene/SceneManager.h"
 #include "proton/Scene/PrefabManager.h"
-#include "proton/Core/Utils.h"
+#include "proton/Utils/Utils.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "proton/Platform/Windows/WindowsWindow.h"
@@ -77,8 +77,8 @@ namespace proton {
 			m_Window->SetFullscreen(true);
 
 #if PROTON_EDITOR
-		m_EditorOverlay = new EditorOverlay();
-		PushOverlay(m_EditorOverlay);
+		m_EditorLayer = new EditorLayer();
+		PushOverlay(m_EditorLayer);
 #endif
 	}
 
@@ -128,12 +128,12 @@ namespace proton {
 					if (m_ShowEditorOverlay)
 					{
 						PROFILE_SCOPE("on_imgui_render");
-						m_EditorOverlay->BeginImGuiRender();
+						m_EditorLayer->BeginImGuiRender();
 
 						for (AppLayer* layer : m_AppLayers)
 							layer->OnImGuiRender();
 
-						m_EditorOverlay->EndImGuiRender();
+						m_EditorLayer->EndImGuiRender();
 					}
 #endif
 				}

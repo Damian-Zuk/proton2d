@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Core/Utils.h"
+#include "proton/Utils/Utils.h"
 
 #include <filesystem>
 #include <glm/gtc/matrix_transform.hpp>

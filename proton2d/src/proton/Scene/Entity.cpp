@@ -48,50 +48,50 @@ namespace proton
 		return true;
 	}
 
-	b2Body* Entity::GetBox2DRigidbody()
+	b2Body* Entity::GetRuntimeBody()
 	{
 		if (!HasComponent<RigidbodyComponent>())
 			return nullptr;
 
 		auto& id = GetComponent<IDComponent>();
-		return m_Scene->GetBox2DRuntimeBody(id.ID);
+		return m_Scene->GetRuntimeBody(id.ID);
 	}
 
 	void Entity::SetVelocity(float x_mps, float y_mps)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->SetLinearVelocity({ x_mps, y_mps });
 	}
 
 	void Entity::SetVelocityX(float mps)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->SetLinearVelocity({ mps, body->GetLinearVelocity().y });
 	}
 
 	void Entity::SetVelocityY(float mps)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->SetLinearVelocity({ body->GetLinearVelocity().x, mps });
 	}
 
 	glm::vec2 Entity::GetVelocity()
 	{
-		b2Vec2 velocity = GetBox2DRigidbody()->GetLinearVelocity();
+		b2Vec2 velocity = GetRuntimeBody()->GetLinearVelocity();
 		return glm::vec2{ velocity.x, velocity.y };
 	}
 
 	void Entity::ApplyImpulse(const glm::vec2& impulse)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->ApplyLinearImpulse({impulse.x, impulse.y }, body->GetWorldCenter(), true);
 	}
 
-	void Entity::DeleteAllScriptInstances()
+	void Entity::TerminateScriptInstances()
 	{
 		for (auto& [scriptName, scriptInstance] : GetComponent<ScriptComponent>().Scripts)
 		{
-			if (m_Scene->m_SceneState != SceneState::Edit)
+			if (m_Scene->m_SceneState != SceneState::Stop)
 				scriptInstance->OnDestroy();
 
 			delete scriptInstance;

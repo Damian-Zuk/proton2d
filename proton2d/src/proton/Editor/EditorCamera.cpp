@@ -18,8 +18,8 @@ namespace proton {
 
 	void EditorCamera::OnUpdate(float ts)
 	{
-		if (EditorOverlay::Get()->m_ActiveScene->m_SceneState != SceneState::Edit
-			&& !EditorOverlay::s_Instance->m_UseEditorCameraInRuntime)
+		if (EditorLayer::Get()->m_ActiveScene->m_SceneState != SceneState::Stop
+			&& !EditorLayer::s_Instance->m_UseEditorCameraInRuntime)
 			return;
 
 		float zoomLevel = m_Camera->GetZoomLevel();
@@ -36,20 +36,18 @@ namespace proton {
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		Scene* activeScene = EditorOverlay::Get()->m_ActiveScene;
-		if (activeScene && !ImGui::GetIO().WantCaptureMouse)
+		Scene* activeScene = EditorLayer::Get()->m_ActiveScene;
+		
+		if (!ImGui::GetIO().WantCaptureMouse && activeScene
+			&& (activeScene->m_SceneState == SceneState::Stop || EditorLayer::s_Instance->m_UseEditorCameraInRuntime))
 		{
-			if (activeScene->m_SceneState == SceneState::Edit
-				|| EditorOverlay::s_Instance->m_UseEditorCameraInRuntime)
+			dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
 			{
-				dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
-				{
-					float zoomOffset = m_CameraZoomSpeed * -event.GetYOffset();
-					m_ZoomLevelTarget += round(zoomOffset * round(m_ZoomLevelTarget * 10.0f) * 1000.0f) / 10000.0f;
-					m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.2f), 30.0f);
-					return false;
-				});
-			}
+				float zoomOffset = m_CameraZoomSpeed * -event.GetYOffset();
+				m_ZoomLevelTarget += round(zoomOffset * round(m_ZoomLevelTarget * 10.0f) * 1000.0f) / 10000.0f;
+				m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.2f), 30.0f);
+				return false;
+			});
 		}
 
 		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& event) -> bool 

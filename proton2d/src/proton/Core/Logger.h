@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "proton/Core/Core.h"
+#include "proton/Core/Base.h"
 
 #define _LOG_COLOR 7
 #define _INFO_COLOR 9

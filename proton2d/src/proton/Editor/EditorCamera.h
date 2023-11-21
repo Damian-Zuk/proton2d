@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proton/Core/Core.h"
+#include "proton/Core/Base.h"
 #include "proton/Graphics/Camera.h"
 #include "proton/Events/Event.h"
 
@@ -24,12 +24,12 @@ namespace proton {
 		
 		glm::vec3 m_Position;
 
-		float m_AspectRatio;
+		float m_AspectRatio = 16.0f / 9.0f;
 		float m_CameraSpeed = 3.0f;
 		float m_ZoomLevelTarget = 1.0f;
 		float m_CameraZoomSpeed = 0.10f;
 
-		friend class EditorOverlay;
+		friend class EditorLayer;
 		friend class SceneSerializer;
 	};
 }

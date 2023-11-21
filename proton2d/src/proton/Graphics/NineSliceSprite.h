@@ -51,27 +51,29 @@ namespace proton {
 		void SetBlockBorders(BlockBorders borders);
 		BlockBorders GetBlockBorders();
 
-		// This function is automaticlly called when component is added
-		void SetTransform(TransformComponent* transform);
+	private:
+		// Calculate tile positions and local transformation matrix for each tile
+		void CalculateTilesLocalTransform();
+
+		// Calculate tile index positions from source spirtesheet
+		std::vector<std::vector<glm::uvec2>> CalculateTilePositions();
 
 	private:
-		void GenerateSprite();
-		std::vector<std::vector<glm::uvec2>> GenerateTilePositions();
+		std::vector<std::vector<NineSliceTile>> m_Tilemap; // [x][y]
 
 		TransformComponent* m_Transform = nullptr;
 		Shared<Spritesheet> m_Spritesheet = nullptr;
 		uint32_t m_Width = 0, m_Height = 0;
 		float m_TileScale = 1.0f;
 
-		std::vector<std::vector<NineSliceTile>> m_Tilemap; // [x][y]
-
 		// Slice scaled sprites
 		glm::uvec2 m_PositionOffset = { 0, 0 };
 		BlockBorders m_BlockBorders = BlockBorder_All;
 
 		friend class Scene;
-		friend class Inspector;
+		friend class InspectorPanel;
 		friend class SceneSerializer;
+		friend class Entity;
 	};
 
 }

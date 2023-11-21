@@ -5,7 +5,7 @@
 #include "proton/Graphics/NineSliceSprite.h"
 #include "proton/Graphics/Camera.h"
 #include "proton/Graphics/SpriteAnimation.h"
-#include "proton/Scene/Physics.h"
+#include "proton/Scene/PhysicsCommon.h"
 
 #include <entt/entity/entity.hpp>
 
@@ -44,7 +44,7 @@ namespace proton {
 
 	struct SpriteComponent
 	{
-		proton::Sprite Sprite;
+		Sprite Sprite;
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 		float TilingFactor = 1.0f;

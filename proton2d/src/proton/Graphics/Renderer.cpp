@@ -1,7 +1,7 @@
 /*
 * 2D batch renderer
 *
-*  Inspired by Hazel Engine renderer:
+*  Based on Hazel Engine renderer:
 *  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.cpp
 */
 #include "pch.h"

@@ -6,10 +6,10 @@
 #include "proton/Scene/EntityScript.h"
 #include "proton/Assets/SceneSerializer.h"
 #include "proton/Core/Input.h"
-#include "proton/Core/Utils.h"
+#include "proton/Utils/Utils.h"
 
 #if PROTON_EDITOR
-#include "proton/Editor/EditorOverlay.h"
+#include "proton/Editor/EditorLayer.h"
 #include <imgui.h>
 #endif
 
@@ -28,9 +28,10 @@ namespace proton {
 
 	Scene::~Scene()
 	{
-		EndPlay();
+		DestroyPhysicsWorld();
 		DestroyAll();
 	}
+
 
 	void Scene::AddFixtureToBox2DBody(b2Body* body, Entity entity)
 	{
@@ -60,6 +61,7 @@ namespace proton {
 		}
 	}
 
+
 	b2Body* Scene::CreateBox2DRuntimeBody(Entity entity)
 	{
 		auto& uuid = entity.GetComponent<IDComponent>().ID;
@@ -80,16 +82,16 @@ namespace proton {
 		return body;
 	}
 
+
 	void Scene::BeginPlay()
 	{	
-		if (m_World)
+		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Paused || m_World)
 			return;
 
 #if PROTON_EDITOR
 		// Create editor backup scene
 		SceneSerializer serializer(this);
-		std::string filepath = m_SceneFilepath == "<Unsaved scene>" ?
-			"unsaved_scene" : m_SceneFilepath;
+		std::string filepath = m_SceneFilepath == "<Unsaved scene>" ? "unsaved_scene" : m_SceneFilepath;
 		std::replace(filepath.begin(), filepath.end(), '\\', '_');
 		serializer.Serialize("cache/" + filepath + ".scene");
 #endif
@@ -101,6 +103,8 @@ namespace proton {
 		for (entt::entity entity : m_Registry.view<RigidbodyComponent>())
 			CreateBox2DRuntimeBody(Entity{ this, entity });
 
+		// Attach a fixture to the parent entity for each child entitiy
+		// which has a BoxColliderComponent but lacks RigidbodyComponent.
 		for (entt::entity e : m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>))
 		{
 			Entity entity{ this, e };
@@ -110,14 +114,15 @@ namespace proton {
 				Entity parent{ this, rc.Parent };
 				if (parent.HasComponent<RigidbodyComponent>())
 				{
-					b2Body* body = GetBox2DRuntimeBody(parent.GetUUID());
+					b2Body* body = GetRuntimeBody(parent.GetUUID());
 					AddFixtureToBox2DBody(body, entity);
 				}
 			}
 		}
 	}
 
-	void Scene::EndPlay()
+
+	void Scene::DestroyPhysicsWorld()
 	{
 		if (m_World)
 		{
@@ -128,10 +133,12 @@ namespace proton {
 		m_FixturesUserData.clear();
 	}
 	 
+
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		return CreateEntityWithID(UUID(), name);
 	}
+
 
 	Entity Scene::CreateEntityWithID(UUID id, const std::string& name)
 	{
@@ -144,7 +151,8 @@ namespace proton {
 		return entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity, bool skipHierarchyCheck)
+
+	void Scene::DestroyEntity(Entity entity, bool popHierarchy)
 	{
 		if (!entity.IsValid())
 			return;
@@ -155,7 +163,7 @@ namespace proton {
 			for (auto& kv : scriptComponent.Scripts)
 				kv.second->OnDestroy();
 
-			entity.DeleteAllScriptInstances();
+			entity.TerminateScriptInstances();
 		}
 		if (entity.HasComponent<RigidbodyComponent>())
 		{
@@ -172,31 +180,14 @@ namespace proton {
 			m_PrimaryCamera = nullptr;
 		}
 
-		auto& rc = entity.GetComponent<RelationshipComponent>();
-
 		DestroyChildEntities(entity);
-
-		if (!skipHierarchyCheck && rc.Parent != entt::null)
-		{
-			Entity parent{ this, rc.Parent };
-			Entity prev{ this, rc.Prev };
-			Entity next{ this, rc.Next };
-
-			auto& prc = parent.GetComponent<RelationshipComponent>();
-			prc.ChildrenCount--;
-
-			if (prev)
-				prev.GetComponent<RelationshipComponent>().Next = next.m_Handle;
-			else
-				prc.First = rc.Next;
-
-			if (next)
-				next.GetComponent<RelationshipComponent>().Prev = prev.m_Handle;
-		}
+		if (popHierarchy)
+			entity.PopHierarchy();
 			
 		m_EntityMap.erase(entity.GetUUID());
 		m_Registry.destroy(entity.m_Handle);
 	}
+
 
 	void Scene::DestroyAll()
 	{
@@ -207,15 +198,18 @@ namespace proton {
 		});
 	}
 
+
 	void Scene::Pause(bool pause)
 	{
 		m_SceneState = pause ? SceneState::Paused : SceneState::Play;
 	}
 
+
 	void Scene::SetScreenClearColor(const glm::vec4& color)
 	{
 		m_ClearColor = color;
 	}
+
 
 	void Scene::OnUpdate(float ts)
 	{
@@ -246,8 +240,10 @@ namespace proton {
 				{
 					for (auto& [scriptName, scriptInstance] : scriptComponent.Scripts)
 					{
+						// Check if script was instantiated
 						if (!scriptInstance->m_Initialized)
 						{
+							// Create script instance
 							scriptInstance->m_Entity = Entity{ this, entity };
 							scriptInstance->OnCreate();
 							scriptInstance->m_Initialized = true;
@@ -267,12 +263,14 @@ namespace proton {
 		RenderScene(*GetPrimaryCamera());
 	}
 
+
 	Entity Scene::FindByID(UUID id)
 	{
 		if (m_EntityMap.find(id) != m_EntityMap.end())
 			return m_EntityMap.at(id);
 		return Entity();
 	}
+
 
 	Entity Scene::FindByTag(const std::string& tag)
 	{
@@ -284,6 +282,7 @@ namespace proton {
 		}
 		return Entity();
 	}
+
 
 	std::vector<Entity> Scene::FindAllByTag(const std::string& tag)
 	{
@@ -298,10 +297,12 @@ namespace proton {
 		return entities;
 	}
 
-	b2Body* Scene::GetBox2DRuntimeBody(UUID id)
+
+	b2Body* Scene::GetRuntimeBody(UUID id)
 	{
 		return m_RuntimeBodies.at(id);
 	}
+
 
 	void Scene::RenderScene(const Camera& camera)
 	{
@@ -360,6 +361,7 @@ namespace proton {
 		Renderer::EndScene();
 	}
 
+
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		auto view = m_Registry.view<CameraComponent>();
@@ -370,6 +372,7 @@ namespace proton {
 		}
 	}
 
+
 	void Scene::DestroyChildEntities(Entity entity)
 	{
 		auto& rc = entity.GetComponent<RelationshipComponent>();
@@ -377,17 +380,19 @@ namespace proton {
 		while (current)
 		{
 			entt::entity next = current.GetComponent<RelationshipComponent>().Next;
-			DestroyEntity(current, true);
+			DestroyEntity(current, false);
 			current = Entity{ this, next };
 		}
 		rc.ChildrenCount = 0;
+		rc.First = entt::null;
 	}
+
 
 	void Scene::SetPrimaryCameraEntity(Entity entity)
 	{
 		if (!entity || !entity.HasComponent<CameraComponent>())
 		{
-			LOG_ERROR("Invalid camera entity");
+			LOG_ERROR("[Scene::SetPrimaryCameraEntity] Entity does not have CameraComponent!");
 			return;
 		}
 
@@ -396,26 +401,28 @@ namespace proton {
 		m_PrimaryCameraEntity = entity.m_Handle;
 	}
 
+
 	Shared<Camera> Scene::GetPrimaryCamera()
 	{
-		PROFILE_SCOPE("GetPrimaryCamera");
 #if PROTON_EDITOR
-		if (m_SceneState != SceneState::Edit
-			&& !EditorOverlay::UsingCameraEditorInRuntime()) {
+		if (m_SceneState != SceneState::Stop
+			&& !EditorLayer::UsingCameraEditorInRuntime()) {
 #endif
 			return m_PrimaryCamera ? m_PrimaryCamera : m_DefaultCamera;
 #if PROTON_EDITOR
 		}
-		return EditorOverlay::GetCamera().GetBaseCamera();
+		return EditorLayer::GetCamera().GetBaseCamera();
 #endif
 	}
+
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{
 		return Entity{ this, m_PrimaryCameraEntity };
 	}
 
-	glm::vec2 Scene::GetMouseWorldPosition()
+
+	glm::vec2 Scene::GetCursorWorldPosition()
 	{
 		Window& window = Application::Get().GetWindow();
 		uint32_t width = window.GetWidth(), height = window.GetHeight();
@@ -429,7 +436,8 @@ namespace proton {
 		};
 	}
 
-	bool Scene::IsMouseHoveringEntity(Entity entity)
+
+	bool Scene::IsCursorOverEntity(Entity entity)
 	{
 		auto& transform = entity.GetComponent<TransformComponent>();
 
@@ -437,7 +445,7 @@ namespace proton {
 		// so we can easliy check after if point is inside rectangle
 		float sinus = sin(glm::radians(-transform.Rotation));
 		float cosinus = cos(glm::radians(-transform.Rotation));
-		glm::vec2 point = GetMouseWorldPosition();
+		glm::vec2 point = GetCursorWorldPosition();
 		if (transform.Rotation)
 		{
 			glm::vec2 rotationCenter = { transform.Position.x, transform.Position.y };
@@ -455,9 +463,10 @@ namespace proton {
 			&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f;
 	}
 
-	std::vector<Entity> Scene::GetEntitiesOnMousePosition()
+
+	std::vector<Entity> Scene::GetEntitiesOnCursor()
 	{
-		const glm::vec2& mousePos = GetMouseWorldPosition();
+		const glm::vec2& mousePos = GetCursorWorldPosition();
 		auto view = m_Registry.view<TransformComponent>();
 		std::vector<Entity> entities;
 
@@ -492,11 +501,12 @@ namespace proton {
 		return entities;
 	}
 
+
 	glm::vec3 Scene::GetPrimaryCameraPosition()
 	{
 #if PROTON_EDITOR
-		if (m_SceneState != SceneState::Edit
-			&& !EditorOverlay::UsingCameraEditorInRuntime()) {
+		if (m_SceneState != SceneState::Stop
+			&& !EditorLayer::UsingCameraEditorInRuntime()) {
 #endif
 			if (m_PrimaryCameraEntity == entt::null)
 				return glm::vec3{ 0.0f };
@@ -508,24 +518,28 @@ namespace proton {
 			};
 #if PROTON_EDITOR
 		} 
-		return EditorOverlay::GetCamera().GetPosition();
+		return EditorLayer::GetCamera().GetPosition();
 #endif
 	}
+
 
 	uint32_t Scene::GetEntitiesCount() const
 	{
 		return (int32_t)m_Registry.alive();
 	}
 
+
 	uint32_t Scene::GetScriptedEntitiesCount() const
 	{
 		return (int32_t)m_Registry.view<ScriptComponent>().size();
 	}
 
+
 	Scene::PhysicsContactListener::PhysicsContactListener(Scene* scene)
 		: m_Scene(scene)
 	{
 	}
+
 
 #define GET_CONTACT_ENTITIES()\
 	b2Fixture* fixtureA = contact->GetFixtureA();\
@@ -538,6 +552,7 @@ namespace proton {
 	auto& bcA = entityA.GetComponent<BoxColliderComponent>();\
 	auto& bcB = entityB.GetComponent<BoxColliderComponent>();
 
+
 	void Scene::PhysicsContactListener::BeginContact(b2Contact* contact)
 	{
 		GET_CONTACT_ENTITIES();
@@ -548,6 +563,7 @@ namespace proton {
 		if (bcB.ContactCallback.OnBeginContactFunction)
 			bcB.ContactCallback.OnBeginContactFunction({ uuidA, contact });
 	}
+
 
 	void Scene::PhysicsContactListener::EndContact(b2Contact* contact)
 	{
@@ -560,6 +576,7 @@ namespace proton {
 			bcB.ContactCallback.OnEndContactFunction({ uuidA, contact });
 	}
 
+
 	void Scene::PhysicsContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
 		GET_CONTACT_ENTITIES();
@@ -570,6 +587,7 @@ namespace proton {
 		if (bcB.ContactCallback.OnPreSolveFunction)
 			bcB.ContactCallback.OnPreSolveFunction({ uuidA, contact }, oldManifold);
 	}
+
 
 	void Scene::PhysicsContactListener::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{

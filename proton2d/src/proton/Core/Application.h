@@ -1,9 +1,9 @@
 #pragma once
 
-#include "proton/Core/Core.h"
+#include "proton/Core/Base.h"
 #include "proton/Core/Window.h"
 #include "proton/Core/AppLayer.h"
-#include "proton/Editor/EditorOverlay.h"
+#include "proton/Editor/EditorLayer.h"
 
 namespace proton {
 
@@ -38,10 +38,10 @@ namespace proton {
 		
 		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;
-		EditorOverlay* m_EditorOverlay;
+		EditorLayer* m_EditorLayer;
 		bool m_ShowEditorOverlay = true;
 
-		friend class DebugInfo;
+		friend class MiscellaneousPanel;
 	};
 
 }

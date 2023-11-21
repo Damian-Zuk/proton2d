@@ -16,7 +16,7 @@ public:
 
 	virtual void OnCreate() override
 	{
-		m_Body = GetBox2DRigidbody();
+		m_Body = GetRuntimeBody();
 	}
 
 	virtual void OnUpdate(float ts) override

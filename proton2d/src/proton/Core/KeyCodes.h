@@ -1,9 +1,5 @@
 #pragma once
 
-/*
-	From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/KeyCodes.h
-*/
-
 namespace proton {
 
 	using KeyCode = unsigned short;

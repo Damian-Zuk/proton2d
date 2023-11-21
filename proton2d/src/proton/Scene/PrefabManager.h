@@ -38,7 +38,7 @@ namespace proton {
 		std::map<std::string, json> m_PrefabsJsonData;
 		
 		friend class Application;
-		friend class EditorOverlay;
+		friend class PrefabPanel;
 	};
 
 }

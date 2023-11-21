@@ -8,7 +8,7 @@
 
 #include "pch.h"
 #include "proton/Graphics/OpenGL/Shader.h"
-#include "proton/Core/Utils.h"
+#include "proton/Utils/Utils.h"
 
 #include <filesystem>
 #include <fstream>

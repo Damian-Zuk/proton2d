@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proton/Core/Core.h"
+#include "proton/Core/Base.h"
 #include "proton/Scene/Components.h"
 #include "proton/Scene/Scene.h"
 
@@ -30,14 +30,18 @@ namespace proton {
 			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward<Types>(args)...);
 		}
 
+		// NineSliceSpriteComponent override of AddComponent
 		template<>
 		NineSliceSpriteComponent& AddComponent() const
 		{
+			assert(!HasComponent<NineSliceSpriteComponent>() && "Entity already have component!");
+			assert(HasComponent<TransformComponent>() && "Entity must have TransformComponent!");
 			auto& sprite = m_Scene->m_Registry.emplace<NineSliceSpriteComponent>(m_Handle);
-			sprite.NineSliceSprite.SetTransform(&GetComponent<TransformComponent>());
+			sprite.NineSliceSprite.m_Transform = &GetComponent<TransformComponent>();
 			return sprite;
 		}
 
+		// CameraComponent override of AddComponent
 		template<>
 		CameraComponent& AddComponent() const
 		{
@@ -47,6 +51,7 @@ namespace proton {
 			return camera;
 		}
 
+		// SpriteAnimationComponent override of AddComponent
 		template<>
 		SpriteAnimationComponent& AddComponent() const
 		{
@@ -88,7 +93,7 @@ namespace proton {
 			assert(HasComponent<T>() && "Entity doesn't have a component!");
 			
 			if (std::is_base_of<ScriptComponent, T>::value)
-				DeleteAllScriptInstances();
+				TerminateScriptInstances();
 
 			if (std::is_base_of<CameraComponent, T>::value
 				&& m_Scene->m_PrimaryCameraEntity == *this)
@@ -119,32 +124,40 @@ namespace proton {
 
 		// Returns pointer to scene
 		Scene* GetScene() { return m_Scene; }
+
 		// Returns entity unique identifier
 		UUID GetUUID() const;
+
 		// Returns entity tag stored in TagComponent
 		const std::string& GetTag() const;
 
 		// Checks if entity is valid
 		bool IsValid();
+
 		// Destroys entity and it's child entities
 		void Destroy();
 
 		// Adds child entity given as parameter
 		void AddChildEntity(Entity child);
+
 		// Destroys all child entities
 		void DestroyChildEntities();
+
 		// Detaches entity from parent and moves to scene root
 		void PopHierarchy();
+
 		// Checks if entity is parent of given entity
 		bool IsParentOf(Entity entity);
 
 		// Requires RigidbodyComponent
-		b2Body* GetBox2DRigidbody();
+		b2Body* GetRuntimeBody();
 
 		// Requires RigidbodyComponent
 		void SetVelocity(float x_mps, float y_mps);
+
 		// Requires RigidbodyComponent
 		void SetVelocityX(float mps);
+
 		// Requires RigidbodyComponent
 		void SetVelocityY(float mps);
 
@@ -154,6 +167,7 @@ namespace proton {
 		// Requires RigidbodyComponent
 		void ApplyImpulse(const glm::vec2& impulse);
 
+		// Operator overloads
 		operator uint32_t() const { return (uint32_t)m_Handle; }
 		operator entt::entity() const { return m_Handle; }
 		operator bool() const { return m_Handle != entt::null; }
@@ -161,16 +175,17 @@ namespace proton {
 		bool operator!=(const Entity& other) const { return !(other == *this); }
 
 	private:
-		void DeleteAllScriptInstances();
+		void TerminateScriptInstances();
 
+	private:
 		Scene* m_Scene = nullptr;
 		entt::entity m_Handle = entt::null;
 
 		friend class Scene;
 		friend class SceneSerializer;
 		friend class EntityScript;
-		friend class Inspector;
-		friend class EditorOverlay;
+		friend class InspectorPanel;
+		friend class EditorLayer;
 	};
 
 }

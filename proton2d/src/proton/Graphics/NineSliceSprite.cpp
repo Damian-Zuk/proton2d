@@ -1,14 +1,9 @@
 #include "pch.h"
 #include "proton/Graphics/NineSliceSprite.h"
 #include "proton/Scene/Components.h"
-#include "proton/Core/Utils.h"
+#include "proton/Utils/Utils.h"
 
 namespace proton {
-
-	void NineSliceSprite::SetTransform(TransformComponent* transform)
-	{
-		m_Transform = transform;
-	}
 
 	void NineSliceSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
 	{
@@ -20,7 +15,7 @@ namespace proton {
 	{
 		if (!m_Transform)
 		{
-			LOG_ERROR("NineSliceSprite refresh failed! TransformComponent pointer not set!");
+			LOG_ERROR("NineSliceSprite::Refresh: TransformComponent pointer not set!");
 			return;
 		}
 
@@ -41,7 +36,7 @@ namespace proton {
 		for (auto& column : m_Tilemap)
 			column.resize(m_Height);
 
-		GenerateSprite();
+		CalculateTilesLocalTransform();
 	}
 
 	void NineSliceSprite::SetTileScale(float tileScale)
@@ -50,7 +45,8 @@ namespace proton {
 		Refresh();
 	}
 
-	std::vector<std::vector<glm::uvec2>> NineSliceSprite::GenerateTilePositions()
+	// Generate tile index positions
+	std::vector<std::vector<glm::uvec2>> NineSliceSprite::CalculateTilePositions()
 	{
 		std::vector<std::vector<glm::uvec2>> tilemap;
 		tilemap.resize(m_Width);
@@ -135,10 +131,10 @@ namespace proton {
 		return tilemap;
 	}
 
-	void NineSliceSprite::GenerateSprite()
+	void NineSliceSprite::CalculateTilesLocalTransform()
 	{
 		if (!m_Transform) {
-			LOG_ERROR("NineSliceSprite generation failed! TransformComponent pointer not set.");
+			LOG_ERROR("NineSliceSprite::GenerateSprite: TransformComponent pointer not set.");
 			return;
 		}
 
@@ -182,7 +178,7 @@ namespace proton {
 		};
 
 		// Generate spritesheet tile positions
-		std::vector<std::vector<glm::uvec2>> spritesheetTilePositions = GenerateTilePositions();
+		std::vector<std::vector<glm::uvec2>> spritesheetTilePositions = CalculateTilePositions();
 
 		for (uint32_t y = 0; y < tileCount.y; y++)
 		{
@@ -284,7 +280,7 @@ namespace proton {
 		if (position != m_PositionOffset)
 		{
 			m_PositionOffset = position;
-			GenerateSprite();
+			CalculateTilesLocalTransform();
 		}
 	}
 
@@ -293,7 +289,7 @@ namespace proton {
 		if (borders != m_BlockBorders)
 		{
 			m_BlockBorders = borders;
-			GenerateSprite();
+			CalculateTilesLocalTransform();
 		}
 	}
 

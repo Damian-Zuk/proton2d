@@ -6,7 +6,7 @@
 #include "proton/Graphics/Renderer.h"
 
 #if PROTON_EDITOR
-#include "proton/Editor/EditorOverlay.h"
+#include "proton/Editor/EditorLayer.h"
 #endif
 
 namespace proton {
@@ -27,7 +27,7 @@ namespace proton {
 #if PROTON_EDITOR
 			Scene* scene = CreateEmptyScene("<Unsaved scene>");
 			s_Instance->m_ActiveScene = scene;
-			EditorOverlay::SetSceneContext(scene);
+			EditorLayer::SetActiveScene(scene);
 #endif
 		}
 	}
@@ -99,8 +99,8 @@ namespace proton {
 		s_Instance->m_ActiveScene = s_Instance->m_Scenes.at(scenePath);
 
 #if PROTON_EDITOR
-		EditorOverlay::SetSceneContext(s_Instance->m_ActiveScene);
-		EditorOverlay::SetInspectorContext({});
+		EditorLayer::SetActiveScene(s_Instance->m_ActiveScene);
+		EditorLayer::SelectEntity({});
 #endif
 
 		Renderer::SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);

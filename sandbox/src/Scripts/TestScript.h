@@ -10,7 +10,7 @@ namespace proton {
 
 		virtual void OnCreate() override
 		{
-			m_Body = GetBox2DRigidbody();
+			m_Body = GetRuntimeBody();
 			auto& bc = GetComponent<BoxColliderComponent>();
 
 			bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContactInfo info)

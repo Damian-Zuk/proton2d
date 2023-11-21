@@ -1,11 +1,12 @@
 #pragma once
+#include "proton/Editor/Panels/EditorPanel.h"
 
 namespace proton {
 
-	class DebugInfo
+	class MiscellaneousPanel : public EditorPanel
 	{
 	public:
-		void OnImGuiRender();
+		virtual void OnImGuiRender() override;
 
 	private:
 		float m_FrameTime = 0.0f;
@@ -15,9 +16,6 @@ namespace proton {
 		uint32_t m_FrameCount = 0;
 		float m_FPS = 0.0f;
 
-		size_t m_EntitiesCount = 0;
-		size_t m_ScriptedEntitiesCount = 0;
-
 		static constexpr uint32_t s_FrameTimePlotValuesCount = 200;
 		float m_FrameTimeHistory[s_FrameTimePlotValuesCount] = {};
 		uint32_t m_FrameTimeValuesOffset = 0;
@@ -25,7 +23,7 @@ namespace proton {
 		float m_RefreshStatsTimer = 0.0f;
 
 		friend class Application;
-		friend class EditorOverlay;
+		friend class EditorLayer;
 	};
 
 }

@@ -5,10 +5,10 @@
 #include "proton/Scene/ScriptFactory.h"
 #include "proton/Scene/Scene.h"
 #include "proton/Scene/Entity.h"
-#include "proton/Core/Utils.h"
+#include "proton/Utils/Utils.h"
 
 #if PROTON_EDITOR
-#include "proton/Editor/EditorOverlay.h"
+#include "proton/Editor/EditorLayer.h"
 #endif
 
 #include <fstream>
@@ -106,7 +106,7 @@ namespace proton {
 #if PROTON_EDITOR
 			if (jsonObj.contains("EditorCameraPosition"))
 			{
-				auto& camera = EditorOverlay::Get()->GetCamera();
+				auto& camera = EditorLayer::Get()->GetCamera();
 				camera.m_Position.x = jsonObj["EditorCameraPosition"][0];
 				camera.m_Position.y = jsonObj["EditorCameraPosition"][1];
 				camera.m_ZoomLevelTarget = jsonObj["EditorCameraZoom"];
@@ -396,7 +396,7 @@ namespace proton {
 			auto& rb = entity.AddComponent<RigidbodyComponent>();
 			rb.Type = jsonObj["Rigidbody"]["Type"];
 			rb.FixedRotation = jsonObj["Rigidbody"]["FixedRotation"];
-			if (m_Scene->GetSceneState() != SceneState::Edit)
+			if (m_Scene->GetSceneState() != SceneState::Stop)
 				m_Scene->CreateBox2DRuntimeBody(entity);
 		}
 

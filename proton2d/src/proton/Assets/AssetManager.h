@@ -51,7 +51,7 @@ namespace proton {
 		std::vector<std::string> m_TexturesFilepathList;
 		std::unordered_map<std::string, glm::uvec2> m_SpritesheetList;
 
-		friend class Inspector;
+		friend class InspectorPanel;
 	};
 
 }

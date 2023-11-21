@@ -1,28 +1,26 @@
 #pragma once
 
-#include "proton/Core/Core.h"
+#include "proton/Editor/Panels/EditorPanel.h"
+#include "proton/Core/Base.h"
 #include "proton/Scene/Entity.h"
 
 namespace proton {
 
-	class Inspector
+	class InspectorPanel : public EditorPanel
 	{
 	public:
-		void OnImGuiRender();
+		virtual void OnImGuiRender() override;
 
 	private:
+		void DrawSceneProporties();
+
 		template<typename T>
 		void DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction);
 
-		void SetSelectionContext(Entity entity);
-
 	private:
-		Scene* m_ActiveScene;
-		Entity m_SelectedEntity; // Inspector Context
-
 		char m_SceneNameBuffer[256] = { 0 };
 
-		friend class EditorOverlay;
+		friend class EditorLayer;
 	};
 
 }
