@@ -61,70 +61,70 @@ namespace proton {
 				tilemap[x][y] = { sx + 1, sy + 1 };
 
 		// Top left corner
-		if (m_BlockBorders & BlockBorder_TopLeft)
+		if (m_Edges & Edge_TopLeft)
 		{
 			tilemap[0][m_Height - 1] = { sx, sy + 2 };
 
-			if (!(m_BlockBorders & BlockBorder_Left))
+			if (!(m_Edges & Edge_Left))
 				tilemap[0][m_Height - 1] = { sx + 1, sy + 2 };
 
-			if (!(m_BlockBorders & BlockBorder_Top))
+			if (!(m_Edges & Edge_Top))
 				tilemap[0][m_Height - 1] = { sx, sy + 2 - 1 };
 		}
 
 		// Top right corner
-		if (m_BlockBorders & BlockBorder_TopRight)
+		if (m_Edges & Edge_TopRight)
 		{
 			tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 2 };
 
-			if (!(m_BlockBorders & BlockBorder_Right))
+			if (!(m_Edges & Edge_Right))
 				tilemap[m_Width - 1][m_Height - 1] = { sx + 1, sy + 2 };
 
-			if (!(m_BlockBorders & BlockBorder_Top))
+			if (!(m_Edges & Edge_Top))
 				tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 1 };
 		}
 
 		// Bottom left corner
-		if (m_BlockBorders & BlockBorder_BottomLeft)
+		if (m_Edges & Edge_BottomLeft)
 		{
 			tilemap[0][0] = { sx, sy };
 
-			if (!(m_BlockBorders & BlockBorder_Left))
+			if (!(m_Edges & Edge_Left))
 				tilemap[0][0] = { sx + 1, sy };
 
-			if (!(m_BlockBorders & BlockBorder_Bottom))
+			if (!(m_Edges & Edge_Bottom))
 				tilemap[0][0] = { sx, sy + 1 };
 		}
 
 		// Bottom right corner
-		if (m_BlockBorders & BlockBorder_BottomRight)
+		if (m_Edges & Edge_BottomRight)
 		{
 			tilemap[m_Width - 1][0] = { sx + 2, sy };
 
-			if (!(m_BlockBorders & BlockBorder_Right))
+			if (!(m_Edges & Edge_Right))
 				tilemap[m_Width - 1][0] = { sx + 1, sy };
 
-			if (!(m_BlockBorders & BlockBorder_Bottom))
+			if (!(m_Edges & Edge_Bottom))
 				tilemap[m_Width - 1][0] = { sx + 2, sy + 1};
 		}
 
 		// Left border
-		if (m_BlockBorders & BlockBorder_Left)
+		if (m_Edges & Edge_Left)
 			for (uint32_t y = 1; y < m_Height - 1; y++)
 				tilemap[0][y] = { sx, sy + 1 };
 
 		// Right border
-		if (m_BlockBorders & BlockBorder_Right)
+		if (m_Edges & Edge_Right)
 			for (uint32_t y = 1; y < m_Height - 1; y++)
 				tilemap[m_Width - 1][y] = { sx + 2, sy + 1 };
 
 		// Top border
-		if (m_BlockBorders & BlockBorder_Top)
+		if (m_Edges & Edge_Top)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
 				tilemap[x][m_Height - 1] = { sx + 1, sy + 2 };
 
 		// Bottom border
-		if (m_BlockBorders & BlockBorder_Bottom)
+		if (m_Edges & Edge_Bottom)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
 				tilemap[x][0] = { sx + 1, sy };
 
@@ -284,11 +284,11 @@ namespace proton {
 		}
 	}
 
-	void NineSliceSprite::SetBlockBorders(BlockBorders borders)
+	void NineSliceSprite::SetEdges(Edges borders)
 	{
-		if (borders != m_BlockBorders)
+		if (borders != m_Edges)
 		{
-			m_BlockBorders = borders;
+			m_Edges = borders;
 			CalculateTilesLocalTransform();
 		}
 	}
@@ -298,9 +298,9 @@ namespace proton {
 		return m_Spritesheet;
 	}
 
-	BlockBorders NineSliceSprite::GetBlockBorders()
+	Edges NineSliceSprite::GetEdges()
 	{
-		return m_BlockBorders;
+		return m_Edges;
 	}
 
 }

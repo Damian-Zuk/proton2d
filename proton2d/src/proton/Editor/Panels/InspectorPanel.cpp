@@ -341,14 +341,14 @@ namespace proton {
 					ImGui::DragInt2("Spritesheet offset", (int*)glm::value_ptr(sprite.m_PositionOffset));
 					ImGui::Dummy({ 0.0f, 5.0f });
 
-					bool left        = sprite.m_BlockBorders & 1;
-					bool right       = sprite.m_BlockBorders & 2;
-					bool top         = sprite.m_BlockBorders & 4;
-					bool bottom      = sprite.m_BlockBorders & 8;
-					bool topLeft     = sprite.m_BlockBorders & 16;
-					bool topRight    = sprite.m_BlockBorders & 32;
-					bool bottomLeft  = sprite.m_BlockBorders & 64;
-					bool bottomRight = sprite.m_BlockBorders & 128;
+					bool left        = sprite.m_Edges & 1;
+					bool right       = sprite.m_Edges & 2;
+					bool top         = sprite.m_Edges & 4;
+					bool bottom      = sprite.m_Edges & 8;
+					bool topLeft     = sprite.m_Edges & 16;
+					bool topRight    = sprite.m_Edges & 32;
+					bool bottomLeft  = sprite.m_Edges & 64;
+					bool bottomRight = sprite.m_Edges & 128;
 
 					// Toggle texture borders and corners
 					ImGui::Text("Toggle texture borders:");
@@ -368,7 +368,7 @@ namespace proton {
 					ImGui::SameLine(); 
 					ImGui::Checkbox("##tb_bottom_right_corner", &bottomRight);
 
-					sprite.SetBlockBorders(left * 1 + right * 2 + top * 4 + bottom * 8
+					sprite.SetEdges(left * 1 + right * 2 + top * 4 + bottom * 8
 						+ topLeft * 16 + topRight * 32 + bottomLeft * 64 + bottomRight * 128);
 
 					ImGui::Dummy({ 0, 3.0f });

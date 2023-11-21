@@ -5,20 +5,20 @@
 
 namespace proton {
 
-	enum BlockBorder : uint16_t
+	enum Edge : uint16_t
 	{
-		BlockBorder_Left        = 1 << 0,
-		BlockBorder_Right       = 1 << 1,
-		BlockBorder_Top         = 1 << 2,
-		BlockBorder_Bottom      = 1 << 3,
-		BlockBorder_TopLeft     = 1 << 4,
-		BlockBorder_TopRight    = 1 << 5,
-		BlockBorder_BottomLeft  = 1 << 6,
-		BlockBorder_BottomRight = 1 << 7,
-		BlockBorder_All         = 0xFF
+		Edge_Left        = 1 << 0,
+		Edge_Right       = 1 << 1,
+		Edge_Top         = 1 << 2,
+		Edge_Bottom      = 1 << 3,
+		Edge_TopLeft     = 1 << 4,
+		Edge_TopRight    = 1 << 5,
+		Edge_BottomLeft  = 1 << 6,
+		Edge_BottomRight = 1 << 7,
+		Edge_All         = 0xFF
 	};
 
-	using BlockBorders = uint8_t;
+	using Edges = uint8_t;
 	struct TransformComponent;
 
 	struct NineSliceTile
@@ -48,8 +48,8 @@ namespace proton {
 		void SetPositionOffset(const glm::uvec2& position);
 		const glm::uvec2& GetPositionOffset() const { return m_PositionOffset; };
 
-		void SetBlockBorders(BlockBorders borders);
-		BlockBorders GetBlockBorders();
+		void SetEdges(Edges borders);
+		Edges GetEdges();
 
 	private:
 		// Calculate tile positions and local transformation matrix for each tile
@@ -68,7 +68,7 @@ namespace proton {
 
 		// Slice scaled sprites
 		glm::uvec2 m_PositionOffset = { 0, 0 };
-		BlockBorders m_BlockBorders = BlockBorder_All;
+		Edges m_Edges = Edge_All;
 
 		friend class Scene;
 		friend class InspectorPanel;

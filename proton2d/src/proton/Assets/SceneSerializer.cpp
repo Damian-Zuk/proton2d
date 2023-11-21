@@ -179,7 +179,7 @@ namespace proton {
 
 			jsonObj["NineSliceSprite"]["Width"] = sprite.m_Width;
 			jsonObj["NineSliceSprite"]["Height"] = sprite.m_Width;
-			jsonObj["NineSliceSprite"]["BlockBorders"] = sprite.GetBlockBorders();
+			jsonObj["NineSliceSprite"]["Edges"] = sprite.GetEdges();
 			jsonObj["NineSliceSprite"]["TileScale"] = sprite.m_TileScale;
 			const auto& c = component.Color;
 			jsonObj["NineSliceSprite"]["Color"] = { c.r, c.g, c.b, c.a };
@@ -353,7 +353,7 @@ namespace proton {
 			json& jsonData = jsonObj["NineSliceSprite"];
 			auto& component = entity.AddComponent<NineSliceSpriteComponent>();
 			auto& sprite = component.NineSliceSprite;
-			sprite.m_BlockBorders = jsonData["BlockBorders"];
+			sprite.m_Edges = jsonData["Edges"];
 			sprite.m_TileScale = jsonData["TileScale"];
 			auto& c = jsonData["Color"];
 			component.Color = { c[0], c[1], c[2], c[3] };
