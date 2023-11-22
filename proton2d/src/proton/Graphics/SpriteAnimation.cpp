@@ -75,7 +75,7 @@ namespace proton {
         return (float)m_CurrentFrame / m_CurrentAnimationFrameCount;
     }
 
-    void SpriteAnimation::PlayFrame(float ts)
+    void SpriteAnimation::Update(float ts)
     {
         if (!m_Sprite || !m_CurrentAnimationFrameCount)
             return;

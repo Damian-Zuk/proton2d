@@ -78,7 +78,7 @@ namespace proton {
 		// Move selected entity
 		if (m_MoveSelectedEntity && m_SelectedEntity.IsValid())
 		{
-			glm::vec2 targetPos = m_ActiveScene->GetCursorWorldPosition() + m_SelectionMouseOffset;
+			glm::vec2 targetPos = m_ActiveScene->GetCursorPosition() + m_SelectionMouseOffset;
 			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
 			transform.Position = { targetPos.x, targetPos.y, transform.Position.z };
 			ImGui::SetMouseCursor(7);
@@ -87,7 +87,7 @@ namespace proton {
 		// Move editor camera
 		if (m_MoveEditorCamera)
 		{
-			glm::vec2 mousePos = m_ActiveScene->GetCursorWorldPosition();
+			glm::vec2 mousePos = m_ActiveScene->GetCursorPosition();
 			glm::vec2 offset = m_CameraDragOffset - mousePos;
 			m_Camera.m_Position.x += offset.x;
 			m_Camera.m_Position.y += offset.y;
@@ -124,17 +124,17 @@ namespace proton {
 			// Mouse Button 1 (Right): Move editor camera
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera)
 			{
-				m_CameraDragOffset = m_ActiveScene->GetCursorWorldPosition();
+				m_CameraDragOffset = m_ActiveScene->GetCursorPosition();
 				m_MoveEditorCamera = true;
 			}
 
 			// Mouse Button 0 (Left: Select Entity
 			else if (e.GetMouseButton() == Mouse::Button0)
 			{
-				glm::vec2 mousePos = m_ActiveScene->GetCursorWorldPosition();
+				glm::vec2 mousePos = m_ActiveScene->GetCursorPosition();
 				Entity& selectedEntity = m_SelectedEntity;
 
-				std::vector<Entity> entities = m_ActiveScene->GetEntitiesOnCursor();
+				std::vector<Entity> entities = m_ActiveScene->GetCursorEntities();
 				Entity target; float transformMaxZ = 0.0f;
 
 				for (auto& entity : entities)

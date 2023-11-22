@@ -3,6 +3,7 @@
 
 namespace proton {
 
+	// TODO: Refactor
 	class PrefabPanel : public EditorPanel
 	{
 	public:

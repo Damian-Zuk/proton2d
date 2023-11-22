@@ -13,11 +13,11 @@
             3.0
         ]
     },
-    "NineSliceSprite": {
+    "ResizableSprite": {
         "Spritesheet": "level-sheet.png",
         "Width": 4,
         "Height": 4,
-        "BlockBorders": 255,
+        "Edges": 255,
         "TileScale": 1.0,
         "Color": [
             1.0,

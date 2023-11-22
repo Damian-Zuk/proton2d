@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "proton/Editor/Panels/InspectorPanel.h"
+#include "proton/Editor/EditorLayer.h"
 #include "proton/Graphics/Renderer/Renderer.h"
 #include "proton/Utils/Utils.h"
 #include "proton/Assets/AssetManager.h"
@@ -7,6 +8,7 @@
 #include "proton/Scene/Components.h"
 #include "proton/Scene/EntityScript.h"
 #include "proton/Scene/PrefabManager.h"
+#include "proton/Physics/PhysicsWorld.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -69,12 +71,14 @@ namespace proton {
 		if (ImGui::Button("Destroy entity", { 165.0f, 25.0f }))
 		{
 			m_SelectedEntity.Destroy();
+			EditorLayer::SelectEntity({});
 			ImGui::End();
 			return;
 		}
 		ImGui::Dummy({ 0.0f, 5.0f });
 
 		// Display UUID
+		// TODO: Move this to the top, add Copy and Copy Decimal buttons
 		ImGui::Dummy({ 3,0 }); ImGui::SameLine();
 		std::stringstream hexUUID;
 		hexUUID << std::hex << (uint64_t)m_SelectedEntity.GetUUID();
@@ -83,6 +87,7 @@ namespace proton {
 		ImGui::SameLine(ImGui::GetWindowWidth() - 140.0f);
 
 		// Create prefab from entity button
+		// TODO: Prefab refactor
 		ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + ImGui::CalcTextSize(uuid.c_str()).x - 140);
 		if (ImGui::Button("Create prefab", { 120.0f, 25.0f }))
 			PrefabManager::CreatePrefabFromEntity(m_SelectedEntity);
@@ -559,10 +564,10 @@ namespace proton {
 		ImGui::Checkbox("Enable physics simulation", &m_ActiveScene->m_EnablePhysics);
 		ImGui::Dummy({ 0,5 });
 		ImGui::PushItemWidth(100.0f);
-		ImGui::DragFloat("World gravity", &m_ActiveScene->m_WorldGravity, 0.1f);
+		ImGui::DragFloat("World gravity", &m_ActiveScene->m_PhysicsWorld->m_Gravity, 0.1f);
 
-		int* vi = &m_ActiveScene->m_PhysicsVelocityIterations;
-		int* pi = &m_ActiveScene->m_PhysicsPositionIterations;
+		int* vi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
+		int* pi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsPositionIterations;
 		if (ImGui::DragInt("Velocity iterations", vi))
 			*vi = glm::max(*vi, 1);
 		if (ImGui::DragInt("Position iterations", pi))

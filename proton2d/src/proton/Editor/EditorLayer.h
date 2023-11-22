@@ -25,6 +25,7 @@ namespace proton {
 		static void SelectEntity(Entity entity);
 
 		static EditorCamera& GetCamera() { return s_Instance->m_Camera; }
+		// TODO: Editor proporties
 		static bool UsingCameraEditorInRuntime() { return s_Instance->m_UseEditorCameraInRuntime; }
 
 	private:

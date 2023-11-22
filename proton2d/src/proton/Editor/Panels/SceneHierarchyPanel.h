@@ -12,7 +12,7 @@ namespace proton {
 		void DrawEntityTreeNode(Entity entity);
 
 	private:
-		Entity m_HierarchyDragEntity;
+		Entity m_EntityDragTarget;
 	};
 
 }

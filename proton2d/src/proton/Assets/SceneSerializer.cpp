@@ -6,6 +6,7 @@
 #include "proton/Scene/Scene.h"
 #include "proton/Scene/Entity.h"
 #include "proton/Utils/Utils.h"
+#include "proton/Physics/PhysicsWorld.h"
 
 #if PROTON_EDITOR
 #include "proton/Editor/EditorLayer.h"
@@ -37,9 +38,9 @@ namespace proton {
 		json jsonObj;
 		jsonObj["SceneName"] = m_Scene->m_SceneName;
 		jsonObj["EnablePhysics"] = m_Scene->m_EnablePhysics;
-		jsonObj["GravityForce"] = m_Scene->m_WorldGravity;
-		jsonObj["VelocityIterations"] = m_Scene->m_PhysicsVelocityIterations;
-		jsonObj["PositionIterations"] = m_Scene->m_PhysicsPositionIterations;
+		jsonObj["GravityForce"] = m_Scene->m_PhysicsWorld->m_Gravity;
+		jsonObj["VelocityIterations"] = m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations;
+		jsonObj["PositionIterations"] = m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations;
 		const auto& c = m_Scene->m_ClearColor;
 		jsonObj["ScreenClearColor"] = { c.r, c.g, c.b, c.a };
 
@@ -87,9 +88,9 @@ namespace proton {
 			json jsonObj = json::parse(jsonData);
 			m_Scene->m_SceneName = jsonObj["SceneName"];
 			m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
-			m_Scene->m_WorldGravity = jsonObj["GravityForce"];
-			m_Scene->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
-			m_Scene->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
+			m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
+			m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
+			m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
 			json& c = jsonObj["ScreenClearColor"];
 			m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
 
@@ -397,7 +398,7 @@ namespace proton {
 			rb.Type = jsonObj["Rigidbody"]["Type"];
 			rb.FixedRotation = jsonObj["Rigidbody"]["FixedRotation"];
 			if (m_Scene->GetSceneState() != SceneState::Stop)
-				m_Scene->CreateBox2DRuntimeBody(entity);
+				m_Scene->m_PhysicsWorld->CreateRuntimeBody(entity);
 		}
 
 		// Deserialize scripts

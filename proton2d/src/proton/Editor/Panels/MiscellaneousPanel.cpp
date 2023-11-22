@@ -43,17 +43,17 @@ namespace proton {
 		else
 			m_RefreshStatsTimer -= m_FrameTime;
 
-		ImGui::Begin("Miscellaneous");
+		ImGui::Begin("Misc");
 
 		if (ImGui::TreeNodeEx("Settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::Checkbox("Runtime editor camera", &EditorLayer::s_Instance->m_UseEditorCameraInRuntime);
-				ImGui::Checkbox("Show selection outline", &EditorLayer::s_Instance->m_ShowSelectionOutline);
-				ImGui::Checkbox("Show selection collider", &EditorLayer::s_Instance->m_ShowSelectionCollider);
-				ImGui::Checkbox("Show all colliders", &EditorLayer::s_Instance->m_ShowAllColliders);
-				if (ImGui::Button("Editor Camera Reset"))
+				ImGui::Checkbox("Selection outline", &EditorLayer::s_Instance->m_ShowSelectionOutline);
+				ImGui::Checkbox("Selection collider", &EditorLayer::s_Instance->m_ShowSelectionCollider);
+				ImGui::Checkbox("Show colliders", &EditorLayer::s_Instance->m_ShowAllColliders);
+				ImGui::Checkbox("Runtime camera", &EditorLayer::s_Instance->m_UseEditorCameraInRuntime);
+				if (ImGui::Button("Reset Camera"))
 					EditorLayer::s_Instance->ResetCameraPosition();
 				ImGui::TreePop();
 			}

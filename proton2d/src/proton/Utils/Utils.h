@@ -30,5 +30,6 @@ namespace proton {
 
 		glm::mat4 GetTransform(const glm::vec3& position, const glm::vec2& scale, float rotation = 0.0f);
 
+		bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
 	}
 }

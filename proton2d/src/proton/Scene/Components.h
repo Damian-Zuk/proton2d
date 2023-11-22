@@ -5,7 +5,7 @@
 #include "proton/Graphics/ResizableSprite.h"
 #include "proton/Graphics/Camera.h"
 #include "proton/Graphics/SpriteAnimation.h"
-#include "proton/Scene/PhysicsCommon.h"
+#include "proton/Physics/PhysicsCommon.h"
 
 #include <entt/entity/entity.hpp>
 

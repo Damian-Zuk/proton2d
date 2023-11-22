@@ -11,13 +11,8 @@ using namespace proton;
 
 void GameLayer::OnCreate()
 {
-#if PROTON_DISTRIBUTION
-	SceneManager::Load("level_1");
-	SceneManager::SetActiveScene("level_1")->BeginPlay();
-#else
 	SceneManager::Load("level_1");
 	SceneManager::SetActiveScene("level_1");
-#endif
 }
 
 
@@ -47,7 +42,7 @@ void GameLayer::OnEvent(Event& e)
 			entity.AddComponent<RigidbodyComponent>().Type = b2_dynamicBody;
 			entity.AddComponent<BoxColliderComponent>();
 			
-			glm::vec2 cursorPos = scene->GetCursorWorldPosition();
+			glm::vec2 cursorPos = scene->GetCursorPosition();
 			auto& transform = entity.GetComponent<TransformComponent>();
 			transform.Position = { cursorPos.x, cursorPos.y, 0 };
 			transform.Rotation = Random::Float(0.0f, 80.0f);
@@ -59,6 +54,8 @@ void GameLayer::OnEvent(Event& e)
 			sprite.Color.g = Random::Float(0.0f, 1.0f);
 			sprite.Color.b = Random::Float(0.0f, 1.0f);
 			sprite.Sprite.SetTexture(AssetManager::GetTexture("box.png"));
+			// TODO: remove
+			scene->CreateRuntimeBody(entity);
 		}
 
 		if (event.GetKeyCode() == Key::L)

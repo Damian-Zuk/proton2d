@@ -4,6 +4,7 @@ namespace proton {
 
 	class Scene;
 
+	// TODO: Refactor Scene::m_Filepath
 	/*
 	* SceneManager class methods use scene filepaths - "scenePath" 
 	* (realative to "scenes" directory) without ".scene" extension
@@ -25,7 +26,7 @@ namespace proton {
 
 		static Scene* GetScene(const std::string& scenePath);
 
-		static void SaveSceneAs(const std::string& scenePath, const std::string& mewSenePath);
+		static void SaveSceneAs(const std::string& scenePath, const std::string& newSenePath);
 		static void SaveActiveSceneAs(const std::string& scenePath);
 		static void SaveActiveScene();
 

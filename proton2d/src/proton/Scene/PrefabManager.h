@@ -9,6 +9,7 @@ namespace proton {
 	using json = nlohmann::ordered_json;
 	class Scene;
 
+	// TODO: General Refactor to this class
 	/*
 	* Class PrefabManager is used to create, load and spawn prefabs
 	* PrefabManager class methods use prefab filepaths - "prefabPath"

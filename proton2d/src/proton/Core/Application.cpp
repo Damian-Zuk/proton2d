@@ -121,6 +121,7 @@ namespace proton {
 						for (AppLayer* layer : m_AppLayers)
 							layer->OnUpdate(m_FrameTime * m_TimeScale);
 					}
+
 					Scene* activeScene = SceneManager::GetActiveScene();
 					if (activeScene)
 						activeScene->OnUpdate(m_FrameTime * m_TimeScale);

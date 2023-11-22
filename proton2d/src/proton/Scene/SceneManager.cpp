@@ -85,29 +85,30 @@ namespace proton {
 			LOG_ERROR("[SceneManager::SetActiveScene] Error: scene not loaded!");
 			return nullptr;
 		}
-
+		Scene* targetScene = s_Instance->m_Scenes.at(scenePath);
 #if PROTON_EDITOR
-		// Unload unsaved scene if it's empty
+		// Remove unsaved scene if it's empty
+		// TODO: Refactor this
 		if (IsLoaded("<Unsaved scene>"))
 		{
 			Scene* scene = GetScene("<Unsaved scene>");
 			if (!scene->m_Registry.size() && s_Instance->m_Scenes.size() > 1)
 				Unload("<Unsaved scene>");
 		}
-#endif
+		if (s_Instance->m_ActiveScene->GetSceneState() == SceneState::Play)
+			targetScene->BeginPlay();
 
-		s_Instance->m_ActiveScene = s_Instance->m_Scenes.at(scenePath);
-
-#if PROTON_EDITOR
-		EditorLayer::SetActiveScene(s_Instance->m_ActiveScene);
+		s_Instance->m_ActiveScene = targetScene;
+		EditorLayer::SetActiveScene(targetScene);
 		EditorLayer::SelectEntity({});
+
+#else
+		s_Instance->m_ActiveScene = targetScene;
+		s_Instance->m_ActiveScene->BeginPlay();
 #endif
-
 		Renderer::SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
-
 		return s_Instance->m_ActiveScene;
 	}
-
 
 	void SceneManager::SaveSceneAs(const std::string& scenePath, const std::string& newScenePath)
 	{

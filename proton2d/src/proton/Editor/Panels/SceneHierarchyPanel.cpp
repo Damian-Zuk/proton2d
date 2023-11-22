@@ -20,7 +20,7 @@ namespace proton {
 		bool opened = ImGui::TreeNodeEx(m_ActiveScene->m_SceneName.c_str(), flags);
 
 		if (ImGui::IsItemClicked())
-			EditorLayer::SelectEntity(Entity{});
+			EditorLayer::SelectEntity({});
 
 		if (ImGui::IsItemClicked(1))
 			ImGui::OpenPopup("new_entity_root");
@@ -35,7 +35,7 @@ namespace proton {
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (ImGui::AcceptDragDropPayload("Entity"))
-				m_HierarchyDragEntity.PopHierarchy();
+				m_EntityDragTarget.PopHierarchy();
 			ImGui::EndDragDropTarget();
 		}
 
@@ -73,18 +73,18 @@ namespace proton {
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
 		{
-			m_HierarchyDragEntity = entity;
+			m_EntityDragTarget = entity;
 			ImGui::BeginDragDropSource();
-			ImGui::SetDragDropPayload("Entity", (void*)&m_HierarchyDragEntity, sizeof(Entity));
+			ImGui::SetDragDropPayload("Entity", (void*)&m_EntityDragTarget, sizeof(Entity));
 			ImGui::EndDragDropSource();
 		}
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (!m_HierarchyDragEntity.IsParentOf(entity) && ImGui::AcceptDragDropPayload("Entity"))
+			if (!m_EntityDragTarget.IsParentOf(entity) && ImGui::AcceptDragDropPayload("Entity"))
 			{
-				m_HierarchyDragEntity.PopHierarchy();
-				entity.AddChildEntity(m_HierarchyDragEntity);
+				m_EntityDragTarget.PopHierarchy();
+				entity.AddChildEntity(m_EntityDragTarget);
 			}
 			ImGui::EndDragDropTarget();
 		}

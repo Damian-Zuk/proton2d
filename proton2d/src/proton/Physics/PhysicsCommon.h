@@ -1,9 +1,10 @@
 #pragma once
 #include "proton/Core/UUID.h"
 
+#include <functional>
 #include <box2d/b2_contact.h>
 #include <box2d/b2_world_callbacks.h>
-#include <functional>
+
 
 namespace proton {
 
@@ -25,12 +26,28 @@ namespace proton {
 	{
 		std::function<void(PhysicsContactInfo info)> 
 			OnBeginContactFunction = nullptr;
+
 		std::function<void(PhysicsContactInfo info)>
 			OnEndContactFunction = nullptr;
+
 		std::function<void(PhysicsContactInfo info, const b2Manifold* oldManifold)>
 			OnPreSolveFunction = nullptr;
+
 		std::function<void(PhysicsContactInfo info, const b2ContactImpulse* impulse)> 
 			OnPostSolveFunction = nullptr;
+	};
+
+	class PhysicsContactListener : public b2ContactListener
+	{
+	public:
+		PhysicsContactListener(Scene* scene);
+		virtual void BeginContact(b2Contact* contact) override;
+		virtual void EndContact(b2Contact* contact) override;
+		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
+		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override;
+
+	private:
+		Scene* m_Scene = nullptr;
 	};
 
 }

@@ -34,8 +34,8 @@ namespace proton {
 		uint16_t GetFPS() const { return m_FPS; }
 
 	private:
+		void Update(float ts);
 		void SetSprite(Sprite* sprite);
-		void PlayFrame(float ts);
 
 		Sprite* m_Sprite = nullptr;
 		

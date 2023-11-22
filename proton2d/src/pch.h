@@ -17,4 +17,4 @@
 #endif
 
 #include "proton/Core/Logger.h"
-#include "proton/Core/Instrumentor.h"
+#include "proton/Debug/Instrumentor.h"

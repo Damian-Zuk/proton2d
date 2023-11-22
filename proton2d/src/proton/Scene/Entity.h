@@ -86,6 +86,7 @@ namespace proton {
 		// Removes script from entity
 		void RemoveScript(const std::string& scriptClassName);
 
+
 		// Removes component from entity
 		template <typename T>
 		void RemoveComponent()
