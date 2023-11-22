@@ -17,7 +17,7 @@ namespace proton {
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual float GetAspectRatio() const { return (float)GetWidth() / (float)GetHeight(); }
+		virtual inline float GetAspectRatio() const { return (float)GetWidth() / (float)GetHeight(); }
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;

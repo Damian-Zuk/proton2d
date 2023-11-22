@@ -11,8 +11,7 @@ namespace proton {
 
 	EntityScript* ScriptFactory::AddScriptToEntity(Entity entity, const std::string& className)
 	{
-		assert(m_ScriptRegistry.find(className) != m_ScriptRegistry.end()
-			&& "Script add function not found in registry");
+		PT_ASSERT(m_ScriptRegistry.find(className) != m_ScriptRegistry.end(), "Script add function not found in registry");
 		AddScriptFunction& addScriptFunction = m_ScriptRegistry.at(className);
 		EntityScript* script = addScriptFunction(entity);
 		return script;
@@ -22,7 +21,7 @@ namespace proton {
 	{
 		if (m_ScriptRegistry.find(className) != m_ScriptRegistry.end())
 		{
-			LOG_ERROR("Script registration failed, script already exists:", className);
+			PT_CORE_ERROR("Script registration failed, script '{}' already exists", className);
 			return false;
 		}
 		m_ScriptRegistry[className] = addFunction;

@@ -22,7 +22,7 @@ namespace proton {
 
 		if (!m_ActiveScene) {
 			ImGui::End();
-			LOG_ERROR("[InspectorPanel::OnImGuiRender] ActiveScene is NULL")
+			PT_CORE_ERROR("[InspectorPanel::OnImGuiRender] ActiveScene is NULL");
 			return;
 		}
 

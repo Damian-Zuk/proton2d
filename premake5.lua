@@ -53,6 +53,7 @@ project "proton2d"
 	includedirs
 	{
 		"%{prj.name}/src",
+		"vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.glm}",
@@ -74,7 +75,8 @@ project "proton2d"
 
 	defines
 	{
-		"_CRT_SECURE_NO_WARNINGS"
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE"
 	}
 
 	filter "system:windows"
@@ -121,9 +123,10 @@ project "sandbox"
 
 	includedirs
 	{
-		"proton2d/src",
 		"%{prj.name}/src",
-		"vendor",
+		"%{wks.location}/proton2d/src",
+		"%{wks.location}/vendor/spdlog/include",
+		"%{wks.location}/vendor",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.json}",

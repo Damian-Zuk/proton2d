@@ -13,12 +13,6 @@ namespace proton {
 
 	void ResizableSprite::Generate()
 	{
-		if (!m_Transform)
-		{
-			LOG_ERROR("ResizableSprite::Refresh: TransformComponent pointer not set!");
-			return;
-		}
-
 		if (m_TileScale < 0.01f)
 			m_TileScale = 0.01f;
 
@@ -133,11 +127,6 @@ namespace proton {
 
 	void ResizableSprite::UpdateTileTransforms()
 	{
-		if (!m_Transform) {
-			LOG_ERROR("ResizableSprite::GenerateSprite: TransformComponent pointer not set.");
-			return;
-		}
-
 		// width, height tile count (with fraction)
 		float width = (*m_Transform).Scale.x / m_TileScale;
 		float height = (*m_Transform).Scale.y / m_TileScale;

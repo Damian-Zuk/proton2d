@@ -8,7 +8,7 @@
 #include "proton/Utils/Utils.h"
 #include "proton/Physics/PhysicsWorld.h"
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 #include "proton/Editor/EditorLayer.h"
 #endif
 
@@ -34,7 +34,7 @@ namespace proton {
 
 	bool SceneSerializer::Serialize(const std::string& filepath)
 	{
-		assert(m_Scene && "Scene context not set!");
+		PT_ASSERT(m_Scene, "Scene context not set!");
 		json jsonObj;
 		jsonObj["SceneName"] = m_Scene->m_SceneName;
 		jsonObj["EnablePhysics"] = m_Scene->m_EnablePhysics;
@@ -51,7 +51,7 @@ namespace proton {
 			jsonObj["PrimaryCameraEntity"] = id;
 		}
 
-//#if PROTON_EDITOR
+//#ifdef PT_EDITOR
 //		const auto& camera = EditorOverlay::Get()->GetCamera();
 //		const auto& cameraPos = camera.GetPosition();
 //		jsonObj["EditorCameraPosition"] = { cameraPos.x, cameraPos.y };
@@ -104,7 +104,7 @@ namespace proton {
 				m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
 			}
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 			if (jsonObj.contains("EditorCameraPosition"))
 			{
 				auto& camera = EditorLayer::Get()->GetCamera();

@@ -21,13 +21,13 @@ namespace proton {
 
 	b2Body* PhysicsWorld::GetRuntimeBody(UUID id)
 	{
-		assert(m_RuntimeBodies.find(id) != m_RuntimeBodies.end() && "Runtime body not found!");
+		PT_ASSERT(m_RuntimeBodies.find(id) != m_RuntimeBodies.end(), "Runtime body not found!");
 		return m_RuntimeBodies.at(id);
 	}
 
 	void PhysicsWorld::DestroyRuntimeBody(UUID id)
 	{
-		assert(m_RuntimeBodies.find(id) != m_RuntimeBodies.end() && "Runtime body not found!");
+		PT_ASSERT(m_RuntimeBodies.find(id) != m_RuntimeBodies.end(), "Runtime body not found!");
 		m_World->DestroyBody(m_RuntimeBodies.at(id));
 		m_RuntimeBodies.erase(id);
 	}
@@ -105,7 +105,6 @@ namespace proton {
 			}
 		}
 	}
-
 
 	void PhysicsWorld::DestroyWorld()
 	{

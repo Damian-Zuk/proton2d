@@ -2,24 +2,34 @@
 
 #include <memory>
 
-#define PROTON_ASSETS_DIR "assets/"
-#define PROTON_ENGINE_ASSETS_DIR "../proton2d/assets"
+#ifndef PROTON_DISTRIBUTION
+	#define PT_EDITOR
+#endif
 
 #ifndef PROTON_PLATFORM_WINDOWS
-#error Unsuportted platform!
+	#error Unsuportted platform!
 #endif
 
-#ifndef PROTON_DEBUG
-#define NDEBUG
-#endif
-
-#ifndef PROTON_DISTRIBUTION
-#define PROTON_EDITOR 1
+#ifdef PROTON_DEBUG
+	#if defined(PROTON_PLATFORM_WINDOWS)
+		#define PT_DEBUGBREAK() __debugbreak()
+	#elif defined(PROTON_PLATFORM_LINUX)
+		#include <signal.h>
+		#define PT_DEBUGBREAK() raise(SIGTRAP)
+	#else
+		#error "Platform doesn't support debugbreak yet!"
+	#endif
+	#define PT_ENABLE_ASSERTS
 #else
-#define PROTON_EDITOR 0
+	#define PT_DEBUGBREAK()
+	#define NDEBUG
 #endif
 
-#define BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
+#define PT_EXPAND_MACRO(x) x
+#define PT_STRINGIFY_MACRO(x) #x
+
+#define PT_BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
+
 
 namespace proton 
 {

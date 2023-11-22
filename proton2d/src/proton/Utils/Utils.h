@@ -1,7 +1,5 @@
 #pragma once 
 
-#include "proton/Core/Logger.h"
-
 #include <string>
 #include <fstream>
 #include <glm/glm.hpp>

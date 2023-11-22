@@ -18,7 +18,7 @@ namespace proton {
 		template <typename T>
 		T& GetComponent() const
 		{
-			assert(HasComponent<T>() && "Entity doesn't have component!");
+			PT_ASSERT(HasComponent<T>(), "Entity doesn't have component!");
 			return m_Scene->m_Registry.get<T>(m_Handle);
 		}
 
@@ -26,7 +26,7 @@ namespace proton {
 		template <typename T, typename... Types>
 		T& AddComponent(Types&& ...args) const
 		{
-			assert(!HasComponent<T>() && "Entity already have component!");
+			PT_ASSERT(!HasComponent<T>(), "Entity already have component!");
 			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward<Types>(args)...);
 		}
 
@@ -34,8 +34,8 @@ namespace proton {
 		template<>
 		ResizableSpriteComponent& AddComponent() const
 		{
-			assert(!HasComponent<ResizableSpriteComponent>() && "Entity already have component!");
-			assert(HasComponent<TransformComponent>() && "Entity must have TransformComponent!");
+			PT_ASSERT(!HasComponent<ResizableSpriteComponent>(), "Entity already have component!");
+			PT_ASSERT(HasComponent<TransformComponent>(), "Entity must have TransformComponent!");
 			auto& sprite = m_Scene->m_Registry.emplace<ResizableSpriteComponent>(m_Handle);
 			sprite.ResizableSprite.m_Transform = &GetComponent<TransformComponent>();
 			return sprite;
@@ -45,7 +45,7 @@ namespace proton {
 		template<>
 		CameraComponent& AddComponent() const
 		{
-			assert(!HasComponent<CameraComponent>() && "Entity already have component!");
+			PT_ASSERT(!HasComponent<CameraComponent>(), "Entity already have component!");
 			auto& camera = m_Scene->m_Registry.emplace<CameraComponent>(m_Handle);
 			camera.Camera = CreateShared<Camera>();
 			return camera;
@@ -55,10 +55,10 @@ namespace proton {
 		template<>
 		SpriteAnimationComponent& AddComponent() const
 		{
-			assert(!HasComponent<SpriteAnimationComponent>() && "Entity already have component!");
-			assert(HasComponent<SpriteComponent>() && "Entity must have sprite component");
+			PT_ASSERT(!HasComponent<SpriteAnimationComponent>(), "Entity already have component!");
+			PT_ASSERT(HasComponent<SpriteComponent>(), "Entity must have sprite component");
 			auto& sprite = GetComponent<SpriteComponent>().Sprite;
-			assert(sprite.m_Spritesheet && "Entity must have spritesheet texture");
+			PT_ASSERT(sprite.m_Spritesheet, "Entity must have spritesheet texture");
 
 			auto& fb = m_Scene->m_Registry.emplace<SpriteAnimationComponent>(m_Handle);
 			fb.SpriteAnimation = CreateShared<SpriteAnimation>(&sprite);
@@ -74,8 +74,7 @@ namespace proton {
 
 			auto& component = GetComponent<ScriptComponent>();
 			std::string className = TScriptClass::__ScriptClassName;
-			assert(component.Scripts.find(className) == component.Scripts.end()
-				&& "Entity has already a script added");
+			PT_ASSERT(component.Scripts.find(className) == component.Scripts.end(), "Entity has already a script added");
 
 			EntityScript*& scriptInstance = component.Scripts[className];
 			scriptInstance = new TScriptClass();
@@ -91,7 +90,7 @@ namespace proton {
 		template <typename T>
 		void RemoveComponent()
 		{
-			assert(HasComponent<T>() && "Entity doesn't have a component!");
+			PT_ASSERT(HasComponent<T>(), "Entity doesn't have a component!");
 			
 			if (std::is_base_of<ScriptComponent, T>::value)
 				TerminateScriptInstances();

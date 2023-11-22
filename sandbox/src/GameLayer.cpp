@@ -30,7 +30,7 @@ void GameLayer::OnEvent(Event& e)
 	dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& event)
 	{
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 		if (ImGui::GetIO().WantCaptureKeyboard)
 			return true;
 #endif

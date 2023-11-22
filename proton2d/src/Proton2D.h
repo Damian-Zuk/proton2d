@@ -1,11 +1,17 @@
 #pragma once
 
 #include "proton/Core/Application.h"
-#include "proton/Core/Logger.h"
 #include "proton/Core/Input.h"
+
+#include "proton/Debug/Log.h"
+#include "proton/Debug/Assert.h"
+#include "proton/Debug/Instrumentor.h"
+
 #include "proton/Utils/Random.h"
+#include "proton/Utils/Utils.h"
 
 #include "proton/Assets/AssetManager.h"
+#include "proton/Assets/SceneSerializer.h"
 
 #include "proton/Events/KeyEvents.h"
 #include "proton/Events/MouseEvents.h"
@@ -19,4 +25,6 @@
 
 #include "proton/Graphics/SpriteAnimation.h"
 
+#ifdef PT_EDITOR
 #include <imgui/imgui.h>
+#endif

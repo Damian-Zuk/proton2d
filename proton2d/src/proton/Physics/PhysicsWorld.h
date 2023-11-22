@@ -1,13 +1,25 @@
 #pragma once
 #include "proton/Core/UUID.h"
 #include "proton/Scene/Entity.h"
-#include "proton/Physics/PhysicsCommon.h"
 
 class b2Body;
 
 namespace proton {
 
 	class Scene;
+
+	class PhysicsContactListener : public b2ContactListener
+	{
+	public:
+		PhysicsContactListener(Scene* scene);
+		virtual void BeginContact(b2Contact* contact) override;
+		virtual void EndContact(b2Contact* contact) override;
+		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
+		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override;
+
+	private:
+		Scene* m_Scene = nullptr;
+	};
 
 	class PhysicsWorld
 	{

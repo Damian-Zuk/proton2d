@@ -9,7 +9,7 @@
 #include "proton/Utils/Utils.h"
 #include "proton/Physics/PhysicsWorld.h"
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 #include "proton/Editor/EditorLayer.h"
 #include <imgui.h>
 #endif
@@ -35,7 +35,7 @@ namespace proton {
 		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Paused)
 			return;
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 		// TODO: Refactor: Change to Scene::CopyScene
 		SceneSerializer serializer(this);
 		std::string filepath = m_SceneFilepath == "<Unsaved scene>" ? "unsaved_scene" : m_SceneFilepath;
@@ -289,14 +289,14 @@ namespace proton {
 
 	b2Body* Scene::GetRuntimeBody(UUID id)
 	{
-		assert(m_EnablePhysics && m_PhysicsWorld->IsIntialized() && "Physics world not initialized");
+		PT_ASSERT(m_EnablePhysics && m_PhysicsWorld->IsIntialized(), "Physics world not initialized");
 		return m_PhysicsWorld->GetRuntimeBody(id);
 	}
 
 	b2Body* Scene::CreateRuntimeBody(Entity entity)
 	{
 		// TODO: remove
-		assert(m_EnablePhysics && m_PhysicsWorld->IsIntialized() && "Physics world not initialized");
+		PT_ASSERT(m_EnablePhysics && m_PhysicsWorld->IsIntialized(), "Physics world not initialized");
 		return m_PhysicsWorld->CreateRuntimeBody(entity);
 	}
 
@@ -304,7 +304,7 @@ namespace proton {
 	{
 		if (!entity || !entity.HasComponent<CameraComponent>())
 		{
-			LOG_ERROR("[Scene::SetPrimaryCameraEntity] Entity does not have CameraComponent!");
+			PT_CORE_ERROR("[Scene::SetPrimaryCameraEntity] Entity does not have CameraComponent!");
 			return;
 		}
 
@@ -315,12 +315,12 @@ namespace proton {
 
 	Shared<Camera> Scene::GetPrimaryCamera()
 	{
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 		if (m_SceneState != SceneState::Stop) {
 #endif
 		// TODO: Refactor this and Renderer::RenderScene
 		return m_PrimaryCamera ? m_PrimaryCamera : m_DefaultCamera;
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 		}
 		return EditorLayer::GetCamera().GetBaseCamera();
 #endif
@@ -412,7 +412,7 @@ namespace proton {
 
 	glm::vec3 Scene::GetPrimaryCameraPosition()
 	{
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 		if (m_SceneState != SceneState::Stop
 			&& !EditorLayer::UsingCameraEditorInRuntime()) {
 #endif
@@ -424,7 +424,7 @@ namespace proton {
 				transform.Position.x + camera.PositionOffset.x,
 				transform.Position.y + camera.PositionOffset.y, 0
 			};
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 		} 
 		return EditorLayer::GetCamera().GetPosition();
 #endif

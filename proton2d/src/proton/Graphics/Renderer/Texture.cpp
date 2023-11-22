@@ -40,7 +40,7 @@ namespace proton {
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = stbi_load((PROTON_ASSETS_DIR + path).c_str(), &width, &height, &channels, 0);
+		stbi_uc* data = stbi_load(("assets/" + path).c_str(), &width, &height, &channels, 0);
 			
 		if (data)
 		{
@@ -59,7 +59,7 @@ namespace proton {
 				m_DataFormat = GL_RGB;
 			}
 
-			assert(m_InternalFormat & m_DataFormat && "Format not supported!");
+			PT_ASSERT(m_InternalFormat & m_DataFormat && "Format not supported!");
 
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_Object_ID);
 			glTextureStorage2D(m_Object_ID, 1, m_InternalFormat, m_Width, m_Height);
@@ -81,7 +81,7 @@ namespace proton {
 	void Texture::SetData(void* data, size_t size)
 	{
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-		assert(size == m_Width * m_Height * bpp && "Data must be entire texture!");
+		PT_ASSERT(size == m_Width * m_Height * bpp && "Data must be entire texture!");
 		glTextureSubImage2D(m_Object_ID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 

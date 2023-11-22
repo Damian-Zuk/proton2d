@@ -5,6 +5,7 @@ namespace proton {
 
 	class Scene;
 
+	// Abstract class for all editor panels
 	class EditorPanel
 	{
 	public:

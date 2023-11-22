@@ -16,7 +16,7 @@ namespace proton {
 
 	static void GLFWErrorCallback(int error, const char* description)
 	{
-		LOG_ERROR("GLFW Error", error, ':', description);
+		PT_CORE_ERROR("GLFW Error {}: {}", error, description);
 	}
 
 	WindowsWindow::WindowsWindow(const std::string& title, uint32_t width, uint32_t height)
@@ -28,7 +28,8 @@ namespace proton {
 		m_PreviousWidth = width;
 		m_PreviousHeight = height;
 
-		LOG_INFO("Creating window", title, "(", width, height, ")");
+		PT_CORE_INFO("*********************************************************");
+		PT_CORE_INFO("Creating window '{}' ({}x{})", title, width, height);
 
 		if (s_GLFWWindowCount == 0)
 		{
@@ -36,10 +37,8 @@ namespace proton {
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
-		{
-			m_Window = glfwCreateWindow((int)width, (int)height, m_Data.Title.c_str(), nullptr, nullptr);
-			++s_GLFWWindowCount;
-		}
+		m_Window = glfwCreateWindow((int)width, (int)height, m_Data.Title.c_str(), nullptr, nullptr);
+		++s_GLFWWindowCount;
 
 		// Context
 		glfwMakeContextCurrent(m_Window);
@@ -47,8 +46,9 @@ namespace proton {
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
-		LOG_INFO("OpenGL version:", glGetString(GL_VERSION));
-		LOG_INFO("Renderer:", glGetString(GL_RENDERER));
+		PT_CORE_INFO("OpenGL version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+		PT_CORE_INFO("Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+		PT_CORE_INFO("*********************************************************");
 
 		// GLFW event callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -154,7 +154,7 @@ namespace proton {
 		if (s_GLFWWindowCount == 0)
 			glfwTerminate();
 		
-		LOG_INFO("GLFW window destroyed")
+		PT_CORE_INFO("GLFW window destroyed");
 	}
 
 	void WindowsWindow::OnUpdate()

@@ -15,7 +15,7 @@
 	#include "proton/Platform/Windows/WindowsInput.h"
 #endif
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 	#include <imgui.h>
 #endif
 
@@ -76,7 +76,7 @@ namespace proton {
 		if (Fullscreen)
 			m_Window->SetFullscreen(true);
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 		m_EditorLayer = new EditorLayer();
 		PushOverlay(m_EditorLayer);
 #endif
@@ -97,7 +97,6 @@ namespace proton {
 		if (m_IsRunning)
 			return;
 
-		Logger::Init();
 		AssetManager::Init();
 		SceneManager::Init();
 		PrefabManager::Init();
@@ -125,7 +124,7 @@ namespace proton {
 					Scene* activeScene = SceneManager::GetActiveScene();
 					if (activeScene)
 						activeScene->OnUpdate(m_FrameTime * m_TimeScale);
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 					if (m_ShowEditorOverlay)
 					{
 						PROFILE_SCOPE("on_imgui_render");
@@ -173,7 +172,7 @@ namespace proton {
 		
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 			if (e.GetKeyCode() == Key::F4)
 				m_ShowEditorOverlay = !m_ShowEditorOverlay;
 #endif

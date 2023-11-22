@@ -37,17 +37,4 @@ namespace proton {
 			OnPostSolveFunction = nullptr;
 	};
 
-	class PhysicsContactListener : public b2ContactListener
-	{
-	public:
-		PhysicsContactListener(Scene* scene);
-		virtual void BeginContact(b2Contact* contact) override;
-		virtual void EndContact(b2Contact* contact) override;
-		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
-		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override;
-
-	private:
-		Scene* m_Scene = nullptr;
-	};
-
 }

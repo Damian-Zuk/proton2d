@@ -13,3 +13,6 @@
 [submodule "vendor/box2d"]
 	path = vendor/box2d
 	url = https://github.com/Damian-Zuk/box2d
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog

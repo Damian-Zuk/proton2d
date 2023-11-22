@@ -30,7 +30,7 @@ namespace proton {
 			case ShaderDataType::Bool:     return GL_BOOL;
 		}
 
-		assert(false && "Unknown ShaderDataType!");
+		PT_ASSERT(false, "Unknown ShaderDataType!");
 		return 0;
 	}
 
@@ -56,7 +56,7 @@ namespace proton {
 
 	void VertexArray::AddVertexBuffer(const Shared<VertexBuffer>& vertexBuffer)
 	{
-		assert(vertexBuffer->GetLayout().GetElements().size() && "Vertex Buffer has no layout!");
+		PT_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 		glBindVertexArray(m_Object_ID);
 		vertexBuffer->Bind();
@@ -115,7 +115,7 @@ namespace proton {
 					break;
 				}
 				default:
-					assert(false && "Unknown ShaderDataType!");
+					PT_ASSERT(false, "Unknown ShaderDataType!");
 			}
 		}
 

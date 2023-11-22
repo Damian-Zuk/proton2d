@@ -32,7 +32,7 @@ namespace proton {
 		case ShaderDataType::Bool:     return 1;
 		}
 
-		assert(false && "Unknown ShaderDataType!");
+		PT_ASSERT(false, "Unknown ShaderDataType!");
 		return 0;
 	}
 
@@ -68,7 +68,7 @@ namespace proton {
 			case ShaderDataType::Bool:    return 1;
 			}
 
-			assert(false && "Unknown ShaderDataType!");
+			PT_ASSERT(false, "Unknown ShaderDataType!");
 			return 0;
 		}
 	};

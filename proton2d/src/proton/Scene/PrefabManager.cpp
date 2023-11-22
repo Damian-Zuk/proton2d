@@ -4,7 +4,7 @@
 #include "proton/Utils/Utils.h"
 
 #include <fstream>
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 #include "proton/Editor/EditorLayer.h"
 #endif
 
@@ -72,7 +72,7 @@ namespace proton {
 
 	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabPath)
 	{
-		assert(Exists(prefabPath) && "Prefab not loaded");
+		PT_ASSERT(Exists(prefabPath), "Prefab not loaded");
 		SceneSerializer serializer(scene);
 		const json& prefabData = s_Instance->m_PrefabsJsonData.at(prefabPath);
 		Entity entity = serializer.DeserializeEntity(prefabData, false);

@@ -52,6 +52,7 @@ namespace proton {
 #define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass, WindowTitle)\
 	int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)\
 	{\
+		proton::Log::Init();\
 		ApplcationClass app(WindowTitle);\
 		app.Run();\
 	}
@@ -60,6 +61,7 @@ namespace proton {
 #define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass, WindowTitle)\
 	int main(int argc, char** argv)\
 	{\
+		proton::Log::Init();\
 		ApplcationClass app(WindowTitle);\
 		app.Run();\
 	}
