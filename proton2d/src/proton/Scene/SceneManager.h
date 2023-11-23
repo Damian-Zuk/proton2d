@@ -4,7 +4,7 @@ namespace proton {
 
 	class Scene;
 
-	// TODO: Refactor Scene::m_Filepath
+	// TODO: Refactor this class
 	/*
 	* SceneManager class methods use scene filepaths - "scenePath" 
 	* (realative to "scenes" directory) without ".scene" extension

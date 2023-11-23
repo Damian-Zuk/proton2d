@@ -1,11 +1,8 @@
-/*
-* ------------------------------------------------------------------------------------------
-*  OpenGL texture object API
-*  From Hazel Engine made by Cherno:
-*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLTexture.h
-* ------------------------------------------------------------------------------------------
-*/
-
+//
+// This file provides functionalities for managing OpenGL textures.
+// From Hazel Engine Renderer OpenGL API:
+// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLTexture.h
+//
 #pragma once
 
 #include "proton/Core/Base.h"

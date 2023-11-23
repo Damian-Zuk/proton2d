@@ -1,9 +1,8 @@
-/*
-* 2D batch renderer
-* 
-*  Inspired by Hazel Engine renderer:
-*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.h
-*/
+// 
+// Basic 2D Batch Renderer
+// Architecture and Code based upon Hazel 2D Renderer:
+// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.h
+// 
 #pragma once
 
 #define DEFAULT_CLEAR_COLOR { 0.1f, 0.12f, 0.16f, 1.0f }

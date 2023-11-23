@@ -1,9 +1,7 @@
+// 
+// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.h
+// 
 #pragma once
-/*
-* From Hazel Engine:
-* https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.h
-*/
-
 #include "proton/Core/Base.h"
 
 #define GLM_ENABLE_EXPERIMENTAL

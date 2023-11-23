@@ -1,11 +1,8 @@
-/*
-* ------------------------------------------------------------------------------------------
-*  OpenGL shader program API
-*  From Hazel Engine made by Cherno:
-*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLShader.cpp
-* ------------------------------------------------------------------------------------------
-*/
-
+//
+// This file provides functionalities for managing and compiling shaders in OpenGL.
+// From Hazel Engine Renderer OpenGL API:
+// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLShader.cpp
+//
 #include "pch.h"
 #include "proton/Graphics/Renderer/Shader.h"
 #include "proton/Utils/Utils.h"

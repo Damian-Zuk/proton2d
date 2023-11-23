@@ -36,6 +36,7 @@ namespace proton {
 	{
 		Application::s_Instance = this;
 
+		// TODO: Move this to ApplicationProporties class
 		// Default values
 		uint32_t windowWidth = 1600;
 		uint32_t windowHeight = 900;
@@ -71,7 +72,7 @@ namespace proton {
 		Input::s_Instance = new WindowsInput();
 #endif
 
-		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
+		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
 		m_Window->SetVSync(VSync);
 		if (Fullscreen)
 			m_Window->SetFullscreen(true);
@@ -109,7 +110,7 @@ namespace proton {
 			m_IsRunning = true;
 			while (m_IsRunning) 
 			{
-				PROFILE_SCOPE("Application_Loop");
+				PROFILE_SCOPE("app_loop");
 				auto start = std::chrono::high_resolution_clock::now();
 
 				if (!m_WindowMinimized) 
@@ -127,7 +128,7 @@ namespace proton {
 #ifdef PT_EDITOR
 					if (m_ShowEditorOverlay)
 					{
-						PROFILE_SCOPE("on_imgui_render");
+						PROFILE_SCOPE("imgui_render");
 						m_EditorLayer->BeginImGuiRender();
 
 						for (AppLayer* layer : m_AppLayers)
@@ -158,11 +159,6 @@ namespace proton {
 	{
 		m_AppLayers.emplace_back(layer);
 		layer->OnCreate();
-	}
-
-	void Application::SetTimeScale(float timeScale)
-	{
-		m_TimeScale;
 	}
 
 	void Application::OnEvent(Event& event)

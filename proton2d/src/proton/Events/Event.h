@@ -1,3 +1,7 @@
+//
+// From:
+// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Events/Event.h
+//
 #pragma once
 #include "pch.h"
 

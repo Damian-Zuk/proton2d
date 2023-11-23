@@ -180,28 +180,21 @@ namespace proton {
 
 			KeyCode key = e.GetKeyCode();
 
-			// Key F1: Toggle show selection outline
 			if (key == Key::F1)
 				m_ShowSelectionOutline = !m_ShowSelectionOutline;
 			
-			// Key F2: Toggle show selection collider
 			if (key == Key::F2)
 				m_ShowSelectionCollider = !m_ShowSelectionCollider;
 			
-			// Key F3: Toggle show all colliders
 			if (key == Key::F3)
 				m_ShowAllColliders = !m_ShowAllColliders;
 
-			// Key Delete: Destroy selected entity
+			if (key == Key::Escape && m_SelectedEntity)
+				SelectEntity({});
+
 			if (key == Key::Delete && m_SelectedEntity)
 			{
 				m_SelectedEntity.Destroy();
-				SelectEntity({});
-			}
-
-			// Key Escape: Deselected entity
-			if (key == Key::Escape && m_SelectedEntity)
-			{
 				SelectEntity({});
 			}
 
@@ -230,7 +223,7 @@ namespace proton {
 		{
 			auto [transform, bc] = view.get<TransformComponent, BoxColliderComponent>(entity);
 
-			// Check if current entity is selected entity and show selection collider is enabled
+			// Check if current entity is selected and draw collider rect
 			bool drawSelected = m_ShowSelectionCollider && m_SelectedEntity.m_Handle == entity;
 
 			if (m_ShowAllColliders || drawSelected)

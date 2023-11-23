@@ -1,7 +1,6 @@
-/*
-* From Hazel Engine:
-* https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.cpp
-*/
+// 
+// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.cpp
+// 
 #include "pch.h"
 #include "proton/Debug/Log.h"
 

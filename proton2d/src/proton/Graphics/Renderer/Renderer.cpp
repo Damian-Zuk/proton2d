@@ -1,9 +1,8 @@
-/*
-* 2D batch renderer
-*
-*  Based on Hazel Engine renderer:
-*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.cpp
-*/
+// 
+// Basic 2D Batch Renderer
+// Architecture and Code based upon Hazel 2D Renderer:
+// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.cpp
+//
 #include "pch.h"
 #include "proton/Graphics/Renderer/Renderer.h"
 

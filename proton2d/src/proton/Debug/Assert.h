@@ -1,7 +1,7 @@
-/*
-* From Hazel Engine:
-* https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Assert.h
-*/
+// 
+// Assert Macros which trigger debugbreak
+// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Assert.h
+// 
 #pragma once
 
 #include "proton/Core/Base.h"

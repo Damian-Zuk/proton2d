@@ -1,11 +1,9 @@
-/*
-* ------------------------------------------------------------------------------------------
-*  OpenGL vertex array object API
-*  From Hazel Engine made by Cherno:
-*  https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLVertexArray.h
-* ------------------------------------------------------------------------------------------
-*/
-
+//
+// This file provides functionalities for creating, binding, and managing vertex arrays in OpenGL,
+// including handling different shader data types and vertex buffer layouts.
+// From Hazel Renderer OpenGL API:
+// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLVertexArray.h
+//
 #pragma once
 
 #include "proton/Core/Base.h"

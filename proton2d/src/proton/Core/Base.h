@@ -50,5 +50,4 @@ namespace proton
 	{
 		return std::make_unique<T>(std::forward<Types>(args)...);
 	}
-
 }

@@ -65,7 +65,7 @@ namespace proton {
 			return fb;
 		}
 
-		// Adds script to entity and returns it's instance
+		// Add script to entity and returns it's instance
 		template <typename TScriptClass>
 		EntityScript* AddScript() const
 		{
@@ -82,11 +82,10 @@ namespace proton {
 			return scriptInstance;
 		}
 
-		// Removes script from entity
+		// Remove script from entity
 		void RemoveScript(const std::string& scriptClassName);
 
-
-		// Removes component from entity
+		// Remove component from entity
 		template <typename T>
 		void RemoveComponent()
 		{
@@ -105,66 +104,66 @@ namespace proton {
 			m_Scene->m_Registry.remove<T>(m_Handle);
 		}
 
-		// Checks if entity has given component
+		// Check if entity has given component
 		template <typename T>
 		bool HasComponent() const
 		{
 			return m_Scene->m_Registry.any_of<T>(m_Handle);
 		}
 
-		// Checks if entity has specified set of components
+		// Check if entity has specified set of components
 		template <typename... TComponents>
 		bool HasComponents() const
 		{
 			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
-		// Returns TransformComponent
+		// Return TransformComponent
 		TransformComponent& GetTransform();
 
-		// Returns pointer to scene
+		// Return pointer to scene
 		Scene* GetScene() { return m_Scene; }
 
-		// Returns entity unique identifier
+		// Return entity unique identifier
 		UUID GetUUID() const;
 
-		// Returns entity tag stored in TagComponent
+		// Return entity tag stored in TagComponent
 		const std::string& GetTag() const;
 
-		// Checks if entity is valid
+		// Check if entity is valid
 		bool IsValid();
 
-		// Destroys entity and it's child entities
+		// Destroy entity and it's child entities
 		void Destroy();
 
-		// Adds child entity given as parameter
+		// Add child entity given as parameter
 		void AddChildEntity(Entity child);
 
-		// Destroys all child entities
+		// Destroy all child entities
 		void DestroyChildEntities();
 
-		// Detaches entity from parent and moves to scene root
+		// Detache entity from parent and moves to scene root
 		void PopHierarchy();
 
-		// Checks if entity is parent of given entity
+		// Check if entity is parent of given entity
 		bool IsParentOf(Entity entity);
 
-		// Requires RigidbodyComponent
+		// Require RigidbodyComponent
 		b2Body* GetRuntimeBody();
 
-		// Requires RigidbodyComponent
+		// Require RigidbodyComponent
 		void SetVelocity(float x_mps, float y_mps);
 
-		// Requires RigidbodyComponent
+		// Require RigidbodyComponent
 		void SetVelocityX(float mps);
 
-		// Requires RigidbodyComponent
+		// Require RigidbodyComponent
 		void SetVelocityY(float mps);
 
-		// Requires RigidbodyComponent
+		// Require RigidbodyComponent
 		glm::vec2 GetVelocity();
 
-		// Requires RigidbodyComponent
+		// Require RigidbodyComponent
 		void ApplyImpulse(const glm::vec2& impulse);
 
 		// Operator overloads

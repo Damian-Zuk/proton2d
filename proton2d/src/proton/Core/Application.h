@@ -14,17 +14,15 @@ namespace proton {
 		virtual ~Application();
 
 		void Run();
-		
 		void PushLayer(AppLayer* layer);
 		void PushOverlay(AppLayer* layer);
-
-		void SetTimeScale(float timeScale);
 
 		static Application& Get() { return *s_Instance; }
 		Window& GetWindow() { return *m_Window; }
 
 	protected:
 		virtual bool OnCreate() = 0; // To be defined by client
+
 		void OnEvent(Event& event);
 
 	private:
@@ -38,6 +36,7 @@ namespace proton {
 		
 		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;
+
 		EditorLayer* m_EditorLayer;
 		bool m_ShowEditorOverlay = true;
 
@@ -46,6 +45,7 @@ namespace proton {
 
 }
 
+// Apllication Entry Point
 #ifdef PROTON_DISTRIBUTION
 #ifdef PROTON_PLATFORM_WINDOWS
 #include <Windows.h>
