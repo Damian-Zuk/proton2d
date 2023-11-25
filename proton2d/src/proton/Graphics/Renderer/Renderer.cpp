@@ -97,7 +97,7 @@ namespace proton {
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, (int*)&data.MaxTextureSlots);
 
 		// Create quad vertex buffer
-		data.QuadVertexBuffer = CreateShared<VertexBuffer>((uint32_t)(data.MaxVertices * sizeof(QuadVertex)));
+		data.QuadVertexBuffer = MakeShared<VertexBuffer>((uint32_t)(data.MaxVertices * sizeof(QuadVertex)));
 		data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "Position"      },
 			{ ShaderDataType::Float4, "Color"         },
@@ -118,27 +118,27 @@ namespace proton {
 		}
 
 		// Create quad vertex array
-		data.QuadVertexArray = CreateShared<VertexArray>();
+		data.QuadVertexArray = MakeShared<VertexArray>();
 		data.QuadVertexArray->AddVertexBuffer(data.QuadVertexBuffer);
-		data.QuadVertexArray->SetIndexBuffer(CreateShared<IndexBuffer>(indicies, data.MaxIndices));
+		data.QuadVertexArray->SetIndexBuffer(MakeShared<IndexBuffer>(indicies, data.MaxIndices));
 		delete[] indicies;
 
 		// Create line vertex buffer and vertex array
-		data.LineVertexBuffer = CreateShared<VertexBuffer>(data.MaxVertices * (uint32_t)sizeof(LineVertex));
+		data.LineVertexBuffer = MakeShared<VertexBuffer>(data.MaxVertices * (uint32_t)sizeof(LineVertex));
 		data.LineVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "Position" },
 			{ ShaderDataType::Float4, "Color"    }
 		});
 		data.LineVertexBufferBase = new LineVertex[data.MaxVertices];
-		data.LineVertexArray = CreateShared<VertexArray>();
+		data.LineVertexArray = MakeShared<VertexArray>();
 		data.LineVertexArray->AddVertexBuffer(data.LineVertexBuffer);
 
 		// Init texture slots vector, shaders and camera uniform buffer
 		data.TextureSlots.resize(data.MaxTextureSlots);
-		data.TextureSlots[0]     = CreateShared<Texture>(1, 1, true); // white texture
-		data.QuadShader          = CreateShared<Shader>("shaders/Quad2D.glsl");
-		data.LineShader          = CreateShared<Shader>("shaders/Line2D.glsl");
-		data.CameraUniformBuffer = CreateShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
+		data.TextureSlots[0]     = MakeShared<Texture>(1, 1, true); // white texture
+		data.QuadShader          = MakeShared<Shader>("content/shaders/Quad2D.glsl");
+		data.LineShader          = MakeShared<Shader>("content/shaders/Line2D.glsl");
+		data.CameraUniformBuffer = MakeShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
 	
 		SetClearColor(DEFAULT_CLEAR_COLOR);
 	}

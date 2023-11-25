@@ -12,34 +12,32 @@ namespace proton {
 	public:
 		static void Init();
 
-		// Loads texture and stores using filepath as key.
+		// Load texture and store using filepath as key.
 		static Shared<Texture> LoadTexture(const std::string& filepath);
 
-		// Returns OpenGL Texture object pointer.
-		// If texture isn't loaded then tries to load it.
+		// Get OpenGL Texture object pointer.
 		static Shared<Texture> GetTexture(const std::string& filepath);
 
-		// Deletes OpenGL Texture object and frees up memory.
+		// Delete OpenGL Texture object and free up memory.
 		static bool UnloadTexture(const std::string& filepath);
 
-		// Checks if OpenGL Texture object is loaded in memory.
+		// Check if OpenGL Texture object is loaded in memory.
 		static bool IsTextureLoaded(const std::string& filepath);
 
-		// Loads spritesheet and stores using filepath as key.
+		// Load spritesheet and store using filepath as key.
 		static Shared<Spritesheet> LoadSpritesheet(const std::string& filepath);
 
 		// Returns Spritesheet object pointer.
-		// If spritesheet isn't loaded then tries to load it.
 		static Shared<Spritesheet> GetSpritesheet(const std::string& filepath);
 
-		// Deletes Spritesheet object and frees up memory.
+		// Delete Spritesheet object and free up memory.
 		static bool UnloadSpritesheet(const std::string& filepath);
 
-		// Checks if Spritesheet object is loaded in memory.
+		// Check if Spritesheet object is loaded in memory.
 		static bool IsSpritesheetLoaded(const std::string& filepath);
 
-		// Reloads list of assets in "assets" directory.
-		// Reloads spritesheet list from "spritesheets.json" file.
+		// Reload list of assets in "assets" directory.
+		// Reload Spritesheet list from "spritesheets.json" file.
 		static void ReloadAssetsList();
 
 	private:

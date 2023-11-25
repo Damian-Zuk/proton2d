@@ -4,9 +4,9 @@
 #include "proton/Graphics/Renderer/Renderer.h"
 #include "proton/Utils/Utils.h"
 #include "proton/Assets/AssetManager.h"
-#include "proton/Scene/ScriptFactory.h"
+#include "proton/Scripting/ScriptFactory.h"
 #include "proton/Scene/Components.h"
-#include "proton/Scene/EntityScript.h"
+#include "proton/Scripting/EntityScript.h"
 #include "proton/Scene/PrefabManager.h"
 #include "proton/Physics/PhysicsWorld.h"
 

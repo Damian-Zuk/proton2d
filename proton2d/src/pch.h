@@ -17,6 +17,5 @@
 #endif
 
 #include "proton/Core/Base.h"
-#include "proton/Debug/Log.h"
 #include "proton/Debug/Assert.h"
 #include "proton/Debug/Instrumentor.h"

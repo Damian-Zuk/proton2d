@@ -4,12 +4,13 @@
 
 namespace proton {
 
-	class WindowResizedEvent : public Event
+	class WindowResizeEvent : public Event
 	{
 	public:
-		EVENT_CLASS_TYPE(WindowResized)
+		EVENT_CLASS_TYPE(WindowResize)
+		EVENT_CLASS_CATEGORY(EventCategoryWindow)
 
-		WindowResizedEvent(unsigned int width, unsigned int height)
+		WindowResizeEvent(unsigned int width, unsigned int height)
 			: m_Width(width), m_Height(height) {}
 
 		unsigned int GetWidth() const { return m_Width; }
@@ -18,7 +19,7 @@ namespace proton {
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "WindowResizedEvent: " << m_Width << ", " << m_Height;
+			ss << "WindowResizeEvent: " << m_Width << ", " << m_Height;
 			return ss.str();
 		}
 
@@ -26,11 +27,13 @@ namespace proton {
 		unsigned int m_Width, m_Height;
 	};
 
-	class WindowClosedEvent : public Event 
+	class WindowCloseEvent : public Event 
 	{
 	public:
-		EVENT_CLASS_TYPE(WindowClosed)
-		WindowClosedEvent() = default;
+		EVENT_CLASS_TYPE(WindowClose)
+		EVENT_CLASS_CATEGORY(EventCategoryWindow)
+
+		WindowCloseEvent() = default;
 	};
 
 }

@@ -1,14 +1,15 @@
-/*
-* From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.cpp
-*/
-
+//
+// Windows GLFW Window implementation
+// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.cpp
+//
 #include "pch.h"
 #include "Proton/Platform/Windows/WindowsWindow.h"
 #include "Proton/Events/WindowEvents.h"
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"
 
-#include "glad/glad.h"
+#include <glad/glad.h>
+#include <stb_image.h>
 
 namespace proton {
 
@@ -50,6 +51,17 @@ namespace proton {
 		PT_CORE_INFO("Renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
 		PT_CORE_INFO("*********************************************************");
 
+		// Set window icon
+		int icon_width, icon_height, icon_channels;
+		unsigned char* iconImage = stbi_load("../resources/icon.png", &icon_width, &icon_height, &icon_channels, 0);
+		if (iconImage) {
+			GLFWimage icon;
+			icon.width = icon_width;
+			icon.height = icon_height;
+			icon.pixels = iconImage;
+			glfwSetWindowIcon(m_Window, 1, &icon);
+		}
+
 		// GLFW event callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
@@ -57,14 +69,14 @@ namespace proton {
 				data.Width = width;
 				data.Height = height;
 
-				WindowResizedEvent event(width, height);
+				WindowResizeEvent event(width, height);
 				data.EventCallback(event);
 			});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				WindowClosedEvent event;
+				WindowCloseEvent event;
 				data.EventCallback(event);
 			});
 
@@ -154,7 +166,7 @@ namespace proton {
 		if (s_GLFWWindowCount == 0)
 			glfwTerminate();
 		
-		PT_CORE_INFO("GLFW window destroyed");
+		PT_CORE_INFO("[WindowsWindow::Shutdown] GLFW Window terminated.");
 	}
 
 	void WindowsWindow::OnUpdate()
@@ -181,20 +193,23 @@ namespace proton {
 
 	void WindowsWindow::SetFullscreen(bool fullscreen)
 	{
-		m_Data.Fullscreen = fullscreen;
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		if (fullscreen)
+		if (fullscreen != m_Data.Fullscreen) 
 		{
-			m_PreviousWidth = m_Data.Width;
-			m_PreviousHeight = m_Data.Height;
-			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-			glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-		}
-		else
-		{
-			m_Data.Width = m_PreviousWidth;
-			m_Data.Height = m_PreviousWidth;
-			glfwSetWindowMonitor(m_Window, NULL, 100, 100, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
+			m_Data.Fullscreen = fullscreen;
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			if (fullscreen)
+			{
+				m_PreviousWidth = m_Data.Width;
+				m_PreviousHeight = m_Data.Height;
+				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+				glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+			}
+			else
+			{
+				m_Data.Width = m_PreviousWidth;
+				m_Data.Height = m_PreviousWidth;
+				glfwSetWindowMonitor(m_Window, NULL, 100, 100, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
+			}
 		}
 	}
 

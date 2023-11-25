@@ -21,6 +21,7 @@
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include <filesystem>
 
 
 namespace proton {
@@ -32,7 +33,6 @@ namespace proton {
 		EditorLayer::s_Instance = this;
 	}
 
-
 	void EditorLayer::OnCreate()
 	{
 		// ImGui setup
@@ -41,7 +41,7 @@ namespace proton {
 
 		auto& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;// | ImGuiConfigFlags_ViewportsEnable;
-		io.Fonts->AddFontFromFileTTF("assets/Roboto.ttf", 18);
+		io.Fonts->AddFontFromFileTTF("editor/content/font/Roboto.ttf", 18);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FrameRounding = 7.0f;
@@ -56,8 +56,12 @@ namespace proton {
 		PushEditorPanel("SceneHierarchy", new SceneHierarchyPanel());
 		PushEditorPanel("ScenePanel", new ScenePanel());
 		PushEditorPanel("PrefabPanel", new PrefabPanel());
-	}
 
+		// Check if cache directory exist
+		if (!std::filesystem::exists("editor/cache/"))
+			if (std::filesystem::create_directories("editor/cache/"))
+				PT_CORE_ERROR("[EditorLayer::OnCreate] Could not create cache directory!");
+	}
 
 	void EditorLayer::OnDestroy()
 	{
@@ -65,30 +69,31 @@ namespace proton {
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 
-		for (auto& panel : m_EditorPanels)
-			delete panel.second;
+		for (auto& p : m_EditorPanels)
+			delete p.second;
 	}
-
 
 	void EditorLayer::OnUpdate(float ts)
 	{
+		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
+
 		// Update editor camera
 		m_Camera.OnUpdate(ts);
 
 		// Move selected entity
 		if (m_MoveSelectedEntity && m_SelectedEntity.IsValid())
 		{
-			glm::vec2 targetPos = m_ActiveScene->GetCursorPosition() + m_SelectionMouseOffset;
+			glm::vec2 targetPos = cursor + m_SelectionMouseOffset;
 			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-			transform.Position = { targetPos.x, targetPos.y, transform.Position.z };
+			transform.Position.x = targetPos.x;
+			transform.Position.y = targetPos.y;
 			ImGui::SetMouseCursor(7);
 		}
 
 		// Move editor camera
 		if (m_MoveEditorCamera)
 		{
-			glm::vec2 mousePos = m_ActiveScene->GetCursorPosition();
-			glm::vec2 offset = m_CameraDragOffset - mousePos;
+			glm::vec2 offset = m_CameraDragOffset - cursor;
 			m_Camera.m_Position.x += offset.x;
 			m_Camera.m_Position.y += offset.y;
 			ImGui::SetMouseCursor(2);
@@ -99,7 +104,6 @@ namespace proton {
 			panel.second->OnUpdate(ts);
 	}
 
-
 	void EditorLayer::OnImGuiRender()
 	{
 		//ImGui::ShowDemoWindow(); // Demo window for reference
@@ -109,35 +113,28 @@ namespace proton {
 		DrawCollidersAndSelectionOutline();
 	}
 
-
 	void EditorLayer::OnEvent(Event& event)
 	{
 		m_Camera.OnEvent(event);
+		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
 		EventDispatcher dispatcher(event);
 
 		// Mouse events
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			if (ImGui::GetIO().WantCaptureMouse)
-				return false;
-
 			// Mouse Button 1 (Right): Move editor camera
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera)
 			{
-				m_CameraDragOffset = m_ActiveScene->GetCursorPosition();
+				m_CameraDragOffset = cursor;
 				m_MoveEditorCamera = true;
 			}
 
-			// Mouse Button 0 (Left: Select Entity
+			// Mouse Button 0 (Left): Select Entity
 			else if (e.GetMouseButton() == Mouse::Button0)
 			{
-				glm::vec2 mousePos = m_ActiveScene->GetCursorPosition();
-				Entity& selectedEntity = m_SelectedEntity;
-
-				std::vector<Entity> entities = m_ActiveScene->GetCursorEntities();
 				Entity target; float transformMaxZ = 0.0f;
 
-				for (auto& entity : entities)
+				for (auto& entity : m_ActiveScene->GetEntitiesOnCursorLocation())
 				{
 					auto& transform = entity.GetComponent<TransformComponent>();
 					if (!target || transform.Position.z > transformMaxZ)
@@ -147,37 +144,34 @@ namespace proton {
 					}
 				}
 
-				if (selectedEntity && m_ActiveScene->IsCursorOverEntity(selectedEntity))
+				if (m_SelectedEntity && m_ActiveScene->IsCursorHoveringEntity(m_SelectedEntity))
 				{
-					auto& transform = selectedEntity.GetComponent<TransformComponent>();
+					auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
 					auto& targetTransform = target.GetComponent<TransformComponent>();
 					if (transform.Scale.x < targetTransform.Scale.x
 						&& transform.Scale.y < targetTransform.Scale.y)
 					{
 						// Discard selection
-						target = selectedEntity;
+						target = m_SelectedEntity;
 					}	
 				}
 
-				if (target && target == selectedEntity)
+				if (target && target == m_SelectedEntity)
 				{
 					m_MoveSelectedEntity = true;
-					auto& transform = selectedEntity.GetComponent<TransformComponent>();
-					m_SelectionMouseOffset = glm::vec2{ transform.Position.x, transform.Position.y } - mousePos;
+					auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
+					m_SelectionMouseOffset = glm::vec2{ transform.Position.x, transform.Position.y } - cursor;
 				}
 
 				SelectEntity(target);
 			}
 
-			return true;
+			return false;
 		});
 
 		// Keyboard events
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
-			if (ImGui::GetIO().WantTextInput)
-				return false;
-
 			KeyCode key = e.GetKeyCode();
 
 			if (key == Key::F1)
@@ -198,7 +192,7 @@ namespace proton {
 				SelectEntity({});
 			}
 
-			return true;
+			return false;
 		});
 
 		// Mouse evenets (button released)
@@ -210,7 +204,7 @@ namespace proton {
 				m_MoveEditorCamera = false;
 
 			ImGui::SetMouseCursor(0);
-			return true;
+			return false;
 		});
 	}
 
@@ -263,12 +257,10 @@ namespace proton {
 		Renderer::EndScene();
 	}
 
-
 	void EditorLayer::ResetCameraPosition()
 	{
 		m_Camera.m_Position = { 0.0f, 0.0f, 0.0f };
 	}
-
 
 	void EditorLayer::SetActiveScene(Scene* scene)
 	{
@@ -279,7 +271,6 @@ namespace proton {
 		}
 	}
 
-
 	void EditorLayer::SelectEntity(Entity entity)
 	{
 		s_Instance->m_SelectedEntity = entity;
@@ -287,13 +278,11 @@ namespace proton {
 			panel.second->m_SelectedEntity = entity;
 	}
 
-
 	void EditorLayer::PushEditorPanel(const std::string& name, EditorPanel* panel)
 	{
 		m_EditorPanels.push_back(std::make_pair(name, panel));
 		panel->m_ActiveScene = m_ActiveScene;
 	}
-
 
 	void EditorLayer::PopEditorPanel(const std::string& name)
 	{
@@ -304,14 +293,12 @@ namespace proton {
 			m_EditorPanels.end());
 	}
 
-
 	void EditorLayer::BeginImGuiRender()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	}
-
 
 	void EditorLayer::EndImGuiRender()
 	{

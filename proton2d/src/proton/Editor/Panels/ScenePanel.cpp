@@ -45,7 +45,7 @@ namespace proton {
 		ImGui::Dummy({ 0, 5 }); ImGui::Separator(); ImGui::Dummy({ 0, 1 });
 		std::string sceneText = m_ActiveScene->m_SceneFilepath;
 		if (m_SavedSceneTextTimer > 0.0f)
-			sceneText = "(Save Success) " + sceneText;
+			sceneText = "Saved: " + sceneText;
 		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize(sceneText.c_str()).x) / 2);
 		ImGui::Text(sceneText.c_str());
 		ImGui::Dummy({ 0, 3 });
@@ -125,9 +125,9 @@ namespace proton {
 		std::size_t pos = filepath.find("scenes");
 		if (pos != std::string::npos) {
 			std::string filename = filepath.substr(pos + 7);
-			std::size_t posExt = filepath.find(".scene");
+			std::size_t posExt = filepath.find(".scene.json");
 			if (posExt != std::string::npos)
-				return filename.substr(0, filename.size() - 6);
+				return filename.substr(0, filename.size() - 11);
 			return filename;
 		}
 		return std::string();
@@ -163,7 +163,7 @@ namespace proton {
 
 	void ScenePanel::SaveSceneAs()
 	{ 
-		std::string filepath = GetSceneFilename(FileDialogs::SaveFile(".scene"));
+		std::string filepath = GetSceneFilename(FileDialogs::SaveFile(".scene.json"));
 		if (filepath.size())
 		{
 			SceneManager::SaveActiveSceneAs(filepath);
@@ -182,7 +182,7 @@ namespace proton {
 		std::string filepath = m_ActiveScene->GetFilepath();
 		if (filepath.size())
 		{
-			SceneManager::LoadFromCache(filepath);
+			SceneManager::EditorLoadFromCache(filepath);
 			SceneManager::SetActiveScene(filepath);
 		}
 	}

@@ -13,13 +13,10 @@ namespace proton {
 
 	void ResizableSprite::Generate()
 	{
-		if (m_TileScale < 0.01f)
-			m_TileScale = 0.01f;
-
 		if (m_Transform->Scale.x < 0.0f || m_Transform->Scale.y < 0.0f)
 		{
-			m_Tilemap.clear();
 			m_Width = 0; m_Height = 0;
+			m_Tilemap.clear();
 			return;
 		}
 
@@ -30,19 +27,18 @@ namespace proton {
 		for (auto& column : m_Tilemap)
 			column.resize(m_Height);
 
-		UpdateTileTransforms();
+		CalculateTileTransforms();
 	}
 
 	void ResizableSprite::SetTileScale(float tileScale)
 	{
-		m_TileScale = tileScale;
+		m_TileScale = tileScale < 0.01f ? 0.01f : tileScale;
 		Generate();
 	}
 
 	// Generate tile index positions
-	std::vector<std::vector<glm::uvec2>> ResizableSprite::DetermineTilePositions()
+	void ResizableSprite::DetermineTileIndexPositions(TilemapIndexPositions& tilemap)
 	{
-		std::vector<std::vector<glm::uvec2>> tilemap;
 		tilemap.resize(m_Width);
 		for (auto& column : tilemap)
 			column.resize(m_Height);
@@ -121,11 +117,9 @@ namespace proton {
 		if (m_Edges & Edge_Bottom)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
 				tilemap[x][0] = { sx + 1, sy };
-
-		return tilemap;
 	}
 
-	void ResizableSprite::UpdateTileTransforms()
+	void ResizableSprite::CalculateTileTransforms()
 	{
 		// width, height tile count (with fraction)
 		float width = (*m_Transform).Scale.x / m_TileScale;
@@ -167,7 +161,8 @@ namespace proton {
 		};
 
 		// Generate spritesheet tile positions
-		std::vector<std::vector<glm::uvec2>> spritesheetTilePositions = DetermineTilePositions();
+		TilemapIndexPositions spritesheetTilePositions;
+		DetermineTileIndexPositions(spritesheetTilePositions);
 
 		for (uint32_t y = 0; y < tileCount.y; y++)
 		{
@@ -269,16 +264,16 @@ namespace proton {
 		if (position != m_PositionOffset)
 		{
 			m_PositionOffset = position;
-			UpdateTileTransforms();
+			CalculateTileTransforms();
 		}
 	}
 
-	void ResizableSprite::SetEdges(uint8_t borders)
+	void ResizableSprite::SetEdges(uint8_t edges)
 	{
-		if (borders != m_Edges)
+		if (edges != m_Edges)
 		{
-			m_Edges = borders;
-			UpdateTileTransforms();
+			m_Edges = edges;
+			CalculateTileTransforms();
 		}
 	}
 
@@ -287,7 +282,7 @@ namespace proton {
 		return m_Spritesheet;
 	}
 
-	uint8_t ResizableSprite::GetEdges()
+	uint8_t ResizableSprite::GetEdges() const
 	{
 		return m_Edges;
 	}

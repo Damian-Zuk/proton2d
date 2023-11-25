@@ -9,6 +9,7 @@ namespace proton {
 	{
 	public:
 		EVENT_CLASS_TYPE(MouseMoved)
+		EVENT_CLASS_CATEGORY(EventCategoryMouse)
 
 		MouseMovedEvent(const float x, const float y)
 			: m_MouseX(x), m_MouseY(y) {}
@@ -32,6 +33,7 @@ namespace proton {
 	{
 	public:
 		EVENT_CLASS_TYPE(MouseScrolled)
+		EVENT_CLASS_CATEGORY(EventCategoryMouse)
 
 		MouseScrolledEvent(const float xOffset, const float yOffset)
 			: m_xOffset(xOffset), m_yOffset(yOffset) {}
@@ -69,6 +71,7 @@ namespace proton {
 	{
 	public:
 		EVENT_CLASS_TYPE(MouseButtonPressed)
+		EVENT_CLASS_CATEGORY(EventCategoryMouse)
 
 		MouseButtonPressedEvent(const MouseCode button)
 			: MouseButtonEvent(button) {}
@@ -86,6 +89,7 @@ namespace proton {
 	{
 	public:
 		EVENT_CLASS_TYPE(MouseButtonReleased)
+		EVENT_CLASS_CATEGORY(EventCategoryMouse)
 
 		MouseButtonReleasedEvent(const MouseCode button)
 			: MouseButtonEvent(button) {}

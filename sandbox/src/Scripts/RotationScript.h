@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Proton2D.h>
+#include <proton.h>
 
 using namespace proton;
 

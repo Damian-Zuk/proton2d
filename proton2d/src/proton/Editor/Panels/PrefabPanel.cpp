@@ -27,8 +27,6 @@ namespace proton {
 				glm::vec2 cameraPos = m_ActiveScene->GetPrimaryCameraPosition();
 				transform.Position.x = cameraPos.x;
 				transform.Position.y = cameraPos.y;
-				if (m_SelectedEntity)
-					m_SelectedEntity.AddChildEntity(entity);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(("X##" + tag).c_str(), { 25, 25 }))

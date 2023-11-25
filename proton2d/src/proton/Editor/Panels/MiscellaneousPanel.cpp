@@ -49,12 +49,12 @@ namespace proton {
 		{
 			if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::Checkbox("Selection outline", &EditorLayer::s_Instance->m_ShowSelectionOutline);
-				ImGui::Checkbox("Selection collider", &EditorLayer::s_Instance->m_ShowSelectionCollider);
-				ImGui::Checkbox("Show colliders", &EditorLayer::s_Instance->m_ShowAllColliders);
-				ImGui::Checkbox("Runtime camera", &EditorLayer::s_Instance->m_UseEditorCameraInRuntime);
+				ImGui::Checkbox("Selection outline", &EditorLayer::Get()->m_ShowSelectionOutline);
+				ImGui::Checkbox("Selection collider", &EditorLayer::Get()->m_ShowSelectionCollider);
+				ImGui::Checkbox("Show colliders", &EditorLayer::Get()->m_ShowAllColliders);
+				ImGui::Checkbox("Runtime camera", &EditorLayer::Get()->m_UseEditorCameraInRuntime);
 				if (ImGui::Button("Reset Camera"))
-					EditorLayer::s_Instance->ResetCameraPosition();
+					EditorLayer::Get()->ResetCameraPosition();
 				ImGui::TreePop();
 			}
 			if (ImGui::TreeNodeEx("Application", ImGuiTreeNodeFlags_DefaultOpen))

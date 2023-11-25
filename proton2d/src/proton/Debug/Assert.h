@@ -1,11 +1,11 @@
 // 
-// Assert Macros which trigger debugbreak
+// Assert macros that trigger debugbreak
 // From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Assert.h
 // 
 #pragma once
 
 #include "proton/Core/Base.h"
-#include "proton/Debug/Log.h"
+#include "proton/Debug/Logger.h"
 #include <filesystem>
 
 #ifdef PT_ENABLE_ASSERTS

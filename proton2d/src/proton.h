@@ -3,7 +3,6 @@
 #include "proton/Core/Application.h"
 #include "proton/Core/Input.h"
 
-#include "proton/Debug/Log.h"
 #include "proton/Debug/Assert.h"
 #include "proton/Debug/Instrumentor.h"
 
@@ -19,7 +18,7 @@
 
 #include "proton/Scene/Entity.h"
 #include "proton/Scene/Components.h"
-#include "proton/Scene/EntityScript.h"
+#include "proton/Scripting/EntityScript.h"
 #include "proton/Scene/SceneManager.h"
 #include "proton/Scene/PrefabManager.h"
 

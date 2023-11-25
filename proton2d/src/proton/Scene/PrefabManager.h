@@ -2,18 +2,17 @@
 #include "proton/Scene/Entity.h"
 
 #include <nlohmann/json.hpp>
-#include <stdio.h>
 
 namespace proton {
 
 	using json = nlohmann::ordered_json;
 	class Scene;
 
-	// TODO: Rework this class
+	// TODO: Entire rework
 	// 
 	// Class PrefabManager is used to create, load and spawn prefabs.
 	// PrefabManager class methods use prefab filepaths - "prefabPath"
-	// (realative to "prefabs" directory) without ".prefab" extension as prefab identifiers (keys in map storage).
+	// (realative to "prefabs" directory) without ".prefab.json" extension as prefab identifiers (keys in map storage).
 	// Prefabs are stored as JSON object data, which is used for deserialization in SpawnPrefab method.
 	// 
 	class PrefabManager

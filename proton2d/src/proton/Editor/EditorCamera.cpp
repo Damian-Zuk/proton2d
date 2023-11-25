@@ -19,7 +19,7 @@ namespace proton {
 	void EditorCamera::OnUpdate(float ts)
 	{
 		if (EditorLayer::Get()->m_ActiveScene->m_SceneState != SceneState::Stop
-			&& !EditorLayer::s_Instance->m_UseEditorCameraInRuntime)
+			&& !EditorLayer::Get()->m_UseEditorCameraInRuntime)
 			return;
 
 		float zoomLevel = m_Camera->GetZoomLevel();
@@ -37,9 +37,7 @@ namespace proton {
 	{
 		EventDispatcher dispatcher(e);
 		Scene* activeScene = EditorLayer::Get()->m_ActiveScene;
-		
-		if (!ImGui::GetIO().WantCaptureMouse && activeScene
-			&& (activeScene->m_SceneState == SceneState::Stop || EditorLayer::s_Instance->m_UseEditorCameraInRuntime))
+		if (activeScene && (activeScene->m_SceneState == SceneState::Stop || EditorLayer::Get()->m_UseEditorCameraInRuntime))
 		{
 			dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
 			{
@@ -50,7 +48,7 @@ namespace proton {
 			});
 		}
 
-		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& event) -> bool 
+		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& event) -> bool 
 		{
 			m_AspectRatio = Application::Get().GetWindow().GetAspectRatio();
 			m_Camera->SetAspectRatio(m_AspectRatio);

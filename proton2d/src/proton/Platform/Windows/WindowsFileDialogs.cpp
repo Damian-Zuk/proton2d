@@ -10,8 +10,6 @@
 namespace proton {
 	namespace FileDialogs
 	{
-		// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsPlatformUtils.cpp
-		
 		std::string OpenFile(const char* filter)
 		{
             OPENFILENAMEA ofn;

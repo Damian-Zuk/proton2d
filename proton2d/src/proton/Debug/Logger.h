@@ -1,4 +1,5 @@
-// 
+//
+// Wrapper for spdlog with logging macros
 // From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.h
 // 
 #pragma once
@@ -15,7 +16,7 @@
 
 namespace proton {
 
-	class Log
+	class Logger
 	{
 	public:
 		static void Init();
@@ -48,15 +49,15 @@ inline OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion)
 }
 
 // Core log macros
-#define PT_CORE_TRACE(...)    ::proton::Log::GetCoreLogger()->trace(__VA_ARGS__)
-#define PT_CORE_INFO(...)     ::proton::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define PT_CORE_WARN(...)     ::proton::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define PT_CORE_ERROR(...)    ::proton::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define PT_CORE_CRITICAL(...) ::proton::Log::GetCoreLogger()->critical(__VA_ARGS__)
+#define PT_CORE_TRACE(...)    ::proton::Logger::GetCoreLogger()->trace(__VA_ARGS__)
+#define PT_CORE_INFO(...)     ::proton::Logger::GetCoreLogger()->info(__VA_ARGS__)
+#define PT_CORE_WARN(...)     ::proton::Logger::GetCoreLogger()->warn(__VA_ARGS__)
+#define PT_CORE_ERROR(...)    ::proton::Logger::GetCoreLogger()->error(__VA_ARGS__)
+#define PT_CORE_CRITICAL(...) ::proton::Logger::GetCoreLogger()->critical(__VA_ARGS__)
 
 // Client log macros
-#define PT_TRACE(...)         ::proton::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define PT_INFO(...)          ::proton::Log::GetClientLogger()->info(__VA_ARGS__)
-#define PT_WARN(...)          ::proton::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define PT_ERROR(...)         ::proton::Log::GetClientLogger()->error(__VA_ARGS__)
-#define PT_CRITICAL(...)      ::proton::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define PT_TRACE(...)         ::proton::Logger::GetClientLogger()->trace(__VA_ARGS__)
+#define PT_INFO(...)          ::proton::Logger::GetClientLogger()->info(__VA_ARGS__)
+#define PT_WARN(...)          ::proton::Logger::GetClientLogger()->warn(__VA_ARGS__)
+#define PT_ERROR(...)         ::proton::Logger::GetClientLogger()->error(__VA_ARGS__)
+#define PT_CRITICAL(...)      ::proton::Logger::GetClientLogger()->critical(__VA_ARGS__)

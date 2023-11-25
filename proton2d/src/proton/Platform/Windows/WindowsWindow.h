@@ -1,6 +1,7 @@
-/*
-* From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.h
-*/
+//
+// Windows GLFW Window implementation
+// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.h
+//
 #pragma once
 
 #include "proton/Core/Window.h"
@@ -15,17 +16,18 @@ namespace proton {
 		WindowsWindow(const std::string& title, uint32_t width, uint32_t height);
 		virtual ~WindowsWindow();
 
-		void OnUpdate() override;
+		virtual void OnUpdate() override;
 
-		unsigned int GetWidth() const override { return m_Data.Width; }
-		unsigned int GetHeight() const override { return m_Data.Height; }
+		virtual unsigned int GetWidth() const override { return m_Data.Width; }
+		virtual unsigned int GetHeight() const override { return m_Data.Height; }
+		virtual inline float GetAspectRatio() const override { return (float)GetWidth() / (float)GetHeight(); }
 
-		void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
-		void SetVSync(bool enabled) override;
-		bool IsVSync() const override;
+		virtual void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
+		virtual void SetVSync(bool enabled) override;
+		virtual bool IsVSync() const override;
 
 		virtual void SetFullscreen(bool fullscreen = true) override;
-		bool IsFullscreen() const override;
+		virtual bool IsFullscreen() const override;
 
 		virtual void* GetNativeWindow() const { return m_Window; }
 

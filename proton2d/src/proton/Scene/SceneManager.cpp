@@ -24,11 +24,11 @@ namespace proton {
 		if (!s_Instance)
 		{
 			s_Instance = new SceneManager();
-#ifdef PT_EDITOR
+		#ifdef PT_EDITOR
 			Scene* scene = CreateEmptyScene("<Unsaved scene>");
 			s_Instance->m_ActiveScene = scene;
 			EditorLayer::SetActiveScene(scene);
-#endif
+		#endif
 		}
 	}
 
@@ -41,33 +41,32 @@ namespace proton {
 	Scene* SceneManager::Load(const std::string& scenePath)
 	{
 		if (scenePath != "<Unsaved scene>")
-			PT_CORE_INFO("[SceneManager::Load] filepath='{}'", scenePath);
-		std::string filepath = "scenes/" + scenePath + ".scene";
+			PT_CORE_INFO("[SceneManager::Load] file='{}.scene.json'", scenePath);
+		std::string filepath = "content/scenes/" + scenePath + ".scene.json";
 		return s_Instance->Deserialize(scenePath, filepath);
 	}
 
 
-	Scene* SceneManager::LoadFromCache(const std::string& scenePath)
+	Scene* SceneManager::EditorLoadFromCache(const std::string& scenePath)
 	{
 		Scene* scene = new Scene(scenePath);
-		std::string filepath = "cache/" + 
-			(scenePath == "<Unsaved scene>" ? "unsaved_scene" : scenePath) + ".scene";
+		std::string filepath = "editor/cache/" + 
+			(scenePath == "<Unsaved scene>" ? "unsaved_scene" : scenePath) + ".scene.json";
 		std::replace(filepath.begin(), filepath.end(), '\\', '_');
-
 		return s_Instance->Deserialize(scenePath, filepath);
 	}
 
 
 	Scene* SceneManager::Deserialize(const std::string& scenePath, const std::string& fullFilepath)
 	{
-		Scene* scene = CreateEmptyScene(scenePath);
-
+		Scene* scene = CreateEmptyScene(scenePath, false);
 		SceneSerializer serializer(scene);
 		if (!serializer.Deserialize(fullFilepath))
 		{
 			PT_CORE_ERROR("[SceneManager::Deserialize] Loading '{}' failed!", fullFilepath);
 			return nullptr;
 		}
+		s_Instance->m_Scenes[scenePath] = scene;
 		return scene;
 	}
 
@@ -86,7 +85,7 @@ namespace proton {
 	{
 		if (!IsLoaded(scenePath))
 		{
-			PT_CORE_ERROR("[SceneManager::SetActiveScene] Scene not loaded!");
+			PT_CORE_ERROR("[SceneManager::SetActiveScene] Scene '{}' not loaded!", scenePath);
 			return nullptr;
 		}
 		Scene* targetScene = s_Instance->m_Scenes.at(scenePath);
@@ -109,6 +108,8 @@ namespace proton {
 		s_Instance->m_ActiveScene = targetScene;
 		s_Instance->m_ActiveScene->BeginPlay();
 #endif
+		PT_CORE_INFO("[SceneManager::SetActiveScene] scene='{}'", scenePath);
+
 		Renderer::SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
 		return s_Instance->m_ActiveScene;
 	}
@@ -122,7 +123,7 @@ namespace proton {
 		}
 
 		SceneSerializer serializer(s_Instance->m_Scenes.at(scenePath));
-		serializer.Serialize("scenes/" + newScenePath + ".scene");
+		serializer.Serialize("content/scenes/" + newScenePath + ".scene.json");
 	}
 
 
@@ -161,14 +162,14 @@ namespace proton {
 		return s_Instance->m_ActiveScene->m_SceneFilepath;
 	}
 
-
-	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)
+	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath, bool addToRegistry)
 	{
 		Scene* scene = new Scene();
 		scene->m_SceneFilepath = scenePath;
 		if (IsLoaded(scenePath))
 			delete s_Instance->m_Scenes.at(scenePath);
-		s_Instance->m_Scenes[scenePath] = scene;
+		if (addToRegistry)
+			s_Instance->m_Scenes[scenePath] = scene;
 		return scene;
 	}
 

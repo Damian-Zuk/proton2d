@@ -8,9 +8,9 @@
 #include <filesystem>
 
 #ifdef PROTON_PLATFORM_WINDOWS
-#define DIR_SLASH "\\"
+constexpr const char DIR_SLASH = '\\';
 #else
-#define DIR_SLASH "/"
+constexpr const char DIR_SLASH = '/';
 #endif
 
 
@@ -41,19 +41,18 @@ namespace proton { namespace Utils {
 	}
 
 	std::vector<std::string> ScanDirectory(const std::string& directory,
-		std::initializer_list<std::string> extensionsFilter, bool returnExtensions)
+		std::initializer_list<std::string> extensionFilter, bool returnWithExtensions)
 	{
 		std::vector<std::string> files;
 		for (const auto& entry : std::filesystem::directory_iterator(directory))
 		{
-			const auto& path = entry.path();
-			auto extension = path.extension().string();
-			for (const std::string& ext : extensionsFilter)
+			std::string filepath = entry.path().string();
+			std::string extension = filepath.substr(filepath.find("."));
+			for (const std::string& ext : extensionFilter)
 			{
 				if (extension == ext)
 				{
-					std::string filepath = path.string();
-					if (!returnExtensions)
+					if (!returnWithExtensions)
 						filepath = filepath.substr(0, filepath.size() - extension.size());
 					files.push_back(filepath.substr(filepath.find_first_of(DIR_SLASH) + 1));
 					break;
@@ -64,20 +63,19 @@ namespace proton { namespace Utils {
 	}
 
 	std::vector<std::string> ScanDirectoryRecursive(const std::string& directory,
-		std::initializer_list<std::string> extensionsFilter, bool returnExtensions)
+		std::initializer_list<std::string> extensionFilter, bool returnWithExtensions)
 	{
 		std::vector<std::string> files;
 		for (const auto& entry : std::filesystem::recursive_directory_iterator(directory)) {
 			if (entry.is_regular_file()) 
 			{
-				const auto& path = entry.path();
-				auto extension = path.extension().string();
-				for (const std::string& ext : extensionsFilter)
+				std::string filepath = entry.path().string();
+				std::string extension = filepath.substr(filepath.find("."));
+				for (const std::string& ext : extensionFilter)
 				{
 					if (extension == ext) 
 					{
-						std::string filepath = path.string();
-						if (!returnExtensions)
+						if (!returnWithExtensions)
 							filepath = filepath.substr(0, filepath.size() - extension.size());
 						files.push_back(filepath.substr(filepath.find_first_of(DIR_SLASH) + 1));
 						break;

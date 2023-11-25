@@ -118,7 +118,8 @@ project "sandbox"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{wks.location}/resources/icon.rc",
 	}
 
 	includedirs

@@ -4,8 +4,6 @@
 
 namespace proton {
 
-	constexpr glm::uvec2 TILEMAP_BLANK_TILE = glm::uvec2{ -1, -1 };
-
 	enum Edge : uint16_t
 	{
 		Edge_Left        = 1 << 0,
@@ -51,15 +49,16 @@ namespace proton {
 
 		// Toggle sprite edges to be rendered as center pieces
 		// Use Edge Enum to toggle specific bits representing edge/corner
-		void SetEdges(uint8_t borders);
-		uint8_t GetEdges();
+		void SetEdges(uint8_t edges);
+		uint8_t GetEdges() const;
 
 	private:
-		// Calculate local transformation matrix for each tile
-		void UpdateTileTransforms();
+		// Calculate tile index positions in source Spritesheet
+		using TilemapIndexPositions = std::vector<std::vector<glm::uvec2>>;
+		void DetermineTileIndexPositions(TilemapIndexPositions& tilemap);
 
-		// Calculate tile index positions from source spirtesheet
-		std::vector<std::vector<glm::uvec2>> DetermineTilePositions();
+		// Calculate local transformation matrix (glm::mat4) for each tile
+		void CalculateTileTransforms();
 
 	private:
 		std::vector<std::vector<ResizableSpriteTile>> m_Tilemap; // [x][y]

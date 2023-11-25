@@ -43,7 +43,7 @@ namespace proton {
 		{
 			m_ActiveScene->m_Registry.each([&](auto id)
 				{
-					Entity entity{ m_ActiveScene, id };
+					Entity entity{ id, m_ActiveScene };
 					auto& relationship = entity.GetComponent<RelationshipComponent>();
 
 					if (relationship.Parent == entt::null)
@@ -108,7 +108,7 @@ namespace proton {
 				auto current = relationship.First;
 				for (uint32_t i = 0; i < relationship.ChildrenCount; i++)
 				{
-					Entity e{ m_ActiveScene, current };
+					Entity e{ current, m_ActiveScene };
 					DrawEntityTreeNode(e);
 					current = e.GetComponent<RelationshipComponent>().Next;
 				}

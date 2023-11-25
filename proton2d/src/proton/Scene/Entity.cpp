@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "proton/Scene/Entity.h"
-#include "proton/Scene/EntityScript.h"
+#include "proton/Scripting/EntityScript.h"
 
 #include <box2d/b2_body.h>
 
 namespace proton 
 {
-	Entity::Entity(Scene* scene, entt::entity handle)
+	Entity::Entity(entt::entity handle, Scene* scene)
 		: m_Scene(scene), m_Handle(handle) 
 	{
 	}
@@ -50,9 +50,6 @@ namespace proton
 
 	b2Body* Entity::GetRuntimeBody()
 	{
-		if (!HasComponent<RigidbodyComponent>())
-			return nullptr;
-
 		auto& id = GetComponent<IDComponent>();
 		return m_Scene->GetRuntimeBody(id.ID);
 	}
@@ -87,7 +84,7 @@ namespace proton
 		body->ApplyLinearImpulse({impulse.x, impulse.y }, body->GetWorldCenter(), true);
 	}
 
-	void Entity::TerminateScriptInstances()
+	void Entity::TerminateScripts()
 	{
 		for (auto& [scriptName, scriptInstance] : GetComponent<ScriptComponent>().Scripts)
 		{
@@ -119,7 +116,7 @@ namespace proton
 
 		if (parentComponent.ChildrenCount)
 		{
-			Entity firstEntity = { m_Scene, parentComponent.First };
+			Entity firstEntity = { parentComponent.First, m_Scene };
 			firstEntity.GetComponent<RelationshipComponent>().Prev = child.m_Handle;
 			childComponent.Next = parentComponent.First;
 		}
@@ -133,9 +130,9 @@ namespace proton
 		auto& rc = GetComponent<RelationshipComponent>();
 		if (rc.Parent != entt::null)
 		{
-			Entity parent{ m_Scene, rc.Parent };
-			Entity prev{ m_Scene, rc.Prev };
-			Entity next{ m_Scene, rc.Next };
+			Entity parent{ rc.Parent, m_Scene };
+			Entity prev{ rc.Prev, m_Scene };
+			Entity next{ rc.Next, m_Scene };
 
 			auto& parentRc = parent.GetComponent<RelationshipComponent>();
 			parentRc.ChildrenCount--;
@@ -164,7 +161,7 @@ namespace proton
 		if (!rc.ChildrenCount)
 			return false;
 
-		Entity current{ m_Scene, rc.First };
+		Entity current{ rc.First, m_Scene };
 		while (current)
 		{
 			if (current == entity)
@@ -174,7 +171,7 @@ namespace proton
 			if (rc.ChildrenCount && current.IsParentOf(entity))
 				return true;
 
-			current = Entity{ m_Scene, rc.Next };
+			current = Entity{ rc.Next, m_Scene };
 		}
 
 		return false;

@@ -17,7 +17,7 @@ namespace proton {
 
 	Shared<Texture> AssetManager::LoadTexture(const std::string& filepath)
 	{
-		auto texture = CreateShared<Texture>(filepath);
+		auto texture = MakeShared<Texture>(filepath);
 		if (!texture->IsLoaded()) 
 		{
 			PT_CORE_ERROR("[AssetManager::LoadTexture] Couldn't load texture '{}'", filepath);
@@ -38,13 +38,13 @@ namespace proton {
 		auto& spritesheetList = s_Instance->m_SpritesheetList;
 		if (spritesheetList.find(filepath) == spritesheetList.end())
 		{
-			PT_CORE_ERROR("[AssetManager::LoadSpritesheet] Spritesheet not found in 'assets/spritesheets.json'");
+			PT_CORE_ERROR("[AssetManager::LoadSpritesheet] Spritesheet not found in 'content/spritesheet.json'");
 			return nullptr;
 		}
 
 		const auto& size = spritesheetList.at(filepath);
 		PT_CORE_INFO("[AssetManager::LoadSpritesheet] file='{}' tile_size=({},{})", filepath, size.x, size.y);
-		return CreateShared<Spritesheet>(texture, size.x, size.y);
+		return MakeShared<Spritesheet>(texture, size.x, size.y);
 	}
 
 	bool AssetManager::IsTextureLoaded(const std::string& filepath)
@@ -78,7 +78,7 @@ namespace proton {
 			auto spritesheet = LoadSpritesheet(filepath);
 			if (!spritesheet)
 			{
-				PT_CORE_ERROR("[AssetManager::GetSpritesheet] Spritesheet not loaded '{}'", filepath);
+				PT_CORE_ERROR("[AssetManager::GetSpritesheet] Spritesheet not found '{}'", filepath);
 				return nullptr;
 			}
 			s_Instance->m_Spritesheets[filepath] = spritesheet;
@@ -113,13 +113,13 @@ namespace proton {
 		textureList.clear();
 		spritesheetList.clear();
 
-		textureList = Utils::ScanDirectoryRecursive("assets",
+		textureList = Utils::ScanDirectoryRecursive("content/textures",
 			{ ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd" });
 
-		for (auto& s : json::parse(Utils::ReadFile("assets/spritesheets.json")))
+		for (auto& s : json::parse(Utils::ReadFile("content/spritesheet.json")))
 		{
-			std::string filepath = s["Filepath"];
-			uint32_t width = s["TileWidth"], height = s["TileHeight"];
+			std::string filepath = s["file_path"];
+			uint32_t width = s["tile_width"], height = s["tile_height"];
 			spritesheetList[filepath] = glm::uvec2{ width, height };
 			textureList.erase(
 				std::remove(textureList.begin(), textureList.end(), filepath),

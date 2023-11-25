@@ -8,7 +8,7 @@ namespace proton {
 
 	class EditorCamera {
 	public:
-		EditorCamera(const Shared<Camera>& camera = CreateShared<Camera>());
+		EditorCamera(const Shared<Camera>& camera = MakeShared<Camera>());
 		virtual ~EditorCamera() = default;
 
 		void OnUpdate(float ts);

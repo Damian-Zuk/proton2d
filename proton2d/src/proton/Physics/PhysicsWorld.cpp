@@ -60,7 +60,7 @@ namespace proton {
 			auto& uuid = entity.GetComponent<IDComponent>().ID;
 
 			b2FixtureDef fixtureDef; b2PolygonShape shape;
-			m_FixtureUserData.push_back(CreateUnique<UUID>(uuid));
+			m_FixtureUserData.push_back(MakeUnique<UUID>(uuid));
 
 			shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
 				bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
@@ -85,18 +85,18 @@ namespace proton {
 		m_World = new b2World({ 0.0f, -m_Gravity });
 		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 		for (entt::entity entity : m_Scene->m_Registry.view<RigidbodyComponent>())
-			CreateRuntimeBody(Entity{ m_Scene, entity });
+			CreateRuntimeBody(Entity{ entity, m_Scene });
 
 		// TODO: Think about it
 		// Attach a fixture to the parent entity for each child entitiy
 		// which has a BoxColliderComponent but lacks RigidbodyComponent.
 		for (entt::entity e : m_Scene->m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>))
 		{
-			Entity entity{ m_Scene, e };
+			Entity entity{ e, m_Scene };
 			auto& rc = entity.GetComponent<RelationshipComponent>();
 			if (rc.Parent != entt::null)
 			{
-				Entity parent{ m_Scene, rc.Parent };
+				Entity parent{ rc.Parent, m_Scene };
 				if (parent.HasComponent<RigidbodyComponent>())
 				{
 					b2Body* body = GetRuntimeBody(parent.GetUUID());
@@ -136,7 +136,6 @@ namespace proton {
 	{
 	}
 
-
 #define GET_CONTACT_ENTITIES()\
 	b2Fixture* fixtureA = contact->GetFixtureA();\
 	b2Fixture* fixtureB = contact->GetFixtureB();\
@@ -147,7 +146,6 @@ namespace proton {
 	if (!entityA.IsValid() || !entityB.IsValid()) return; \
 	auto& bcA = entityA.GetComponent<BoxColliderComponent>();\
 	auto& bcB = entityB.GetComponent<BoxColliderComponent>();
-
 
 	void PhysicsContactListener::BeginContact(b2Contact* contact)
 	{
@@ -160,7 +158,6 @@ namespace proton {
 			bcB.ContactCallback.OnBeginContactFunction({ uuidA, contact });
 	}
 
-
 	void PhysicsContactListener::EndContact(b2Contact* contact)
 	{
 		GET_CONTACT_ENTITIES();
@@ -172,7 +169,6 @@ namespace proton {
 			bcB.ContactCallback.OnEndContactFunction({ uuidA, contact });
 	}
 
-
 	void PhysicsContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
 		GET_CONTACT_ENTITIES();
@@ -183,7 +179,6 @@ namespace proton {
 		if (bcB.ContactCallback.OnPreSolveFunction)
 			bcB.ContactCallback.OnPreSolveFunction({ uuidA, contact }, oldManifold);
 	}
-
 
 	void PhysicsContactListener::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{

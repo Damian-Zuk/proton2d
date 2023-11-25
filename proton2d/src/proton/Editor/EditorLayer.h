@@ -25,8 +25,6 @@ namespace proton {
 		static void SelectEntity(Entity entity);
 
 		static EditorCamera& GetCamera() { return s_Instance->m_Camera; }
-		// TODO: Editor proporties
-		static bool UsingCameraEditorInRuntime() { return s_Instance->m_UseEditorCameraInRuntime; }
 
 	private:
 		void BeginImGuiRender();
@@ -59,6 +57,8 @@ namespace proton {
 		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
 
 		friend class Application;
+		friend class Scene;
+
 		friend class InspectorPanel;
 		friend class MiscellaneousPanel;
 		friend class EditorCamera;
