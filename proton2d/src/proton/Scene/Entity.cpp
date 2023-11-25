@@ -1,12 +1,12 @@
 #include "pch.h"
-#include "proton/Scene/Entity.h"
-#include "proton/Scene/EntityScript.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Scripting/EntityScript.h"
 
 #include <box2d/b2_body.h>
 
 namespace proton 
 {
-	Entity::Entity(Scene* scene, entt::entity handle)
+	Entity::Entity(entt::entity handle, Scene* scene)
 		: m_Scene(scene), m_Handle(handle) 
 	{
 	}
@@ -48,50 +48,47 @@ namespace proton
 		return true;
 	}
 
-	b2Body* Entity::GetBox2DRigidbody()
+	b2Body* Entity::GetRuntimeBody()
 	{
-		if (!HasComponent<RigidbodyComponent>())
-			return nullptr;
-
 		auto& id = GetComponent<IDComponent>();
-		return m_Scene->GetBox2DRuntimeBody(id.ID);
+		return m_Scene->GetRuntimeBody(id.ID);
 	}
 
 	void Entity::SetVelocity(float x_mps, float y_mps)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->SetLinearVelocity({ x_mps, y_mps });
 	}
 
 	void Entity::SetVelocityX(float mps)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->SetLinearVelocity({ mps, body->GetLinearVelocity().y });
 	}
 
 	void Entity::SetVelocityY(float mps)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->SetLinearVelocity({ body->GetLinearVelocity().x, mps });
 	}
 
 	glm::vec2 Entity::GetVelocity()
 	{
-		b2Vec2 velocity = GetBox2DRigidbody()->GetLinearVelocity();
+		b2Vec2 velocity = GetRuntimeBody()->GetLinearVelocity();
 		return glm::vec2{ velocity.x, velocity.y };
 	}
 
 	void Entity::ApplyImpulse(const glm::vec2& impulse)
 	{
-		b2Body* body = GetBox2DRigidbody();
+		b2Body* body = GetRuntimeBody();
 		body->ApplyLinearImpulse({impulse.x, impulse.y }, body->GetWorldCenter(), true);
 	}
 
-	void Entity::DeleteAllScriptInstances()
+	void Entity::TerminateScripts()
 	{
 		for (auto& [scriptName, scriptInstance] : GetComponent<ScriptComponent>().Scripts)
 		{
-			if (m_Scene->m_SceneState != SceneState::Edit)
+			if (m_Scene->m_SceneState != SceneState::Stop)
 				scriptInstance->OnDestroy();
 
 			delete scriptInstance;
@@ -119,7 +116,7 @@ namespace proton
 
 		if (parentComponent.ChildrenCount)
 		{
-			Entity firstEntity = { m_Scene, parentComponent.First };
+			Entity firstEntity = { parentComponent.First, m_Scene };
 			firstEntity.GetComponent<RelationshipComponent>().Prev = child.m_Handle;
 			childComponent.Next = parentComponent.First;
 		}
@@ -133,9 +130,9 @@ namespace proton
 		auto& rc = GetComponent<RelationshipComponent>();
 		if (rc.Parent != entt::null)
 		{
-			Entity parent{ m_Scene, rc.Parent };
-			Entity prev{ m_Scene, rc.Prev };
-			Entity next{ m_Scene, rc.Next };
+			Entity parent{ rc.Parent, m_Scene };
+			Entity prev{ rc.Prev, m_Scene };
+			Entity next{ rc.Next, m_Scene };
 
 			auto& parentRc = parent.GetComponent<RelationshipComponent>();
 			parentRc.ChildrenCount--;
@@ -164,7 +161,7 @@ namespace proton
 		if (!rc.ChildrenCount)
 			return false;
 
-		Entity current{ m_Scene, rc.First };
+		Entity current{ rc.First, m_Scene };
 		while (current)
 		{
 			if (current == entity)
@@ -174,7 +171,7 @@ namespace proton
 			if (rc.ChildrenCount && current.IsParentOf(entity))
 				return true;
 
-			current = Entity{ m_Scene, rc.Next };
+			current = Entity{ rc.Next, m_Scene };
 		}
 
 		return false;

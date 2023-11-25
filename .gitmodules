@@ -3,7 +3,7 @@
 	url = https://github.com/glfw/glfw
 [submodule "vendor/imgui"]
 	path = vendor/imgui
-	url = https://github.com/kreedyX/imgui
+	url = https://github.com/Damian-Zuk/imgui
 [submodule "vendor/glm"]
 	path = vendor/glm
 	url = https://github.com/g-truc/glm
@@ -12,4 +12,7 @@
 	url = https://github.com/skypjack/entt
 [submodule "vendor/box2d"]
 	path = vendor/box2d
-	url = https://github.com/kreedyX/box2d
+	url = https://github.com/Damian-Zuk/box2d
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog

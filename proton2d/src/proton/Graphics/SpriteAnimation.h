@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proton/Graphics/Sprite.h"
+#include "Proton/Graphics/Sprite.h"
 
 #include <unordered_map>
 
@@ -16,7 +16,6 @@ namespace proton {
 	public:
 		SpriteAnimation() = default;
 		SpriteAnimation(Sprite* sprite);
-
 
 		// index - spritesheet Y tile pos (from image bottom)
 		void AddAnimation(uint16_t index, uint16_t frameCount);
@@ -35,8 +34,8 @@ namespace proton {
 		uint16_t GetFPS() const { return m_FPS; }
 
 	private:
+		void Update(float ts);
 		void SetSprite(Sprite* sprite);
-		void PlayFrame(float ts);
 
 		Sprite* m_Sprite = nullptr;
 		

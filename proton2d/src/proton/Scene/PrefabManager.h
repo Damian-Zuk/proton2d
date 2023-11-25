@@ -1,22 +1,20 @@
 #pragma once
-#include "proton/Scene/Entity.h"
+#include "Proton/Scene/Entity.h"
 
 #include <nlohmann/json.hpp>
-#include <stdio.h>
 
 namespace proton {
 
 	using json = nlohmann::ordered_json;
 	class Scene;
 
-	/*
-	* Class PrefabManager is used to create, load and spawn prefabs
-	* PrefabManager class methods use prefab filepaths - "prefabPath"
-	* (realative to "prefabs" directory) without ".prefab" extension
-	* as prefab identifiers (keys in map storage).
-	* Prefabs are stored as JSON object data, which is used for
-	* deserialization in SpawnPrefab method.
-	*/
+	// TODO: Entire rework
+	// 
+	// Class PrefabManager is used to create, load and spawn prefabs.
+	// PrefabManager class methods use prefab filepaths - "prefabPath"
+	// (realative to "prefabs" directory) without ".prefab.json" extension as prefab identifiers (keys in map storage).
+	// Prefabs are stored as JSON object data, which is used for deserialization in SpawnPrefab method.
+	// 
 	class PrefabManager
 	{
 	public:
@@ -38,7 +36,7 @@ namespace proton {
 		std::map<std::string, json> m_PrefabsJsonData;
 		
 		friend class Application;
-		friend class EditorOverlay;
+		friend class PrefabPanel;
 	};
 
 }

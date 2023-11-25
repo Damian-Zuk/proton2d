@@ -1,6 +1,7 @@
 {
-    "Fullscreen": false,
-    "VSync": false,
-    "Window_Height": 900,
-    "Window_Width": 1600
+  "application_name": "Proton2D Engine",
+  "window_width": 1600,
+  "window_height": 900,
+  "fullscreen": false,
+  "vsync": false
 }

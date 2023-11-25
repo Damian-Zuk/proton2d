@@ -16,5 +16,6 @@
 #include <Windows.h>
 #endif
 
-#include "proton/Core/Logger.h"
-#include "proton/Core/Instrumentor.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Debug/Assert.h"
+#include "Proton/Debug/Instrumentor.h"

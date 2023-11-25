@@ -1,68 +1,68 @@
 #pragma once
 
-#include "proton/Core/Core.h"
-#include "proton/Core/Window.h"
-#include "proton/Core/AppLayer.h"
-#include "proton/Editor/EditorOverlay.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Core/Window.h"
+#include "Proton/Core/AppLayer.h"
+#include "Proton/Editor/EditorLayer.h"
 
 namespace proton {
 
 	class Application
 	{
 	public:
-		Application(const std::string& appName);
+		Application();
 		virtual ~Application();
 
 		void Run();
-		
 		void PushLayer(AppLayer* layer);
 		void PushOverlay(AppLayer* layer);
-
-		void SetTimeScale(float timeScale);
 
 		static Application& Get() { return *s_Instance; }
 		Window& GetWindow() { return *m_Window; }
 
 	protected:
 		virtual bool OnCreate() = 0; // To be defined by client
+
 		void OnEvent(Event& event);
 
 	private:
 		static Application* s_Instance;
 
+		std::vector<AppLayer*> m_AppLayers;
+		Unique<Window> m_Window;
+
+		std::string m_Name;
 		bool m_IsRunning = false;
 		bool m_WindowMinimized = false;
 		float m_FrameTime = 0.0f;
 		float m_TimeScale = 1.0f;
-		std::string m_AppName;
-		
-		std::vector<AppLayer*> m_AppLayers;
-		Unique<Window> m_Window;
-		EditorOverlay* m_EditorOverlay;
+
+		EditorLayer* m_EditorLayer;
 		bool m_ShowEditorOverlay = true;
 
-		friend class DebugInfo;
+		friend class MiscellaneousPanel;
 	};
 
 }
 
+// Application Entry Point
 #ifdef PROTON_DISTRIBUTION
-#ifdef PROTON_PLATFORM_WINDOWS
-#include <Windows.h>
-#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass, WindowTitle)\
-	int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)\
-	{\
-		ApplcationClass app(WindowTitle);\
-		app.Run();\
-	}
-#endif
+	#ifdef PROTON_PLATFORM_WINDOWS
+		#include <Windows.h>
+		#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass)\
+		int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)\
+		{\
+			proton::Logger::Init();\
+			ApplcationClass app;\
+			app.Run();\
+		}
+	#endif
 #else
-#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass, WindowTitle)\
+#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass)\
 	int main(int argc, char** argv)\
 	{\
-		ApplcationClass app(WindowTitle);\
+		proton::Logger::Init();\
+		ApplcationClass app;\
 		app.Run();\
 	}
 #endif
-
-	

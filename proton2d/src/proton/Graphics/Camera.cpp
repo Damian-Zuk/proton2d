@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
-#include "proton/Graphics/Camera.h"
-#include "proton/Core/Application.h"
+#include "Proton/Graphics/Camera.h"
+#include "Proton/Core/Application.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

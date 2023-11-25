@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Graphics/SpriteAnimation.h"
+#include "Proton/Graphics/SpriteAnimation.h"
 
 namespace proton {
 
@@ -20,26 +20,18 @@ namespace proton {
 
     void SpriteAnimation::StartAnimation(uint16_t index, bool mirror_x, bool mirror_y)
     {
-        if (!m_Sprite)
-            return;
-
         if (index != m_CurrentAnimationIndex)
         {
             m_CurrentAnimationIndex = index;
             m_CurrentAnimationFrameCount = m_AnimationsFrameCount[index];
             m_Sprite->SetTile(0, index);
         }
-
         SetMirrorFlip(mirror_x, mirror_y);
     }
 
     void SpriteAnimation::SetAnimation(uint16_t index, bool mirror_x, bool mirror_y)
     {
-        assert(m_AnimationsFrameCount.find(index) != m_AnimationsFrameCount.end() && "Animation not found");
-        
-        if (!m_Sprite)
-            return;
-
+        PT_ASSERT(m_AnimationsFrameCount.find(index) != m_AnimationsFrameCount.end(), "Animation not found");
         if (index != m_CurrentAnimationIndex)
         {
             m_CurrentAnimationIndex = index;
@@ -47,7 +39,6 @@ namespace proton {
             m_CurrentFrame %= m_CurrentAnimationFrameCount;
             m_Sprite->SetTile(m_CurrentFrame, index);
         }
-
         SetMirrorFlip(mirror_x, mirror_y);
     }
 
@@ -75,9 +66,9 @@ namespace proton {
         return (float)m_CurrentFrame / m_CurrentAnimationFrameCount;
     }
 
-    void SpriteAnimation::PlayFrame(float ts)
+    void SpriteAnimation::Update(float ts)
     {
-        if (!m_Sprite || !m_CurrentAnimationFrameCount)
+        if (!m_CurrentAnimationFrameCount)
             return;
 
         m_ElapsedTime += ts;

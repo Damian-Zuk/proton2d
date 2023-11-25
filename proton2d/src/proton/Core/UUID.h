@@ -17,6 +17,7 @@ namespace proton {
 }
 
 namespace std {
+
 	template <typename T> struct hash;
 
 	template<>

@@ -1,21 +1,22 @@
 #include "pch.h"
-#include "proton/Core/Application.h"
-#include "proton/Core/Input.h"
-#include "proton/Events/WindowEvents.h"
-#include "proton/Events/KeyEvents.h"
-#include "proton/Graphics/Renderer.h"
-#include "proton/Scene/ScriptFactory.h"
-#include "proton/Assets/AssetManager.h"
-#include "proton/Scene/SceneManager.h"
-#include "proton/Scene/PrefabManager.h"
-#include "proton/Core/Utils.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Core/Input.h"
+#include "Proton/Events/WindowEvents.h" 
+#include "Proton/Events/KeyEvents.h"
+#include "Proton/Events/MouseEvents.h"
+#include "Proton/Assets/AssetManager.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/PrefabManager.h"
+#include "Proton/Utils/Utils.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
-	#include "proton/Platform/Windows/WindowsWindow.h"
-	#include "proton/Platform/Windows/WindowsInput.h"
+	#include "Proton/Platform/Windows/WindowsWindow.h"
+	#include "Proton/Platform/Windows/WindowsInput.h"
 #endif
 
-#if PROTON_EDITOR
+#ifdef PT_EDITOR
 	#include <imgui.h>
 #endif
 
@@ -31,55 +32,54 @@ namespace proton {
 	Application* Application::s_Instance = nullptr;
 	Input* Input::s_Instance = nullptr;
 
-	Application::Application(const std::string& appName)
-		: m_AppName(appName)
+	Application::Application()
 	{
+		PT_CORE_ASSERT(!s_Instance, "Application already exists!");
 		Application::s_Instance = this;
 
-		// Default values
+		// TODO: Move loading configuration to ApplicationProporties class
 		uint32_t windowWidth = 1600;
 		uint32_t windowHeight = 900;
-		bool VSync = false;
-		bool Fullscreen = false;
-
+		bool vsync = false;
+		bool fullscreen = false;
 		if (std::filesystem::exists("app.config.json"))
 		{
 			// Load config file
 			std::string configData = Utils::ReadFile("app.config.json");
 			json jsonObj = jsonObj.parse(configData);
-			windowWidth = jsonObj["Window_Width"];
-			windowHeight = jsonObj["Window_Height"];
-			VSync = jsonObj["VSync"];
-			Fullscreen = jsonObj["Fullscreen"];
+			windowWidth = jsonObj["window_width"];
+			windowHeight = jsonObj["window_height"];
+			vsync = jsonObj["vsync"];
+			fullscreen = jsonObj["fullscreen"];
+			m_Name = jsonObj["application_name"];
 		}	
 		else
 		{
-			// Create config file if it doesn't exists
+			// Create config file if does not exists
 			json jsonObj;
-			jsonObj["Window_Width"] = windowWidth;
-			jsonObj["Window_Height"] = windowHeight;
-			jsonObj["VSync"] = VSync;
-			jsonObj["Fullscreen"] = Fullscreen;
+			jsonObj["window_width"] = windowWidth;
+			jsonObj["window_height"] = windowHeight;
+			jsonObj["vsync"] = vsync;
+			jsonObj["fullscreen"] = fullscreen;
+			jsonObj["application_name"] = m_Name;
 			std::ofstream configFile("app.config.json");
 			configFile << jsonObj.dump(4);
 			configFile.close();
 		}
 
-#ifdef PROTON_PLATFORM_WINDOWS
-		m_Window = CreateUnique<WindowsWindow>
-			(m_AppName, windowWidth, windowHeight);
+	#ifdef PROTON_PLATFORM_WINDOWS
+		m_Window = MakeUnique<WindowsWindow>(m_Name, windowWidth, windowHeight);
 		Input::s_Instance = new WindowsInput();
-#endif
+	#endif
 
-		m_Window->SetEventCallback(BIND_FUNCTION(Application::OnEvent));
-		m_Window->SetVSync(VSync);
-		if (Fullscreen)
-			m_Window->SetFullscreen(true);
+		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
+		m_Window->SetVSync(vsync);
+		m_Window->SetFullscreen(fullscreen);
 
-#if PROTON_EDITOR
-		m_EditorOverlay = new EditorOverlay();
-		PushOverlay(m_EditorOverlay);
-#endif
+	#ifdef PT_EDITOR
+		m_EditorLayer = new EditorLayer();
+		PushOverlay(m_EditorLayer);
+	#endif
 	}
 
 	Application::~Application()
@@ -95,9 +95,11 @@ namespace proton {
 	void Application::Run()
 	{
 		if (m_IsRunning)
+		{
+			PT_CORE_ERROR("[Application::Run] Application is already running!");
 			return;
+		}
 
-		Logger::Init();
 		AssetManager::Init();
 		SceneManager::Init();
 		PrefabManager::Init();
@@ -108,38 +110,47 @@ namespace proton {
 		if (OnCreate()) 
 		{
 			m_IsRunning = true;
+			// Game loop
 			while (m_IsRunning) 
 			{
-				PROFILE_SCOPE("Application_Loop");
+				PROFILE_SCOPE("app_game_loop");
 				auto start = std::chrono::high_resolution_clock::now();
 
 				if (!m_WindowMinimized) 
 				{
 					Renderer::Clear();
 					{
+						// Update application layers
 						PROFILE_SCOPE("app_layers_on_update");
 						for (AppLayer* layer : m_AppLayers)
 							layer->OnUpdate(m_FrameTime * m_TimeScale);
 					}
-					Scene* activeScene = SceneManager::GetActiveScene();
-					if (activeScene)
-						activeScene->OnUpdate(m_FrameTime * m_TimeScale);
-#if PROTON_EDITOR
+
+					// Update active scene
+					// TODO: Can more than one scene be active?
+					Scene* scene = SceneManager::GetActiveScene();
+					if (scene)
+						scene->OnUpdate(m_FrameTime * m_TimeScale);
+
+				#ifdef PT_EDITOR
+					// Update and render Editor ImGui interface
 					if (m_ShowEditorOverlay)
 					{
-						PROFILE_SCOPE("on_imgui_render");
-						m_EditorOverlay->BeginImGuiRender();
+						PROFILE_SCOPE("imgui_render");
+						m_EditorLayer->BeginImGuiRender();
 
 						for (AppLayer* layer : m_AppLayers)
 							layer->OnImGuiRender();
 
-						m_EditorOverlay->EndImGuiRender();
+						m_EditorLayer->EndImGuiRender();
 					}
-#endif
+				#endif
 				}
 
+				// Update window
 				m_Window->OnUpdate();
 				
+				// Calculate frame time
 				auto end = std::chrono::high_resolution_clock::now();
 				m_FrameTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000000.0f;
 			}
@@ -160,36 +171,50 @@ namespace proton {
 		layer->OnCreate();
 	}
 
-	void Application::SetTimeScale(float timeScale)
-	{
-		m_TimeScale;
-	}
-
 	void Application::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
-
 		
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
-		{
-#if PROTON_EDITOR
-			if (e.GetKeyCode() == Key::F4)
-				m_ShowEditorOverlay = !m_ShowEditorOverlay;
-#endif
-			if (e.GetKeyCode() == Key::F11)
-				m_Window->SetFullscreen(!m_Window->IsFullscreen());
+			{
+			#ifdef PT_EDITOR
+				if (ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantTextInput)
+					return true;
 
-			return true;
-		});
+				if (e.GetKeyCode() == Key::F4)
+					m_ShowEditorOverlay = !m_ShowEditorOverlay;
+			#endif
+				if (e.GetKeyCode() == Key::F11)
+					m_Window->SetFullscreen(!m_Window->IsFullscreen());
+
+				return false;
+			});
+
+		#ifdef PT_EDITOR
+		dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& e)
+			{
+				if (ImGui::GetIO().WantCaptureMouse)
+					return true;
+				return false;
+			});
+		#endif
+
+		#ifdef PT_EDITOR
+		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
+			{
+				if (ImGui::GetIO().WantCaptureMouse)
+					return true;
+				return false;
+			});
+		#endif
 		
-
-		dispatcher.Dispatch<WindowClosedEvent>([&](WindowClosedEvent& e)
+		dispatcher.Dispatch<WindowCloseEvent>([&](WindowCloseEvent& e)
 		{
 			m_IsRunning = false;
 			return true;
 		});
 
-		dispatcher.Dispatch<WindowResizedEvent>([&](WindowResizedEvent& e)
+		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e)
 		{
 			uint32_t width = e.GetWidth(), height = e.GetHeight();
 			if (width && height)
@@ -207,7 +232,11 @@ namespace proton {
 		});
 
 		for (AppLayer* layer : m_AppLayers)
+		{
+			if (event.Handled)
+				break;
 			layer->OnEvent(event);
+		}
 	}
 
 }

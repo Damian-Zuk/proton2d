@@ -10,14 +10,14 @@ void PortalScript::OnRegisterFields()
 
 void PortalScript::OnCreate()
 {
-	m_SpriteAnimation = AddComponent<SpriteAnimationComponent>().SpriteAnimation;
+	m_SpriteAnimation = m_Entity.AddComponent<SpriteAnimationComponent>().SpriteAnimation;
 	m_SpriteAnimation->AddAnimation(0, 8);
 	m_SpriteAnimation->SetAnimation(0);
 	m_SpriteAnimation->SetFPS(10);
 
-	auto& bc = GetComponent<BoxColliderComponent>();
+	auto& bc = m_Entity.GetComponent<BoxColliderComponent>();
 	bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContactInfo contact) {
-		if (GetScene()->FindByID(contact.OtherUUID).GetTag() == "Player")
+		if (m_Entity.GetScene()->FindByID(contact.OtherUUID).GetTag() == "Player")
 		{
 			std::string level = "level_" + std::to_string(m_TargetLevel);
 			if (!SceneManager::IsLoaded(level))

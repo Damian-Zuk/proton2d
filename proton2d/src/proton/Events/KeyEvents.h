@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
-#include "proton/Events/Event.h"
-#include "proton/Core/KeyCodes.h"
+#include "Proton/Events/Event.h"
+#include "Proton/Core/KeyCodes.h"
 
 namespace proton {
 
@@ -22,6 +22,7 @@ namespace proton {
 	{
 	public:
 		EVENT_CLASS_TYPE(KeyPressed)
+		EVENT_CLASS_CATEGORY(EventCategoryKeyboard)
 
 		KeyPressedEvent(const KeyCode keycode, const uint16_t repeatCount)
 			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
@@ -44,6 +45,7 @@ namespace proton {
 	{
 	public:
 		EVENT_CLASS_TYPE(KeyReleased)
+		EVENT_CLASS_CATEGORY(EventCategoryKeyboard)
 
 		KeyReleasedEvent(const KeyCode keycode)
 			: KeyEvent(keycode) {}
@@ -61,6 +63,7 @@ namespace proton {
 	{
 	public:
 		EVENT_CLASS_TYPE(KeyTyped)
+		EVENT_CLASS_CATEGORY(EventCategoryKeyboard)
 
 		KeyTypedEvent(const KeyCode keycode)
 			: KeyEvent(keycode) {}

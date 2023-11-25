@@ -6,14 +6,14 @@ namespace proton {
 
 	/*
 	* SceneManager class methods use scene filepaths - "scenePath" 
-	* (realative to "scenes" directory) without ".scene" extension
+	* (realative to "scenes" directory) without ".scene.json" extension
 	* as scene identifiers (keys in map storage)
 	*/
 	class SceneManager
 	{
 	public:
 		SceneManager() = default;
-		~SceneManager();
+		virtual ~SceneManager();
 
 		static bool IsLoaded(const std::string& scenePath);
 
@@ -25,7 +25,7 @@ namespace proton {
 
 		static Scene* GetScene(const std::string& scenePath);
 
-		static void SaveSceneAs(const std::string& scenePath, const std::string& mewSenePath);
+		static void SaveSceneAs(const std::string& scenePath, const std::string& newSenePath);
 		static void SaveActiveSceneAs(const std::string& scenePath);
 		static void SaveActiveScene();
 
@@ -33,17 +33,19 @@ namespace proton {
 
 	private:
 		static void Init();
-		static Scene* LoadFromCache(const std::string& scenePath);
-		static Scene* CreateEmptyScene(const std::string& scenePath);
+		// TODO: Remove
+		static Scene* EditorLoadFromCache(const std::string& scenePath);
+		static Scene* CreateEmptyScene(const std::string& scenePath, bool addToRegistry = true);
 
 		Scene* Deserialize(const std::string& scenePath, const std::string& fullFilepath);
 	private:
 		static SceneManager* s_Instance;
 
+		// TODO: Can more than one scene be active?
 		Scene* m_ActiveScene = nullptr;
 		std::map<std::string, Scene*> m_Scenes;
 
 		friend class Application;
-		friend class EditorOverlay;
+		friend class ScenePanel;
 	};
 }

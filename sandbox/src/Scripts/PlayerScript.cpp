@@ -11,9 +11,9 @@ void PlayerScript::OnRegisterFields()
 
 void PlayerScript::OnCreate()
 {
-	m_Body = GetBox2DRigidbody();
+	m_Body = m_Entity.GetRuntimeBody();
 	// Create animations
-	m_Animation = AddComponent<SpriteAnimationComponent>().SpriteAnimation;
+	m_Animation = m_Entity.AddComponent<SpriteAnimationComponent>().SpriteAnimation;
 	m_Animation->SetFPS(10);
 	m_Animation->AddAnimation(Idle, 10);
 	m_Animation->AddAnimation(Run, 10);
@@ -23,7 +23,7 @@ void PlayerScript::OnCreate()
 
 	// Foot sensor detects if player is on the ground
 	proton::UUID playerUUID = m_Entity.GetUUID();
-	m_FootSensor = GetScene()->FindByTag("FootSensor");
+	m_FootSensor = m_Entity.GetScene()->FindByTag("FootSensor");
 	if (m_FootSensor)
 	{
 		auto& bc = m_FootSensor.GetComponent<BoxColliderComponent>();
@@ -76,12 +76,12 @@ void PlayerScript::OnUpdate(float ts)
 		m_Direction = Right;
 		if (m_IsAttacking) // Walking while attacking
 		{
-			SetVelocityX(m_PlayerSpeed / 2);
+			m_Entity.SetVelocityX(m_PlayerSpeed / 2);
 			m_Animation->SetMirrorFlip(false);
 		}
 		else // Running
 		{
-			SetVelocityX(m_PlayerSpeed);
+			m_Entity.SetVelocityX(m_PlayerSpeed);
 			if (!m_IsJumping)
 				m_Animation->StartAnimation(Run);
 			m_Animation->SetMirrorFlip(false);
@@ -92,12 +92,12 @@ void PlayerScript::OnUpdate(float ts)
 		m_Direction = Left;
 		if (m_IsAttacking) // Walking while attacking
 		{
-			SetVelocityX(-m_PlayerSpeed / 2);
+			m_Entity.SetVelocityX(-m_PlayerSpeed / 2);
 			m_Animation->SetMirrorFlip(true);
 		}
 		else // Running
 		{
-			SetVelocityX(-m_PlayerSpeed);
+			m_Entity.SetVelocityX(-m_PlayerSpeed);
 			if (!m_IsJumping)
 				m_Animation->StartAnimation(Run);
 			m_Animation->SetMirrorFlip(true);
@@ -105,7 +105,7 @@ void PlayerScript::OnUpdate(float ts)
 	}
 	else  
 	{
-		SetVelocityX(0.0f);
+		m_Entity.SetVelocityX(0.0f);
 		if (!m_IsAttacking && !m_IsJumping) // Idle
 			m_Animation->SetAnimation(Idle, m_Direction);
 	}
@@ -126,7 +126,7 @@ void PlayerScript::OnUpdate(float ts)
 		{
 			m_IsJumping = true;
 			m_JumpDelay = 0.1f;
-			ApplyImpulse({ 0.0f,  m_JumpForce });
+			m_Entity.ApplyImpulse({ 0.0f,  m_JumpForce });
 		}
 	}
 	// Set jumping / falling animation

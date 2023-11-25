@@ -1,41 +1,75 @@
+// Event interface and Event Dispatcher
+// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Events/Event.h
+//
 #pragma once
 #include "pch.h"
 
 namespace proton {
 
-	enum class EventType {
-		WindowResized, WindowClosed,
+	// Events in Hazel are currently blocking, meaning when an event occurs it
+	// immediately gets dispatched and must be dealt with right then an there.
+	// For the future, a better strategy might be to buffer events in an event
+	// bus and process them during the "event" part of the update stage.
+
+	enum class EventType
+	{
+		None = 0,
+		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
-	class Event 
+	enum EventCategory
 	{
-	public:
-		virtual EventType GetEventType()	const = 0;
-		virtual std::string GetEventName()	const = 0;
-		virtual std::string ToString()		const { return GetEventName(); }
-
-	public:
-		bool m_Handled = false;
+		None = 0,
+		EventCategoryWindow   = (1 << 1),
+		EventCategoryKeyboard = (1 << 2),
+		EventCategoryMouse    = (1 << 4),
 	};
 
-#define EVENT_CLASS_TYPE(type) \
-	static EventType GetStaticType() { return EventType::type; } \
-	EventType GetEventType()	const override	{ return GetStaticType(); } \
-	std::string GetEventName()	const override	{ return #type; } 
-								
+#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
+								virtual EventType GetEventType() const override { return GetStaticType(); }\
+								virtual const char* GetName() const override { return #type; }
+
+#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+
+	class Event
+	{
+	public:
+		virtual ~Event() = default;
+
+		bool Handled = false;
+
+		virtual EventType GetEventType() const = 0;
+		virtual const char* GetName() const = 0;
+		virtual int GetCategoryFlags() const = 0;
+		virtual std::string ToString() const { return GetName(); }
+
+		bool IsInCategory(EventCategory category)
+		{
+			return GetCategoryFlags() & category;
+		}
+	};
+
 	class EventDispatcher
 	{
 	public:
-		EventDispatcher(Event& event) : m_Event(event) {}
-
-		template<typename T, typename F>
-		void Dispatch(const F& function) {
-			if (m_Event.GetEventType() == T::GetStaticType())
-				m_Event.m_Handled |= function(static_cast<T&>(m_Event));
+		EventDispatcher(Event& event)
+			: m_Event(event)
+		{
 		}
 
+		// F will be deduced by the compiler
+		template<typename T, typename F>
+		bool Dispatch(const F& func)
+		{
+			if (m_Event.GetEventType() == T::GetStaticType())
+			{
+				m_Event.Handled |= func(static_cast<T&>(m_Event));
+				return true;
+			}
+			return false;
+		}
 	private:
 		Event& m_Event;
 	};
@@ -44,4 +78,5 @@ namespace proton {
 	{
 		return os << e.ToString();
 	}
+
 }

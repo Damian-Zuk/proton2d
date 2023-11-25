@@ -1,11 +1,11 @@
 #pragma once
 
-#include "proton/Core/UUID.h"
-#include "proton/Graphics/Sprite.h"
-#include "proton/Graphics/NineSliceSprite.h"
-#include "proton/Graphics/Camera.h"
-#include "proton/Graphics/SpriteAnimation.h"
-#include "proton/Scene/Physics.h"
+#include "Proton/Core/UUID.h"
+#include "Proton/Graphics/Sprite.h"
+#include "Proton/Graphics/ResizableSprite.h"
+#include "Proton/Graphics/Camera.h"
+#include "Proton/Graphics/SpriteAnimation.h"
+#include "Proton/Physics/PhysicsCommon.h"
 
 #include <entt/entity/entity.hpp>
 
@@ -44,15 +44,15 @@ namespace proton {
 
 	struct SpriteComponent
 	{
-		proton::Sprite Sprite;
+		Sprite Sprite;
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 		float TilingFactor = 1.0f;
 	};
 
-	struct NineSliceSpriteComponent
+	struct ResizableSpriteComponent
 	{
-		NineSliceSprite NineSliceSprite;
+		ResizableSprite ResizableSprite;
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
 	};

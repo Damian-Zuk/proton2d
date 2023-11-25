@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "proton/Scene/PrefabManager.h"
-#include "proton/Assets/SceneSerializer.h"
-#include "proton/Core/Utils.h"
+#include "Proton/Scene/PrefabManager.h"
+#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Utils/Utils.h"
 
 #include <fstream>
-#if PROTON_EDITOR
-#include "proton/Editor/EditorOverlay.h"
+#ifdef PT_EDITOR
+#include "Proton/Editor/EditorLayer.h"
 #endif
 
 namespace proton {
@@ -24,7 +24,7 @@ namespace proton {
 	void PrefabManager::ReloadAllPrefabs()
 	{
 		s_Instance->m_PrefabsJsonData.clear();
-		for (const auto& prefabFile : Utils::ScanDirectoryRecursive("prefabs", { ".prefab" }, false))
+		for (const auto& prefabFile : Utils::ScanDirectoryRecursive("content/prefabs", { ".prefab.json" }, false))
 			LoadPrefab(prefabFile);
 	}
 
@@ -34,14 +34,14 @@ namespace proton {
 		json jsonData = serializer.SerializeEntity(entity);
 		std::string tag = jsonData["Tag"];
 		s_Instance->m_PrefabsJsonData[tag] = jsonData;
-		std::ofstream file("prefabs/" + tag + ".prefab");
+		std::ofstream file("content/prefabs/" + tag + ".prefab.json");
 		file << jsonData.dump(4);
 		file.close();
 	}
 
 	bool PrefabManager::LoadPrefab(const std::string& prefabPath)
 	{
-		std::string rawData = Utils::ReadFile("prefabs/" + prefabPath + ".prefab");
+		std::string rawData = Utils::ReadFile("content/prefabs/" + prefabPath + ".prefab.json");
 		if (rawData.size())
 		{
 			json jsonData = json::parse(rawData);
@@ -56,7 +56,7 @@ namespace proton {
 	{
 		if (Exists(prefabPath))
 		{
-			if (remove(("prefabs/" + prefabPath + ".prefab").c_str()) == 0)
+			if (remove(("content/prefabs/" + prefabPath + ".prefab.json").c_str()) == 0)
 			{
 				s_Instance->m_PrefabsJsonData.erase(prefabPath);
 				return true;
@@ -72,7 +72,7 @@ namespace proton {
 
 	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabPath)
 	{
-		assert(Exists(prefabPath) && "Prefab not loaded");
+		PT_ASSERT(Exists(prefabPath), "Prefab not loaded");
 		SceneSerializer serializer(scene);
 		const json& prefabData = s_Instance->m_PrefabsJsonData.at(prefabPath);
 		Entity entity = serializer.DeserializeEntity(prefabData, false);

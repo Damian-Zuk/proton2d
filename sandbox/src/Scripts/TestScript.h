@@ -10,15 +10,15 @@ namespace proton {
 
 		virtual void OnCreate() override
 		{
-			m_Body = GetBox2DRigidbody();
-			auto& bc = GetComponent<BoxColliderComponent>();
+			m_Body = m_Entity.GetRuntimeBody();
+			auto& bc = m_Entity.GetComponent<BoxColliderComponent>();
 
 			bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContactInfo info)
 			{
-				Entity e = GetScene()->FindByID(info.OtherUUID);
+				Entity e = m_Entity.GetScene()->FindByID(info.OtherUUID);
 				auto& sprite = e.GetComponent<SpriteComponent>();
 				if (sprite.Color != glm::vec4{1.0f})
-					GetComponent<SpriteComponent>().Color = sprite.Color;
+					m_Entity.GetComponent<SpriteComponent>().Color = sprite.Color;
 			};
 		}
 

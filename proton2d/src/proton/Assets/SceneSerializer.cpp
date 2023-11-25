@@ -1,15 +1,12 @@
 #include "pch.h"
-#include "proton/Assets/SceneSerializer.h"
-#include "proton/Assets/AssetManager.h"
-#include "proton/Scene/EntityScript.h"
-#include "proton/Scene/ScriptFactory.h"
-#include "proton/Scene/Scene.h"
-#include "proton/Scene/Entity.h"
-#include "proton/Core/Utils.h"
-
-#if PROTON_EDITOR
-#include "proton/Editor/EditorOverlay.h"
-#endif
+#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Assets/AssetManager.h"
+#include "Proton/Scripting/EntityScript.h"
+#include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scene/Scene.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Utils/Utils.h"
+#include "Proton/Physics/PhysicsWorld.h"
 
 #include <fstream>
 
@@ -33,15 +30,16 @@ namespace proton {
 
 	bool SceneSerializer::Serialize(const std::string& filepath)
 	{
-		assert(m_Scene && "Scene context not set!");
-		json jsonObj;
-		jsonObj["SceneName"] = m_Scene->m_SceneName;
-		jsonObj["EnablePhysics"] = m_Scene->m_EnablePhysics;
-		jsonObj["GravityForce"] = m_Scene->m_WorldGravity;
-		jsonObj["VelocityIterations"] = m_Scene->m_PhysicsVelocityIterations;
-		jsonObj["PositionIterations"] = m_Scene->m_PhysicsPositionIterations;
+		PT_ASSERT(m_Scene, "Scene context not set!");
 		const auto& c = m_Scene->m_ClearColor;
-		jsonObj["ScreenClearColor"] = { c.r, c.g, c.b, c.a };
+		json jsonObj = {
+			{ "SceneName",          m_Scene->m_SceneName },
+			{ "EnablePhysics",      m_Scene->m_EnablePhysics },
+			{ "GravityForce",       m_Scene->m_PhysicsWorld->m_Gravity },
+			{ "VelocityIterations", m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations },
+			{ "PositionIterations", m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations },
+			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } }
+		};
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
 		if (primaryCameraEntity.IsValid())
@@ -50,27 +48,20 @@ namespace proton {
 			jsonObj["PrimaryCameraEntity"] = id;
 		}
 
-//#if PROTON_EDITOR
-//		const auto& camera = EditorOverlay::Get()->GetCamera();
-//		const auto& cameraPos = camera.GetPosition();
-//		jsonObj["EditorCameraPosition"] = { cameraPos.x, cameraPos.y };
-//		jsonObj["EditorCameraZoom"] = camera.GetBaseCamera()->GetZoomLevel();
-//#endif
-
 		m_Scene->m_Registry.each([&](auto id)
 			{
-				Entity entity{ m_Scene, id };
+				Entity entity{ id, m_Scene };
 				auto& relationship = entity.GetComponent<RelationshipComponent>();
 				if (relationship.Parent == entt::null)
 					jsonObj["Entities"].push_back(SerializeEntity(entity));
 			});
 
 		std::ofstream out(filepath);
-#if PROTON_SERIALIZER_INDENT_JSON
+	#if PROTON_SERIALIZER_INDENT_JSON
 		out << jsonObj.dump(4);
-#else
+	#else
 		out << jsonObj;
-#endif
+	#endif
 		out.close();
 		return true;
 	}
@@ -87,9 +78,9 @@ namespace proton {
 			json jsonObj = json::parse(jsonData);
 			m_Scene->m_SceneName = jsonObj["SceneName"];
 			m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
-			m_Scene->m_WorldGravity = jsonObj["GravityForce"];
-			m_Scene->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
-			m_Scene->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
+			m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
+			m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
+			m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
 			json& c = jsonObj["ScreenClearColor"];
 			m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
 
@@ -102,16 +93,6 @@ namespace proton {
 				UUID id{ jsonObj["PrimaryCameraEntity"] };
 				m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
 			}
-
-#if PROTON_EDITOR
-			if (jsonObj.contains("EditorCameraPosition"))
-			{
-				auto& camera = EditorOverlay::Get()->GetCamera();
-				camera.m_Position.x = jsonObj["EditorCameraPosition"][0];
-				camera.m_Position.y = jsonObj["EditorCameraPosition"][1];
-				camera.m_ZoomLevelTarget = jsonObj["EditorCameraZoom"];
-			}
-#endif
 
 			return true;
 		}
@@ -130,7 +111,7 @@ namespace proton {
 		if (serializeUUID)
 		{
 			auto& uuid = entity.GetUUID();
-			jsonObj["ID"] = (uint64_t)uuid;
+			jsonObj["UUID"] = (uint64_t)uuid;
 		}
 
 		// Serialize TagComponent
@@ -140,9 +121,12 @@ namespace proton {
 		// Serialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
 		auto& position = transform.Position;
-		jsonObj["Transform"]["Position"] = { round(position.x), round(position.y), round(position.z) };
-		jsonObj["Transform"]["Rotation"] = round(transform.Rotation);
-		jsonObj["Transform"]["Scale"] = { round(transform.Scale.x), round(transform.Scale.y) };
+		jsonObj["Transform"] = 
+		{
+			{ "Position", { round(position.x), round(position.y), round(position.z) } },
+			{ "Rotation", round(transform.Rotation) },
+			{ "Scale", { round(transform.Scale.x), round(transform.Scale.y) } }
+		};
 
 		// Serialize SpriteComponent
 		if (entity.HasComponent<SpriteComponent>())
@@ -150,69 +134,76 @@ namespace proton {
 			auto& spriteComponent = entity.GetComponent<SpriteComponent>();
 			auto& sprite = spriteComponent.Sprite;
 			auto& color = spriteComponent.Color;
-
 			if (sprite)
 			{
-				jsonObj["Sprite"]["Texture"] = sprite.GetTexture()->GetPath();
-				jsonObj["Sprite"]["FilterMode"] = sprite.GetTexture()->GetFilterMode();
-				jsonObj["Sprite"]["Flip"] = { sprite.m_MirrorFlipX, sprite.m_MirrorFlipY };
+				jsonObj["Sprite"] = {
+					{ "Texture",    sprite.GetTexture()->GetPath() },
+					{ "FilterMode", sprite.GetTexture()->GetFilterMode() },
+					{ "Flip", { sprite.m_MirrorFlipX, sprite.m_MirrorFlipY } }
+				};
 
 				if (sprite.m_Spritesheet)
 				{
-					jsonObj["Sprite"]["TilePos"] = { sprite.m_TilePos.x, sprite.m_TilePos.y };
+					jsonObj["Sprite"]["TilePos"] = { sprite.m_TilePos.x, sprite.m_TilePos.y }; 
 					jsonObj["Sprite"]["TileSize"] = { sprite.m_TileSize.x, sprite.m_TileSize.y };
 				}
 			}
-
 			jsonObj["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
 		}
 		
-		// Serialize NineSliceSpriteComponent
-		if (entity.HasComponent<NineSliceSpriteComponent>())
+		// Serialize ResizableSpriteComponent
+		if (entity.HasComponent<ResizableSpriteComponent>())
 		{
-			auto& component = entity.GetComponent<NineSliceSpriteComponent>();
-			auto& sprite = component.NineSliceSprite;
+			auto& component = entity.GetComponent<ResizableSpriteComponent>();
+			auto& sprite = component.ResizableSprite;
 			auto& spritesheet = sprite.GetSpritesheet();
-			
+			const auto& col = component.Color;
+
+			jsonObj["ResizableSprite"] = {
+				{ "Width",     sprite.m_Width },
+				{ "Height",    sprite.m_Width },
+				{ "TileScale", sprite.m_TileScale },
+				{ "Edges",     sprite.GetEdges() },
+				{ "Color", { col.r, col.g, col.b, col.a } }
+			};
+
 			if (spritesheet)
-				jsonObj["NineSliceSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
-
-			jsonObj["NineSliceSprite"]["Width"] = sprite.m_Width;
-			jsonObj["NineSliceSprite"]["Height"] = sprite.m_Width;
-			jsonObj["NineSliceSprite"]["BlockBorders"] = sprite.GetBlockBorders();
-			jsonObj["NineSliceSprite"]["TileScale"] = sprite.m_TileScale;
-			const auto& c = component.Color;
-			jsonObj["NineSliceSprite"]["Color"] = { c.r, c.g, c.b, c.a };
-			
-		}
-
-		// Serialize CameraComponent
-		if (entity.HasComponent<CameraComponent>())
-		{
-			auto& camera = entity.GetComponent<CameraComponent>();
-			jsonObj["Camera"]["ZoomLevel"] = camera.Camera->GetZoomLevel();
-			jsonObj["Camera"]["PositionOffset"] = { camera.PositionOffset.x, camera.PositionOffset.y };
+				jsonObj["ResizableSprite"]["Spritesheet"] = spritesheet->GetTexture()->GetPath();
 		}
 
 		// Serialize RigidbodyComponent
 		if (entity.HasComponent<RigidbodyComponent>())
 		{
 			auto& rb = entity.GetComponent<RigidbodyComponent>();
-			jsonObj["Rigidbody"]["Type"] = rb.Type;
-			jsonObj["Rigidbody"]["FixedRotation"] = rb.FixedRotation;
+			jsonObj["Rigidbody"] = {
+				{ "Type", rb.Type },
+				{ "FixedRotation", rb.FixedRotation }
+			};
 		}
 
 		// Serialize BoxColliderComponent
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
 			auto& collider = entity.GetComponent<BoxColliderComponent>();
-			jsonObj["BoxCollider"]["Size"] = { collider.Size.x, collider.Size.y };
-			jsonObj["BoxCollider"]["Offset"] = { collider.Offset.x, collider.Offset.y };
-			jsonObj["BoxCollider"]["Friction"] = collider.Material.Friction;
-			jsonObj["BoxCollider"]["Restitution"] = collider.Material.Restitution;
-			jsonObj["BoxCollider"]["RestitutionThreshold"] = collider.Material.RestitutionThreshold;
-			jsonObj["BoxCollider"]["Density"] = collider.Material.Density;
-			jsonObj["BoxCollider"]["IsSensor"] = collider.IsSensor;
+			jsonObj["BoxCollider"] = {
+				{ "Size",               { collider.Size.x,   collider.Size.y } },
+				{ "Offset",             { collider.Offset.x, collider.Offset.y } },
+				{ "Friction",             collider.Material.Friction },
+				{ "Restitution",          collider.Material.Restitution },
+				{ "RestitutionThreshold", collider.Material.RestitutionThreshold },
+				{ "Density",              collider.Material.Density },
+				{ "IsSensor",             collider.IsSensor }
+			};
+		}
+
+		// Serialize CameraComponent
+		if (entity.HasComponent<CameraComponent>())
+		{
+			auto& camera = entity.GetComponent<CameraComponent>();
+			jsonObj["Camera"] = {
+				{ "ZoomLevel", camera.Camera->GetZoomLevel() },
+				{ "PositionOffset", { camera.PositionOffset.x, camera.PositionOffset.y } },
+			};
 		}
 
 		// Serialize ScriptComponent
@@ -291,10 +282,10 @@ namespace proton {
 			entt::entity current = relationship.First;
 			while (current != entt::null)
 			{
-				Entity child{ entity.m_Scene, current };
-				auto& rel = child.GetComponent<RelationshipComponent>();
+				Entity child{ current, entity.m_Scene };
+				auto& rc = child.GetComponent<RelationshipComponent>();
 				jsonObj["Entities"].push_back(SerializeEntity(child, serializeUUID));
-				current = rel.Next;
+				current = rc.Next;
 			}
 		}
 
@@ -308,8 +299,8 @@ namespace proton {
 	Entity SceneSerializer::DeserializeEntity(json jsonObj, bool deserializeUUID)
 	{
 		Entity entity = deserializeUUID ? 
-			m_Scene->CreateEntityWithID((uint64_t)jsonObj["ID"], jsonObj["Tag"])
-			: m_Scene->CreateEntity(jsonObj["Tag"]);
+			m_Scene->CreateEntityWithID((uint64_t)jsonObj["UUID"], jsonObj["Tag"]) :
+			m_Scene->CreateEntity(jsonObj["Tag"]);
 
 		// Deserialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
@@ -347,13 +338,13 @@ namespace proton {
 			spriteComponent.Color = { color[0], color[1], color[2], color[3] };
 		}
 
-		// Deserialize NineSliceSpriteComponent
-		if (jsonObj.contains("NineSliceSprite"))
+		// Deserialize ResizableSpriteComponent
+		if (jsonObj.contains("ResizableSprite"))
 		{
-			json& jsonData = jsonObj["NineSliceSprite"];
-			auto& component = entity.AddComponent<NineSliceSpriteComponent>();
-			auto& sprite = component.NineSliceSprite;
-			sprite.m_BlockBorders = jsonData["BlockBorders"];
+			json& jsonData = jsonObj["ResizableSprite"];
+			auto& component = entity.AddComponent<ResizableSpriteComponent>();
+			auto& sprite = component.ResizableSprite;
+			sprite.m_Edges = jsonData["Edges"];
 			sprite.m_TileScale = jsonData["TileScale"];
 			auto& c = jsonData["Color"];
 			component.Color = { c[0], c[1], c[2], c[3] };
@@ -361,7 +352,7 @@ namespace proton {
 			if (jsonData.contains("Spritesheet"))
 				sprite.SetSpritesheet(AssetManager::GetSpritesheet(jsonData["Spritesheet"]));
 
-			sprite.Refresh();
+			sprite.Generate();
 		}
 
 		// Deserialize CameraComponent
@@ -396,8 +387,8 @@ namespace proton {
 			auto& rb = entity.AddComponent<RigidbodyComponent>();
 			rb.Type = jsonObj["Rigidbody"]["Type"];
 			rb.FixedRotation = jsonObj["Rigidbody"]["FixedRotation"];
-			if (m_Scene->GetSceneState() != SceneState::Edit)
-				m_Scene->CreateBox2DRuntimeBody(entity);
+			if (m_Scene->GetSceneState() != SceneState::Stop)
+				m_Scene->m_PhysicsWorld->CreateRuntimeBody(entity);
 		}
 
 		// Deserialize scripts
