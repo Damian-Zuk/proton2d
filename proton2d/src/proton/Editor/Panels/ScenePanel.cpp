@@ -1,8 +1,8 @@
 #include "pch.h"
-#include "proton/Editor/Panels/ScenePanel.h"
-#include "proton/Editor/EditorLayer.h"
-#include "proton/Scene/SceneManager.h"
-#include "proton/Utils/Utils.h"
+#include "Proton/Editor/Panels/ScenePanel.h"
+#include "Proton/Editor/EditorLayer.h"
+#include "Proton/Scene/SceneManager.h"
+#include "Proton/Utils/Utils.h"
 
 #include <imgui.h>
 
@@ -45,7 +45,7 @@ namespace proton {
 		ImGui::Dummy({ 0, 5 }); ImGui::Separator(); ImGui::Dummy({ 0, 1 });
 		std::string sceneText = m_ActiveScene->m_SceneFilepath;
 		if (m_SavedSceneTextTimer > 0.0f)
-			sceneText = "Saved: " + sceneText;
+			sceneText = "[Saved] " + sceneText;
 		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize(sceneText.c_str()).x) / 2);
 		ImGui::Text(sceneText.c_str());
 		ImGui::Dummy({ 0, 3 });
@@ -114,10 +114,7 @@ namespace proton {
 
 	void ScenePanel::OnUpdate(float ts) 
 	{
-		if (m_SavedSceneTextTimer == 2.0f)
-			m_SavedSceneTextTimer = 1.999f;
-		else
-			m_SavedSceneTextTimer = glm::max(m_SavedSceneTextTimer - ts, 0.0f);
+		m_SavedSceneTextTimer = glm::max(m_SavedSceneTextTimer - ts, 0.0f);
 	}
 
 	static std::string GetSceneFilename(const std::string& filepath)

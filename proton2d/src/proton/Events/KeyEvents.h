@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
-#include "proton/Events/Event.h"
-#include "proton/Core/KeyCodes.h"
+#include "Proton/Events/Event.h"
+#include "Proton/Core/KeyCodes.h"
 
 namespace proton {
 

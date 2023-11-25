@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "proton/Editor/Panels/PrefabPanel.h"
-#include "proton/Scene/PrefabManager.h"
+#include "Proton/Editor/Panels/PrefabPanel.h"
+#include "Proton/Scene/PrefabManager.h"
 
 #include <imgui.h>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "proton/Core/Base.h"
-#include "proton/Graphics/Camera.h"
-#include "proton/Events/Event.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Graphics/Camera.h"
+#include "Proton/Events/Event.h"
 
 namespace proton {
 

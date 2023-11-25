@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "proton/Graphics/Spritesheet.h"
+#include "Proton/Graphics/Spritesheet.h"
 
 namespace proton {
 

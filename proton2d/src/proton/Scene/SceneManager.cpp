@@ -1,12 +1,12 @@
 #include "pch.h"
-#include "proton/Scene/SceneManager.h"
-#include "proton/Scene/Scene.h"
-#include "proton/Assets/SceneSerializer.h"
-#include "proton/Core/Application.h"
-#include "proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/Scene.h"
+#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
 
 #ifdef PT_EDITOR
-#include "proton/Editor/EditorLayer.h"
+#include "Proton/Editor/EditorLayer.h"
 #endif
 
 namespace proton {

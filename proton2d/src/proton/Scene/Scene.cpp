@@ -1,16 +1,16 @@
 #include "pch.h"
-#include "proton/Scene/Scene.h"
-#include "proton/Scene/Entity.h"
-#include "proton/Graphics/Renderer/Renderer.h"
-#include "proton/Scripting/EntityScript.h"
-#include "proton/Core/Application.h"
-#include "proton/Core/Input.h"
-#include "proton/Assets/SceneSerializer.h"
-#include "proton/Utils/Utils.h"
-#include "proton/Physics/PhysicsWorld.h"
+#include "Proton/Scene/Scene.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Scripting/EntityScript.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Core/Input.h"
+#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Utils/Utils.h"
+#include "Proton/Physics/PhysicsWorld.h"
 
 #ifdef PT_EDITOR
-#include "proton/Editor/EditorLayer.h"
+#include "Proton/Editor/EditorLayer.h"
 #include <imgui.h>
 #endif
 

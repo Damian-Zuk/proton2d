@@ -1,5 +1,5 @@
 #pragma once
-#include "proton/Graphics/Renderer/Texture.h"
+#include "Proton/Graphics/Renderer/Texture.h"
 
 #include <glm/glm.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
-#include "proton/Core/UUID.h"
-#include "proton/Scene/Entity.h"
+#include "Proton/Core/UUID.h"
+#include "Proton/Scene/Entity.h"
 
 class b2Body;
 

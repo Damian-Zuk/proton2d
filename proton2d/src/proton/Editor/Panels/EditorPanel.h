@@ -1,5 +1,5 @@
 #pragma once
-#include "proton/Scene/Entity.h"
+#include "Proton/Scene/Entity.h"
 
 namespace proton {
 

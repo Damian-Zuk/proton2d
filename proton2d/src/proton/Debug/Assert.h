@@ -4,8 +4,8 @@
 // 
 #pragma once
 
-#include "proton/Core/Base.h"
-#include "proton/Debug/Logger.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Debug/Logger.h"
 #include <filesystem>
 
 #ifdef PT_ENABLE_ASSERTS

@@ -5,7 +5,7 @@
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLBuffer.cpp
 //
 #include "pch.h"
-#include "proton/Graphics/Renderer/Buffer.h"
+#include "Proton/Graphics/Renderer/Buffer.h"
 
 #include <glad/glad.h>
 

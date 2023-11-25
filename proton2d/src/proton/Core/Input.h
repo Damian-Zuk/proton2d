@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proton/Core/KeyCodes.h"
+#include "Proton/Core/KeyCodes.h"
 
 namespace proton {
 

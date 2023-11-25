@@ -1,11 +1,11 @@
 #pragma once
 
-#include "proton/Core/UUID.h"
-#include "proton/Graphics/Sprite.h"
-#include "proton/Graphics/ResizableSprite.h"
-#include "proton/Graphics/Camera.h"
-#include "proton/Graphics/SpriteAnimation.h"
-#include "proton/Physics/PhysicsCommon.h"
+#include "Proton/Core/UUID.h"
+#include "Proton/Graphics/Sprite.h"
+#include "Proton/Graphics/ResizableSprite.h"
+#include "Proton/Graphics/Camera.h"
+#include "Proton/Graphics/SpriteAnimation.h"
+#include "Proton/Physics/PhysicsCommon.h"
 
 #include <entt/entity/entity.hpp>
 

@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "proton/Scene/Entity.h"
-#include "proton/Scripting/EntityScript.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Scripting/EntityScript.h"
 
 #include <box2d/b2_body.h>
 

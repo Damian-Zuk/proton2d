@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "proton/Platform/Windows/WindowsInput.h"
-#include "proton/Core/Application.h"
+#include "Proton/Platform/Windows/WindowsInput.h"
+#include "Proton/Core/Application.h"
 
 #include <GLFW/glfw3.h>
 

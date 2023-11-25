@@ -4,7 +4,7 @@
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLTexture.cpp
 //
 #include "pch.h"
-#include "proton/Graphics/Renderer/Texture.h"
+#include "Proton/Graphics/Renderer/Texture.h"
 
 #include <glad/glad.h>
 #include <stb_image.h>

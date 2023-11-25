@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "proton/Editor/Panels/SceneHierarchyPanel.h"
-#include "proton/Editor/EditorLayer.h"
+#include "Proton/Editor/Panels/SceneHierarchyPanel.h"
+#include "Proton/Editor/EditorLayer.h"
 
 #include <imgui.h>
 

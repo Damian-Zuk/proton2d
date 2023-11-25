@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "proton/Assets/AssetManager.h"
-#include "proton/Utils/Utils.h"
+#include "Proton/Assets/AssetManager.h"
+#include "Proton/Utils/Utils.h"
 
 namespace proton {
 

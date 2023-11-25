@@ -3,7 +3,7 @@
 // From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.h
 // 
 #pragma once
-#include "proton/Core/Base.h"
+#include "Proton/Core/Base.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/string_cast.hpp"

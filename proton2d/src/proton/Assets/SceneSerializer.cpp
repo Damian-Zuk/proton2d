@@ -1,12 +1,12 @@
 #include "pch.h"
-#include "proton/Assets/SceneSerializer.h"
-#include "proton/Assets/AssetManager.h"
-#include "proton/Scripting/EntityScript.h"
-#include "proton/Scripting/ScriptFactory.h"
-#include "proton/Scene/Scene.h"
-#include "proton/Scene/Entity.h"
-#include "proton/Utils/Utils.h"
-#include "proton/Physics/PhysicsWorld.h"
+#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Assets/AssetManager.h"
+#include "Proton/Scripting/EntityScript.h"
+#include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scene/Scene.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Utils/Utils.h"
+#include "Proton/Physics/PhysicsWorld.h"
 
 #include <fstream>
 

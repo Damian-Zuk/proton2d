@@ -1,7 +1,7 @@
 #pragma once
-#include "proton/Editor/EditorCamera.h"
-#include "proton/Core/AppLayer.h"
-#include "proton/Scene/Entity.h"
+#include "Proton/Editor/EditorCamera.h"
+#include "Proton/Core/AppLayer.h"
+#include "Proton/Scene/Entity.h"
 
 namespace proton {
 

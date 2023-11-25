@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proton/Graphics/Sprite.h"
+#include "Proton/Graphics/Sprite.h"
 
 #include <unordered_map>
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "proton/Core/UUID.h"
+#include "Proton/Core/UUID.h"
 
 #include <functional>
 #include <box2d/b2_contact.h>

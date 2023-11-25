@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "proton/Graphics/ResizableSprite.h"
-#include "proton/Scene/Components.h"
-#include "proton/Utils/Utils.h"
+#include "Proton/Graphics/ResizableSprite.h"
+#include "Proton/Scene/Components.h"
+#include "Proton/Utils/Utils.h"
 
 namespace proton {
 

@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "proton/Utils/Utils.h"
-#include "proton/Core/Application.h"
+#include "Proton/Utils/Utils.h"
+#include "Proton/Core/Application.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>

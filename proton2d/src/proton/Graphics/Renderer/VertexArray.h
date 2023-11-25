@@ -6,8 +6,8 @@
 //
 #pragma once
 
-#include "proton/Core/Base.h"
-#include "proton/Graphics/Renderer/Buffer.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Graphics/Renderer/Buffer.h"
 
 namespace proton {
 

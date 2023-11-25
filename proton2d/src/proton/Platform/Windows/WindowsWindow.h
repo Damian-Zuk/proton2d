@@ -4,7 +4,7 @@
 //
 #pragma once
 
-#include "proton/Core/Window.h"
+#include "Proton/Core/Window.h"
 
 #include <GLFW/glfw3.h>
 

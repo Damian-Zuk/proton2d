@@ -1,28 +1,28 @@
 #pragma once
 
-#include "proton/Core/Application.h"
-#include "proton/Core/Input.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Core/Input.h"
 
-#include "proton/Debug/Assert.h"
-#include "proton/Debug/Instrumentor.h"
+#include "Proton/Debug/Assert.h"
+#include "Proton/Debug/Instrumentor.h"
 
-#include "proton/Utils/Random.h"
-#include "proton/Utils/Utils.h"
+#include "Proton/Utils/Random.h"
+#include "Proton/Utils/Utils.h"
 
-#include "proton/Assets/AssetManager.h"
-#include "proton/Assets/SceneSerializer.h"
+#include "Proton/Assets/AssetManager.h"
+#include "Proton/Assets/SceneSerializer.h"
 
-#include "proton/Events/KeyEvents.h"
-#include "proton/Events/MouseEvents.h"
-#include "proton/Events/WindowEvents.h"
+#include "Proton/Events/KeyEvents.h"
+#include "Proton/Events/MouseEvents.h"
+#include "Proton/Events/WindowEvents.h"
 
-#include "proton/Scene/Entity.h"
-#include "proton/Scene/Components.h"
-#include "proton/Scripting/EntityScript.h"
-#include "proton/Scene/SceneManager.h"
-#include "proton/Scene/PrefabManager.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Scene/Components.h"
+#include "Proton/Scripting/EntityScript.h"
+#include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/PrefabManager.h"
 
-#include "proton/Graphics/SpriteAnimation.h"
+#include "Proton/Graphics/SpriteAnimation.h"
 
 #ifdef PT_EDITOR
 #include <imgui/imgui.h>

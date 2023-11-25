@@ -1,8 +1,8 @@
 #pragma once
 
-#include "proton/Editor/Panels/EditorPanel.h"
-#include "proton/Core/Base.h"
-#include "proton/Scene/Entity.h"
+#include "Proton/Editor/Panels/EditorPanel.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Scene/Entity.h"
 
 namespace proton {
 

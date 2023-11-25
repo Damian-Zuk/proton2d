@@ -1,9 +1,9 @@
 #pragma once
 
-#include "proton/Core/Base.h"
-#include "proton/Core/Window.h"
-#include "proton/Core/AppLayer.h"
-#include "proton/Editor/EditorLayer.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Core/Window.h"
+#include "Proton/Core/AppLayer.h"
+#include "Proton/Editor/EditorLayer.h"
 
 namespace proton {
 

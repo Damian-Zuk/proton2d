@@ -1,19 +1,19 @@
 #include "pch.h"
-#include "proton/Core/Application.h"
-#include "proton/Core/Input.h"
-#include "proton/Events/WindowEvents.h" 
-#include "proton/Events/KeyEvents.h"
-#include "proton/Events/MouseEvents.h"
-#include "proton/Assets/AssetManager.h"
-#include "proton/Graphics/Renderer/Renderer.h"
-#include "proton/Scripting/ScriptFactory.h"
-#include "proton/Scene/SceneManager.h"
-#include "proton/Scene/PrefabManager.h"
-#include "proton/Utils/Utils.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Core/Input.h"
+#include "Proton/Events/WindowEvents.h" 
+#include "Proton/Events/KeyEvents.h"
+#include "Proton/Events/MouseEvents.h"
+#include "Proton/Assets/AssetManager.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/PrefabManager.h"
+#include "Proton/Utils/Utils.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
-	#include "proton/Platform/Windows/WindowsWindow.h"
-	#include "proton/Platform/Windows/WindowsInput.h"
+	#include "Proton/Platform/Windows/WindowsWindow.h"
+	#include "Proton/Platform/Windows/WindowsInput.h"
 #endif
 
 #ifdef PT_EDITOR

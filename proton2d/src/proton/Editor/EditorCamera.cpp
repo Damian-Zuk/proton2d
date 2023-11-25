@@ -1,10 +1,10 @@
 #include "pch.h"
 
-#include "proton/Editor/EditorCamera.h"
-#include "proton/Core/Input.h"
-#include "proton/Events/MouseEvents.h"
-#include "proton/Core/Application.h"
-#include "proton/Events/WindowEvents.h"
+#include "Proton/Editor/EditorCamera.h"
+#include "Proton/Core/Input.h"
+#include "Proton/Events/MouseEvents.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Events/WindowEvents.h"
 
 #include <imgui.h>
 

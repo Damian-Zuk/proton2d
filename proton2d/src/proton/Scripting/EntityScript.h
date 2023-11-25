@@ -1,6 +1,6 @@
 #pragma once
-#include "proton/Scene/Entity.h"
-#include "proton/Scripting/ScriptFactory.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Scripting/ScriptFactory.h"
 
 // Script class must inherit from EntityScript class.
 // This macro registers script class inside engine ScriptFactory.

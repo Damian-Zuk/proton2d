@@ -4,12 +4,12 @@
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.cpp
 //
 #include "pch.h"
-#include "proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
 
-#include "proton/Graphics/Renderer/Shader.h"
-#include "proton/Graphics/Renderer/UniformBuffer.h"
-#include "proton/Graphics/Renderer/VertexArray.h"
-#include "proton/Graphics/Renderer/Texture.h"
+#include "Proton/Graphics/Renderer/Shader.h"
+#include "Proton/Graphics/Renderer/UniformBuffer.h"
+#include "Proton/Graphics/Renderer/VertexArray.h"
+#include "Proton/Graphics/Renderer/Texture.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>

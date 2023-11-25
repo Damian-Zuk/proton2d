@@ -1,5 +1,5 @@
 #pragma once
-#include "proton/Core/Input.h"
+#include "Proton/Core/Input.h"
 
 namespace proton {
 

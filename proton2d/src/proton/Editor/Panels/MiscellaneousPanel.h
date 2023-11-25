@@ -1,5 +1,5 @@
 #pragma once
-#include "proton/Editor/Panels/EditorPanel.h"
+#include "Proton/Editor/Panels/EditorPanel.h"
 
 namespace proton {
 

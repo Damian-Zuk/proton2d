@@ -4,7 +4,7 @@
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLUniformBuffer.cpp
 //
 #include "pch.h"
-#include "proton/Graphics/Renderer/UniformBuffer.h"
+#include "Proton/Graphics/Renderer/UniformBuffer.h"
 
 #include <glad/glad.h>
 

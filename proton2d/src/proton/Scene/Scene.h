@@ -1,8 +1,8 @@
 #pragma once
 
-#include "proton/Graphics/Camera.h"
-#include "proton/Events/Event.h"
-#include "proton/Core/UUID.h"
+#include "Proton/Graphics/Camera.h"
+#include "Proton/Events/Event.h"
+#include "Proton/Core/UUID.h"
 
 #include <entt/entt.hpp>
 

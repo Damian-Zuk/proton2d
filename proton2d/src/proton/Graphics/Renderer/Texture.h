@@ -5,7 +5,7 @@
 //
 #pragma once
 
-#include "proton/Core/Base.h"
+#include "Proton/Core/Base.h"
 
 // Forward declaration
 typedef unsigned int GLenum;

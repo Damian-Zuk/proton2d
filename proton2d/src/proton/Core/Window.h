@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proton/Core/Base.h"
-#include "proton/Events/Event.h"
+#include "Proton/Core/Base.h"
+#include "Proton/Events/Event.h"
 
 namespace proton {
 

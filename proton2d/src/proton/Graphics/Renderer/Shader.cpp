@@ -4,8 +4,8 @@
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLShader.cpp
 //
 #include "pch.h"
-#include "proton/Graphics/Renderer/Shader.h"
-#include "proton/Utils/Utils.h"
+#include "Proton/Graphics/Renderer/Shader.h"
+#include "Proton/Utils/Utils.h"
 
 #include <filesystem>
 #include <fstream>
