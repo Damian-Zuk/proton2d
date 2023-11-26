@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef PT_EDITOR
 #include "Proton/Editor/Panels/MiscellaneousPanel.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Editor/EditorLayer.h"
@@ -87,7 +88,7 @@ namespace proton {
 
 			uint32_t entitiesCount = m_ActiveScene ? m_ActiveScene->GetEntitiesCount() : 0;
 			uint32_t scriptedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
-			ImGui::Text("Entities: %i (scripted: %i)", entitiesCount, scriptedEntitiesCount);
+			ImGui::Text("Entities: %i (%i scripted)", entitiesCount, scriptedEntitiesCount);
 			ImGui::Text("OpenGL draw calls: %i", Renderer::GetDrawCallsCount());
 			ImGui::TreePop();
 		}
@@ -97,3 +98,5 @@ namespace proton {
 	}
 
 }
+
+#endif PT_EDITOR

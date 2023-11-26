@@ -1,4 +1,5 @@
 #pragma once
+#ifdef PT_EDITOR
 #include "Proton/Editor/Panels/EditorPanel.h"
 
 namespace proton {
@@ -12,11 +13,6 @@ namespace proton {
 	private:
 		void DrawSceneMemoryView();
 
-		// Button functions
-		void CreateNewScene();
-		void OpenScene();
-		void SaveScene();
-		void SaveSceneAs();
 		void StopSceneSimulation();
 
 	private:
@@ -24,3 +20,4 @@ namespace proton {
 	};
 
 }
+#endif // PT_EDITOR

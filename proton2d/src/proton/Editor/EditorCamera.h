@@ -1,4 +1,5 @@
 #pragma once
+#ifdef PT_EDITOR
 
 #include "Proton/Core/Base.h"
 #include "Proton/Graphics/Camera.h"
@@ -19,6 +20,8 @@ namespace proton {
 
 		const glm::vec3& GetPosition() const { return m_Position; }
 
+		void OnViewportResize(float w, float h);
+
 	private:
 		Shared<Camera> m_Camera;
 		
@@ -33,3 +36,4 @@ namespace proton {
 		friend class SceneSerializer;
 	};
 }
+#endif // PT_EDITOR

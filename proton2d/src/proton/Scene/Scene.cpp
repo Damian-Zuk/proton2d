@@ -115,8 +115,10 @@ namespace proton {
 
 	void Scene::Stop()
 	{
-		if (m_SceneState == SceneState::Stop)
+		if (m_SceneState == SceneState::Stop) {
+			PT_CORE_WARN("[Scene::Stop] Scene simulation is already stopped.");
 			return;
+		}
 
 		m_PhysicsWorld->DestroyWorld();
 
@@ -312,13 +314,22 @@ namespace proton {
 
 	void Scene::CacheCursorWorldPosition()
 	{
+#ifdef PT_EDITOR
+		uint32_t width = EditorLayer::s_Instance->m_ViewportSize.x;
+		uint32_t height = EditorLayer::s_Instance->m_ViewportSize.y;
+#else
 		Window& window = Application::Get().GetWindow();
 		uint32_t width = window.GetWidth(), height = window.GetHeight();
+#endif
 		OrthoProjection ortho = GetPrimaryCamera()->GetOrthoProjection();
 		auto& camera = GetPrimaryCameraPosition();
-		auto& [mouseX, mouseY] = Input::GetMousePosition();
-		m_CursorWorldPosition[0] = mouseX / width * ortho.Right * 2.0f + camera.x + ortho.Left;
-		m_CursorWorldPosition[1] = mouseY / height * ortho.Bottom * 2.0f + camera.y + ortho.Top;
+#ifdef PT_EDITOR
+		const glm::vec2& mouse = EditorLayer::s_Instance->m_MousePos;
+#else
+		glm::vec2 mouse = Input::GetMousePosition();
+#endif
+		m_CursorWorldPosition[0] = mouse.x / (float)width * ortho.Right * 2.0f + camera.x + ortho.Left;
+		m_CursorWorldPosition[1] = mouse.y / (float)height * ortho.Bottom * 2.0f + camera.y + ortho.Top;
 	}
 
 	b2Body* Scene::GetRuntimeBody(UUID id)

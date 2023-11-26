@@ -1,6 +1,6 @@
 #pragma once
 
-class GameLayer : public proton::AppLayer
+class MainLayer : public proton::AppLayer
 {
 public:
 	virtual void OnCreate() override;

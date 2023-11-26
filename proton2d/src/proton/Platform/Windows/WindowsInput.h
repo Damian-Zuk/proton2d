@@ -7,7 +7,7 @@ namespace proton {
 	{
 	protected:
 		virtual bool Impl_IsKeyPressed(int keyCode) override;
-		virtual std::pair<float, float> Impl_GetMousePosition() override;
+		virtual glm::vec2 Impl_GetMousePosition() override;
 	};
 
 }

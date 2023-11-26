@@ -15,7 +15,7 @@ namespace proton {
 		}
 	}
 
-	Shared<Texture> AssetManager::LoadTexture(const std::string& filepath)
+	Shared<Texture> AssetManager::LoadTexture(const std::string& filepath, bool autoLoad)
 	{
 		auto texture = MakeShared<Texture>(filepath);
 		if (!texture->IsLoaded()) 

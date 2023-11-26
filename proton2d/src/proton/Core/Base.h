@@ -14,7 +14,6 @@
 #define PT_STRINGIFY_MACRO(x) #x
 
 #ifdef PROTON_DEBUG
-	// debugbreak for assertions
 	#if defined(PROTON_PLATFORM_WINDOWS)
 		#define PT_DEBUGBREAK() __debugbreak()
 	#elif defined(PROTON_PLATFORM_LINUX)

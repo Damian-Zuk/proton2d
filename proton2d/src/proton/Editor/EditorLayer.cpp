@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Panels/MiscellaneousPanel.h"
 #include "Proton/Editor/Panels/InspectorPanel.h"
@@ -7,6 +8,7 @@
 #include "Proton/Editor/Panels/PrefabPanel.h"
 
 #include "Proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Graphics/Renderer/Framebuffer.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/Window.h"
 #include "Proton/Utils/Utils.h"
@@ -40,11 +42,24 @@ namespace proton {
 		ImGui::StyleColorsDark();
 
 		auto& io = ImGui::GetIO();
-		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;// | ImGuiConfigFlags_ViewportsEnable;
 		io.Fonts->AddFontFromFileTTF("editor/content/font/Roboto.ttf", 18);
+		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+		if (m_EnableViewports)
+			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FrameRounding = 7.0f;
+		style.PopupRounding = 7.0f;
+		style.ScrollbarSize = 20.0f;
+		style.WindowBorderSize = 0.0f;
+		style.WindowMenuButtonPosition = ImGuiDir_None;
+		style.ColorButtonPosition;
+
+		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
 
 		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -61,6 +76,12 @@ namespace proton {
 		if (!std::filesystem::exists("editor/cache/"))
 			if (std::filesystem::create_directories("editor/cache/"))
 				PT_CORE_ERROR("[EditorLayer::OnCreate] Could not create cache directory!");
+
+		FramebufferSpecification fbSpec;
+		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
+		fbSpec.Width = 1280;
+		fbSpec.Height = 720;
+		m_Framebuffer = MakeShared<Framebuffer>(fbSpec);
 	}
 
 	void EditorLayer::OnDestroy()
@@ -75,6 +96,33 @@ namespace proton {
 
 	void EditorLayer::OnUpdate(float ts)
 	{
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+		// Resize
+		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
+			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
+		{
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_Camera.OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+			Renderer::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
+
+		m_Framebuffer->Bind();
+		Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
+		Renderer::Clear();
+
+		m_ActiveScene->OnUpdate(ts * Application::Get().GetTimeScale());
+
+		auto [mx, my] = ImGui::GetMousePos();
+		mx -= m_ViewportBounds[0].x;
+		my -= m_ViewportBounds[0].y;
+		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+		m_MousePos = { (int)mx, (int)my };
+
+		DrawCollidersAndSelectionOutline();
+		m_Framebuffer->Unbind();
+
 		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
 
 		// Update editor camera
@@ -107,14 +155,91 @@ namespace proton {
 	void EditorLayer::OnImGuiRender()
 	{
 		//ImGui::ShowDemoWindow(); // Demo window for reference
+
+		// Viewport and dockspace implementation from Hazel
+		// Note: Switch this to true to enable dockspace
+		static bool dockspaceOpen = true;
+		static bool opt_fullscreen_persistant = true;
+		bool opt_fullscreen = opt_fullscreen_persistant;
+		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		if (opt_fullscreen)
+		{
+			ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport->Pos);
+			ImGui::SetNextWindowSize(viewport->Size);
+			ImGui::SetNextWindowViewport(viewport->ID);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		}
+
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("DockSpace", &dockspaceOpen, window_flags);
+		ImGui::PopStyleVar();
+
+		if (opt_fullscreen)
+			ImGui::PopStyleVar(2);
+
+		// DockSpace
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+		float minWinSizeX = style.WindowMinSize.x;
+		style.WindowMinSize.x = 370.0f;
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+
+		style.WindowMinSize.x = minWinSizeX;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		ImGui::Begin("Viewport");
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportOffset = ImGui::GetWindowPos();
+		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+		m_ViewportFocused = ImGui::IsWindowFocused();
+		m_ViewportHovered = ImGui::IsWindowHovered();
+
+		m_BlockEvents = !m_ViewportHovered;
+
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+		uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		m_MenuBar.OnImGuiRender();
 		for (auto& panel : m_EditorPanels) {
 			panel.second->OnImGuiRender();
 		}
-		DrawCollidersAndSelectionOutline();
+
+		ImGui::End();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{
+		if (m_BlockEvents)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
+			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & (io.WantCaptureKeyboard || io.WantTextInput);
+			if (event.Handled)
+				return;
+		}
+
 		m_Camera.OnEvent(event);
 		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
 		EventDispatcher dispatcher(event);
@@ -204,6 +329,7 @@ namespace proton {
 				m_MoveEditorCamera = false;
 
 			ImGui::SetMouseCursor(0);
+
 			return false;
 		});
 	}
@@ -226,7 +352,7 @@ namespace proton {
 				glm::vec4 color = (m_ShowAllColliders && drawSelected) 
 					? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
 				glm::vec3 position = { transform.Position.x + bc.Offset.x, transform.Position.y + bc.Offset.y, zPos };
-				glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
+				glm::vec3 scale    = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
 				glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
 
 				Renderer::DrawQuad(transformMatrix, color);
@@ -239,7 +365,7 @@ namespace proton {
 			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
 			float padding = glm::sqrt(m_ActiveScene->GetPrimaryCamera()->GetZoomLevel()) * 0.05f;
 			glm::vec3 position = { transform.Position.x, transform.Position.y, 0.21f };
-			glm::vec3 scale = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
+			glm::vec3 scale    = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
 			glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
 
 			glm::vec4 color = m_ShowSelectionOutline && m_MoveSelectedEntity
@@ -308,6 +434,17 @@ namespace proton {
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	#ifdef PROTON_PLATFORM_WINDOWS
+		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+	#endif
 	}
 
 }
+#endif

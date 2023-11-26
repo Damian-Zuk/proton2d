@@ -11,33 +11,30 @@ void ParallaxBackground::OnRegisterFields()
 
 void ParallaxBackground::OnCreate()
 {
+	m_Scene = m_Entity.GetScene();
+	auto& camera = m_Scene->GetPrimaryCamera();
 	auto& sprite = m_Entity.GetComponent<SpriteComponent>().Sprite;
-	auto& camera = m_Entity.GetScene()->GetPrimaryCamera();
-	float zoomLevel = camera->GetZoomLevel();
-	float viewSize = camera->GetOrthographicSize() * zoomLevel;
 
 	m_SpriteAspectRatio = sprite.GetAspectRatio();
-	m_CopiesCount = (uint32_t)ceil(camera->GetAspectRatio() / m_SpriteAspectRatio) + 1;
+	m_CopiesCount = 1 + (uint32_t)ceil(camera->GetAspectRatio() / m_SpriteAspectRatio);
 	m_Entity.DestroyChildEntities();
 
-	// Create copies of image
 	for (uint32_t i = 0; i < m_CopiesCount; i++)
 	{
-		Entity e = m_Entity.GetScene()->CreateEntity(m_Entity.GetTag() + "-" + std::to_string(i));
+		Entity e = m_Scene->CreateEntity(m_Entity.GetTag() + "-" + std::to_string(i));
 		e.AddComponent<SpriteComponent>().Sprite.SetTexture(sprite.GetTexture());
-		auto& transform = e.GetTransform(); 
-		transform.Position.z = m_Entity.GetTransform().Position.z;
-		m_Copies.push_back(e); m_Entity.AddChildEntity(e);
+		e.GetTransform().Position.z = m_Entity.GetTransform().Position.z;
+		m_Entity.AddChildEntity(e);
+		m_Copies.push_back(e); 
 	}
 }
 
 void ParallaxBackground::OnUpdate(float ts)
 {
-	const auto& camera = m_Entity.GetScene()->GetPrimaryCamera();
+	const auto& camera = m_Scene->GetPrimaryCamera();
 	float zoomLevel = camera->GetZoomLevel();
 	float viewSize = camera->GetOrthographicSize() * zoomLevel;
-
-	glm::vec3 cameraPos = m_Entity.GetScene()->GetPrimaryCameraPosition();
+	const glm::vec3& cameraPos = m_Scene->GetPrimaryCameraPosition();
 	glm::vec2 scale = { viewSize * m_SpriteAspectRatio, viewSize };
 
 	float offset = fmod(cameraPos.x * zoomLevel * m_ParallaxFactor, scale.x);

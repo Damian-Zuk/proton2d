@@ -72,7 +72,7 @@ namespace proton {
 				AddComponent<ScriptComponent>();
 
 			auto& component = GetComponent<ScriptComponent>();
-			std::string className = TScriptClass::__ScriptClassName;
+			std::string className{ TScriptClass::__ScriptClassName };
 			PT_ASSERT(component.Scripts.find(className) == component.Scripts.end(), "The script is already attached to an Entity!");
 
 			EntityScript*& scriptInstance = component.Scripts[className];

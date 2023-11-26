@@ -101,6 +101,8 @@ project "proton2d"
 		runtime "Release"
 		optimize "on"
 
+		removeincludedirs { "%{IncludeDir.ImGui}" }
+
 
 project "sandbox"
 	location "sandbox"

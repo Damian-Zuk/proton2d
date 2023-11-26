@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef PT_EDITOR
 #include "Proton/Editor/Panels/InspectorPanel.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
@@ -34,8 +35,18 @@ namespace proton {
 			return;
 		}
 
+		// Display UUID
+		std::stringstream hexUUID;
+		hexUUID << std::hex << (uint64_t)m_SelectedEntity.GetUUID();
+		std::string uuid = "Entity " + hexUUID.str();
+		ImGui::Columns(2, NULL, false);
+		ImGui::SetColumnWidth(0, 180.0f);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+		ImGui::Text(uuid.c_str());
+
 		// Add component popup
-		if (ImGui::Button("Add component", { 165.0f, 25.0f }))
+		ImGui::NextColumn();
+		if (ImGui::Button("     + Add      "))
 			ImGui::OpenPopup("Add component");
 
 		if (ImGui::BeginPopup("Add component"))
@@ -66,33 +77,33 @@ namespace proton {
 			ImGui::EndPopup();
 		}
 
-		// Destroy entity button
 		ImGui::SameLine();
-		if (ImGui::Button("Destroy entity", { 165.0f, 25.0f }))
+		if (ImGui::ArrowButton("##down", ImGuiDir_Down))
 		{
-			m_SelectedEntity.Destroy();
-			EditorLayer::SelectEntity({});
-			ImGui::End();
-			return;
+			ImGui::OpenPopup("Entity options");
 		}
-		ImGui::Dummy({ 0.0f, 5.0f });
 
-		// Display UUID
-		// TODO: Move this to the top, add Copy and Copy Decimal buttons
-		ImGui::Dummy({ 3,0 }); ImGui::SameLine();
-		std::stringstream hexUUID;
-		hexUUID << std::hex << (uint64_t)m_SelectedEntity.GetUUID();
-		std::string uuid = "UUID: " + hexUUID.str();
-		ImGui::Text(uuid.c_str());
-		ImGui::SameLine(ImGui::GetWindowWidth() - 140.0f);
+		if (ImGui::BeginPopup("Entity options")) {
+			if (ImGui::MenuItem("Create prefab"))
+			{
+				PrefabManager::CreatePrefabFromEntity(m_SelectedEntity);
+			}
+			if (ImGui::MenuItem("Delete entity"))
+			{
+				m_SelectedEntity.Destroy();
+				EditorLayer::SelectEntity({});
+				ImGui::End();
+				return;
+			}
+			ImGui::EndPopup();
+		}
+		ImGui::Columns(1);
 
-		// Create prefab from entity button
-		// TODO: Prefab refactor
-		ImGui::SetCursorPosX(ImGui::GetWindowWidth() / 2 + ImGui::CalcTextSize(uuid.c_str()).x - 140);
-		if (ImGui::Button("Create prefab", { 120.0f, 25.0f }))
-			PrefabManager::CreatePrefabFromEntity(m_SelectedEntity);
-		ImGui::Dummy({ 0.0f, 5.0f });
-
+		ImGui::Dummy({0, 10});
+		ImGui::Text("Components");
+		ImGui::Dummy({ 0, 5 });
+		ImGui::Separator();
+		ImGui::Dummy({0, 5});
 
 		// ******************************************************
 		// Tag Component UI
@@ -558,22 +569,27 @@ namespace proton {
 		ImGui::Dummy({ 0.0f, 5.0f });
 
 		// Physics configuration
-		ImGui::Text("Scene physics settings");
+		ImGui::Text("Physics settings");
 		ImGui::Dummy({ 0.0f, 3.0f });
 		ImGui::Separator();
-		ImGui::Checkbox("Enable physics simulation", &m_ActiveScene->m_EnablePhysics);
-		ImGui::Dummy({ 0,5 });
-		ImGui::PushItemWidth(100.0f);
-		ImGui::DragFloat("World gravity", &m_ActiveScene->m_PhysicsWorld->m_Gravity, 0.1f);
+		bool enablePhysics = m_ActiveScene->m_EnablePhysics;
+		if (ImGui::Checkbox("Enable Physics", &enablePhysics) && m_ActiveScene->m_SceneState == SceneState::Stop)
+			m_ActiveScene->m_EnablePhysics = enablePhysics;
+		if (m_ActiveScene->m_EnablePhysics) 
+		{
+			ImGui::Dummy({ 0,5 });
+			ImGui::PushItemWidth(100.0f);
+			ImGui::DragFloat("World gravity", &m_ActiveScene->m_PhysicsWorld->m_Gravity, 0.1f);
 
-		int* vi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
-		int* pi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsPositionIterations;
-		if (ImGui::DragInt("Velocity iterations", vi))
-			*vi = glm::max(*vi, 1);
-		if (ImGui::DragInt("Position iterations", pi))
-			*pi = glm::max(*pi, 1);
+			int* vi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
+			int* pi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsPositionIterations;
+			if (ImGui::DragInt("Velocity iterations", vi))
+				*vi = glm::max(*vi, 1);
+			if (ImGui::DragInt("Position iterations", pi))
+				*pi = glm::max(*pi, 1);
 
-		ImGui::PopItemWidth();
+			ImGui::PopItemWidth();
+		}
 	}
 
 
@@ -585,6 +601,7 @@ namespace proton {
 		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 		
+
 		bool opened = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 
 		bool removeComponent = false;
@@ -608,3 +625,5 @@ namespace proton {
 	}
 
 }
+
+#endif // PT_EDITOR

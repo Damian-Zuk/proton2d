@@ -13,7 +13,7 @@ namespace proton {
         return state == GLFW_PRESS || state == GLFW_REPEAT;
     }
 
-    std::pair<float, float> WindowsInput::Impl_GetMousePosition()
+    glm::vec2 WindowsInput::Impl_GetMousePosition()
     {
         auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
         double x, y;

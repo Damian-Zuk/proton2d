@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef PT_EDITOR
 #include "Proton/Editor/Panels/PrefabPanel.h"
 #include "Proton/Scene/PrefabManager.h"
 
@@ -38,3 +39,5 @@ namespace proton {
 		ImGui::End();
 	}
 }
+
+#endif // PT_EDITOR

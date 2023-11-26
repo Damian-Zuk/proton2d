@@ -1,7 +1,10 @@
 #pragma once
+#ifdef PT_EDITOR
 #include "Proton/Editor/EditorCamera.h"
+#include "Proton/Editor/EditorMenuBar.h"
 #include "Proton/Core/AppLayer.h"
 #include "Proton/Scene/Entity.h"
+#include "Proton/Graphics/Renderer/Framebuffer.h"
 
 namespace proton {
 
@@ -38,11 +41,23 @@ namespace proton {
 
 	private:
 		static EditorLayer* s_Instance;
+		// TODO: add m_EditorScene
 		Scene* m_ActiveScene = nullptr;
 		Entity m_SelectedEntity;
 
+		bool m_BlockEvents = true;
+		bool m_EnableViewports = true;
+
 		std::vector<std::pair<std::string, EditorPanel*>> m_EditorPanels;
 		EditorCamera m_Camera;
+		EditorMenuBar m_MenuBar;
+
+		Shared<Framebuffer> m_Framebuffer;
+		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+		glm::vec2 m_ViewportBounds[2];
+		bool m_ViewportFocused;
+		bool m_ViewportHovered;
+		glm::vec2 m_MousePos;
 
 		// Editor options
 		bool m_UseEditorCameraInRuntime = false;
@@ -61,7 +76,9 @@ namespace proton {
 
 		friend class InspectorPanel;
 		friend class MiscellaneousPanel;
+		friend class ScenePanel;
 		friend class EditorCamera;
 	};
 
 }
+#endif

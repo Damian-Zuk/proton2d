@@ -38,12 +38,15 @@ namespace proton {
 	}
 
 
-	Scene* SceneManager::Load(const std::string& scenePath)
+	Scene* SceneManager::Load(const std::string& scenePath, bool setActive)
 	{
 		if (scenePath != "<Unsaved scene>")
 			PT_CORE_INFO("[SceneManager::Load] file='{}.scene.json'", scenePath);
 		std::string filepath = "content/scenes/" + scenePath + ".scene.json";
-		return s_Instance->Deserialize(scenePath, filepath);
+		Scene* scene = s_Instance->Deserialize(scenePath, filepath);
+		if (setActive)
+			SetActiveScene(scenePath);
+		return scene;
 	}
 
 
@@ -81,8 +84,11 @@ namespace proton {
 
 
 	// TODO: Refactor this function
-	Scene* SceneManager::SetActiveScene(const std::string& scenePath)
+	Scene* SceneManager::SetActiveScene(const std::string& scenePath, bool autoLoad)
 	{
+		if (autoLoad && !IsLoaded(scenePath))
+			Load(scenePath);
+
 		if (!IsLoaded(scenePath))
 		{
 			PT_CORE_ERROR("[SceneManager::SetActiveScene] Scene '{}' not loaded!", scenePath);

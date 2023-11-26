@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Proton/Graphics/Sprite.h"
+#include "Proton/Assets/AssetManager.h"
 
 namespace proton {
 
@@ -14,6 +15,11 @@ namespace proton {
 		m_PixelSize(spritesheet->m_TileSize)
 	{
 		CalculateTextureCoords();
+	}
+
+	void Sprite::SetTextureFromPath(const std::string& filepath)
+	{
+		SetTexture(AssetManager::GetTexture(filepath));
 	}
 
 	void Sprite::SetTexture(Shared<Texture> texture)

@@ -13,14 +13,13 @@ namespace proton {
 	{
 	public:
 		SceneManager() = default;
-		virtual ~SceneManager();
+		~SceneManager();
 
+		static Scene* Load(const std::string& scenePath, bool setActive = false);
+		static void Unload(const std::string& scenePath);
 		static bool IsLoaded(const std::string& scenePath);
 
-		static Scene* Load(const std::string& scenePath);
-		static void Unload(const std::string& scenePath);
-
-		static Scene* SetActiveScene(const std::string& scenePath);
+		static Scene* SetActiveScene(const std::string& scenePath, bool autoLoad = false);
 		static Scene* GetActiveScene();
 
 		static Scene* GetScene(const std::string& scenePath);
@@ -41,11 +40,11 @@ namespace proton {
 	private:
 		static SceneManager* s_Instance;
 
-		// TODO: Can more than one scene be active?
 		Scene* m_ActiveScene = nullptr;
 		std::map<std::string, Scene*> m_Scenes;
 
 		friend class Application;
 		friend class ScenePanel;
+		friend class EditorMenuBar;
 	};
 }

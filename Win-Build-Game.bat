@@ -2,23 +2,25 @@
 setlocal
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::                                                                                   ::
-::              Use this batch script to build your game in Proton2D                 ::
-::                                                                                   ::    
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::  Proton2D Windows build game script.  :::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::    
 :::::::::::::::::::::::::::::: Default build parameters :::::::::::::::::::::::::::::::
-::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::  
+
 :: Default destination for the build output
 set defaultBuildDirectory="build"
-::
+
 :: Default game project name
 set defaultProjectName="sandbox"
-::
+
 :: 1 - Debug, 2 - Release, 3 - Distribution
 set defaultBuildConfiguration=3
-::
+
 :: Delete all files from output build directory before copying game files.
 :: If set to false, you'll need to decide whether to overwrite each file individually.
 set clearOutputDirectory=true
+
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 :: Project Name
@@ -34,7 +36,7 @@ if "%projectName%"=="" (
 )
 
 :: Build Configuration
-echo Select the target build configuration.
+echo Select build configuration:
 echo 1. Debug
 echo 2. Release
 echo 3. Distribution
@@ -116,7 +118,7 @@ mkdir "%destination%\editor\cache"
 
 :: Copy other files
 :copyOtherFiles
-copy "%projectName%\app.config.json" "%destination%\"
+copy "%projectName%\app-config.json" "%destination%\"
 
 :: Copy executable
 copy %executablePath% %destination%

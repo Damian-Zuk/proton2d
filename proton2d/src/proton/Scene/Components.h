@@ -44,6 +44,12 @@ namespace proton {
 
 	struct SpriteComponent
 	{
+		SpriteComponent(const std::string& filepath = std::string())
+		{
+			if (filepath.size())
+				Sprite.SetTextureFromPath(filepath);
+		}
+
 		Sprite Sprite;
 		// RGBA, range: 0.0f - 1.0f
 		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };

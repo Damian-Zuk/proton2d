@@ -1,9 +1,10 @@
 #include "pch.h"
-
+#ifdef PT_EDITOR
 #include "Proton/Editor/EditorCamera.h"
+#include "Proton/Editor/EditorLayer.h"
+#include "Proton/Core/Application.h"
 #include "Proton/Core/Input.h"
 #include "Proton/Events/MouseEvents.h"
-#include "Proton/Core/Application.h"
 #include "Proton/Events/WindowEvents.h"
 
 #include <imgui.h>
@@ -47,13 +48,13 @@ namespace proton {
 				return false;
 			});
 		}
+	}
 
-		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& event) -> bool 
-		{
-			m_AspectRatio = Application::Get().GetWindow().GetAspectRatio();
-			m_Camera->SetAspectRatio(m_AspectRatio);
-			return false;
-		});
+	void EditorCamera::OnViewportResize(float w, float h)
+	{
+		m_AspectRatio = w / h;
+		m_Camera->SetAspectRatio(w / h);
 	}
 
 }
+#endif // PT_EDITOR

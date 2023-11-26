@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef PT_EDITOR
 #include "Proton/Editor/Panels/SceneHierarchyPanel.h"
 #include "Proton/Editor/EditorLayer.h"
 
@@ -27,7 +28,7 @@ namespace proton {
 
 		if (ImGui::BeginPopup("new_entity_root"))
 		{
-			if (ImGui::MenuItem("Create new entity"))
+			if (ImGui::MenuItem("New entity"))
 				m_ActiveScene->CreateEntity();
 			ImGui::EndPopup();
 		}
@@ -81,7 +82,7 @@ namespace proton {
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (!m_EntityDragTarget.IsParentOf(entity) && ImGui::AcceptDragDropPayload("Entity"))
+			if (m_EntityDragTarget && !m_EntityDragTarget.IsParentOf(entity) && ImGui::AcceptDragDropPayload("Entity"))
 			{
 				m_EntityDragTarget.PopHierarchy();
 				entity.AddChildEntity(m_EntityDragTarget);
@@ -96,7 +97,7 @@ namespace proton {
 			ImGui::OpenPopup("new_entity_child");
 		if (ImGui::BeginPopup("new_entity_child"))
 		{
-			if (ImGui::MenuItem("Create new entity"))
+			if (ImGui::MenuItem("New child entity"))
 				entity.AddChildEntity(m_ActiveScene->CreateEntity());
 			ImGui::EndPopup();
 		}
@@ -118,3 +119,4 @@ namespace proton {
 	}
 
 }
+#endif // PT_EDITOR

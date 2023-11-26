@@ -1,12 +1,12 @@
 #include "pcheader.h"
-#include "GameLayer.h"
+#include "MainLayer.h"
 
 class Sandbox : public proton::Application
 {
 public:
 	virtual bool OnCreate() override
 	{
-		PushLayer(new GameLayer());
+		PushLayer(new MainLayer());
 		return true;
 	}
 };

@@ -8,13 +8,13 @@ namespace proton {
 	class Input 
 	{
 	public:
-		static bool IsKeyPressed(int keyCode)             { return s_Instance->Impl_IsKeyPressed(keyCode); }
-		static std::pair<float, float> GetMousePosition() { return s_Instance->Impl_GetMousePosition();    }
+		static bool IsKeyPressed(int keyCode) { return s_Instance->Impl_IsKeyPressed(keyCode); }
+		static glm::vec2 GetMousePosition()   { return s_Instance->Impl_GetMousePosition();    }
 
 	protected:
 		// Implementation per platform
 		virtual bool Impl_IsKeyPressed(int keyCode) = 0;
-		virtual std::pair<float,float> Impl_GetMousePosition() = 0;
+		virtual glm::vec2 Impl_GetMousePosition() = 0;
 
 	private:
 		static Input* s_Instance;

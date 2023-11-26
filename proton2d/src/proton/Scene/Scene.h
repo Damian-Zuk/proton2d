@@ -142,6 +142,7 @@ namespace proton {
 		friend class InspectorPanel;
 		friend class SceneHierarchyPanel;
 		friend class ScenePanel;
+		friend class EditorMenuBar;
 
 		friend class PhysicsWorld;
 	};

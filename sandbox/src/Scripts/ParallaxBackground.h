@@ -12,7 +12,8 @@ private:
 	float m_ParallaxFactor = 1.0f;
 	float m_PositionOffset = 0.0f;
 
-	float m_SpriteAspectRatio = 1.0f;
-	uint32_t m_CopiesCount = 3;
+	proton::Scene* m_Scene;
 	std::vector<proton::Entity> m_Copies;
+	float m_SpriteAspectRatio;
+	uint32_t m_CopiesCount;
 };

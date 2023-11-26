@@ -1,4 +1,5 @@
 #pragma once
+#ifdef PT_EDITOR
 #include "Proton/Scene/Entity.h"
 
 namespace proton {
@@ -22,3 +23,4 @@ namespace proton {
 	};
 
 }
+#endif // PT_EDITOR
