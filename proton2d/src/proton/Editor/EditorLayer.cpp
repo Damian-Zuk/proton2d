@@ -43,8 +43,8 @@ namespace proton {
 		const EditorConfig::Font font = m_Config.EditorFonts["roboto"];
 		io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), font.FontSize);
 		
-		// Enable viewports (ImGui windows can be detached from main application window)
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+		// Enable viewports (ImGui windows can be detached from main application window)
 		if (m_EnableViewports)
 			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
@@ -124,14 +124,13 @@ namespace proton {
 
 	void EditorLayer::OnUpdate(float ts)
 	{
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-
 		// On viewport resize
 		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_Camera.OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 			Renderer::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}

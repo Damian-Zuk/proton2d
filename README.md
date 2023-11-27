@@ -1,18 +1,19 @@
 # proton
 
 ## About
-<b>Proton2D</b> is an open-source game engine specifically designed to create 2D platformer games.
+<b>Proton2D</b> is a simple open-source game engine specifically designed for making 2D platformer games. 
 
-### Main Features:
-- Game Editor (written using <a href="https://github.com/ocornut/imgui">ImGui</a>)
-- Entity Component System (ECS) architecture (powered by the <a href="https://github.com/skypjack/entt">EnTT</a> library)
-- Integrated external physics engine <a href="https://github.com/erincatto/box2d">Box2D</a>.
-- Scene system to manage game entities.
-- Native C++ Entity Scripting.
-- Spritesheet support.
-- Spritesheet tile based animation.
-- Resizable sprites (9-scaling method).
-- Entity prefabs (which will be reworked).
+The main features of the engine are:
+- Game Editor written using <a href="https://github.com/ocornut/imgui">ImGui</a> library,
+- Entity Component System (ECS) architecture powered by the <a href="https://github.com/skypjack/entt">EnTT</a> library,
+- External Physics Engine <a href="https://github.com/erincatto/box2d">Box2D</a>,
+- Prebuilt Entity Components,
+- Scenes system to manage game entities,
+- Native C++ Entity Scripting,
+- Spritesheet support,
+- Spritesheet Tile-based Animation,
+- Resizable Sprites using the 9-scaling method,
+- Entity Prefabs (which will be reworked).
 
 <details>
 <summary><b>Game Editor Preview (expand)</b></summary>
@@ -27,7 +28,6 @@ Proton uses the <b>git submodules</b>, therefore repository cloning should be do
 ```
 git clone --recursive https://github.com/Proton2D/proton
 ```
-
 If you happen to clone this repository non-recursively, use `git submodule update --init ` to clone the necessary submodules.
 
 ## Building
@@ -39,7 +39,7 @@ If you happen to clone this repository non-recursively, use `git submodule updat
 Run the ```Win-Build-VS22``` script to generate solution files for <b>Microsoft Visual Studio 2022</b> via <b>Premake5</b>.
 
 ### Building The Game
-Run the ```Win-Build-Game``` script to build and copy the game executable and content from the project directory to a separate output build directory. You can choose a project by providing its name, the configuration of the build, and the target output directory. Default values can be modified inside the script. Proton does not currently support binary asset packing, all files from the `content` directory are copied directly to the output directory while running the script.
+Run the ```Win-Build-Game``` script to build and copy the game executable and content from the project directory to a separate output build directory. You can choose a project by providing its name, the configuration of the build, and the target output directory. Default values can be modified inside the script. Proton does not currently support binary asset packing, all files from the `content` directory will be copied directly to the output directory while running the script.
 
 ### Build Configurations
 There are three types of build configurations in Proton2D:
@@ -50,15 +50,16 @@ There are three types of build configurations in Proton2D:
 ## The Game Engine Architecture
 ### Inspiration
 The Proton2D game engine architecture is mainly based on the 
-<a href="https://github.com/TheCherno/Hazel">Hazel Engine</a> architecture. 
-Some modules as 
+<a href="https://github.com/TheCherno/Hazel">Hazel Engine</a> architecture. The resources and materials provided there by the Cherno helped me learn a lot about the game engine and software architecture, which I am very thankful for. I highly recommend checking it out for anyone who is interested in the game engine architecture. Note: I am not an expert game engine developer, this is just my personal project that I worked on, and I will continue working for some time.
+
+Modules as 
 <b>Renderer</b>,
 <b>Event</b> system,
 <b>Debug</b> utilities and implementation for Windows
 <b>Input</b> and application 
 <b>Window</b> were directly copied from the Hazel source code with some slight modifications. The organization of code into modules, represented by the `src/Proton` directory structure, closely resembles the structure found in Hazel and other game engines.
 Most of the libraries used in Proton are also used in Hazel.
-The only difference is the library for entity serialization, which Proton happens to use, which is the <a href="https://github.com/nlohmann/json">nlohmann/json</a> library.
+The only difference is the library for entity serialization, which Proton happens to use, is the <a href="https://github.com/nlohmann/json">nlohmann/json</a> library.
 
 ### Libraries Used
 - <a href="https://github.com/glfw/glfw">GLFW</a>
@@ -76,12 +77,12 @@ The `src/Proton` directory was divided into the following modules.
 | Module | Short description |
 | ----------- | ---------- |
 | <b>Core</b> | Core engine components like the `Application` class, `Window`, and `Input` interface. |
-| <b>Debug</b> | Spdlog logger wrapped with logging macros. Better assertions that use debugbreak. Basic Instrumetor for measuring code performance. |
-| <b>Events</b> | Event System for handling events with the `EventDispatcher` class. Contains window, key, and mouse event classes. |
+| <b>Debug</b> | Spdlog logger wrapped with logging macros. Better assertions that use debugbreak. An `Instrumetor` class for measuring code performance. |
+| <b>Events</b> | `Event` system for handling events with the `EventDispatcher` class. Contains window, key, and mouse event classes. |
 | <b>Graphics</b> | The module features a 2D Batch Renderer from Hazel engine. Additional classes: `Sprite`, `Spritesheet`, `ResizableSprite`, `SpriteAnimation`, `Camera`. |
-| <b>Scene</b> | Scene module contains ECS integration which consists of `Scene` class that, in some sense, is a wrapper for `entt::registry`. In the Scene module there, can also be found an `Entity` class wrapper providing several methods to make changes to components associated with an `entt::entity`. The `Components.h` file contains all the available components that can be added to an entity. This module also contains utility classes like `SceneManager` to manage game scenes and `PrefabManager` (which will be reworked) to create entity prefabs on the scene. |
-| <b>Physics</b> | Integration of the Box2D physics engine in form of the `PhysicsWorld` class. |
-| <b>Scripting</b> | Contains an `EntityScript` base class enhanced with `ScriptFactory` register macro to keep track of created `EntityScript` derived classes and create appropriate instances. Scripts are at the moment written natively in C++. |
+| <b>Scene</b> | Scene module contains ECS integration which consists of `Scene` class which manages entities on the screen. In the Scene module, there is also an `Entity` class wrapper which provides several methods to make changes to components associated with an `entt::entity`. The `Components.h` file contains all the available components that can be added to an entity. This module also contains utility classes like `SceneManager` to manage game scenes and `PrefabManager` (which will be reworked) to create entity prefabs on the scene. |
+| <b>Physics</b> | Integration of the Box2D physics engine. The components for entities are `RigidbodyComponent` and `BoxColliderComponent`.  |
+| <b>Scripting</b> | Contains an `EntityScript` base class and the `ScriptFactory` to keep track of created `EntityScript` derived classes and create appropriate instances. Scripts are at the moment written natively in C++. |
 | <b>Assets</b> | Contains `AssetManager` class to manage game resources and a `SceneSerializer` class to serialize and deserialize scenes and entities. |
 | <b>Editor</b> | Game editor interface implementation using ImGui library. |
 
@@ -91,23 +92,23 @@ The Proton2D game engine editor consists of several panels, each having it's own
 | ----------- | ---------- |
 | <b>Scene Hierarchy</b> |  Manages the scene's entity structure. Right-click to add a new entity at the scene root, or click on an entity to add a child. Entities can be reorganized through drag-and-drop.  |
 | <b>Inspector</b> | Panel where you can edit entities by modifing their component values. |
-| <b>Scene</b> | Scene simulation Play, Pause, and Stop buttons. View of scenes loaded in memory. This will be changed to scene tabs and the above editor. |
-| <b>Viewport</b> | Scene viewport that show rendered game view. You can move the camera by holding the right mouse button and select and move entities using the left mouse button. Camera zoom can be changed by using the scroll wheel. |
+| <b>Scene</b> | Scene simulation Play, Pause, and Stop buttons. The view of scenes loaded in memory. This will be changed to scene tabs above an editor. |
+| <b>Viewport</b> | Scene viewport that shows a rendered game view. You can move the editor camera by holding the right mouse button, and select and move entities using the left mouse button. Camera zoom can be changed by using the scroll wheel. |
 | <b>Prefab</b> | List of prefabs that can be spawned or deleted. |
 | <b>Misc</b> | General application settings and statistics. |
 
+The editor is included into the game runtime and not built as a separate application, because the engine does not have external language scripting or hot reloading implemented yet.
 
-The editor is included into the game runtime and not built as a separate application, because engine does not have external language scripting or hot reloading implemented yet.
+### Entity Scripting
+Proton at the moment, offers only Native C++ Scripting. To create an entity script, you must create a class that derives from the `EntityScript` base class. Inside the created class, a macro `ENTITY_SCRIPT_CLASS(class)` must be placed (under the public members). It will register a script inside the `ScriptFactory` class.
 
-
-### Entity Scripting Method
-Proton at the moment offers only native C++ scripting with enchanced interface via the `ScriptFactory` register macro. This approach has the disadvantage of requiring a recompilation and restart of the application for script changes, as it cannot hot-reload scripts during runtime. Native C++ scripting however, is generally faster in terms of performance than external language scripting. The external scripting engine will probably be added in the future, it was not implemented yet due to the lack of time.
+The approach of native scripting has the disadvantage of requiring a recompilation and restart of the application for script changes, as it cannot hot-reload scripts during runtime. Native C++ scripting however, is generally faster in terms of performance than external language scripting. The external scripting engine will probably be added in the future. It was not implemented yet due to the lack of time.
 
 ## Sandbox Project
 The `sandbox` is the project in which the game is developed. It contains an example game made in Proton2D. Window properties can be changed by editing `sandbox/app-config.json` file. A script for creating new game projects will be added soon.
 
 ## The Plans
-The current plan for the project is to have networking implemented and a functional game UI system. The work will be primarily done on a private branch. This branch will also be updated with general engine changes like, game editor improvements and other features.
+The current goal of the project is to have networking implemented and a basic game UI system. The work will be primarily done in a private repo. This branch will also be updated with general engine changes like, game editor improvements and other features.
 
 ## License
 &copy; Licensed under the MIT License.

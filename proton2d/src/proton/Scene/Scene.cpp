@@ -35,7 +35,7 @@ namespace proton {
 			return;
 
 	#ifdef PT_EDITOR
-		// TODO: Refactor: Change to Scene::CopyScene // Scene::DuplicateScene
+		// TODO: Refactor: Change to Scene::DuplicateScene
 		// Temporary solution
 		SceneSerializer serializer(this);
 		std::string filepath = m_SceneFilepath == "<Unsaved scene>" ? "unsaved_scene" : m_SceneFilepath;
@@ -240,7 +240,7 @@ namespace proton {
 		}
 
 		// Render entities with ResizableSpriteComponent
-		// TODO: Think about using TilingFactor in Shader program for center tiles
+		// TODO: Think about using TilingFactor in shader program for center tiles
 		auto renderableResizableSprite = m_Registry.view<TransformComponent, ResizableSpriteComponent>();
 		for (auto e : renderableResizableSprite)
 		{
