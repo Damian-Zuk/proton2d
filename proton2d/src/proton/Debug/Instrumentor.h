@@ -3,7 +3,7 @@
 // From: https://gist.github.com/TheCherno/31f135eea6ee729ab5f26a6908eb3a5e
 //
 #pragma once
-#define PROFILING 0
+#define PT_ENABLE_PROFILING 0
 
 #include <string>
 #include <chrono>
@@ -129,7 +129,7 @@ namespace proton {
 
 }
 
-#if PROFILING
+#if PT_ENABLE_PROFILING
     #define PROFILE_BEGIN_SESSION(name) ::proton::Instrumentor::Get().BeginSession(name, name ".json")
     #define PROFILE_END_SESSION() ::proton::Instrumentor::Get().EndSession()
     #define PROFILE_SCOPE(name) ::proton::InstrumentationTimer timer##__LINE(name)

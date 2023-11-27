@@ -107,6 +107,7 @@ namespace proton {
 		uint32_t GetScriptedEntitiesCount() const;
 
 	private:
+		UUID m_SceneUUID;
 		SceneState m_SceneState = SceneState::Stop;
 
 		// General

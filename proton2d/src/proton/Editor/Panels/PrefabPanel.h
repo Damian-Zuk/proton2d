@@ -4,7 +4,7 @@
 
 namespace proton {
 
-	// TODO: Refactor
+	// TODO: Rework
 	class PrefabPanel : public EditorPanel
 	{
 	public:

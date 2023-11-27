@@ -37,7 +37,6 @@ namespace proton {
 		return s_Instance->m_Scenes.find(scenePath) != s_Instance->m_Scenes.end();
 	}
 
-
 	Scene* SceneManager::Load(const std::string& scenePath, bool setActive)
 	{
 		if (scenePath != "<Unsaved scene>")
@@ -49,16 +48,13 @@ namespace proton {
 		return scene;
 	}
 
-
 	Scene* SceneManager::EditorLoadFromCache(const std::string& scenePath)
 	{
-		Scene* scene = new Scene(scenePath);
 		std::string filepath = "editor/cache/" + 
 			(scenePath == "<Unsaved scene>" ? "unsaved_scene" : scenePath) + ".scene.json";
 		std::replace(filepath.begin(), filepath.end(), '\\', '_');
 		return s_Instance->Deserialize(scenePath, filepath);
 	}
-
 
 	Scene* SceneManager::Deserialize(const std::string& scenePath, const std::string& fullFilepath)
 	{
@@ -73,7 +69,6 @@ namespace proton {
 		return scene;
 	}
 
-
 	void SceneManager::Unload(const std::string& scenePath)
 	{
 		if (scenePath != "<Unsaved scene>")
@@ -81,7 +76,6 @@ namespace proton {
 		delete s_Instance->m_Scenes.at(scenePath);
 		s_Instance->m_Scenes.erase(scenePath);
 	}
-
 
 	// TODO: Refactor this function
 	Scene* SceneManager::SetActiveScene(const std::string& scenePath, bool autoLoad)
@@ -132,12 +126,10 @@ namespace proton {
 		serializer.Serialize("content/scenes/" + newScenePath + ".scene.json");
 	}
 
-
 	void SceneManager::SaveActiveSceneAs(const std::string& scenePath)
 	{
 		SaveSceneAs(s_Instance->m_ActiveScene->m_SceneFilepath, scenePath);
 	}
-
 
 	void SceneManager::SaveActiveScene()
 	{
@@ -145,12 +137,10 @@ namespace proton {
 		SaveSceneAs(filepath, filepath);
 	}
 
-
 	Scene* SceneManager::GetActiveScene()
 	{
 		return s_Instance->m_ActiveScene;
 	}
-
 
 	Scene* SceneManager::GetScene(const std::string& scenePath)
 	{
@@ -161,7 +151,6 @@ namespace proton {
 		}
 		return s_Instance->m_Scenes.at(scenePath);
 	}
-
 
 	const std::string& SceneManager::GetActiveSceneFilepath()
 	{

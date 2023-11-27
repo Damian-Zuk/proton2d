@@ -3,6 +3,7 @@
 #include "Proton/Editor/EditorCamera.h"
 #include "Proton/Editor/EditorMenuBar.h"
 #include "Proton/Core/AppLayer.h"
+#include "Proton/Core/Config.h"
 #include "Proton/Scene/Entity.h"
 #include "Proton/Graphics/Renderer/Framebuffer.h"
 
@@ -41,23 +42,24 @@ namespace proton {
 
 	private:
 		static EditorLayer* s_Instance;
-		// TODO: add m_EditorScene
 		Scene* m_ActiveScene = nullptr;
 		Entity m_SelectedEntity;
 
-		bool m_BlockEvents = true;
-		bool m_EnableViewports = true;
-
-		std::vector<std::pair<std::string, EditorPanel*>> m_EditorPanels;
+		EditorConfig m_Config;
 		EditorCamera m_Camera;
 		EditorMenuBar m_MenuBar;
+		std::vector<std::pair<std::string, EditorPanel*>> m_EditorPanels;
 
+		bool m_EnableViewports = true; // when set to true ImGui windows can be detached from main GLFW window
+		bool m_BlockEvents = true; // set automaticly to false when viewport is not hovered by mouse
+
+		// Scene viewport
 		Shared<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
-		glm::vec2 m_ViewportBounds[2];
-		bool m_ViewportFocused;
-		bool m_ViewportHovered;
-		glm::vec2 m_MousePos;
+		glm::vec2 m_ViewportBounds[2] = { { 0.0f, 0.0f }, {0.0f, 0.0f} };
+		glm::vec2 m_MousePos = { 0.0f, 0.0f };
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
 
 		// Editor options
 		bool m_UseEditorCameraInRuntime = false;

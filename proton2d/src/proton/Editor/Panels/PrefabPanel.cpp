@@ -11,7 +11,7 @@ namespace proton {
 	{
 		ImGui::Begin("Prefabs");
 		ImGui::Dummy({ 0, 1 });
-		if (ImGui::Button("Refresh list"))
+		if (ImGui::Button("Refresh"))
 			PrefabManager::ReloadAllPrefabs();
 
 		std::string deletePrefabTag;

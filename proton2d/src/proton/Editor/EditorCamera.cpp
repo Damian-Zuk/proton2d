@@ -19,26 +19,32 @@ namespace proton {
 
 	void EditorCamera::OnUpdate(float ts)
 	{
-		if (EditorLayer::Get()->m_ActiveScene->m_SceneState != SceneState::Stop
-			&& !EditorLayer::Get()->m_UseEditorCameraInRuntime)
+		Scene* activeScene = EditorLayer::Get()->m_ActiveScene;
+		if (!activeScene)
 			return;
 
-		float zoomLevel = m_Camera->GetZoomLevel();
-		float zoomTargetDiff = glm::abs(m_ZoomLevelTarget - zoomLevel);
-		float zoomOffset = glm::max(glm::round(zoomTargetDiff * ts * 10000.0f) / 1000.0f, 0.001f);
+		if (activeScene->m_SceneState == SceneState::Stop || EditorLayer::Get()->m_UseEditorCameraInRuntime)
+		{
+			float zoomLevel = m_Camera->GetZoomLevel();
+			float zoomTargetDiff = glm::abs(m_ZoomLevelTarget - zoomLevel);
+			float zoomOffset = glm::max(glm::round(zoomTargetDiff * ts * 10000.0f) / 1000.0f, 0.001f);
 
-		if (m_ZoomLevelTarget > zoomLevel)
-			m_Camera->SetZoomLevel(glm::min(zoomLevel + zoomOffset, m_ZoomLevelTarget));
+			if (m_ZoomLevelTarget > zoomLevel)
+				m_Camera->SetZoomLevel(glm::min(zoomLevel + zoomOffset, m_ZoomLevelTarget));
 
-		else if (m_ZoomLevelTarget < zoomLevel)
-			m_Camera->SetZoomLevel(glm::max(zoomLevel - zoomOffset, m_ZoomLevelTarget));
+			else if (m_ZoomLevelTarget < zoomLevel)
+				m_Camera->SetZoomLevel(glm::max(zoomLevel - zoomOffset, m_ZoomLevelTarget));
+		}
 	}	
 
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
 		Scene* activeScene = EditorLayer::Get()->m_ActiveScene;
-		if (activeScene && (activeScene->m_SceneState == SceneState::Stop || EditorLayer::Get()->m_UseEditorCameraInRuntime))
+		if (!activeScene) 
+			return;
+
+		if (activeScene->m_SceneState == SceneState::Stop || EditorLayer::Get()->m_UseEditorCameraInRuntime)
 		{
 			dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& event) -> bool 
 			{

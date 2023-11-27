@@ -21,10 +21,7 @@
 #include <backends/imgui_impl_opengl3.cpp>
 #include <backends/imgui_impl_glfw.cpp>
 
-#include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <filesystem>
-
 
 namespace proton {
 
@@ -41,12 +38,17 @@ namespace proton {
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
+		// Font
 		auto& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF("editor/content/font/Roboto.ttf", 18);
+		const EditorConfig::Font font = m_Config.EditorFonts["roboto"];
+		io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), font.FontSize);
+		
+		// Enable viewports (ImGui windows can be detached from main application window)
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 		if (m_EnableViewports)
 			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+		// Styles
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.FrameRounding = 7.0f;
 		style.PopupRounding = 7.0f;
@@ -61,6 +63,7 @@ namespace proton {
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+		// Initialize ImGui
 		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
@@ -77,6 +80,7 @@ namespace proton {
 			if (std::filesystem::create_directories("editor/cache/"))
 				PT_CORE_ERROR("[EditorLayer::OnCreate] Could not create cache directory!");
 
+		// Create framebuffer for scene viewport
 		FramebufferSpecification fbSpec;
 		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		fbSpec.Width = 1280;
@@ -98,7 +102,7 @@ namespace proton {
 	{
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		// Resize
+		// On viewport resize
 		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
@@ -199,6 +203,7 @@ namespace proton {
 
 		style.WindowMinSize.x = minWinSizeX;
 
+		// Scene viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -221,6 +226,7 @@ namespace proton {
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		// Render editor components
 		m_MenuBar.OnImGuiRender();
 		for (auto& panel : m_EditorPanels) {
 			panel.second->OnImGuiRender();
@@ -231,24 +237,35 @@ namespace proton {
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_BlockEvents)
+		ImGuiIO& io = ImGui::GetIO();
+
+		// Block events if viewport is not hovered by mouse
+		if (m_BlockEvents && !m_MoveEditorCamera)
 		{
-			ImGuiIO& io = ImGui::GetIO();
 			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
 			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & (io.WantCaptureKeyboard || io.WantTextInput);
 			if (event.Handled)
 				return;
 		}
+		else if (event.IsInCategory(EventCategoryKeyboard) && io.WantTextInput)
+		{
+			event.Handled = true;
+			return;
+		}
 
 		m_Camera.OnEvent(event);
 		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
+		
 		EventDispatcher dispatcher(event);
 
-		// Mouse events
+		// Dispatch mouse events
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
+			SceneState state = m_ActiveScene->GetSceneState();
+
 			// Mouse Button 1 (Right): Move editor camera
-			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera)
+			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera 
+				&& (state == SceneState::Stop || m_UseEditorCameraInRuntime))
 			{
 				m_CameraDragOffset = cursor;
 				m_MoveEditorCamera = true;
@@ -294,7 +311,7 @@ namespace proton {
 			return false;
 		});
 
-		// Keyboard events
+		// Dispatch keyboard events
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
 			KeyCode key = e.GetKeyCode();

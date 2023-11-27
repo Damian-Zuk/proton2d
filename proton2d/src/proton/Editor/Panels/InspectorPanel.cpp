@@ -14,7 +14,6 @@
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
-
 namespace proton {
 
 	void InspectorPanel::OnImGuiRender()
@@ -23,11 +22,10 @@ namespace proton {
 
 		if (!m_ActiveScene) {
 			ImGui::End();
-			PT_CORE_ERROR("[InspectorPanel::OnImGuiRender] ActiveScene is NULL");
 			return;
 		}
 
-		// Draw Scene proporties if no selected entity
+		// Draw scene proporties if no entity is selected
 		if (!m_SelectedEntity.IsValid())
 		{
 			DrawSceneProporties();
@@ -35,18 +33,18 @@ namespace proton {
 			return;
 		}
 
-		// Display UUID
+		// Display UUID of entity
 		std::stringstream hexUUID;
 		hexUUID << std::hex << (uint64_t)m_SelectedEntity.GetUUID();
 		std::string uuid = "Entity " + hexUUID.str();
 		ImGui::Columns(2, NULL, false);
-		ImGui::SetColumnWidth(0, 180.0f);
+		ImGui::SetColumnWidth(0, 190.0f);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
 		ImGui::Text(uuid.c_str());
 
 		// Add component popup
 		ImGui::NextColumn();
-		if (ImGui::Button("     + Add      "))
+		if (ImGui::Button("       + Add        "))
 			ImGui::OpenPopup("Add component");
 
 		if (ImGui::BeginPopup("Add component"))
@@ -92,6 +90,7 @@ namespace proton {
 			{
 				m_SelectedEntity.Destroy();
 				EditorLayer::SelectEntity({});
+				ImGui::EndPopup();
 				ImGui::End();
 				return;
 			}
@@ -357,14 +356,14 @@ namespace proton {
 					ImGui::DragInt2("Spritesheet offset", (int*)glm::value_ptr(sprite.m_PositionOffset));
 					ImGui::Dummy({ 0.0f, 5.0f });
 
-					bool left        = sprite.m_Edges & 1;
-					bool right       = sprite.m_Edges & 2;
-					bool top         = sprite.m_Edges & 4;
-					bool bottom      = sprite.m_Edges & 8;
-					bool topLeft     = sprite.m_Edges & 16;
-					bool topRight    = sprite.m_Edges & 32;
-					bool bottomLeft  = sprite.m_Edges & 64;
-					bool bottomRight = sprite.m_Edges & 128;
+					bool left        = sprite.m_Edges & (1 << 0);
+					bool right       = sprite.m_Edges & (1 << 1);
+					bool top         = sprite.m_Edges & (1 << 2);
+					bool bottom      = sprite.m_Edges & (1 << 3);
+					bool topLeft     = sprite.m_Edges & (1 << 4);
+					bool topRight    = sprite.m_Edges & (1 << 5);
+					bool bottomLeft  = sprite.m_Edges & (1 << 6);
+					bool bottomRight = sprite.m_Edges & (1 << 7);
 
 					// Toggle sprite edges texture
 					ImGui::Text("Toggle sprite edges texture:");
@@ -507,7 +506,7 @@ namespace proton {
 							ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
 							break;
 						case ScriptFieldType::Float4:
-							if (fieldName.find("Color") != fieldName.npos)
+							if (fieldName.find("Color") != fieldName.npos || fieldName.find("color") != fieldName.npos)
 								ImGui::ColorEdit4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue);
 							else
 								ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);

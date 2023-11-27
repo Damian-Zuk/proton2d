@@ -34,6 +34,7 @@ namespace proton {
 				std::string filepath = m_ActiveScene->GetFilepath();
 				if (filepath.size())
 				{
+					m_ActiveScene->Stop();
 					SceneManager::EditorLoadFromCache(filepath);
 					SceneManager::SetActiveScene(filepath);
 				}

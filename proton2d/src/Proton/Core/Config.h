@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace proton {
 
 	class ApplicationConfig
@@ -15,16 +14,32 @@ namespace proton {
 		bool VSync = true;
 
 		void LoadConfig();
-		
-		void WriteConfig(
-			const std::string& windowTitle,
-			int windowWidth,
-			int windowHeight,
-			bool fullscreen,
-			bool vsync);
+		void WriteConfig();
 
 	private:
 		std::string m_Filepath = "app-config.json";
 	};
+
+#ifdef PT_EDITOR
+	class EditorConfig
+	{
+	public:
+		EditorConfig();
+
+		struct Font
+		{
+			std::string FontFilepath;
+			float  FontSize;
+		};
+		std::map<std::string, Font> EditorFonts;
+
+		void LoadConfig();
+		void WriteConfig();
+
+	private:
+		std::string m_Filepath = "editor/editor-config.json";
+	};
+#endif
+
 }
 

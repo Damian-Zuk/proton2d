@@ -119,7 +119,7 @@ namespace proton {
 			PT_CORE_WARN("[Scene::Stop] Scene simulation is already stopped.");
 			return;
 		}
-
+		
 		m_PhysicsWorld->DestroyWorld();
 
 		m_Registry.view<ScriptComponent>().each([=](auto entity, auto& scriptComponent)
@@ -315,8 +315,8 @@ namespace proton {
 	void Scene::CacheCursorWorldPosition()
 	{
 #ifdef PT_EDITOR
-		uint32_t width = EditorLayer::s_Instance->m_ViewportSize.x;
-		uint32_t height = EditorLayer::s_Instance->m_ViewportSize.y;
+		uint32_t width = (uint32_t)EditorLayer::s_Instance->m_ViewportSize.x;
+		uint32_t height = (uint32_t)EditorLayer::s_Instance->m_ViewportSize.y;
 #else
 		Window& window = Application::Get().GetWindow();
 		uint32_t width = window.GetWidth(), height = window.GetHeight();

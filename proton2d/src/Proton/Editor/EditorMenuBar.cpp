@@ -16,7 +16,7 @@ namespace proton {
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Open Menu...", "Ctrl+O"))
+				if (ImGui::MenuItem("Open Scene...", "Ctrl+O"))
 					OpenScene();
 
 				ImGui::Separator();
