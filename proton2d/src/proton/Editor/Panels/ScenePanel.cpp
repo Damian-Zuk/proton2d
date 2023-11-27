@@ -83,7 +83,7 @@ namespace proton {
 				ImGui::Text(scenePath.c_str());
 				bool isActive = m_ActiveScene == scenePtr;
 
-				ImGui::SameLine(ImGui::GetWindowWidth() - (isActive ? 75 : 160));
+				ImGui::SameLine(ImGui::GetWindowWidth() - (isActive ? 69 : 160));
 				if (!isActive && ImGui::Button(("Set active##" + scenePath).c_str()))
 					SceneManager::SetActiveScene(scenePath);
 

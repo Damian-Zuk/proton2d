@@ -1,7 +1,7 @@
 {
   "window_title": "Proton2D Engine",
-  "window_width": 1600,
-  "window_height": 900,
+  "window_width": 1920,
+  "window_height": 1080,
   "fullscreen": false,
-  "vsync": true
+  "vsync": false
 }

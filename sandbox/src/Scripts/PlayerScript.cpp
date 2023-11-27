@@ -44,6 +44,8 @@ void PlayerScript::OnCreate()
 
 void PlayerScript::OnUpdate(float ts)
 {
+	m_FootSensor.GetTransform().Position = m_Entity.GetTransform().Position;
+
 	// === Attack (Space) ===
 	bool space = Input::IsKeyPressed(Key::Space);
 	if (m_IsAttacking)

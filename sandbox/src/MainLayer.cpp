@@ -20,12 +20,13 @@ void MainLayer::OnUpdate(float ts)
 void MainLayer::OnEvent(Event& e)
 {
 	EventDispatcher dispatcher(e);
+	Scene* scene = SceneManager::GetActiveScene();
 
 	dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& event)
 	{
 		if (event.GetKeyCode() == Key::R)
 		{
-			SpawnRandomBox(SceneManager::GetActiveScene()->GetCursorWorldPosition());
+			SpawnRandomBox(scene->GetCursorWorldPosition());
 		}
 		return false;
 	});

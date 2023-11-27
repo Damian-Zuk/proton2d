@@ -57,6 +57,30 @@ namespace proton {
 		style.WindowMenuButtonPosition = ImGuiDir_None;
 		style.ColorButtonPosition;
 
+		// Theme styles
+		ImVec4 color = ImVec4(0.5f, 0.12f, 0.12f, 1.0f);
+		style.Colors[ImGuiCol_TextDisabled] = color;
+		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.7f);
+		style.Colors[ImGuiCol_Border] = color;
+		style.Colors[ImGuiCol_FrameBg] = color;
+		style.Colors[ImGuiCol_Button] = color;
+		style.Colors[ImGuiCol_ButtonHovered] = color;
+		style.Colors[ImGuiCol_ButtonActive] = color;
+		style.Colors[ImGuiCol_Header] = color;
+		style.Colors[ImGuiCol_HeaderHovered] = color;
+		style.Colors[ImGuiCol_HeaderActive] = color;
+		style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+		ImVec4 titleColor = ImVec4(0.40f, 0.11f, 0.11f, 1.0f);
+		style.Colors[ImGuiCol_TitleBg] = titleColor;
+		style.Colors[ImGuiCol_TitleBgActive] = titleColor;
+
+		ImVec4 tabColor = ImVec4(0.25f, 0.1f, 0.1f, 1.0f);
+		style.Colors[ImGuiCol_TabUnfocusedActive] = tabColor;
+		style.Colors[ImGuiCol_TabHovered] = tabColor;
+		style.Colors[ImGuiCol_TabActive] = tabColor;
+		style.Colors[ImGuiCol_DockingPreview] = tabColor;
+
 		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 0.0f;
@@ -205,7 +229,10 @@ namespace proton {
 
 		// Scene viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+
+		ImGui::PushStyleColor(ImGuiCol_Tab, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
 		ImGui::Begin("Viewport");
+		ImGui::PopStyleColor();
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto viewportOffset = ImGui::GetWindowPos();

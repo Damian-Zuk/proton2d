@@ -10,13 +10,13 @@
 - Scene system to manage game entities.
 - Native C++ Entity Scripting.
 - Spritesheet support.
-- Spritesheet tile-based animation.
+- Spritesheet tile based animation.
 - Resizable sprites (9-scaling method).
 - Entity prefabs (which will be reworked).
 
 <details>
-<summary><b>Game editor preview (expand)</b></summary>
-<img src="" alt="Game editor"></img>
+<summary><b>Game Editor Preview (expand)</b></summary>
+<img src="https://i.imgur.com/iEeSS1V.png" alt="Game editor"></img>
 </details>
 
 ## Getting Started
@@ -90,7 +90,7 @@ The Proton2D game engine editor consists of several panels, each having it's own
 | Panel | Short description |
 | ----------- | ---------- |
 | <b>Scene Hierarchy</b> |  Manages the scene's entity structure. Right-click to add a new entity at the scene root, or click on an entity to add a child. Entities can be reorganized through drag-and-drop.  |
-| <b>Inspector</b> | Panel where you can edit game objects (entities) by modifing their component values. |
+| <b>Inspector</b> | Panel where you can edit entities by modifing their component values. |
 | <b>Scene</b> | Scene simulation Play, Pause, and Stop buttons. View of scenes loaded in memory. This will be changed to scene tabs and the above editor. |
 | <b>Viewport</b> | Scene viewport that show rendered game view. You can move the camera by holding the right mouse button and select and move entities using the left mouse button. Camera zoom can be changed by using the scroll wheel. |
 | <b>Prefab</b> | List of prefabs that can be spawned or deleted. |
