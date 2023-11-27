@@ -2,7 +2,7 @@
 // Wrapper for spdlog with logging macros
 // From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Log.cpp
 // 
-#include "pch.h"
+#include "ptpch.h"
 #include "Proton/Debug/Logger.h"
 
 #include <spdlog/sinks/stdout_color_sinks.h>

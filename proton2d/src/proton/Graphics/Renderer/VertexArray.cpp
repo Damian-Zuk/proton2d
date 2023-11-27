@@ -5,7 +5,7 @@
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLVertexArray.cpp
 //
 
-#include "pch.h"
+#include "ptpch.h"
 #include "Proton/Graphics/Renderer/VertexArray.h"
 
 #include <glad/glad.h>

@@ -38,8 +38,8 @@ project "proton2d"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "pch.h"
-	pchsource "%{prj.location}/src/pch.cpp"
+	pchheader "ptpch.h"
+	pchsource "%{prj.location}/src/ptpch.cpp"
 
 	files
 	{
@@ -115,8 +115,8 @@ project "sandbox"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "pcheader.h"
-	pchsource "%{prj.location}/src/pcheader.cpp"
+	pchheader "pch.h"
+	pchsource "%{prj.location}/src/pch.cpp"
 
 	files
 	{

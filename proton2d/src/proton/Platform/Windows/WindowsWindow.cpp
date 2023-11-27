@@ -2,7 +2,7 @@
 // Windows GLFW Window implementation
 // From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.cpp
 //
-#include "pch.h"
+#include "ptpch.h"
 #include "Proton/Platform/Windows/WindowsWindow.h"
 #include "Proton/Events/WindowEvents.h"
 #include "Proton/Events/KeyEvents.h"

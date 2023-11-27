@@ -3,7 +3,7 @@
 // Architecture and Code based upon Hazel 2D Renderer:
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.cpp
 //
-#include "pch.h"
+#include "ptpch.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 
 #include "Proton/Graphics/Renderer/Shader.h"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Proton/Core/Base.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/Input.h"
 

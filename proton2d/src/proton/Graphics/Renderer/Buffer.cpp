@@ -4,7 +4,7 @@
 // From Hazel Engine Renderer OpenGL API:
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLBuffer.cpp
 //
-#include "pch.h"
+#include "ptpch.h"
 #include "Proton/Graphics/Renderer/Buffer.h"
 
 #include <glad/glad.h>
