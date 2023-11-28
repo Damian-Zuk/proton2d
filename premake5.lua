@@ -115,9 +115,6 @@ project "sandbox"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "pch.h"
-	pchsource "%{prj.location}/src/pch.cpp"
-
 	files
 	{
 		"%{prj.name}/src/**.h",

@@ -2,6 +2,7 @@
 
 #include "Proton/Core/Base.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/AppLayer.h"
 #include "Proton/Core/Input.h"
 
 #include "Proton/Debug/Assert.h"
@@ -19,9 +20,10 @@
 
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scene/Components.h"
-#include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
+
+#include "Proton/Scripting/EntityScript.h"
 
 #include "Proton/Graphics/SpriteAnimation.h"
 

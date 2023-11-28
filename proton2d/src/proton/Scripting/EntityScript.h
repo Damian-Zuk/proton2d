@@ -16,7 +16,7 @@ static inline const bool __RegisteredInFactory = \
 namespace proton {
 
 	// Supported script variable types for Serialization / Editor view.
-	enum class ScriptFieldType { Float = 0, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
+	enum class ScriptFieldType { Float, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
 
 	struct ScriptField
 	{

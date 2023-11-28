@@ -98,8 +98,6 @@ namespace proton {
 		}
 		ImGui::Columns(1);
 
-		ImGui::Dummy({0, 10});
-		ImGui::Text("Components");
 		ImGui::Dummy({ 0, 5 });
 		ImGui::Separator();
 		ImGui::Dummy({0, 5});
@@ -253,9 +251,9 @@ namespace proton {
 				ImGui::PopItemWidth();
 				ImGui::Dummy({ 0.0f, 5.0f });
 
-				// Texture filter mode
 				if (sprite)
 				{
+					// Texture filter mode
 					ImGui::Text("Filter mode:"); ImGui::SameLine();
 					uint32_t filterMode = (uint32_t)sprite.GetTexture()->GetFilterMode();
 					const char* filterModes[] = { "Nearest", "Linear" };
@@ -276,6 +274,8 @@ namespace proton {
 						}
 						ImGui::EndCombo();
 					}
+
+					// Mirror flip
 					ImGui::Dummy({ 0.0f, 5.0f });
 					ImGui::Text("Mirror flip: ");
 					ImGui::SameLine();
@@ -305,7 +305,7 @@ namespace proton {
 					}
 
 					glm::ivec2 tileSize = (glm::ivec2)sprite.m_TileSize;
-					if (ImGui::DragInt2("Size (tiles)", glm::value_ptr(tileSize), 0.2f, 1))
+					if (ImGui::DragInt2("Size", glm::value_ptr(tileSize), 0.2f, 1))
 					{
 						if (tileSize.x > 0 && tileSize.y > 0)
 							sprite.SetTileSize((uint32_t)tileSize.x, (uint32_t)tileSize.y);

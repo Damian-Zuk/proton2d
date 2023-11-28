@@ -10,7 +10,7 @@ class b2Body;
 
 namespace proton {
 
-	constexpr glm::vec4 DEFAULT_SCENE_SCREEN_CLEAR_COLOR = { 0.18f, 0.22f, 0.30f, 1.0f };
+	constexpr glm::vec4 DEFAULT_SCENE_SCREEN_CLEAR_COLOR = { 0.24f, 0.37f, 0.67f, 1.0f };
 
 	// Forward declaration
 	class Entity;

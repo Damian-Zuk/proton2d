@@ -1,7 +1,8 @@
-#include "pch.h"
+#include <Proton.h>
+using namespace proton;
+
 #include "PortalScript.h"
 
-using namespace proton;
 
 void PortalScript::OnRegisterFields()
 {

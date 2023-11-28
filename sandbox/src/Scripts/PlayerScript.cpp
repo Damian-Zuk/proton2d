@@ -1,7 +1,8 @@
-#include "pch.h"
+#include <Proton.h>
+using namespace proton;
+
 #include "PlayerScript.h"
 
-using namespace proton;
 
 void PlayerScript::OnRegisterFields()
 {

@@ -1,4 +1,5 @@
-#include "pch.h"
+#include <Proton/Core/Application.h>
+
 #include "MainLayer.h"
 
 class Sandbox : public proton::Application

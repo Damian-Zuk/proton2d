@@ -2,8 +2,8 @@
 
 #include "Proton/Core/Base.h"
 #include "Proton/Core/Window.h"
-#include "Proton/Core/AppLayer.h"
 #include "Proton/Core/Config.h"
+#include "Proton/Core/AppLayer.h"
 
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"

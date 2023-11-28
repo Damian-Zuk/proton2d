@@ -1,17 +1,14 @@
 #pragma once
+// Header-only script example
 
-#include <proton.h>
-
-using namespace proton;
-
-class RotationScript : public proton::EntityScript
+class RotationScript : public EntityScript
 {
 public:
 	ENTITY_SCRIPT_CLASS(RotationScript)
 
 	virtual void OnRegisterFields() override
 	{
-		RegisterField(proton::ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
+		RegisterField(ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
 	}
 
 	virtual void OnCreate() override

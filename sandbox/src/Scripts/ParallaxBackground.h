@@ -1,6 +1,6 @@
 #pragma once
 
-class ParallaxBackground : public proton::EntityScript
+class ParallaxBackground : public EntityScript
 {
 public:
 	ENTITY_SCRIPT_CLASS(ParallaxBackground)
@@ -12,8 +12,8 @@ private:
 	float m_ParallaxFactor = 1.0f;
 	float m_PositionOffset = 0.0f;
 
-	proton::Scene* m_Scene;
-	std::vector<proton::Entity> m_Copies;
+	Scene* m_Scene;
+	std::vector<Entity> m_Copies;
 	float m_SpriteAspectRatio;
 	uint32_t m_CopiesCount;
 };

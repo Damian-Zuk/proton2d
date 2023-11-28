@@ -1,6 +1,6 @@
 #pragma once
 
-class PortalScript : public proton::EntityScript
+class PortalScript : public EntityScript
 {
 public:
 	ENTITY_SCRIPT_CLASS(PortalScript)
@@ -8,6 +8,6 @@ public:
 	virtual void OnCreate() override;
 	virtual void OnRegisterFields() override;
 private:
-	proton::Shared<proton::SpriteAnimation> m_SpriteAnimation;
+	Shared<SpriteAnimation> m_SpriteAnimation;
 	int m_TargetLevel = 1;
 };

@@ -58,28 +58,30 @@ namespace proton {
 		style.ColorButtonPosition;
 
 		// Theme styles
-		ImVec4 color = ImVec4(0.5f, 0.12f, 0.12f, 1.0f);
-		style.Colors[ImGuiCol_TextDisabled] = color;
+		// TODO: Move values to editor config file
+		style.Colors[ImGuiCol_Border] = ImVec4(0.28f, 0.12f, 0.12f, 1.0f);;
+		style.Colors[ImGuiCol_FrameBg] = ImVec4(0.28f, 0.12f, 0.12f, 1.0f);
+
+		style.Colors[ImGuiCol_Button] = ImVec4(0.5f, 0.12f, 0.12f, 1.0f);;
+		style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.6f, 0.12f, 0.12f, 1.0f);;
+		style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.7f, 0.12f, 0.12f, 1.0f);;
+
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.7f);
-		style.Colors[ImGuiCol_Border] = color;
-		style.Colors[ImGuiCol_FrameBg] = color;
-		style.Colors[ImGuiCol_Button] = color;
-		style.Colors[ImGuiCol_ButtonHovered] = color;
-		style.Colors[ImGuiCol_ButtonActive] = color;
-		style.Colors[ImGuiCol_Header] = color;
-		style.Colors[ImGuiCol_HeaderHovered] = color;
-		style.Colors[ImGuiCol_HeaderActive] = color;
 		style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 
-		ImVec4 titleColor = ImVec4(0.40f, 0.11f, 0.11f, 1.0f);
+		ImVec4 headerColor = ImVec4(0.5f, 0.12f, 0.12f, 1.0f);
+		style.Colors[ImGuiCol_Header] = headerColor;
+		style.Colors[ImGuiCol_HeaderHovered] = headerColor;
+		style.Colors[ImGuiCol_HeaderActive] = headerColor;
+
+		ImVec4 titleColor = ImVec4(0.32f, 0.12f, 0.12f, 1.0f);
 		style.Colors[ImGuiCol_TitleBg] = titleColor;
 		style.Colors[ImGuiCol_TitleBgActive] = titleColor;
 
-		ImVec4 tabColor = ImVec4(0.25f, 0.1f, 0.1f, 1.0f);
+		ImVec4 tabColor = ImVec4(0.5f, 0.2f, 0.1f, 1.0f);
 		style.Colors[ImGuiCol_TabUnfocusedActive] = tabColor;
 		style.Colors[ImGuiCol_TabHovered] = tabColor;
 		style.Colors[ImGuiCol_TabActive] = tabColor;
-		style.Colors[ImGuiCol_DockingPreview] = tabColor;
 
 		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

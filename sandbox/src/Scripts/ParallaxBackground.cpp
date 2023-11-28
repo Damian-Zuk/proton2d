@@ -1,7 +1,8 @@
-#include "pch.h"
+#include <Proton.h>
+using namespace proton;
+
 #include "ParallaxBackground.h"
 
-using namespace proton;
 
 void ParallaxBackground::OnRegisterFields()
 {

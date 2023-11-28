@@ -1,11 +1,12 @@
-#include "pch.h"
+#include <Proton.h>
+using namespace proton;
+
 #include "MainLayer.h"
 
 // Header-only scripts must be compiled somewhere
 #include "Scripts/RotationScript.h" 
 #include "Scripts/TestScript.h"
 
-using namespace proton;
 
 void MainLayer::OnCreate()
 {
@@ -51,7 +52,7 @@ Entity MainLayer::SpawnRandomBox(const glm::vec2& position)
 	sprite.Color.g = Random::Float(0.0f, 1.0f);
 	sprite.Color.b = Random::Float(0.0f, 1.0f);
 
-	// TODO: Implement a queue and remove this
+	// TODO: Add an entity queue and remove this
 	scene->CreateRuntimeBody(entity);
 	
 	return entity;
