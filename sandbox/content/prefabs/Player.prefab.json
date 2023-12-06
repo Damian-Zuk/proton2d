@@ -1,20 +1,20 @@
 {
-    "ID": 6549071544000056107,
+    "UUID": 15452605691319723735,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            11.75359,
-            4.53959,
-            0.0
+            2.76231,
+            -0.72211,
+            0.1
         ],
         "Rotation": 0.0,
         "Scale": [
-            7.5,
-            5.0
+            2.5,
+            2.5
         ]
     },
     "Sprite": {
-        "Texture": "player-sheet.png",
+        "Texture": "character.png",
         "FilterMode": 0,
         "Flip": [
             false,
@@ -29,17 +29,10 @@
             1
         ],
         "Color": [
-            1.0,
-            1.0,
-            1.0,
+            0.76471,
+            0.18431,
+            0.33725,
             1.0
-        ]
-    },
-    "Camera": {
-        "ZoomLevel": 2.5,
-        "PositionOffset": [
-            0.0,
-            2.5
         ]
     },
     "Rigidbody": {
@@ -48,12 +41,12 @@
     },
     "BoxCollider": {
         "Size": [
-            0.09000000357627869,
-            0.44999998807907104
+            0.1599999964237213,
+            0.5899999737739563
         ],
         "Offset": [
-            -0.05999999865889549,
-            -1.2899999618530273
+            0.0,
+            -0.07999999821186066
         ],
         "Friction": 0.0,
         "Restitution": 0.0,
@@ -61,56 +54,26 @@
         "Density": 5.0,
         "IsSensor": false
     },
+    "Camera": {
+        "ZoomLevel": 1.5,
+        "PositionOffset": [
+            0.0,
+            1.7999999523162842
+        ]
+    },
     "Scripts": [
         {
-            "ClassName": "PlayerScript",
+            "ClassName": "Player",
             "Fields": [
                 {
-                    "FieldName": "PlayerSpeed",
-                    "Value": 5.0
+                    "FieldName": "JumpForce",
+                    "Value": 45.0
                 },
                 {
-                    "FieldName": "JumpForce",
-                    "Value": 60.0
+                    "FieldName": "PlayerSpeed",
+                    "Value": 6.0
                 }
             ]
-        }
-    ],
-    "Entities": [
-        {
-            "ID": 10397077487674101346,
-            "Tag": "FootSensor",
-            "Transform": {
-                "Position": [
-                    11.754,
-                    4.54,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rigidbody": {
-                "Type": 2,
-                "FixedRotation": true
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.5099999904632568,
-                    0.41999998688697815
-                ],
-                "Offset": [
-                    -0.05000000074505806,
-                    -2.4100000858306885
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 0.5,
-                "IsSensor": true
-            }
         }
     ]
 }

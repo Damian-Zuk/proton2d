@@ -39,15 +39,12 @@ namespace proton {
 
 		// Pause the simulation. Set scene state to SceneState::Pause
 		void Pause(bool pause = true);
-
-		// Stop the simulation, destroy physics world and entity scripts. Set scene state to SceneState::Stop
-		void Stop();
 		
 		// Create entitiy with random unique identifier (UUID)
 		Entity CreateEntity(const std::string& name = "Entity");
 
 		// Create entitiy with given identifier (UUID)
-		Entity CreateEntityWithID(UUID id, const std::string& name = "Entity");
+		Entity CreateEntityWithUUID(UUID id, const std::string& name = "Entity");
 
 		// Destroy given entity
 		void DestroyEntity(Entity entity, bool popHierachy = true);
@@ -61,16 +58,25 @@ namespace proton {
 		// Find entity by tag (name) from TagComponent
 		Entity FindByTag(const std::string& tag);
 
+		void SetEntityLocalPosition(Entity entity, const glm::vec3& position);
+		void SetEntityWorldPosition(Entity entity, const glm::vec3& position);
+
 		// Find all entities that have given tag
 		std::vector<Entity> FindAllByTag(const std::string& tag);
 
-		// TODO: Add GetEntitiesWithComponents function
+		// Get entities with given set of components
+		template<typename... Components>
+		auto GetAllEntitiesWith()
+		{
+			return m_Registry.view<Components...>();
+		}
+
 		// TODO: Add DuplicateEntity function
 
 		// Camera related methods
 		void SetPrimaryCameraEntity(Entity entity);
 		Entity GetPrimaryCameraEntity();
-		Shared<Camera> GetPrimaryCamera();
+		Camera& GetPrimaryCamera();
 		const glm::vec3& GetPrimaryCameraPosition();
 
 		// Cursor related methods
@@ -82,9 +88,6 @@ namespace proton {
 		// Entity must have RigidbodyComponent.
 		b2Body* GetRuntimeBody(UUID id);
 
-		// TODO: remove - add entity queue in PhysicsWorld
-		b2Body* CreateRuntimeBody(Entity entity);
-
 		// Set renderer screen clear color
 		void SetScreenClearColor(const glm::vec4& color);
 
@@ -94,6 +97,8 @@ namespace proton {
 		// SceneState::Play, SceneState::Play, SceneState::Stop
 		SceneState GetSceneState() const { return m_SceneState; }
 
+		bool IsPhysicsEnabled() const { return m_EnablePhysics; }
+
 	private:
 		void OnUpdate(float ts);
 		void RenderScene(const Camera& camera);
@@ -102,6 +107,8 @@ namespace proton {
 
 		void CachePrimaryCameraPosition();
 		void CacheCursorWorldPosition();
+
+		void CalculateWorldPositions(bool isPhysicsSimulated);
 
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
@@ -118,15 +125,16 @@ namespace proton {
 		// ECS
 		entt::registry m_Registry;
 		std::unordered_map<UUID, Entity> m_EntityMap;
+		std::vector<Entity> m_Root;
 
 		// Camera
 		entt::entity m_PrimaryCameraEntity = entt::null;
-		Shared<Camera> m_PrimaryCamera = nullptr;
-		Shared<Camera> m_DefaultCamera; // pass this to Renderer if m_PrimaryCamera is nullptr
+		Camera* m_PrimaryCamera = nullptr;
+		Camera m_DefaultCamera; // pass this to Renderer if m_PrimaryCamera is nullptr
 
 		// Physics
 		bool m_EnablePhysics = true;
-		PhysicsWorld* m_PhysicsWorld = nullptr;
+		Unique<PhysicsWorld> m_PhysicsWorld;
 
 		// Cache
 		glm::vec3 m_PrimaryCameraPosition = { 0.0f, 0.0f, 0.0f };
@@ -136,7 +144,8 @@ namespace proton {
 		friend class Entity;
 		friend class SceneSerializer;
 		friend class SceneManager;
-
+		friend class PhysicsWorld;
+		
 		friend class EditorLayer;
 		friend class EditorCamera;
 		friend class MiscellaneousPanel;
@@ -144,8 +153,7 @@ namespace proton {
 		friend class SceneHierarchyPanel;
 		friend class ScenePanel;
 		friend class EditorMenuBar;
-
-		friend class PhysicsWorld;
+		friend class SceneViewportPanel;
 	};
 
 }

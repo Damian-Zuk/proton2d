@@ -1,4 +1,4 @@
-#include <Proton/Core/Application.h>
+#include <Proton.h>
 
 #include "MainLayer.h"
 

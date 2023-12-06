@@ -10,31 +10,32 @@ void ParallaxBackground::OnRegisterFields()
 	RegisterField(ScriptFieldType::Float, "PositionOffset", &m_PositionOffset);
 }
 
-void ParallaxBackground::OnCreate()
+bool ParallaxBackground::OnCreate()
 {
 	m_Scene = m_Entity.GetScene();
 	auto& camera = m_Scene->GetPrimaryCamera();
 	auto& sprite = m_Entity.GetComponent<SpriteComponent>().Sprite;
 
 	m_SpriteAspectRatio = sprite.GetAspectRatio();
-	m_CopiesCount = 1 + (uint32_t)ceil(camera->GetAspectRatio() / m_SpriteAspectRatio);
+	m_CopiesCount = 1 + (uint32_t)ceil(camera.GetAspectRatio() / m_SpriteAspectRatio);
 	m_Entity.DestroyChildEntities();
 
 	for (uint32_t i = 0; i < m_CopiesCount; i++)
 	{
 		Entity e = m_Scene->CreateEntity(m_Entity.GetTag() + "-" + std::to_string(i));
 		e.AddComponent<SpriteComponent>().Sprite.SetTexture(sprite.GetTexture());
-		e.GetTransform().Position.z = m_Entity.GetTransform().Position.z;
+		e.GetTransform().WorldPosition.z = m_Entity.GetTransform().WorldPosition.z;
 		m_Entity.AddChildEntity(e);
 		m_Copies.push_back(e); 
 	}
+	return true;
 }
 
 void ParallaxBackground::OnUpdate(float ts)
 {
 	const auto& camera = m_Scene->GetPrimaryCamera();
-	float zoomLevel = camera->GetZoomLevel();
-	float viewSize = camera->GetOrthographicSize() * zoomLevel;
+	float zoomLevel = camera.GetZoomLevel();
+	float viewSize = camera.GetOrthographicSize() * zoomLevel;
 	const glm::vec3& cameraPos = m_Scene->GetPrimaryCameraPosition();
 	glm::vec2 scale = { viewSize * m_SpriteAspectRatio, viewSize };
 
@@ -43,15 +44,13 @@ void ParallaxBackground::OnUpdate(float ts)
 	
 	auto& transform = m_Entity.GetTransform();
 	transform.Scale = scale;
-	transform.Position.x = position - offset;
-	transform.Position.y = cameraPos.y;
+	m_Entity.SetWorldPosition({ position - offset, cameraPos.y, transform.WorldPosition.z });
 
 	for (Entity copy : m_Copies)
 	{
 		auto& transform = copy.GetTransform();
 		position += scale.x;
 		transform.Scale = scale;
-		transform.Position.x = position - offset;
-		transform.Position.y = cameraPos.y;
+		copy.SetWorldPosition({ position - offset, cameraPos.y, transform.WorldPosition.z });
 	}
 }

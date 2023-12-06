@@ -7,28 +7,31 @@ class TestScript : public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(TestScript)
 
-	virtual void OnCreate() override
+	virtual bool OnCreate() override
 	{
 		m_Body = m_Entity.GetRuntimeBody();
-		auto& bc = m_Entity.GetComponent<BoxColliderComponent>();
 
-		bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContactInfo info)
+		// Set collision callback function (lambda)
+		auto& bc = m_Entity.GetComponent<BoxColliderComponent>();
+		bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContact contact)
 		{
-			Entity e = m_Entity.GetScene()->FindByID(info.OtherUUID);
-			auto& sprite = e.GetComponent<SpriteComponent>();
-			if (sprite.Color != glm::vec4{1.0f})
+			// Change color to the color of entity that collided with
+			auto& sprite = contact.Other->GetComponent<SpriteComponent>();
+			if (sprite.Color != glm::vec4{ 1.0f })
 				m_Entity.GetComponent<SpriteComponent>().Color = sprite.Color;
 		};
+		return true;
 	}
 
 	virtual void OnUpdate(float ts) override
 	{
+		// Apply random impules in random intervals (1-3s)
 		if (m_Timer == 0.0f)
 		{
+			m_Timer = Random::Float(1.0f, 3.0f);
 			float ix = Random::Float(-200.0f, 200.0f);
 			float iy = Random::Float(-200.0f, 200.0f);
 			m_Body->ApplyLinearImpulse({ ix, iy }, m_Body->GetWorldCenter(), true);
-			m_Timer = Random::Float(1.0f, 3.0f);
 		}
 
 		m_Timer = glm::max(m_Timer - ts, 0.0f);

@@ -21,75 +21,76 @@ namespace proton {
 
 	b2Body* PhysicsWorld::GetRuntimeBody(UUID id)
 	{
-		PT_ASSERT(m_RuntimeBodies.find(id) != m_RuntimeBodies.end(), "Runtime body not found!");
+		PT_CORE_ASSERT(m_RuntimeBodies.find(id) != m_RuntimeBodies.end(), "Physics runtime body not found!");
 		return m_RuntimeBodies.at(id);
 	}
 
 	void PhysicsWorld::DestroyRuntimeBody(UUID id)
 	{
-		PT_ASSERT(m_RuntimeBodies.find(id) != m_RuntimeBodies.end(), "Runtime body not found!");
-		m_World->DestroyBody(m_RuntimeBodies.at(id));
+		m_World->DestroyBody(GetRuntimeBody(id));
 		m_RuntimeBodies.erase(id);
 	}
 
-	b2Body* PhysicsWorld::CreateRuntimeBody(Entity entity)
+	void PhysicsWorld::CreateRuntimeBody(Entity entity)
 	{
 		auto& uuid = entity.GetComponent<IDComponent>().ID;
+		PT_CORE_ASSERT(m_RuntimeBodies.find(uuid) == m_RuntimeBodies.end(), "Physics runtime body already exists!");
+
 		auto& transform = entity.GetComponent<TransformComponent>();
 		auto& rb = entity.GetComponent<RigidbodyComponent>();
 
 		b2BodyDef bodyDef;
 		bodyDef.type = rb.Type;
-		bodyDef.position.Set(transform.Position.x, transform.Position.y);
+		bodyDef.position.Set(transform.WorldPosition.x, transform.WorldPosition.y);
 		bodyDef.angle = glm::radians(transform.Rotation);
 
 		b2Body* body = m_World->CreateBody(&bodyDef);
 		body->SetFixedRotation(rb.FixedRotation);
-		AddFixtureRuntimeBody(body, entity);
+		AddFixtureRuntimeBody(entity, body);
 		m_RuntimeBodies[entity.GetUUID()] = body;
-
-		return body;
 	}
 
-	void PhysicsWorld::AddFixtureRuntimeBody(b2Body* body, Entity entity)
+	void PhysicsWorld::AddFixtureRuntimeBody(Entity entity, b2Body* body)
 	{
-		if (entity.HasComponent<BoxColliderComponent>())
-		{
-			auto& bc = entity.GetComponent<BoxColliderComponent>();
-			auto& transform = entity.GetComponent<TransformComponent>();
-			auto& uuid = entity.GetComponent<IDComponent>().ID;
+		if (!entity.HasComponent<BoxColliderComponent>()) 
+			return;
 
-			b2FixtureDef fixtureDef; b2PolygonShape shape;
-			m_FixtureUserData.push_back(MakeUnique<UUID>(uuid));
+		auto& bc = entity.GetComponent<BoxColliderComponent>();
+		auto& transform = entity.GetComponent<TransformComponent>();
+		auto& uuid = entity.GetComponent<IDComponent>().ID;
 
-			shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
-				bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
+		b2PolygonShape shape;
+		shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
+			bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
 
-			const PhysicsMaterial& material = bc.Material;
-			fixtureDef.shape = &shape;
-			fixtureDef.friction = material.Friction;
-			fixtureDef.restitution = material.Restitution;
-			fixtureDef.restitutionThreshold = material.RestitutionThreshold;
-			fixtureDef.density = material.Density;
-			fixtureDef.isSensor = bc.IsSensor;
-			fixtureDef.filter = bc.Filter;
-			fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(m_FixtureUserData.back().get());
-			body->CreateFixture(&fixtureDef);
-		}
+		b2FixtureDef fixtureDef;
+		m_FixtureUserData.push_back(MakeUnique<Entity>(entity.m_Handle, m_Scene));
+		fixtureDef.userData.pointer = (uintptr_t)(m_FixtureUserData.back().get());
+
+		fixtureDef.shape = &shape;
+		fixtureDef.friction = bc.Material.Friction;
+		fixtureDef.restitution = bc.Material.Restitution;
+		fixtureDef.restitutionThreshold = bc.Material.RestitutionThreshold;
+		fixtureDef.density = bc.Material.Density;
+		fixtureDef.isSensor = bc.IsSensor;
+		fixtureDef.filter = bc.Filter;
+
+		if (!body)
+			body = GetRuntimeBody(entity.GetUUID());
+
+		body->CreateFixture(&fixtureDef);
 	}
 
 	void PhysicsWorld::BuildWorld()
 	{
-		// TODO: Change GetEntitiesWithComponents
-		// Initialize b2World
+		// Initialize Box2D world
 		m_World = new b2World({ 0.0f, -m_Gravity });
 		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 		for (entt::entity entity : m_Scene->m_Registry.view<RigidbodyComponent>())
 			CreateRuntimeBody(Entity{ entity, m_Scene });
 
-		// TODO: Think about it
-		// Attach a fixture to the parent entity for each child entitiy
-		// which has a BoxColliderComponent but lacks RigidbodyComponent.
+		// Attach a fixture to the parent entity for each child which has
+		// a BoxColliderComponent but does not have a RigidbodyComponent.
 		for (entt::entity e : m_Scene->m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>))
 		{
 			Entity entity{ e, m_Scene };
@@ -100,7 +101,7 @@ namespace proton {
 				if (parent.HasComponent<RigidbodyComponent>())
 				{
 					b2Body* body = GetRuntimeBody(parent.GetUUID());
-					AddFixtureRuntimeBody(body, entity);
+					AddFixtureRuntimeBody(entity, body);
 				}
 			}
 		}
@@ -119,14 +120,41 @@ namespace proton {
 
 	void PhysicsWorld::Update(float ts)
 	{
+		// Initialize entities created during game runtime
+		if (m_EntitiesToInitialize.size())
+		{
+			auto& vec = m_EntitiesToInitialize;
+			vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+
+			for (auto& entity : m_EntitiesToInitialize)
+			{
+				if (entity.HasComponent<RigidbodyComponent>())
+				{
+					CreateRuntimeBody(entity);
+				}
+				else if (entity.HasComponent<BoxColliderComponent>())
+				{
+					auto& rc = entity.GetComponent<RelationshipComponent>();
+					if (rc.Parent != entt::null)
+					{
+						Entity parent{ rc.Parent, m_Scene };
+						AddFixtureRuntimeBody(entity, GetRuntimeBody(parent.GetUUID()));
+					}
+				}
+			}
+			m_EntitiesToInitialize.clear();
+		}
+
+		// Update physics world
 		m_World->Step(ts, m_PhysicsVelocityIterations, m_PhysicsPositionIterations);
 		auto view = m_Scene->m_Registry.view<IDComponent, TransformComponent, RigidbodyComponent>();
 		for (auto entity : view)
 		{
 			auto [id, transform] = view.get<IDComponent, TransformComponent>(entity);
 			b2Body* body = m_RuntimeBodies.at(id.ID);
-			transform.Position.x = body->GetPosition().x;
-			transform.Position.y = body->GetPosition().y;
+			// Retrive positions of entities
+			transform.WorldPosition.x = body->GetPosition().x;
+			transform.WorldPosition.y = body->GetPosition().y;
 			transform.Rotation = glm::degrees(body->GetAngle());
 		}
 	}
@@ -136,59 +164,35 @@ namespace proton {
 	{
 	}
 
-#define GET_CONTACT_ENTITIES()\
-	b2Fixture* fixtureA = contact->GetFixtureA();\
-	b2Fixture* fixtureB = contact->GetFixtureB();\
-	UUID uuidA = *(UUID*)(fixtureA->GetUserData().pointer);\
-	UUID uuidB = *(UUID*)(fixtureB->GetUserData().pointer);\
-	Entity entityA = m_Scene->FindByID(uuidA);\
-	Entity entityB = m_Scene->FindByID(uuidB);\
-	if (!entityA.IsValid() || !entityB.IsValid()) return; \
-	auto& bcA = entityA.GetComponent<BoxColliderComponent>();\
-	auto& bcB = entityB.GetComponent<BoxColliderComponent>();
+#define CALL_CONTACT_CALLBACK_FUNCTION(callback_func, ...) \
+	Entity* entityA = (Entity*)(contact->GetFixtureA()->GetUserData().pointer); \
+	Entity* entityB = (Entity*)(contact->GetFixtureB()->GetUserData().pointer); \
+	if (!entityA->IsValid() || !entityB->IsValid()) return; \
+	auto& bcA = entityA->GetComponent<BoxColliderComponent>(); \
+	auto& bcB = entityB->GetComponent<BoxColliderComponent>(); \
+	if (bcA.ContactCallback.callback_func) \
+		bcA.ContactCallback.callback_func(PhysicsContact{ entityB, contact }, __VA_ARGS__); \
+	if (bcB.ContactCallback.callback_func) \
+		bcB.ContactCallback.callback_func(PhysicsContact{ entityA, contact }, __VA_ARGS__); \
 
 	void PhysicsContactListener::BeginContact(b2Contact* contact)
 	{
-		GET_CONTACT_ENTITIES();
-
-		if (bcA.ContactCallback.OnBeginContactFunction)
-			bcA.ContactCallback.OnBeginContactFunction({ uuidB, contact });
-
-		if (bcB.ContactCallback.OnBeginContactFunction)
-			bcB.ContactCallback.OnBeginContactFunction({ uuidA, contact });
+		CALL_CONTACT_CALLBACK_FUNCTION(OnBeginContactFunction);
 	}
 
 	void PhysicsContactListener::EndContact(b2Contact* contact)
 	{
-		GET_CONTACT_ENTITIES();
-
-		if (bcA.ContactCallback.OnEndContactFunction)
-			bcA.ContactCallback.OnEndContactFunction({ uuidB, contact });
-
-		if (bcB.ContactCallback.OnEndContactFunction)
-			bcB.ContactCallback.OnEndContactFunction({ uuidA, contact });
+		CALL_CONTACT_CALLBACK_FUNCTION(OnEndContactFunction);
 	}
 
 	void PhysicsContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
-		GET_CONTACT_ENTITIES();
-
-		if (bcA.ContactCallback.OnPreSolveFunction)
-			bcA.ContactCallback.OnPreSolveFunction({ uuidB, contact }, oldManifold);
-
-		if (bcB.ContactCallback.OnPreSolveFunction)
-			bcB.ContactCallback.OnPreSolveFunction({ uuidA, contact }, oldManifold);
+		CALL_CONTACT_CALLBACK_FUNCTION(OnPreSolveFunction, oldManifold);
 	}
 
 	void PhysicsContactListener::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
-		GET_CONTACT_ENTITIES();
-
-		if (bcA.ContactCallback.OnPostSolveFunction)
-			bcA.ContactCallback.OnPostSolveFunction({ uuidB, contact }, impulse);
-
-		if (bcB.ContactCallback.OnPostSolveFunction)
-			bcB.ContactCallback.OnPostSolveFunction({ uuidA, contact }, impulse);
+		CALL_CONTACT_CALLBACK_FUNCTION(OnPostSolveFunction, impulse);
 	}
 
 }

@@ -6,7 +6,7 @@
 #include "Proton/Utils/Utils.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Scripting/ScriptFactory.h"
-#include "Proton/Scene/Components.h"
+#include "Proton/Scene/EntityComponent.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Physics/PhysicsWorld.h"
@@ -128,13 +128,13 @@ namespace proton {
 				ImGui::Text("Position");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(75.0f);
-				ImGui::DragFloat("##P_X", &component.Position.x, 0.01f, 0.0f, 0.0f, "%.3f");
+				ImGui::DragFloat("##P_X", &component.LocalPosition.x, 0.01f, 0.0f, 0.0f, "%.3f");
 				ImGui::SameLine();
 				ImGui::PushItemWidth(75.0f);
-				ImGui::DragFloat("##P_Y", &component.Position.y, 0.01f, 0.0f, 0.0f, " %.3f");
+				ImGui::DragFloat("##P_Y", &component.LocalPosition.y, 0.01f, 0.0f, 0.0f, " %.3f");
 				ImGui::SameLine();
 				ImGui::PushItemWidth(75.0f);
-				ImGui::DragFloat("##P_Z", &component.Position.z, 0.0001f, 0.0f, 0.0f, "%.3f");
+				ImGui::DragFloat("##P_Z", &component.LocalPosition.z, 0.0001f, 0.0f, 0.0f, "%.3f");
 				ImGui::Columns(1);
 
 				// Scale
@@ -414,9 +414,9 @@ namespace proton {
 							m_ActiveScene->SetPrimaryCameraEntity(Entity{});
 					}
 
-					float zoom = component.Camera->GetZoomLevel();
+					float zoom = component.Camera.GetZoomLevel();
 					if (ImGui::DragFloat("Zoom level", &zoom, 0.01f))
-						component.Camera->SetZoomLevel(zoom);
+						component.Camera.SetZoomLevel(zoom);
 					ImGui::DragFloat2("Position offset", glm::value_ptr(component.PositionOffset), 0.01f);
 				});
 		}
@@ -535,7 +535,7 @@ namespace proton {
 
 				if (removeScript)
 				{
-					bool breakLoop = scriptInstance->m_ScriptFields.size() == 1;
+					bool breakLoop = component.Scripts.size() == 1;
 					m_SelectedEntity.RemoveScript(scriptClassName);
 					if (breakLoop)
 						break;

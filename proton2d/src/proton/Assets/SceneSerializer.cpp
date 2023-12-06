@@ -1,12 +1,12 @@
 #include "ptpch.h"
 #include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Scene/EntityComponent.h"
+#include "Proton/Scene/Scene.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scripting/ScriptFactory.h"
-#include "Proton/Scene/Scene.h"
-#include "Proton/Scene/Entity.h"
-#include "Proton/Utils/Utils.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Utils/Utils.h"
 
 #include <fstream>
 
@@ -30,7 +30,7 @@ namespace proton {
 
 	bool SceneSerializer::Serialize(const std::string& filepath)
 	{
-		PT_ASSERT(m_Scene, "Scene context not set!");
+		PT_CORE_ASSERT(m_Scene, "Scene context not set!");
 		const auto& c = m_Scene->m_ClearColor;
 		json jsonObj = {
 			{ "SceneName",          m_Scene->m_SceneName },
@@ -93,7 +93,7 @@ namespace proton {
 				UUID id{ jsonObj["PrimaryCameraEntity"] };
 				m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
 			}
-
+			m_Scene->CalculateWorldPositions(false);
 			return true;
 		}
 		return false;
@@ -120,7 +120,7 @@ namespace proton {
 
 		// Serialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
-		auto& position = transform.Position;
+		auto& position = transform.LocalPosition;
 		jsonObj["Transform"] = 
 		{
 			{ "Position", { round(position.x), round(position.y), round(position.z) } },
@@ -201,7 +201,7 @@ namespace proton {
 		{
 			auto& camera = entity.GetComponent<CameraComponent>();
 			jsonObj["Camera"] = {
-				{ "ZoomLevel", camera.Camera->GetZoomLevel() },
+				{ "ZoomLevel", camera.Camera.GetZoomLevel() },
 				{ "PositionOffset", { camera.PositionOffset.x, camera.PositionOffset.y } },
 			};
 		}
@@ -299,7 +299,7 @@ namespace proton {
 	Entity SceneSerializer::DeserializeEntity(json jsonObj, bool deserializeUUID)
 	{
 		Entity entity = deserializeUUID ? 
-			m_Scene->CreateEntityWithID((uint64_t)jsonObj["UUID"], jsonObj["Tag"]) :
+			m_Scene->CreateEntityWithUUID((uint64_t)jsonObj["UUID"], jsonObj["Tag"]) :
 			m_Scene->CreateEntity(jsonObj["Tag"]);
 
 		// Deserialize TransformComponent
@@ -307,7 +307,8 @@ namespace proton {
 		json& position = jsonObj["Transform"]["Position"];
 		json& scale    = jsonObj["Transform"]["Scale"];
 		json& rotation = jsonObj["Transform"]["Rotation"];
-		transform.Position = { position[0], position[1], position[2] };
+		transform.WorldPosition = { position[0], position[1], position[2] };
+		transform.LocalPosition = { position[0], position[1], position[2] };
 		transform.Scale    = { scale[0], scale[1] };
 		transform.Rotation = rotation;
 
@@ -319,19 +320,30 @@ namespace proton {
 			
 			if (sprite.contains("Texture"))
 			{
-				if (sprite.contains("TilePos"))
+				const auto& texture = AssetManager::GetTexture(sprite["Texture"]);
+				if (texture)
 				{
-					spriteComponent.Sprite.SetSpritesheet(AssetManager::GetSpritesheet(sprite["Texture"]));
+					if (sprite.contains("TilePos"))
+					{
+						const auto& spritesheet = AssetManager::GetSpritesheet(sprite["Texture"]);
+						if (spritesheet)
+						{
+							spriteComponent.Sprite.SetSpritesheet(spritesheet);
+							spriteComponent.Sprite.SetTile(sprite["TilePos"][0], sprite["TilePos"][1]);
+							spriteComponent.Sprite.SetTileSize(sprite["TileSize"][0], sprite["TileSize"][1]);
+						}
+						else
+							PT_CORE_ERROR("[SceneSerializer::DeserializeEntity] Spritesheet {} does not exist!", sprite["Texture"]);
+					}
+					else
+						spriteComponent.Sprite.SetTexture(texture);
 
-					spriteComponent.Sprite.SetTile(sprite["TilePos"][0], sprite["TilePos"][1]);
-					spriteComponent.Sprite.SetTileSize(sprite["TileSize"][0], sprite["TileSize"][1]);
-				} 
+					spriteComponent.Sprite.GetTexture()->m_FilterMode = sprite["FilterMode"];
+					spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][0];
+					spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][1];
+				}
 				else
-					spriteComponent.Sprite.SetTexture(AssetManager::GetTexture(sprite["Texture"]));
-
-				spriteComponent.Sprite.GetTexture()->m_FilterMode = sprite["FilterMode"];
-				spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][0];
-				spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][1];
+					PT_CORE_ERROR("[SceneSerializer::DeserializeEntity] Texture '{}' does not exist!", sprite["Texture"]);
 			}
 			
 			json& color = jsonObj["Sprite"]["Color"];
@@ -360,7 +372,7 @@ namespace proton {
 		{
 			auto& camera = entity.AddComponent<CameraComponent>();
 			json& cameraJson = jsonObj["Camera"];
-			camera.Camera->SetZoomLevel(cameraJson["ZoomLevel"]);
+			camera.Camera.SetZoomLevel(cameraJson["ZoomLevel"]);
 			camera.PositionOffset = { cameraJson["PositionOffset"][0], cameraJson["PositionOffset"][1] };
 		}
 
@@ -398,6 +410,9 @@ namespace proton {
 			{
 				std::string scriptClassName = scriptJson["ClassName"];
 				EntityScript* script = ScriptFactory::Get().AddScriptToEntity(entity, scriptClassName);
+
+				if (script == nullptr)
+					continue;
 
 				if (scriptJson.contains("Fields"))
 				{
@@ -453,7 +468,7 @@ namespace proton {
 		{
 			json& entities = jsonObj["Entities"];
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)
-				entity.AddChildEntity(DeserializeEntity(*it, deserializeUUID));
+				entity.AddChildEntity(DeserializeEntity(*it, deserializeUUID), false);
 		}
 
 		return entity;

@@ -26,9 +26,11 @@ namespace proton {
 		std::string Tag;
 	};
 
+	// Use Entity::SetWorldPosition to modify world position manually
 	struct TransformComponent
 	{
-		glm::vec3 Position { 0.0f, 0.0f, 0.0f };
+		glm::vec3 WorldPosition { 0.0f, 0.0f, 0.0f };
+		glm::vec3 LocalPosition { 0.0f, 0.0f, 0.0f };
 		float Rotation { 0.0f };
 		glm::vec2 Scale { 1.0f, 1.0f };
 	};
@@ -72,7 +74,7 @@ namespace proton {
 
 	struct CameraComponent
 	{
-		Shared<Camera> Camera = nullptr;
+		Camera Camera;
 		glm::vec2 PositionOffset { 0.0f, 0.0f };
 	};
 
@@ -94,6 +96,6 @@ namespace proton {
 
 	struct SpriteAnimationComponent
 	{
-		Shared<SpriteAnimation> SpriteAnimation;
+		SpriteAnimation SpriteAnimation;
 	};
 }

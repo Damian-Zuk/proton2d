@@ -7,30 +7,30 @@ enum PlayerDirection : bool
 
 enum PlayerAnimation : uint32_t
 {
-	Idle, Run, Attack, Jump
+	Idle, Run, Jump, Land
 };
 
-class PlayerScript: public EntityScript
+class Player : public EntityScript
 {
 public:
-	ENTITY_SCRIPT_CLASS(PlayerScript)
+	ENTITY_SCRIPT_CLASS(Player)
 
 	virtual void OnRegisterFields() override;
-	virtual void OnCreate() override;
+	virtual bool OnCreate() override;
 	virtual void OnUpdate(float ts) override;
 
 private:
-	float m_PlayerSpeed = 5.0f;
-	float m_JumpForce = 5.0f;
+	float m_PlayerSpeed = 6.0f;
+	float m_JumpForce = 45.0f;
 
-	Shared<SpriteAnimation> m_Animation;
+	SpriteAnimation* m_Animation;
 	PlayerDirection m_Direction = Right;
+	b2Body* m_Body = nullptr;
 
-	bool m_IsAttacking = false;
-	bool m_IsJumping = true;
+	bool m_IsJumping = false;
+	bool m_IsLanding = false;
 	float m_JumpDelay = 0.0f;
 
-	b2Body* m_Body = nullptr;
 	Entity m_FootSensor;
 	uint32_t m_ContactCount = 0;
 };

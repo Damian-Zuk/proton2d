@@ -18,50 +18,47 @@ namespace proton {
 		template <typename T>
 		T& GetComponent() const
 		{
-			PT_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			PT_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
 			return m_Scene->m_Registry.get<T>(m_Handle);
 		}
 
 		template <typename T, typename... Types>
 		T& AddComponent(Types&& ...args) const
 		{
-			PT_ASSERT(!HasComponent<T>(), "Entity already have component!");
+			PT_CORE_ASSERT(!HasComponent<T>(), "Entity already have component!");
 			return m_Scene->m_Registry.emplace<T>(m_Handle, std::forward<Types>(args)...);
 		}
 
-		// ResizableSpriteComponent override of AddComponent
-		template<>
-		ResizableSpriteComponent& AddComponent() const
+		template <typename T>
+		bool HasComponent() const
 		{
-			PT_ASSERT(!HasComponent<ResizableSpriteComponent>(), "Entity already has component!");
-			PT_ASSERT(HasComponent<TransformComponent>(), "Entity does not have TransformComponent!");
-			auto& sprite = m_Scene->m_Registry.emplace<ResizableSpriteComponent>(m_Handle);
-			sprite.ResizableSprite.m_Transform = &GetComponent<TransformComponent>();
-			return sprite;
+			return m_Scene->m_Registry.any_of<T>(m_Handle);
 		}
 
-		// CameraComponent override of AddComponent
-		template<>
-		CameraComponent& AddComponent() const
+		template <typename... TComponents>
+		bool HasComponents() const
 		{
-			PT_ASSERT(!HasComponent<CameraComponent>(), "Entity already has component!");
-			auto& camera = m_Scene->m_Registry.emplace<CameraComponent>(m_Handle);
-			camera.Camera = MakeShared<Camera>();
-			return camera;
+			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
 		}
 
-		// SpriteAnimationComponent override of AddComponent
-		template<>
-		SpriteAnimationComponent& AddComponent() const
+		// Remove component from Entity
+		template <typename T>
+		void RemoveComponent()
 		{
-			PT_ASSERT(!HasComponent<SpriteAnimationComponent>(), "Entity already has component!");
-			PT_ASSERT(HasComponent<SpriteComponent>(), "Entity must have SpriteComponent!");
-			auto& sprite = GetComponent<SpriteComponent>().Sprite;
-			PT_ASSERT(sprite.m_Spritesheet, "Entity must have Spritesheet Texture!");
+			PT_CORE_ASSERT(HasComponent<T>(), "Entity does not have a component!");
 
-			auto& fb = m_Scene->m_Registry.emplace<SpriteAnimationComponent>(m_Handle);
-			fb.SpriteAnimation = MakeShared<SpriteAnimation>(&sprite);
-			return fb;
+			if (std::is_base_of<ScriptComponent, T>::value)
+				TerminateScripts();
+
+			if (std::is_base_of<CameraComponent, T>::value
+				&& m_Scene->m_PrimaryCameraEntity == *this)
+			{
+				PT_CORE_WARN("[Entity::RemoveComponent<CameraComponent>] Scene Primary Camera has been removed!");
+				m_Scene->m_PrimaryCameraEntity = entt::null;
+				m_Scene->m_PrimaryCamera = nullptr;
+			}
+
+			m_Scene->m_Registry.remove<T>(m_Handle);
 		}
 
 		// Add script to Entity and return instance
@@ -73,7 +70,7 @@ namespace proton {
 
 			auto& component = GetComponent<ScriptComponent>();
 			std::string className{ TScriptClass::__ScriptClassName };
-			PT_ASSERT(component.Scripts.find(className) == component.Scripts.end(), "The script is already attached to an Entity!");
+			PT_CORE_ASSERT(component.Scripts.find(className) == component.Scripts.end(), "The script is already attached to an Entity!");
 
 			EntityScript*& scriptInstance = component.Scripts[className];
 			scriptInstance = new TScriptClass();
@@ -81,45 +78,34 @@ namespace proton {
 			return scriptInstance;
 		}
 
+		// Definitions in EntityComponent.h
+
+		// AddComponent<ResizableSpriteComponent>
+		template<> ResizableSpriteComponent& AddComponent() const;
+
+		// AddComponent<RigidbodyComponent>
+		template<> RigidbodyComponent& AddComponent() const;
+
+		// AddComponent<BoxColliderComponent>
+		template<> BoxColliderComponent& AddComponent() const;
+
+		// AddComponent<SpriteAnimationComponent>
+		template<> SpriteAnimationComponent& AddComponent() const;
+
+
 		// Remove script from Entity
 		void RemoveScript(const std::string& scriptClassName);
 
-		// Remove component from Entity
-		template <typename T>
-		void RemoveComponent()
-		{
-			PT_ASSERT(HasComponent<T>(), "Entity does not have a component!");
-			
-			if (std::is_base_of<ScriptComponent, T>::value)
-				TerminateScripts();
-
-			if (std::is_base_of<CameraComponent, T>::value
-				&& m_Scene->m_PrimaryCameraEntity == *this)
-			{
-				PT_CORE_WARN("[Entity::RemoveComponent<CameraComponent>] Entity with Scene Primary Camera has been removed!");
-				m_Scene->m_PrimaryCameraEntity = entt::null;
-				m_Scene->m_PrimaryCamera = nullptr;
-			}
-
-			m_Scene->m_Registry.remove<T>(m_Handle);
-		}
-
-		// Check if Entity has given component
-		template <typename T>
-		bool HasComponent() const
-		{
-			return m_Scene->m_Registry.any_of<T>(m_Handle);
-		}
-
-		// Check if Entity has given set of components
-		template <typename... TComponents>
-		bool HasComponents() const
-		{
-			return m_Scene->m_Registry.all_of<TComponents...>(m_Handle);
-		}
-
 		// Get TransformComponent
 		TransformComponent& GetTransform();
+
+		// Set position relative to world center
+		// Updates World and Local position
+		void SetWorldPosition(const glm::vec3& position);
+		
+		// Set position relative to parent entity position
+		// Updates World and Local position
+		void SetLocalPosition(const glm::vec3& position);
 
 		// Get pointer to scene
 		Scene* GetScene() { return m_Scene; }
@@ -137,7 +123,7 @@ namespace proton {
 		void Destroy();
 
 		// Add child Entity given as parameter
-		void AddChildEntity(Entity child);
+		void AddChildEntity(Entity child, bool refreshChildWorldPosition = true);
 
 		// Destroy all child entities
 		void DestroyChildEntities();
@@ -187,8 +173,11 @@ namespace proton {
 		friend class Scene;
 		friend class SceneSerializer;
 		friend class EntityScript;
+		friend class PhysicsWorld;
+		friend class PhysicsContactListener;
+
 		friend class InspectorPanel;
-		friend class EditorLayer;
+		friend class SceneViewportPanel;
 	};
 
 }
