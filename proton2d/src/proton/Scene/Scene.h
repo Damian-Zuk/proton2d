@@ -91,13 +91,19 @@ namespace proton {
 		// Set renderer screen clear color
 		void SetScreenClearColor(const glm::vec4& color);
 
+		uint32_t GetEntitiesCount() const;
+
+		uint32_t GetScriptedEntitiesCount() const;
+
 		// Get scene filepath (relative to "content/scenes" directory)
-		const std::string& GetFilepath() const { return m_SceneFilepath; }
+		const std::string& GetFilepath() const;
 
 		// SceneState::Play, SceneState::Play, SceneState::Stop
-		SceneState GetSceneState() const { return m_SceneState; }
+		SceneState GetSceneState() const;
 
-		bool IsPhysicsEnabled() const { return m_EnablePhysics; }
+		bool IsPhysicsEnabled() const;
+
+		bool IsPhysicsWorldInitialized() const;
 
 	private:
 		void OnUpdate(float ts);
@@ -109,9 +115,6 @@ namespace proton {
 		void CacheCursorWorldPosition();
 
 		void CalculateWorldPositions(bool isPhysicsSimulated);
-
-		uint32_t GetEntitiesCount() const;
-		uint32_t GetScriptedEntitiesCount() const;
 
 	private:
 		// TODO: Add Scene UUID
@@ -148,10 +151,10 @@ namespace proton {
 		
 		friend class EditorLayer;
 		friend class EditorCamera;
-		friend class MiscellaneousPanel;
+		friend class SettingsPanel;
 		friend class InspectorPanel;
 		friend class SceneHierarchyPanel;
-		friend class ScenePanel;
+		friend class ToolbarPanel;
 		friend class EditorMenuBar;
 		friend class SceneViewportPanel;
 	};

@@ -3,153 +3,95 @@ using namespace proton;
 
 #include "Player.h"
 
+// Internal script parameters
+static constexpr float s_JumpDelay = 0.2f;
+static constexpr float s_JumpFrameSwitchTime = 0.3f;
+static constexpr float s_LandAnimationDelay = 0.5f;
+static constexpr float s_LandAnimationCancelTime = 0.2f;
+
 void Player::OnRegisterFields()
 {
-	RegisterField(ScriptFieldType::Float, "PlayerSpeed", &m_PlayerSpeed);
+	RegisterField(ScriptFieldType::Float, "PlayerMaxSpeed", &m_PlayerMaxSpeed);
+	RegisterField(ScriptFieldType::Float, "PlayerAcceleration", &m_PlayerAcceleration);
 	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
+	RegisterField(ScriptFieldType::Float, "GravityModifier", &m_GravityModifier);
 }
 
 bool Player::OnCreate()
 {
-	if (!GetScene()->IsPhysicsEnabled())
-	{
-		PT_ERROR("[PlayerScript]: Physics is not enabled!");
-		return false;
-	}
+	// Set up animations
+	m_Animation = CreateSpriteAnimation();
+	m_Animation->AddAnimation(Idle, 10, AnimationPlayMode::REPEAT);
+	m_Animation->AddAnimation(Run,   8, AnimationPlayMode::REPEAT);
+	m_Animation->AddAnimation(Jump,  3, AnimationPlayMode::PAUSED);
+	m_Animation->AddAnimation(Land,  9, AnimationPlayMode::PLAY_ONCE);
+	m_Animation->SetFPS(8);
 
-	m_Body = m_Entity.GetRuntimeBody();
-
-	// Create animations
-	m_Animation = &m_Entity.AddComponent<SpriteAnimationComponent>().SpriteAnimation;
-	m_Animation->SetFPS(12);
-	m_Animation->AddAnimation(Idle, 10);
-	m_Animation->AddAnimation(Run, 8);
-	m_Animation->AddAnimation(Jump, 3);
-	m_Animation->AddAnimation(Land, 9);
-	m_Animation->SetAnimation(Idle, Right);
-
-	// Foot sensor detects if player is the air
-	m_FootSensor = GetScene()->CreateEntity("FootSensor");
-	m_Entity.AddChildEntity(m_FootSensor, false);
-	auto& bc = m_FootSensor.AddComponent<BoxColliderComponent>();
-	bc.Size = { 0.32f, 0.15f };
+	// Foot sensor is used to detect if player is touching the ground
+	Entity footSensor = CreateChildEntity("FootSensor");
+	auto& bc = footSensor.AddComponent<BoxColliderComponent>();
+	bc.Size = { 0.38f, 0.38f };
 	bc.Offset = { 0.0f, -0.8f };
 	bc.IsSensor = true;
-
-	// Set On Begin Contact callback function
-	bc.ContactCallback.OnBeginContactFunction = [&](PhysicsContact contact)
-	{
-		if (*contact.Other != m_Entity)
-			m_ContactCount++;
-	};
-	// Set On End Contact callback function
-	bc.ContactCallback.OnEndContactFunction = [&](PhysicsContact contact)
-	{
-		if (*contact.Other != m_Entity)
-			m_ContactCount--;
-	};
+	m_FootSensorContactCount = &bc.ContactCallback.ContactCount;
 
 	return true;
 }
 
 void Player::OnUpdate(float ts)
 {
-	// ======================== Movement (A, D) ========================
+	// Poll key states for player movement
+	bool moveRight = Input::IsKeyPressed(Key::D);
+	bool moveLeft = Input::IsKeyPressed(Key::A);
+	bool jump = Input::IsKeyPressed(Key::W);
+	bool move = moveRight || moveLeft;
+	
+	// Set player direction (right: 1.0, left: -1.0f)
+	m_Direction = moveRight ? 1.0f : (moveLeft ? -1.0f : m_Direction);
 
-	if (Input::IsKeyPressed(Key::D))
+	// Set horizontal velocity (acceleration)
+	SetLinearVelocityX(!move ? 0.0f : glm::clamp(
+		GetLinearVelocity().x + m_PlayerAcceleration * m_Direction * ts,
+		-m_PlayerMaxSpeed, m_PlayerMaxSpeed));
+	
+	// Set player state to Run when key is pressed and player is not in the air
+	if (move && m_State != Jump && m_JumpTimer >= s_LandAnimationCancelTime)
+		m_State = Run;
+	// Set player state to Idle when stopped running or landing animation finished playing
+	else if (m_State == Run || (m_State == Land && m_Animation->FinishedPlaying()))
+		m_State = Idle;
+
+	// Start landing animation
+	if (m_State == Jump && IsTouchingGround())
 	{
-		if (m_IsLanding)
-		{
-			// Cancel landing animation
-			m_Animation->SetPlayMode(AnimationPlayMode::REPEAT);
-			m_IsLanding = false;
-		}
-		// Move right
-		m_Direction = Right;
-		m_Entity.SetVelocityX(m_PlayerSpeed);
-		if (!m_IsJumping)
-			m_Animation->StartAnimation(Run);
-	}
-	else if (Input::IsKeyPressed(Key::A))
-	{
-		if (m_IsLanding)
-		{
-			// Cancel landing animation
-			m_Animation->SetPlayMode(AnimationPlayMode::REPEAT);
-			m_IsLanding = false;
-		}
-		// Move left
-		m_Direction = Left;
-		m_Entity.SetVelocityX(-m_PlayerSpeed);
-		if (!m_IsJumping)
-			m_Animation->StartAnimation(Run);
-	}
-	else
-	{
-		// Idle
-		m_Entity.SetVelocityX(0.0f);
-		if (!m_IsJumping && !m_IsLanding)
-			m_Animation->SetAnimation(Idle);
+		m_State = m_JumpTimer >= s_LandAnimationDelay ? Land : Idle;
+		m_JumpTimer = 0.0f;
 	}
 
-	// ======================== Jumping (W) ========================
-
-	// Check if jumping / falling ended
-	if (m_IsJumping && m_JumpDelay == 0.0f && m_ContactCount > 0)
+	// Player pressed a jump key
+	if (jump && IsTouchingGround() && m_JumpTimer >= s_JumpDelay)
 	{
-		m_IsLanding = true;
-		m_IsJumping = false;
-		m_JumpDelay = 0.2f;
-		m_Animation->SetAnimation(Land);
-		m_Animation->SetPlayMode(AnimationPlayMode::PLAY_ONCE);
+		ApplyLinearImpulse({ 0.0f,  m_JumpForce });
+		m_JumpTimer = 0.0f;
+		m_State = Jump;
 	}
 
-	// Landing animation
-	if (m_IsLanding && m_Animation->FinishedPlaying())
+	// Player is in the air: Set jump or fall animation frame 
+	float velocity = GetLinearVelocity().y;
+	if (!IsTouchingGround())
 	{
-		m_IsLanding = false;
-		m_Animation->SetAnimation(Idle);
-		m_Animation->SetPlayMode(AnimationPlayMode::REPEAT);
+		// Modify vertical velocity to make jump feel less floaty
+		if (velocity > 0.0f && velocity < 0.05f)
+			ApplyLinearImpulse({ 0.0f,  m_GravityModifier });
+
+		// Update jump animation frame
+		uint16_t frame = velocity > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
+		m_Animation->SetAnimationFrame(frame);
+		m_State = Jump;
 	}
 
-	// Try jump
-	if (Input::IsKeyPressed(Key::W) && m_ContactCount > 0 && m_JumpDelay == 0.0f)
-	{
-		m_IsJumping = true;
-		m_JumpDelay = 0.2f;
-		m_Entity.ApplyImpulse({ 0.0f,  m_JumpForce });
-		m_Animation->SetAnimation(Jump);
-		m_Animation->SetPlayMode(AnimationPlayMode::PAUSED, true, 0);
-	}
-
-	// Set jumping / falling animation
-	if (m_IsJumping || m_ContactCount == 0)
-	{
-		float velocity = m_Body->GetLinearVelocity().y;
-		
-		if (!m_IsJumping) 
-		{
-			m_Animation->SetAnimation(Jump);
-			m_Animation->SetPlayMode(AnimationPlayMode::PAUSED, true, 1);
-		}
-		
-		if (!m_JumpDelay)
-		{
-			if (velocity > 0.0f)
-				m_Animation->SetPlayMode(AnimationPlayMode::PAUSED, true, 1);
-			else
-				m_Animation->SetPlayMode(AnimationPlayMode::PAUSED, true, 2);
-		}
-
-		m_IsJumping = true;
-
-		// Modify jump velocity
-		if (velocity < 0.05f && velocity > 0.0f)
-			m_Body->ApplyLinearImpulseToCenter({ 0.0f,  -m_JumpForce / 7.0f }, true);
-		else if (velocity > m_JumpForce / 5.0f)
-			m_Body->ApplyLinearImpulseToCenter({ 0.0f,  -m_JumpForce / 6.0f }, true);
-	}
-
-	m_JumpDelay = glm::max(m_JumpDelay - ts, 0.0f);
-	m_Animation->SetMirrorFlip(m_Direction);
+	// Update animation and timer
+	m_Animation->PlayAnimation(m_State);
+	m_Animation->SetMirrorFlip(m_Direction < 0.0f);
+	m_JumpTimer += ts;
 }

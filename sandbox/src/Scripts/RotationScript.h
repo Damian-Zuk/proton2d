@@ -6,26 +6,17 @@ class RotationScript : public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(RotationScript)
 
-	virtual void OnRegisterFields() override {
+	virtual void OnRegisterFields() override 
+	{
 		RegisterField(ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
 	}
 
-	virtual bool OnCreate() override {
-		if (m_Entity.HasComponent<RigidbodyComponent>())
-			m_Body = m_Entity.GetRuntimeBody();
-		return true;
-	}
-
-	virtual void OnUpdate(float ts) override {
-		if (m_Body) {
-			m_Body->SetTransform(m_Body->GetPosition(),
-				m_Body->GetAngle() + m_RotationSpeed * b2_pi * ts);
-		}
-		else m_Entity.GetTransform().Rotation += m_RotationSpeed;
+	virtual void OnUpdate(float ts) override 
+	{
+		RotateCenter(m_RotationSpeed * ts);
 	}
 
 private:
-	b2Body* m_Body = nullptr;
-	float m_RotationSpeed = 0.5f;
+	float m_RotationSpeed = 1.0f;
 };
 
