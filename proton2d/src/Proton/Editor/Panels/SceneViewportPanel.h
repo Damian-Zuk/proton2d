@@ -5,6 +5,8 @@
 
 namespace proton {
 
+	class GameInstance;
+
 	class SceneViewportPanel : public EditorPanel
 	{
 	public:
@@ -13,11 +15,18 @@ namespace proton {
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
 
+		void SetGameInstancePtr(GameInstance* instance);
+
 	private:
 		void DrawCollidersAndSelectionOutline();
 		void HandleImGuiDragAndDrop();
 
 	private:
+		bool m_IsMainViewport = true;
+		std::string m_ImGuiWindowName = "Viewport";
+		GameInstance* m_GameInstance = nullptr;
+
+
 		Unique<EditorCamera> m_Camera;
 
 		Shared<Framebuffer> m_Framebuffer;

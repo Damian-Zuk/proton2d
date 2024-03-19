@@ -10,6 +10,7 @@
 #include "Proton/Editor/Panels/InfoPanel.h"
 
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Window.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Graphics/Renderer/Framebuffer.h"
@@ -75,6 +76,8 @@ namespace proton {
 		m_EditorPanels.push_back(&s_Panels.Toolbar);
 		m_EditorPanels.push_back(&s_Panels.ContentBrowser);
 		m_EditorPanels.push_back(&s_Panels.SceneViewport);
+
+		s_Panels.SceneViewport.SetGameInstancePtr(Application::GetGameInstance());
 
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
@@ -191,9 +194,10 @@ namespace proton {
 	{
 		bool isActiveScene = scene == m_ActiveScene;
 		std::string sceneFilepath = scene->m_SceneFilepath;
-		SceneManager::s_Instance->m_Scenes[sceneFilepath] = m_SceneBackup.at(sceneFilepath);
+		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
+		manager->m_Scenes[sceneFilepath] = m_SceneBackup.at(sceneFilepath);
 		if (isActiveScene)
-			SceneManager::SetActiveScene(sceneFilepath);
+			manager->SetActiveScene(sceneFilepath);
 		m_SceneBackup.erase(sceneFilepath);
 	}
 

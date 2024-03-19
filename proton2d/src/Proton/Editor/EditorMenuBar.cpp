@@ -4,6 +4,7 @@
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Utils/Utils.h"
 
@@ -65,31 +66,34 @@ namespace proton {
 
 	void EditorMenuBar::NewScene()
 	{
-		Scene* scene = SceneManager::CreateEmptyScene();
-		SceneManager::s_Instance->m_ActiveScene = scene;
+		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
+		Scene* scene = manager->CreateEmptyScene();
+		manager->m_ActiveScene = scene;
 		EditorLayer::SetActiveScene(scene);
 	}
 
 	void EditorMenuBar::OpenScene()
 	{
+		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
 		std::string sceneFile = GetSceneFilename(FileDialogs::OpenFile("scene"));
 		if (sceneFile.size())
 		{
-			SceneManager::Load(sceneFile);
-			SceneManager::SetActiveScene(sceneFile);
+			manager->Load(sceneFile);
+			manager->SetActiveScene(sceneFile);
 		}
 	}
 
 	void EditorMenuBar::SaveScene()
 	{
-		Scene* activeScene = SceneManager::GetActiveScene();
+		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
+		Scene* activeScene = manager->GetActiveScene();
 		if (!activeScene)
 			return;
 
 		if (activeScene->m_SceneFilepath != "<Unsaved scene>")
 		{
 			const std::string filepath = activeScene->m_SceneFilepath;
-			SceneManager::SaveSceneAs(filepath, filepath);
+			manager->SaveSceneAs(filepath, filepath);
 		}
 		else
 			SaveSceneAs();
@@ -97,20 +101,21 @@ namespace proton {
 
 	void EditorMenuBar::SaveSceneAs()
 	{
-		Scene* activeScene = SceneManager::GetActiveScene();
+		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
+		Scene* activeScene = manager->GetActiveScene();
 		if (!activeScene)
 			return;
 
 		std::string filepath = GetSceneFilename(FileDialogs::SaveFile(".scene.json"));
 		if (filepath.size())
 		{
-			SceneManager::SaveSceneAs(activeScene->m_SceneFilepath, filepath);
+			manager->SaveSceneAs(activeScene->m_SceneFilepath, filepath);
 			if (activeScene->m_SceneFilepath == "<Unsaved scene>")
 			{
-				SceneManager::Unload("<Unsaved scene>");
+				manager->Unload("<Unsaved scene>");
 			}
-			SceneManager::Load(filepath);
-			SceneManager::SetActiveScene(filepath);
+			manager->Load(filepath);
+			manager->SetActiveScene(filepath);
 		}
 	}
 

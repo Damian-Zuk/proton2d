@@ -2,6 +2,8 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/ToolbarPanel.h"
 #include "Proton/Editor/EditorLayer.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Physics/PhysicsWorld.h"
@@ -56,12 +58,12 @@ namespace proton {
 
 	void ToolbarPanel::DrawSceneTabBar()
 	{
-		
-		if (ImGui::BeginTabBar("SceneTabBar", ImGuiTabBarFlags_AutoSelectNewTabs))
+		if (ImGui::BeginTabBar("SceneTabBar", ImGuiTabBarFlags_AutoSelectNewTabs)) 
 		{
-			const std::string& activeScene = SceneManager::GetActiveScene()->GetFilepath();
+			SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
+			const std::string& activeScene = manager->GetActiveScene()->GetFilepath();
 
-			for (auto& [name, scene] : SceneManager::s_Instance->m_Scenes)
+			for (auto& [name, scene] : manager->m_Scenes)
 			{
 				bool keepOpen = true;
 				bool selected = activeScene == name;
@@ -73,11 +75,11 @@ namespace proton {
 					ImGui::EndTabItem();
 
 				if (ImGui::IsItemClicked() && !selected)
-					SceneManager::SetActiveScene(name);
+					manager->SetActiveScene(name);
 
 				if (!keepOpen)
 				{
-					SceneManager::Unload(name);
+					manager->Unload(name);
 					break;
 				}
 			}

@@ -4,6 +4,9 @@
 
 namespace proton {
 
+	// Forward declaration
+	class SceneManager;
+
 	class AppLayer
 	{
 	public:
@@ -15,6 +18,8 @@ namespace proton {
 		virtual void OnUpdate(float timestep) {}
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiRender() {}
+
+		SceneManager* GetSceneManager();
 	};
 
 }

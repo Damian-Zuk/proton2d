@@ -11,22 +11,14 @@
 
 namespace proton {
 
-	SceneManager* SceneManager::s_Instance = nullptr;
-
-	void SceneManager::Init()
-	{
-		if (!s_Instance)
-			s_Instance = new SceneManager();
-	}
-
 	Scene* SceneManager::GetScene(const std::string& scenePath)
 	{
-		return s_Instance->m_Scenes.at(scenePath).get();
+		return m_Scenes.at(scenePath).get();
 	}
 
 	Scene* SceneManager::GetActiveScene()
 	{
-		return s_Instance->m_ActiveScene;
+		return m_ActiveScene;
 	}
 
 	Scene* SceneManager::SetActiveScene(const std::string& scenePath)
@@ -39,13 +31,13 @@ namespace proton {
 
 		PT_CORE_INFO("scene='{}'", scenePath);
 		Scene* targetScene = GetScene(scenePath);
-		s_Instance->m_ActiveScene = targetScene;
-		Renderer::SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
+		m_ActiveScene = targetScene;
+		Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
 
 	#ifdef PT_EDITOR
 		EditorLayer::SetActiveScene(targetScene);
 	#endif
-		return s_Instance->m_ActiveScene;
+		return m_ActiveScene;
 	}
 
 	Scene* SceneManager::Load(const std::string& scenePath)
@@ -60,7 +52,7 @@ namespace proton {
 			PT_CORE_ERROR("Loading '{}' failed!", filepath);
 			return nullptr;
 		}
-		s_Instance->m_Scenes[scenePath] = scene;
+		m_Scenes[scenePath] = scene;
 		return scene.get();
 	}
 
@@ -73,21 +65,20 @@ namespace proton {
 			return;
 		}
 
-		std::string name = scenePath;
-		PT_CORE_INFO("scene='{}'", name);
+		PT_CORE_INFO("scene='{}'", scenePath);
+		bool isActive = scene == m_ActiveScene;
+		m_Scenes.erase(scenePath);
 
-		bool isActive = scene == s_Instance->m_ActiveScene;
-		s_Instance->m_Scenes.erase(scenePath);
 		if (isActive)
 		{
-			if (s_Instance->m_Scenes.size())
+			if (m_Scenes.size())
 			{
 				// If unloaded active scene, switch to first scene
-				SetActiveScene(s_Instance->m_Scenes.begin()->first);
+				SetActiveScene(m_Scenes.begin()->first);
 			}
 			else
 			{
-				s_Instance->m_ActiveScene = nullptr;
+				m_ActiveScene = nullptr;
 			#ifdef PT_EDITOR
 				EditorLayer::SetActiveScene(nullptr);
 			#endif
@@ -97,7 +88,7 @@ namespace proton {
 
 	bool SceneManager::IsLoaded(const std::string& scenePath)
 	{
-		return s_Instance->m_Scenes.find(scenePath) != s_Instance->m_Scenes.end();
+		return m_Scenes.find(scenePath) != m_Scenes.end();
 	}
 
 	void SceneManager::SaveSceneAs(const std::string& scenePath, const std::string& newScenePath)
@@ -115,7 +106,7 @@ namespace proton {
 	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)
 	{
 		Shared<Scene> scene = MakeShared<Scene>("Unnamed Scene", "<Unsaved scene>");
-		s_Instance->m_Scenes["<Unsaved scene>"] = scene;
+		m_Scenes["<Unsaved scene>"] = scene;
 		return scene.get();
 	}
 

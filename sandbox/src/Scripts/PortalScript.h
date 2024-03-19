@@ -23,7 +23,7 @@ public:
 			if (contact.Other->GetTag() == "Player")
 			{
 				std::string levelName = "level_" + std::to_string(m_TargetLevel);
-				SceneManager::SetActiveScene(levelName)->BeginPlay();
+				GetSceneManager()->SetActiveScene(levelName)->BeginPlay();
 			}
 		};
 		return true;

@@ -20,7 +20,7 @@ void MainLayer::OnUpdate(float ts)
 
 void MainLayer::OnEvent(Event& e)
 {
-	Scene* scene = SceneManager::GetActiveScene();
+	Scene* scene = GetSceneManager()->GetActiveScene();
 	EventDispatcher dispatcher(e);
 
 	dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& event)
@@ -34,7 +34,7 @@ void MainLayer::OnEvent(Event& e)
 
 void MainLayer::SpawnRandomBox(const glm::vec2& position)
 {
-	Scene* scene = SceneManager::GetActiveScene();
+	Scene* scene = GetSceneManager()->GetActiveScene();
 	Entity entity = scene->CreateEntity("Random Box");
 
 	entity.SetWorldPosition({ position.x, position.y, 0 });

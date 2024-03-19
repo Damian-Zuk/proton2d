@@ -1,11 +1,18 @@
 #include "ptpch.h"
 #include "Proton/Scripting/EntityScript.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 
 namespace proton {
 
 	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor)
 	{
 		m_ScriptFields[name] = { type, field, showInEditor };
+	}
+
+	SceneManager* EntityScript::GetSceneManager()
+	{
+		return Application::GetGameInstance()->GetSceneManager();
 	}
 
 	void EntityScript::SetFieldValueData(const std::string& fieldName, void* valuePtr)

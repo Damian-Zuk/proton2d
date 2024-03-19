@@ -3,17 +3,16 @@
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/EditorCamera.h"
-#include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Core/Input.h"
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"
-#include "Proton/Core/Input.h"
-#include "Proton/Utils/Utils.h"
-#include "Proton/Scene/SceneManager.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scene/PrefabManager.h"
+#include "Proton/Utils/Utils.h"
 
 #include <imgui.h>
-#include <filesystem> // remove
 
 namespace proton {
 
@@ -124,14 +123,17 @@ namespace proton {
 			return;
 
 		m_Camera->OnEvent(event);
-		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
 
 		EventDispatcher dispatcher(event);
 
 		// Dispatch mouse events
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
+			if (!m_IsMainViewport)
+				return false;
+
 			SceneState state = m_ActiveScene->GetSceneState();
+			const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
 
 			// Mouse Button 1 (Right): Move editor camera
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
@@ -183,14 +185,17 @@ namespace proton {
 		{
 			KeyCode key = e.GetKeyCode();
 
+			if (key == Key::F3)
+				m_ShowAllColliders = !m_ShowAllColliders;
+
+			if (!m_IsMainViewport)
+				return false;
+
 			if (key == Key::F1)
 				m_ShowSelectionOutline = !m_ShowSelectionOutline;
 
 			if (key == Key::F2)
 				m_ShowSelectionCollider = !m_ShowSelectionCollider;
-
-			if (key == Key::F3)
-				m_ShowAllColliders = !m_ShowAllColliders;
 
 			if (key == Key::Escape && m_SelectedEntity)
 				EditorLayer::Get()->SelectEntity({});
@@ -208,6 +213,9 @@ namespace proton {
 		// Mouse evenets (button released)
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
 		{
+			if (!m_IsMainViewport)
+				return false;
+
 			if (e.GetMouseButton() == Mouse::Button0)
 				m_MoveSelectedEntity = false;
 			if (e.GetMouseButton() == Mouse::Button1)
@@ -217,6 +225,11 @@ namespace proton {
 
 			return false;
 		});
+	}
+
+	void SceneViewportPanel::SetGameInstancePtr(GameInstance* instance)
+	{
+		m_GameInstance = instance;
 	}
 
 	void SceneViewportPanel::DrawCollidersAndSelectionOutline()
@@ -314,8 +327,8 @@ namespace proton {
 				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
 				std::filesystem::path path(path_wchar);
 				std::string sceneFilepath = path.replace_extension().replace_extension().string();
-				SceneManager::Load(sceneFilepath);
-				SceneManager::SetActiveScene(sceneFilepath);
+				m_GameInstance->m_SceneManager.Load(sceneFilepath);
+				m_GameInstance->m_SceneManager.SetActiveScene(sceneFilepath);
 			}
 
 			ImGui::EndDragDropTarget();

@@ -12,6 +12,9 @@
 
 namespace proton {
 
+	// Forward declaration
+	class GameInstance;
+
 	class Application
 	{
 	public:
@@ -28,6 +31,8 @@ namespace proton {
 		Window& GetWindow() { return *m_Window; }
 		static Application& Get() { return *s_Instance; }
 
+		static GameInstance* GetGameInstance() { return s_Instance->m_GameInstance.get(); }
+
 	protected:
 		virtual bool OnCreate() = 0; // To be defined by client
 
@@ -35,6 +40,8 @@ namespace proton {
 
 	private:
 		static Application* s_Instance;
+
+		Unique<GameInstance> m_GameInstance;
 
 		ApplicationConfig m_AppConfig;
 		std::vector<AppLayer*> m_AppLayers;
@@ -47,7 +54,7 @@ namespace proton {
 		float m_TimeScale = 1.0f;
 
 	#ifdef PT_EDITOR
-		EditorLayer* m_EditorLayer;
+		EditorLayer* m_EditorLayer = nullptr;
 	#endif
 
 		friend class SettingsPanel;

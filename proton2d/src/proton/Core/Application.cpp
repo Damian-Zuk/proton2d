@@ -2,6 +2,7 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/Timer.h"
 #include "Proton/Core/Input.h"
+#include "Proton/Core/GameInstance.h"
 
 #include "Proton/Events/WindowEvents.h" 
 #include "Proton/Events/KeyEvents.h"
@@ -32,6 +33,8 @@ namespace proton {
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
 		m_Window->SetFullscreen(m_AppConfig.Fullscreen);
 		m_Window->SetVSync(m_AppConfig.VSync);
+
+		m_GameInstance = MakeUnique<GameInstance>();
 	}
 
 	Application::~Application()
@@ -60,7 +63,6 @@ namespace proton {
 		PushOverlay(m_EditorLayer);
 	#endif
 
-		SceneManager::Init();
 		PrefabManager::Init();
 
 		if (!m_Project.LoadProjectSettings())
@@ -69,8 +71,8 @@ namespace proton {
 			return;
 		}
 
-		SceneManager::Load(m_Project.m_StartScene);
-		SceneManager::SetActiveScene(m_Project.m_StartScene);
+		m_GameInstance->m_SceneManager.Load(m_Project.m_StartScene);
+		m_GameInstance->m_SceneManager.SetActiveScene(m_Project.m_StartScene);
 
 		PROFILE_BEGIN_SESSION("Proton-Runtime");
 

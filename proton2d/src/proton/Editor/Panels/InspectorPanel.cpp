@@ -2,6 +2,9 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/InspectorPanel.h"
 #include "Proton/Editor/EditorLayer.h"
+#include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Assets/AssetManager.h"
@@ -10,6 +13,7 @@
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Networking/NetworkManager.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -592,6 +596,32 @@ namespace proton {
 
 			ImGui::PopItemWidth();
 		}
+		ImGui::Dummy({ 0.0f, 5.0f });
+
+		// Network
+		ImGui::Text("Networking");
+		ImGui::Dummy({ 0.0f, 3.0f });
+		ImGui::Separator();
+
+		constexpr char* netModesNames[] = {"Standalone", "Listen server"};
+		const NetMode netMode = Application::GetGameInstance()->GetNetMode();
+
+		ImGui::Text("Net Mode");
+		ImGui::SameLine();
+		ImGui::PushItemWidth(150.0f);
+		if (ImGui::BeginCombo("##net_mode", netModesNames[(uint8_t)netMode]))
+		{
+			for (uint8_t i = 0; i < 2; i++)
+			{
+				bool selected = (uint8_t)netMode == i;
+				if (ImGui::Selectable(netModesNames[i], selected))
+				{
+					Application::GetGameInstance()->SetNetMode((NetMode)i);
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
 	}
 
 
