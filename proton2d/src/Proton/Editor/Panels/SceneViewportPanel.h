@@ -15,8 +15,6 @@ namespace proton {
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
 
-		void SetGameInstancePtr(GameInstance* instance);
-
 	private:
 		void DrawCollidersAndSelectionOutline();
 		void HandleImGuiDragAndDrop();
@@ -25,7 +23,6 @@ namespace proton {
 		bool m_IsMainViewport = true;
 		std::string m_ImGuiWindowName = "Viewport";
 		GameInstance* m_GameInstance = nullptr;
-
 
 		Unique<EditorCamera> m_Camera;
 
@@ -48,6 +45,8 @@ namespace proton {
 		bool m_ShowAllColliders = false;
 	
 		friend class Scene;
+		friend class SceneManager;
+
 		friend class EditorLayer;
 		friend class SettingsPanel;
 		friend class EditorMenuBar;

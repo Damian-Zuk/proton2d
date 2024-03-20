@@ -3,13 +3,20 @@
 #include "Proton/Scene/Scene.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
 #endif
 
 namespace proton {
+
+	SceneManager::SceneManager(GameInstance* gameInstance)
+		: m_GameInstance(gameInstance)
+	{
+	}
 
 	Scene* SceneManager::GetScene(const std::string& scenePath)
 	{
@@ -30,14 +37,22 @@ namespace proton {
 		}
 
 		PT_CORE_INFO("scene='{}'", scenePath);
-		Scene* targetScene = GetScene(scenePath);
-		m_ActiveScene = targetScene;
+		SetActiveScene(GetScene(scenePath));
 		Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
 
-	#ifdef PT_EDITOR
-		EditorLayer::SetActiveScene(targetScene);
-	#endif
 		return m_ActiveScene;
+	}
+
+	Scene* SceneManager::SetActiveScene(Scene* scene)
+	{
+		m_ActiveScene = scene;
+	#ifdef PT_EDITOR
+		if (!m_GameInstance->IsMainInstance())
+			m_GameInstance->m_EditorViewport->m_ActiveScene = scene;
+		else
+			EditorLayer::SetActiveScene(scene);
+	#endif
+		return scene;
 	}
 
 	Scene* SceneManager::Load(const std::string& scenePath)
@@ -66,23 +81,15 @@ namespace proton {
 		}
 
 		PT_CORE_INFO("scene='{}'", scenePath);
-		bool isActive = scene == m_ActiveScene;
+		bool active = scene == m_ActiveScene;
 		m_Scenes.erase(scenePath);
 
-		if (isActive)
+		if (active)
 		{
 			if (m_Scenes.size())
-			{
-				// If unloaded active scene, switch to first scene
 				SetActiveScene(m_Scenes.begin()->first);
-			}
 			else
-			{
-				m_ActiveScene = nullptr;
-			#ifdef PT_EDITOR
-				EditorLayer::SetActiveScene(nullptr);
-			#endif
-			}
+				SetActiveScene(nullptr);
 		}
 	}
 

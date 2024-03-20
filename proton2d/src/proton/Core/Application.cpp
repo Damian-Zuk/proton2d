@@ -33,7 +33,6 @@ namespace proton {
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
 		m_Window->SetFullscreen(m_AppConfig.Fullscreen);
 		m_Window->SetVSync(m_AppConfig.VSync);
-
 		m_GameInstance = MakeUnique<GameInstance>();
 	}
 
@@ -59,20 +58,12 @@ namespace proton {
 		Renderer::Init();
 
 	#ifdef PT_EDITOR
-		m_EditorLayer = new EditorLayer();
+		m_EditorLayer = EditorLayer::Get();
 		PushOverlay(m_EditorLayer);
 	#endif
 
 		PrefabManager::Init();
-
-		if (!m_Project.LoadProjectSettings())
-		{
-			PT_CORE_ERROR("Project settings loading failed!");
-			return;
-		}
-
-		m_GameInstance->m_SceneManager.Load(m_Project.m_StartScene);
-		m_GameInstance->m_SceneManager.SetActiveScene(m_Project.m_StartScene);
+		m_GameInstance->Init();
 
 		PROFILE_BEGIN_SESSION("Proton-Runtime");
 
@@ -81,7 +72,7 @@ namespace proton {
 			m_IsRunning = true;
 
 		#ifdef PROTON_DISTRIBUTION
-			SceneManager::GetActiveScene()->BeginPlay();
+			m_GameInstance->GetActiveScene()->BeginPlay();
 		#endif
 
 			// The game loop
@@ -116,7 +107,7 @@ namespace proton {
 					}
 				#else
 					// Update active scene
-					Scene* scene = SceneManager::GetActiveScene();
+					Scene* scene = m_GameInstance->GetActiveScene();
 					if (scene)
 						scene->OnUpdate(m_FrameTime * m_TimeScale);
 				#endif
@@ -135,12 +126,14 @@ namespace proton {
 	void Application::PushLayer(AppLayer* layer)
 	{
 		m_AppLayers.emplace_back(layer);
+		layer->m_GameInstance = m_GameInstance.get();
 		layer->OnCreate();
 	}
 
 	void Application::PushOverlay(AppLayer* layer)
 	{
 		m_AppLayers.insert(m_AppLayers.begin(), layer);
+		layer->m_GameInstance = m_GameInstance.get();
 		layer->OnCreate();
 	}
 

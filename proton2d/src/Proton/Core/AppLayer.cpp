@@ -5,8 +5,13 @@
 
 namespace proton {
 
+	GameInstance* AppLayer::GetGameInstance()
+	{
+		return m_GameInstance;
+	}
 	SceneManager* AppLayer::GetSceneManager()
 	{
-		return Application::GetGameInstance()->GetSceneManager();
+		return GetGameInstance()->GetSceneManager();
 	}
+
 }

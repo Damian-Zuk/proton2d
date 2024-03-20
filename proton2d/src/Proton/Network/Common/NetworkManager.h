@@ -1,13 +1,7 @@
 #pragma once
+#include "Proton/Network/Common/Network.h"
 
 namespace proton {
-
-	enum class NetMode : uint8_t
-	{
-		Standalone = 0,
-		ListenServer = 1,
-		Client = 3,
-	};
 
 	class NetworkManager
 	{

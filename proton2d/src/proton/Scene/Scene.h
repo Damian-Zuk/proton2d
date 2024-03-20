@@ -3,6 +3,7 @@
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Events/Event.h"
 #include "Proton/Core/UUID.h"
+#include "Proton/Network/Common/Network.h"
 
 #include <entt/entt.hpp>
 
@@ -15,21 +16,20 @@ namespace proton {
 	// Forward declaration
 	class Entity;
 	class PhysicsWorld;
+	class GameInstance;
 
 	enum class SceneState
 	{
 		Stop, Play, Paused
 	};
 
-	//
 	// Scene Class
 	// Wrapper for the Entity Registry (entt:registry) from the EnTT Entity Component System (ECS) library.
 	// Provides additional functionalities to manage entities on the scene.
-	//
 	class Scene
 	{
 	public:
-		Scene(const std::string& name = "Unnamed scene", const std::string& filepath = std::string());
+		Scene(const std::string& name = "Unnamed scene", const std::string& filepath = "<Unsaved scene>");
 		virtual ~Scene() = default;
 
 		Shared<Scene> CreateSceneCopy();
@@ -74,10 +74,7 @@ namespace proton {
 
 		// Get entities with given set of components
 		template<typename... Components>
-		auto GetAllEntitiesWith()
-		{
-			return m_Registry.view<Components...>();
-		}
+		auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
 		// TODO: Add DuplicateEntity function
 
@@ -110,6 +107,10 @@ namespace proton {
 
 		bool IsPhysicsWorldInitialized() const;
 
+		bool IsSimulated() const { return m_SceneState != SceneState::Stop; };
+
+		bool IsPaused() const { return m_SceneState == SceneState::Paused; };
+
 	private:
 		void OnUpdate(float ts);
 		void RenderScene(const Camera& camera);
@@ -122,11 +123,13 @@ namespace proton {
 		void CalculateWorldPositions(bool isPhysicsSimulated);
 
 	private:
-		// TODO: Add Scene UUID
+		// State
 		SceneState m_SceneState = SceneState::Stop;
+		bool m_EnableNetworking = true;
+		GameInstance* m_GameInstance = nullptr;
 
-		// General
-		std::string m_SceneName;
+		// General properties
+		std::string m_SceneName = "Unnamed scene";
 		std::string m_SceneFilepath = "<Unsaved scene>";
 		glm::vec4 m_ClearColor = DEFAULT_SCENE_SCREEN_CLEAR_COLOR;
 
@@ -138,7 +141,7 @@ namespace proton {
 		// Camera
 		entt::entity m_PrimaryCameraEntity = entt::null;
 		Camera* m_PrimaryCamera = nullptr;
-		Camera m_DefaultCamera; // pass this to Renderer if m_PrimaryCamera is nullptr
+		Camera m_DefaultCamera;
 
 		// Physics
 		bool m_EnablePhysics = true;
@@ -149,6 +152,7 @@ namespace proton {
 		glm::vec2 m_CursorWorldPosition = { 0.0f, 0.0f };
 
 		friend class Application;
+		friend class GameInstance;
 		friend class Entity;
 		friend class SceneSerializer;
 		friend class SceneManager;

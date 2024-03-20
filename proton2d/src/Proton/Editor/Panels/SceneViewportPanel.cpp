@@ -15,7 +15,7 @@
 #include <imgui.h>
 
 namespace proton {
-
+	
 	void SceneViewportPanel::OnCreate()
 	{
 		FramebufferSpecification fbSpec;
@@ -30,7 +30,7 @@ namespace proton {
 	{
 		// Scene Viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin("Viewport");
+		ImGui::Begin(m_ImGuiWindowName.c_str());
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto viewportOffset = ImGui::GetWindowPos();
@@ -225,11 +225,6 @@ namespace proton {
 
 			return false;
 		});
-	}
-
-	void SceneViewportPanel::SetGameInstancePtr(GameInstance* instance)
-	{
-		m_GameInstance = instance;
 	}
 
 	void SceneViewportPanel::DrawCollidersAndSelectionOutline()

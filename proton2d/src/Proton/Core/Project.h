@@ -12,7 +12,7 @@ namespace proton {
 		std::string m_StartScene;
 		const std::string m_Filepath = "content/project.json";
 
-		friend class Application;
+		friend class GameInstance;
 		friend class SettingsPanel;
 	};
 

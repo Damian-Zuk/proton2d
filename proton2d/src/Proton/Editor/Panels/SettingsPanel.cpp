@@ -6,6 +6,8 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/Project.h"
+#include "Proton/Core/GameInstance.h"
 
 #include "imgui.h"
 
@@ -17,26 +19,67 @@ namespace proton {
 	{
 		ImGui::Begin("Settings");
 
+		Project& project = Application::Get().GetGameInstance()->m_Project;
 
-		char buffer[500];
-		strcpy_s(buffer, Application::Get().m_Project.m_StartScene.c_str());
+		char buffer[256];
+		strcpy_s(buffer, project.m_StartScene.c_str());
 
 		if (ImGui::TreeNodeEx("Project", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushItemWidth(150.0f);
-			if (ImGui::InputText("Start Scene", buffer, 500))
+			ImGui::Dummy({ 0, 2 });
+			ImGui::Text("Start scene");
+			ImGui::SameLine();
+			ImGui::PushItemWidth(120.0f);
+			if (ImGui::InputText("##start_scene", buffer, 256))
 			{
-				Application::Get().m_Project.m_StartScene = buffer;
+				project.m_StartScene = buffer;
 			}
 		
 			ImGui::SameLine();
 			if (ImGui::Button("Apply"))
 			{
-				Application::Get().m_Project.WriteProjectSettings();
+				project.WriteProjectSettings();
 			}
 
 			ImGui::TreePop();
 		}
+		ImGui::Dummy({ 0, 5 });
+
+		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+			constexpr char* netModesNames[] = { "Standalone", "Listen server" };
+			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
+
+			ImGui::Text("Net mode");
+			ImGui::SameLine();
+			ImGui::PushItemWidth(150.0f);
+			if (ImGui::BeginCombo("##net_mode", netModesNames[(uint8_t)netMode]))
+			{
+				for (uint8_t i = 0; i < 2; i++)
+				{
+					bool selected = (uint8_t)netMode == i;
+					if (ImGui::Selectable(netModesNames[i], selected))
+					{
+						Application::GetGameInstance()->SetNetMode((NetMode)i);
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+
+			if (netMode == NetMode::ListenServer)
+			{
+				int count = EditorLayer::Get()->m_NetNumClients;
+				if (ImGui::InputInt("Number of clients", &count, 1, 1))
+				{
+					EditorLayer::Get()->m_NetNumClients = glm::clamp(count, 0, 10);
+				}
+			}
+
+			ImGui::TreePop();
+		}
+		ImGui::Dummy({ 0, 5 });
 
 		if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -49,6 +92,7 @@ namespace proton {
 			ImGui::TreePop();
 		}
 		ImGui::Dummy({ 0, 5 });
+
 		if (ImGui::TreeNodeEx("Application", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });

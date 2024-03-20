@@ -17,8 +17,10 @@ namespace proton {
 	class EditorLayer : AppLayer
 	{
 	public:
-		EditorLayer();
+		EditorLayer() = default;
 		virtual ~EditorLayer() = default;
+
+		static EditorLayer* Get();
 
 		virtual void OnCreate() override;
 		virtual void OnDestroy() override;
@@ -26,7 +28,6 @@ namespace proton {
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& event) override;
 
-		static EditorLayer* Get() { return s_Instance; }
 		static EditorCamera* GetCamera();
 		static SceneViewportPanel* GetSceneViewportPanel();
 		static ImFont* GetFontAwesome();
@@ -36,21 +37,25 @@ namespace proton {
 		static void SelectEntity(Entity entity);
 
 	private:
+		// ImGui setup
 		void SetupFonts();
 		void SetupThemeStyle();
 		void SetupImGuiViewports();
 		void InitializeImGui();
 
+		// OpenGL/GLFW render
 		void BeginImGuiRender();
 		void EndImGuiRender();
 
+		// Callbacks
+		void OnPlayButton();
+		void OnStopButton();
+		void OnPauseButton();
 		void OnBeginSceneSimulation(Scene* scene);
 		void OnStopSceneSimulation(Scene* scene);
 
 	private:
-		static EditorLayer* s_Instance;
-
-		bool m_EnableViewports = false; // true: ImGui windows can be detached from main GLFW window
+		bool m_EnableViewports = true; // true: ImGui windows can be detached from main GLFW window
 
 		Scene* m_ActiveScene = nullptr;
 		Entity m_SelectedEntity;
@@ -62,6 +67,10 @@ namespace proton {
 
 		std::vector<EditorPanel*> m_EditorPanels;
 		bool m_BlockEvents = true;
+
+		uint32_t m_NetNumClients = 1;
+		std::vector<Unique<GameInstance>> m_ClientGameInstances;
+		std::vector<Unique<SceneViewportPanel>> m_ClientViewports;
 
 		friend class Application;
 		friend class Scene;

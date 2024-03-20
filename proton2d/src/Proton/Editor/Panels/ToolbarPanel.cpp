@@ -29,26 +29,24 @@ namespace proton {
 		}
 
 		ImGui::PushFont(EditorLayer::GetFontAwesome());
-		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (m_ActiveScene->m_SceneState == SceneState::Stop ? 60 : 145)) / 2.0f);
+		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (!m_ActiveScene->IsSimulated() ? 60 : 145)) / 2.0f);
 
-		if (m_ActiveScene->m_SceneState != SceneState::Stop)
+		if (m_ActiveScene->IsSimulated())
 		{
 			if (ImGui::Button(FontAwesome_Stop, { 60, 32 }))
 			{
-				m_ActiveScene->Stop();
+				EditorLayer::Get()->OnStopButton();
 			}
 			ImGui::SameLine();
 
-			bool paused = m_ActiveScene->m_SceneState == SceneState::Paused;
-			if (ImGui::Button(paused ? FontAwesome_Resume : FontAwesome_Pause, { 60, 32 }))
-				m_ActiveScene->Pause(!paused);
-		}
-		else
-		{
-			if (ImGui::Button(FontAwesome_Play, { 60, 32 }))
+			if (ImGui::Button(m_ActiveScene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, {60, 32}))
 			{
-				m_ActiveScene->BeginPlay();
+				EditorLayer::Get()->OnPauseButton();
 			}
+		}
+		else if (ImGui::Button(FontAwesome_Play, { 60, 32 }))
+		{
+			EditorLayer::Get()->OnPlayButton();
 		}
 		ImGui::PopFont();
 		DrawSceneTabBar();

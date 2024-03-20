@@ -6,6 +6,7 @@ namespace proton {
 
 	// Forward declaration
 	class SceneManager;
+	class GameInstance;
 
 	class AppLayer
 	{
@@ -19,7 +20,13 @@ namespace proton {
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiRender() {}
 
+		GameInstance* GetGameInstance();
 		SceneManager* GetSceneManager();
+	
+	private:
+		GameInstance* m_GameInstance;
+
+		friend class Application;
 	};
 
 }

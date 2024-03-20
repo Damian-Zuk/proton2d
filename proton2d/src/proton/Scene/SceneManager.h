@@ -3,6 +3,7 @@
 namespace proton {
 
 	class Scene;
+	class GameInstance;
 
 	/*
 	* SceneManager class methods use scene filepaths - "scenePath" 
@@ -12,9 +13,12 @@ namespace proton {
 	class SceneManager
 	{
 	public:
+		SceneManager(GameInstance* gameInstance);
+
 		Scene* GetScene(const std::string& scenePath);
 		Scene* GetActiveScene();
 		Scene* SetActiveScene(const std::string& scenePath);
+		Scene* SetActiveScene(Scene* scene);
 
 		Scene* Load(const std::string& scenePath);
 		void Unload(const std::string& scenePath);
@@ -24,6 +28,8 @@ namespace proton {
 		Scene* CreateEmptyScene(const std::string& scenePath = "<Unsaved scene>");
 
 	private:
+		GameInstance* m_GameInstance = nullptr;
+
 		Scene* m_ActiveScene = nullptr;
 		std::map<std::string, Shared<Scene>> m_Scenes;
 

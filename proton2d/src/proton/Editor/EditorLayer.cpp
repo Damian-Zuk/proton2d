@@ -40,19 +40,20 @@ namespace proton {
 		ToolbarPanel Toolbar;
 		ContentBrowserPanel ContentBrowser;
 		SceneViewportPanel SceneViewport;
+
 	} static s_Panels;
 
 	struct EditorFonts
 	{
 		ImFont* FontAwesome = nullptr;
 		ImFont* SmallFont = nullptr;
+
 	} static s_Fonts;
 
-	EditorLayer* EditorLayer::s_Instance = nullptr;
-
-	EditorLayer::EditorLayer()
+	EditorLayer* EditorLayer::Get()
 	{
-		EditorLayer::s_Instance = this;
+		static EditorLayer* instance = new EditorLayer(); // deleted by Application
+		return instance;
 	}
 
 	void EditorLayer::OnCreate()
@@ -68,7 +69,7 @@ namespace proton {
 		// Initialize ImGui implementation for GLFW
 		InitializeImGui();
 
-		// Store editor panels in vector
+		// Initialize editor panels
 		m_EditorPanels.push_back(&s_Panels.Settings);
 		m_EditorPanels.push_back(&s_Panels.Info);
 		m_EditorPanels.push_back(&s_Panels.Inspector);
@@ -77,7 +78,9 @@ namespace proton {
 		m_EditorPanels.push_back(&s_Panels.ContentBrowser);
 		m_EditorPanels.push_back(&s_Panels.SceneViewport);
 
-		s_Panels.SceneViewport.SetGameInstancePtr(Application::GetGameInstance());
+		GameInstance* instance = Application::GetGameInstance();
+		s_Panels.SceneViewport.m_GameInstance = instance;
+		instance->m_EditorViewport = &s_Panels.SceneViewport;
 
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
@@ -94,6 +97,9 @@ namespace proton {
 	{
 		for (auto& panel : m_EditorPanels)
 			panel->OnUpdate(ts);
+
+		for (auto& clientViewport : m_ClientViewports)
+			clientViewport->OnUpdate(ts);
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -129,7 +135,6 @@ namespace proton {
 			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 		}
-
 		style.WindowMinSize.x = minWinSizeX;
 
 		// Render editor panels
@@ -137,6 +142,9 @@ namespace proton {
 
 		for (auto& panel : m_EditorPanels)
 			panel->OnImGuiRender();
+
+		for (auto& clientViewport : m_ClientViewports)
+			clientViewport->OnImGuiRender();
 
 		ImGui::End(); // DockSpace
 		ImGui::PopStyleVar();
@@ -171,8 +179,8 @@ namespace proton {
 
 	void EditorLayer::SetActiveScene(Scene* scene)
 	{
-		s_Instance->m_ActiveScene = scene;
-		for (auto& panel : s_Instance->m_EditorPanels)
+		Get()->m_ActiveScene = scene;
+		for (auto& panel : Get()->m_EditorPanels)
 			panel->m_ActiveScene = scene;
 		
 		EditorLayer::SelectEntity({});
@@ -180,9 +188,52 @@ namespace proton {
 
 	void EditorLayer::SelectEntity(Entity entity)
 	{
-		s_Instance->m_SelectedEntity = entity;
-		for (auto& panel : s_Instance->m_EditorPanels)
+		Get()->m_SelectedEntity = entity;
+		for (auto& panel : Get()->m_EditorPanels)
 			panel->m_SelectedEntity = entity;
+	}
+
+	void EditorLayer::OnPlayButton()
+	{
+		m_ActiveScene->BeginPlay();
+
+		NetMode mode = Application::GetGameInstance()->GetNetMode();
+		if (mode == NetMode::ListenServer)
+		{
+			for (uint32_t i = 0; i < m_NetNumClients; i++)
+			{
+				m_ClientGameInstances.push_back(MakeUnique<GameInstance>());
+				GameInstance* instance = m_ClientGameInstances.back().get();
+				instance->m_IsMainInstance = false;
+
+				m_ClientViewports.push_back(MakeUnique<SceneViewportPanel>());
+				SceneViewportPanel* viewport = m_ClientViewports.back().get();
+				viewport->m_GameInstance = instance;
+				viewport->m_ImGuiWindowName = "Client " + std::to_string(i + 1);
+				viewport->OnCreate();
+
+				instance->m_EditorViewport = viewport;
+				instance->Init();
+				instance->GetActiveScene()->BeginPlay();
+			}
+		}
+	}
+
+	void EditorLayer::OnStopButton()
+	{
+		m_ActiveScene->Stop();
+
+		NetMode mode = Application::GetGameInstance()->GetNetMode();
+		if (mode == NetMode::ListenServer)
+		{
+			m_ClientViewports.clear();
+			m_ClientGameInstances.clear();
+		}
+	}
+
+	void EditorLayer::OnPauseButton()
+	{
+		m_ActiveScene->Pause(!m_ActiveScene->IsPaused());
 	}
 
 	void EditorLayer::OnBeginSceneSimulation(Scene* scene)
@@ -224,8 +275,10 @@ namespace proton {
 		// Main font
 		const EditorConfig::Font font = m_Config.EditorFonts["roboto"];
 		io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), font.FontSize);
+
 		// Small font
 		s_Fonts.SmallFont = io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), 14.0f);
+
 		// Font Awesome
 		static const ImWchar icons_ranges[] = { 0xE000, 0xF8FF, 0 };
 		s_Fonts.FontAwesome = io.Fonts->AddFontFromFileTTF("editor/content/font/FontAwesome.ttf", 18.0f, NULL, icons_ranges);
