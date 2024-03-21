@@ -1,6 +1,8 @@
 #include "ptpch.h"
 #include "Proton/Network/Common/NetworkManager.h"
 
+#include <steam/steamnetworkingsockets.h>
+
 namespace proton {
 
 	NetworkManager::NetworkManager()

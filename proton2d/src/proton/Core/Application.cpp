@@ -168,7 +168,7 @@ namespace proton {
 				m_WindowMinimized = false;
 				Renderer::SetViewport(0, 0, width, height);
 
-				for (auto& kv : SceneManager::s_Instance->m_Scenes)
+				for (auto& kv : m_GameInstance->GetSceneManager()->m_Scenes)
 					kv.second->OnViewportResize(width, height);
 			}
 			else 

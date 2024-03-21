@@ -20,6 +20,7 @@ IncludeDir["stb"] = "vendor/stb"
 IncludeDir["entt"] = "vendor/entt/src"
 IncludeDir["json"] = "vendor/json"
 IncludeDir["box2d"] = "vendor/box2d/include"
+IncludeDir["GameNetworkingSockets"] = "vendor/GameNetworkingSockets/include"
 
 group "Dependencies"
 	include "vendor/GLFW"
@@ -61,7 +62,8 @@ project "proton2d"
 		"%{IncludeDir.stb}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.json}",
-		"%{IncludeDir.box2d}"
+		"%{IncludeDir.box2d}",
+		"%{IncludeDir.GameNetworkingSockets}"
 	}
 
 	links
@@ -88,19 +90,56 @@ project "proton2d"
 			"PROTON_PLATFORM_WINDOWS",
 			"GLFW_INCLUDE_NONE"
 		}
+  
 
 	filter "configurations:Debug"
 		defines "PROTON_DEBUG"
 		symbols "on"
 
+		postbuildcommands 
+		{
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/libprotobufd.dll" "%{cfg.targetdir}"',
+		}
+
+		links
+		{
+			"vendor/GameNetworkingSockets/bin/Windows/Debug/GameNetworkingSockets.lib"
+		}
+
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
 		optimize "on"
+
+		postbuildcommands 
+		{
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/libprotobuf.dll" "%{cfg.targetdir}"',
+		}
+
+		links
+		{
+			"vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/GameNetworkingSockets.lib"
+		}
 
 	filter "configurations:Distribution"
 		defines "PROTON_DISTRIBUTION"
 		runtime "Release"
 		optimize "on"
+
+		postbuildcommands 
+		{
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/libprotobuf.dll" "%{cfg.targetdir}"',
+		}
+
+		links
+		{
+			"vendor/GameNetworkingSockets/bin/Windows/Release/GameNetworkingSockets.lib"
+		}
 
 		removeincludedirs { "%{IncludeDir.ImGui}" }
 
