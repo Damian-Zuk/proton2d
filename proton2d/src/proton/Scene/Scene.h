@@ -111,6 +111,8 @@ namespace proton {
 
 		bool IsPaused() const { return m_SceneState == SceneState::Paused; };
 
+		GameInstance* GetOwningGameInstance() { return m_GameInstance; }
+
 	private:
 		void OnUpdate(float ts);
 		void RenderScene(const Camera& camera);

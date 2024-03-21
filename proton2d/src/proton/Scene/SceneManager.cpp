@@ -30,10 +30,13 @@ namespace proton {
 
 	Scene* SceneManager::SetActiveScene(const std::string& scenePath)
 	{
-		if (!IsLoaded(scenePath) && !Load(scenePath))
+		if (!IsLoaded(scenePath))
 		{
-			PT_CORE_ERROR("Scene '{}' not loaded!", scenePath);
-			return nullptr;
+			if (!Load(scenePath))
+			{
+				PT_CORE_ERROR("Scene '{}' not loaded!", scenePath);
+				return nullptr;
+			}
 		}
 
 		PT_CORE_INFO("scene='{}'", scenePath);
@@ -60,6 +63,7 @@ namespace proton {
 		PT_CORE_INFO("file='{}.scene.json'", scenePath);
 		Shared<Scene> scene = MakeShared<Scene>(std::string(), scenePath);
 		SceneSerializer serializer(scene.get());
+		scene->m_GameInstance = m_GameInstance;
 
 		std::string filepath = "content/scenes/" + scenePath + ".scene.json";
 		if (!serializer.Deserialize(filepath))
@@ -113,6 +117,7 @@ namespace proton {
 	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)
 	{
 		Shared<Scene> scene = MakeShared<Scene>("Unnamed Scene", "<Unsaved scene>");
+		scene->m_GameInstance = m_GameInstance;
 		m_Scenes["<Unsaved scene>"] = scene;
 		return scene.get();
 	}

@@ -12,7 +12,7 @@ namespace proton {
 
 	SceneManager* EntityScript::GetSceneManager()
 	{
-		return Application::GetGameInstance()->GetSceneManager();
+		return GetScene()->GetOwningGameInstance()->GetSceneManager();
 	}
 
 	void EntityScript::SetFieldValueData(const std::string& fieldName, void* valuePtr)
