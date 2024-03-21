@@ -20,8 +20,10 @@ namespace proton {
 		void HandleImGuiDragAndDrop();
 
 	private:
-		bool m_IsMainViewport = true;
 		std::string m_ImGuiWindowName = "Viewport";
+
+		bool m_IsMainViewport = true;
+		bool m_IsViewportFocused = false;
 		GameInstance* m_GameInstance = nullptr;
 
 		Unique<EditorCamera> m_Camera;

@@ -36,6 +36,8 @@ namespace proton {
 		static void SetActiveScene(Scene* scene);
 		static void SelectEntity(Entity entity);
 
+		GameInstance* GetFocusedGameInstance();
+
 	private:
 		// ImGui setup
 		void SetupFonts();
@@ -71,6 +73,7 @@ namespace proton {
 		uint32_t m_NetNumClients = 1;
 		std::vector<Unique<GameInstance>> m_ClientGameInstances;
 		std::vector<Unique<SceneViewportPanel>> m_ClientViewports;
+		GameInstance* m_FocusedGameInstance = nullptr;
 
 		friend class Application;
 		friend class Scene;

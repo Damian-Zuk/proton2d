@@ -57,6 +57,16 @@ namespace proton {
  
 		HandleImGuiDragAndDrop();
 
+		bool isFocused = ImGui::IsWindowFocused();
+		if (isFocused != m_IsViewportFocused)
+		{
+			if (isFocused)
+			{
+				EditorLayer::Get()->m_FocusedGameInstance = m_GameInstance;
+			}
+			m_IsViewportFocused = isFocused;
+		}
+
 		ImGui::End();
 		ImGui::PopStyleVar();
 	}
@@ -129,7 +139,7 @@ namespace proton {
 		// Dispatch mouse events
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			if (!m_IsMainViewport)
+			if (!m_IsMainViewport || !m_IsViewportFocused)
 				return false;
 
 			SceneState state = m_ActiveScene->GetSceneState();
@@ -183,6 +193,9 @@ namespace proton {
 		// Dispatch keyboard events
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
+			if (!m_IsViewportFocused)
+				return false;
+
 			KeyCode key = e.GetKeyCode();
 
 			if (key == Key::F3)
@@ -213,7 +226,7 @@ namespace proton {
 		// Mouse evenets (button released)
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
 		{
-			if (!m_IsMainViewport)
+			if (!m_IsMainViewport || !m_IsViewportFocused)
 				return false;
 
 			if (e.GetMouseButton() == Mouse::Button0)

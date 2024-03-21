@@ -41,9 +41,9 @@ bool Player::OnCreate()
 void Player::OnUpdate(float ts)
 {
 	// Poll key states for player movement
-	bool moveRight = Input::IsKeyPressed(Key::D);
-	bool moveLeft = Input::IsKeyPressed(Key::A);
-	bool jump = Input::IsKeyPressed(Key::W);
+	bool moveRight = Input::IsKeyPressed(Key::D, this);
+	bool moveLeft = Input::IsKeyPressed(Key::A, this);
+	bool jump = Input::IsKeyPressed(Key::W, this);
 	bool move = moveRight || moveLeft;
 	
 	// Set player direction (right: 1.0, left: -1.0f)

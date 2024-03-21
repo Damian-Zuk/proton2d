@@ -193,6 +193,11 @@ namespace proton {
 			panel->m_SelectedEntity = entity;
 	}
 
+	GameInstance* EditorLayer::GetFocusedGameInstance()
+	{
+		return m_FocusedGameInstance;
+	}
+
 	void EditorLayer::OnPlayButton()
 	{
 		m_ActiveScene->BeginPlay();
