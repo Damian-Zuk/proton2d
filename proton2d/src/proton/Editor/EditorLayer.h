@@ -56,9 +56,13 @@ namespace proton {
 		void OnBeginSceneSimulation(Scene* scene);
 		void OnStopSceneSimulation(Scene* scene);
 
-	private:
-		bool m_EnableViewports = true; // true: ImGui windows can be detached from main GLFW window
+		void CloseClientGameInstance(uint32_t instanceID);
 
+	private:
+		bool m_EnableViewports = false; // true: ImGui windows can be detached from main GLFW window
+		uint32_t m_SimulatedScenes = 0;
+
+		GameInstance* m_GameInstance;
 		Scene* m_ActiveScene = nullptr;
 		Entity m_SelectedEntity;
 
@@ -69,11 +73,19 @@ namespace proton {
 
 		std::vector<EditorPanel*> m_EditorPanels;
 		bool m_BlockEvents = true;
+		GameInstance* m_FocusedGameInstance = nullptr;
 
 		uint32_t m_NetNumClients = 1;
-		std::vector<Unique<GameInstance>> m_ClientGameInstances;
-		std::vector<Unique<SceneViewportPanel>> m_ClientViewports;
-		GameInstance* m_FocusedGameInstance = nullptr;
+
+		struct EditorClientInstance
+		{
+			Unique<GameInstance> Instance;
+			Unique<SceneViewportPanel> Viewport;
+			uint32_t ID;
+		};
+		std::vector<EditorClientInstance> m_ClientInstances;
+		std::vector<uint32_t> m_ClientInstancesToClose;
+		std::vector<uint32_t> m_FreeClientInstanceID;
 
 		friend class Application;
 		friend class Scene;

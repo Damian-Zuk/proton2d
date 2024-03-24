@@ -5,7 +5,6 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Scripting/ScriptFactory.h"
@@ -13,7 +12,6 @@
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Physics/PhysicsWorld.h"
-#include "Proton/Network/Common/Network.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -602,7 +600,27 @@ namespace proton {
 		ImGui::Text("Networking");
 		ImGui::Dummy({ 0.0f, 3.0f });
 		ImGui::Separator();
-		ImGui::Checkbox("Enable networking", &Application::GetGameInstance()->GetSceneManager()->GetActiveScene()->m_EnableNetworking);
+
+		constexpr char* netmodeItems[] = { "Inherit", "Standalone" };
+		const NetMode netMode = Application::GetGameInstance()->GetNetMode();
+		bool inheritNetMode = m_ActiveScene->m_InheritNetMode;
+
+		ImGui::Text("Net mode");
+		ImGui::SameLine();
+		ImGui::PushItemWidth(150.0f);
+		if (ImGui::BeginCombo("##net_mode", netmodeItems[!inheritNetMode]))
+		{
+			for (uint8_t i = 0; i < 2; i++)
+			{
+				bool selected = inheritNetMode != (bool)i;
+				if (ImGui::Selectable(netmodeItems[i], selected))
+				{
+					m_ActiveScene->m_InheritNetMode = !(bool)i;
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
 	}
 
 

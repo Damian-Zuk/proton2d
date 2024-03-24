@@ -10,12 +10,17 @@
 #include "Proton/Events/MouseEvents.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scene/PrefabManager.h"
+#include "Proton/Scene/SceneManager.h"
 #include "Proton/Utils/Utils.h"
 
 #include <imgui.h>
 
 namespace proton {
-	
+
+	SceneViewportPanel::~SceneViewportPanel()
+	{
+	}
+
 	void SceneViewportPanel::OnCreate()
 	{
 		FramebufferSpecification fbSpec;
@@ -30,7 +35,21 @@ namespace proton {
 	{
 		// Scene Viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin(m_ImGuiWindowName.c_str());
+		
+		if (m_IsMainViewport)
+		{
+			ImGui::Begin(m_ImGuiWindowName.c_str());
+		}
+		else
+		{
+			bool open = true;
+			ImGui::Begin(m_ImGuiWindowName.c_str(), &open);
+			if (!open)
+			{
+				EditorLayer::Get()->CloseClientGameInstance(m_GameInstance->m_InstanceID);
+			}
+		}
+
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto viewportOffset = ImGui::GetWindowPos();
@@ -91,8 +110,10 @@ namespace proton {
 		Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
 		Renderer::Clear();
 
-		m_ActiveScene->OnUpdate(ts * Application::Get().GetTimeScale());
+		// Update game instance
+		m_GameInstance->OnUpdate(ts * Application::Get().GetTimeScale());
 
+		// Get mouse position
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
@@ -335,8 +356,8 @@ namespace proton {
 				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
 				std::filesystem::path path(path_wchar);
 				std::string sceneFilepath = path.replace_extension().replace_extension().string();
-				m_GameInstance->m_SceneManager.Load(sceneFilepath);
-				m_GameInstance->m_SceneManager.SetActiveScene(sceneFilepath);
+				m_GameInstance->m_SceneManager->Load(sceneFilepath);
+				m_GameInstance->m_SceneManager->SetActiveScene(sceneFilepath);
 			}
 
 			ImGui::EndDragDropTarget();

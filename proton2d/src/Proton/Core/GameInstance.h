@@ -1,10 +1,12 @@
 #pragma once
 #include "Proton/Core/Project.h"
-#include "Proton/Scene/SceneManager.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/Common/Network.h"
 
 namespace proton {
 
+	class Scene;
+	class SceneManager;
+	class NetworkManager;
 	class SceneViewportPanel;
 
 	class GameInstance
@@ -15,20 +17,28 @@ namespace proton {
 
 		void Init();
 
-		Scene* GetActiveScene() { return m_SceneManager.GetActiveScene(); }
-		SceneManager* GetSceneManager() { return &m_SceneManager; }
+		void OnSceneSimulationStart(Scene* scene);
+		void OnSceneSimulationStop(Scene* scene);
 
-		void SetNetMode(NetMode mode) { return m_NetworkManager.SetNetMode(mode); }
-		NetMode GetNetMode() const { return m_NetworkManager.GetNetMode(); }
+		void OnUpdate(float ts);
+
+		Scene* GetActiveScene();
+		SceneManager* GetSceneManager();
+
+		void SetNetMode(NetMode mode);
+		NetMode GetNetMode() const;
 
 		bool IsMainInstance() const { return m_IsMainInstance; }
+		bool HasSimulationStarted() const { return m_SimulatedScenesCount > 0; }
 
 	private:
-		SceneManager m_SceneManager;
-		NetworkManager m_NetworkManager;
-
-		Project m_Project;
 		bool m_IsMainInstance = true;
+		uint32_t m_SimulatedScenesCount = 0;
+		uint32_t m_InstanceID = 0;
+
+		Unique<SceneManager> m_SceneManager;
+		Unique<NetworkManager> m_NetworkManager;
+		Project m_Project;
 
 	#ifdef PT_EDITOR
 		SceneViewportPanel* m_EditorViewport;

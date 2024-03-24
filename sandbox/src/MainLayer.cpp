@@ -12,6 +12,9 @@ using namespace proton;
 
 void MainLayer::OnCreate()
 {
+#ifdef PROTON_DISTRIBUTION
+	Application::Get().GetGameInstance()->SetNetMode(NetMode::Client);
+#endif
 }
 
 void MainLayer::OnUpdate(float ts)

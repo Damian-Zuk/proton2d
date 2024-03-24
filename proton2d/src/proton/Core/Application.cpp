@@ -106,10 +106,7 @@ namespace proton {
 						m_EditorLayer->EndImGuiRender();
 					}
 				#else
-					// Update active scene
-					Scene* scene = m_GameInstance->GetActiveScene();
-					if (scene)
-						scene->OnUpdate(m_FrameTime * m_TimeScale);
+					m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);
 				#endif
 				}
 

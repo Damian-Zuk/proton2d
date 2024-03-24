@@ -2,6 +2,7 @@
 
 #include "Proton/Core/Base.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Core/AppLayer.h"
 #include "Proton/Core/Input.h"
 

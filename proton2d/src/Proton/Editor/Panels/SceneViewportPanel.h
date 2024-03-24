@@ -10,6 +10,8 @@ namespace proton {
 	class SceneViewportPanel : public EditorPanel
 	{
 	public:
+		virtual ~SceneViewportPanel();
+
 		virtual void OnCreate() override;
 		virtual void OnImGuiRender() override;
 		virtual void OnUpdate(float ts) override;

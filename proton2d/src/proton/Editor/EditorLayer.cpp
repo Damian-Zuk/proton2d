@@ -79,6 +79,7 @@ namespace proton {
 		m_EditorPanels.push_back(&s_Panels.SceneViewport);
 
 		GameInstance* instance = Application::GetGameInstance();
+		m_GameInstance = instance;
 		s_Panels.SceneViewport.m_GameInstance = instance;
 		instance->m_EditorViewport = &s_Panels.SceneViewport;
 
@@ -98,8 +99,26 @@ namespace proton {
 		for (auto& panel : m_EditorPanels)
 			panel->OnUpdate(ts);
 
-		for (auto& clientViewport : m_ClientViewports)
-			clientViewport->OnUpdate(ts);
+		for (auto& client : m_ClientInstances)
+			client.Viewport->OnUpdate(ts);
+
+		if (m_GameInstance->GetNetMode() == NetMode::ListenServer)
+		{
+			for (uint32_t id : m_ClientInstancesToClose)
+			{
+				m_ClientInstances.erase(std::remove_if(m_ClientInstances.begin(), m_ClientInstances.end(),
+					[id](const EditorClientInstance& instance) {
+						return instance.ID == id;
+					}));
+				m_FreeClientInstanceID.push_back(id);
+			}
+			if (m_ClientInstancesToClose.size())
+			{
+				m_ClientInstancesToClose.clear();
+				m_FocusedGameInstance = m_GameInstance;
+				GetSceneViewportPanel()->m_IsViewportFocused = true;
+			}
+		}
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -143,8 +162,8 @@ namespace proton {
 		for (auto& panel : m_EditorPanels)
 			panel->OnImGuiRender();
 
-		for (auto& clientViewport : m_ClientViewports)
-			clientViewport->OnImGuiRender();
+		for (auto& client : m_ClientInstances)
+			client.Viewport->OnImGuiRender();
 
 		ImGui::End(); // DockSpace
 		ImGui::PopStyleVar();
@@ -202,19 +221,26 @@ namespace proton {
 	{
 		m_ActiveScene->BeginPlay();
 
-		NetMode mode = Application::GetGameInstance()->GetNetMode();
-		if (mode == NetMode::ListenServer)
+		if (m_GameInstance->GetNetMode() == NetMode::ListenServer)
 		{
 			for (uint32_t i = 0; i < m_NetNumClients; i++)
 			{
-				m_ClientGameInstances.push_back(MakeUnique<GameInstance>());
-				GameInstance* instance = m_ClientGameInstances.back().get();
-				instance->m_IsMainInstance = false;
+				m_ClientInstances.push_back(EditorClientInstance{
+					MakeUnique<GameInstance>(),
+					MakeUnique<SceneViewportPanel>(),
+					i + 1
+				});
 
-				m_ClientViewports.push_back(MakeUnique<SceneViewportPanel>());
-				SceneViewportPanel* viewport = m_ClientViewports.back().get();
+				GameInstance* instance = m_ClientInstances.back().Instance.get();
+				SceneViewportPanel* viewport = m_ClientInstances.back().Viewport.get();
+
+				instance->m_IsMainInstance = false;
+				instance->m_InstanceID = i + 1;
+				instance->SetNetMode(NetMode::Client);
+
 				viewport->m_GameInstance = instance;
 				viewport->m_ImGuiWindowName = "Client " + std::to_string(i + 1);
+				viewport->m_IsMainViewport = false;
 				viewport->OnCreate();
 
 				instance->m_EditorViewport = viewport;
@@ -226,14 +252,12 @@ namespace proton {
 
 	void EditorLayer::OnStopButton()
 	{
-		m_ActiveScene->Stop();
-
-		NetMode mode = Application::GetGameInstance()->GetNetMode();
-		if (mode == NetMode::ListenServer)
+		if (m_GameInstance->GetNetMode() == NetMode::ListenServer)
 		{
-			m_ClientViewports.clear();
-			m_ClientGameInstances.clear();
+			m_ClientInstances.clear();
+			m_FreeClientInstanceID.clear();
 		}
+		m_ActiveScene->Stop();
 	}
 
 	void EditorLayer::OnPauseButton()
@@ -243,18 +267,29 @@ namespace proton {
 
 	void EditorLayer::OnBeginSceneSimulation(Scene* scene)
 	{
+		if (!scene->m_GameInstance->IsMainInstance())
+			return;
 		m_SceneBackup[scene->m_SceneFilepath] = scene->CreateSceneCopy();
+		m_SimulatedScenes++;
 	}
 
 	void EditorLayer::OnStopSceneSimulation(Scene* scene)
 	{
+		if (!scene->m_GameInstance->IsMainInstance())
+			return;
 		bool isActiveScene = scene == m_ActiveScene;
 		std::string sceneFilepath = scene->m_SceneFilepath;
-		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
+		SceneManager* manager = m_GameInstance->GetSceneManager();
 		manager->m_Scenes[sceneFilepath] = m_SceneBackup.at(sceneFilepath);
 		if (isActiveScene)
 			manager->SetActiveScene(sceneFilepath);
 		m_SceneBackup.erase(sceneFilepath);
+		m_SimulatedScenes--;
+	}
+
+	void EditorLayer::CloseClientGameInstance(uint32_t instanceID)
+	{
+		m_ClientInstancesToClose.push_back(instanceID);
 	}
 
 	EditorCamera* EditorLayer::GetCamera()

@@ -24,7 +24,7 @@ namespace proton {
 			return nullptr;
 		}
 
-		PT_CORE_INFO("file='{}'", filepath);
+		//PT_CORE_INFO("file='{}'", filepath);
 		s_Instance->m_Textures[filepath] = texture;
 		return texture;
 	}
@@ -43,7 +43,7 @@ namespace proton {
 		}
 
 		const auto& size = spritesheetList.at(filepath);
-		PT_CORE_INFO("file='{}' tile_size=({},{})", filepath, size.x, size.y);
+		//PT_CORE_INFO("file='{}' tile_size=({},{})", filepath, size.x, size.y);
 		return MakeShared<Spritesheet>(texture, size.x, size.y);
 	}
 

@@ -4,6 +4,7 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Input.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Utils/Utils.h"
@@ -67,6 +68,7 @@ namespace proton {
 		newScene->m_SceneFilepath = m_SceneFilepath;
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
+		newScene->m_GameInstance = m_GameInstance;
 
 		auto& dstSceneRegistry = newScene->m_Registry;
 		std::unordered_map<UUID, entt::entity> enttMap;
@@ -152,6 +154,7 @@ namespace proton {
 			m_PhysicsWorld->BuildWorld();
 
 		m_SceneState = SceneState::Play;
+		m_GameInstance->OnSceneSimulationStart(this);
 	}
 
 	void Scene::Pause(bool pause)
@@ -168,6 +171,7 @@ namespace proton {
 			m_PhysicsWorld->DestroyWorld();
 		m_SceneState = SceneState::Stop;
 
+		m_GameInstance->OnSceneSimulationStop(this);
 	#ifdef PT_EDITOR
 		EditorLayer::Get()->OnStopSceneSimulation(this);
 	#endif
@@ -335,7 +339,7 @@ namespace proton {
 		}
 	}
 
-	void Scene::OnUpdate(float ts)
+	void Scene::OnUpdate(float ts, bool render)
 	{
 		PROFILE_FUNCTION();
 		
@@ -393,7 +397,8 @@ namespace proton {
 		}
 
 		// Render scene
-		RenderScene(GetPrimaryCamera());
+		if (render)
+			RenderScene(GetPrimaryCamera());
 	}
 
 	Entity Scene::FindByID(UUID id)

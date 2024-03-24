@@ -1,3 +1,4 @@
 {
-    "start_scene": "level_1"
+    "start_scene": "level_1",
+    "net_mode": "Client"
 }

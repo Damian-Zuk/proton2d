@@ -15,6 +15,8 @@ namespace proton {
 	public:
 		SceneManager(GameInstance* gameInstance);
 
+		void OnUpdate(float ts);
+
 		Scene* GetScene(const std::string& scenePath);
 		Scene* GetActiveScene();
 		Scene* SetActiveScene(const std::string& scenePath);

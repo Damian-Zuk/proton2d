@@ -18,6 +18,11 @@ namespace proton {
 	{
 	}
 
+	void SceneManager::OnUpdate(float ts)
+	{
+		m_ActiveScene->OnUpdate(ts);
+	}
+
 	Scene* SceneManager::GetScene(const std::string& scenePath)
 	{
 		return m_Scenes.at(scenePath).get();
@@ -39,7 +44,7 @@ namespace proton {
 			}
 		}
 
-		PT_CORE_INFO("scene='{}'", scenePath);
+		//PT_CORE_INFO("scene='{}'", scenePath);
 		SetActiveScene(GetScene(scenePath));
 		Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
 
@@ -60,7 +65,7 @@ namespace proton {
 
 	Scene* SceneManager::Load(const std::string& scenePath)
 	{
-		PT_CORE_INFO("file='{}.scene.json'", scenePath);
+		//PT_CORE_INFO("file='{}.scene.json'", scenePath);
 		Shared<Scene> scene = MakeShared<Scene>(std::string(), scenePath);
 		SceneSerializer serializer(scene.get());
 		scene->m_GameInstance = m_GameInstance;

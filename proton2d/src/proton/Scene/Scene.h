@@ -114,7 +114,7 @@ namespace proton {
 		GameInstance* GetOwningGameInstance() { return m_GameInstance; }
 
 	private:
-		void OnUpdate(float ts);
+		void OnUpdate(float ts, bool render = true);
 		void RenderScene(const Camera& camera);
 		void OnViewportResize(uint32_t width, uint32_t height);
 		void DestroyChildEntities(Entity entity);
@@ -127,7 +127,7 @@ namespace proton {
 	private:
 		// State
 		SceneState m_SceneState = SceneState::Stop;
-		bool m_EnableNetworking = true;
+		bool m_InheritNetMode = true;
 		GameInstance* m_GameInstance = nullptr;
 
 		// General properties
@@ -159,6 +159,7 @@ namespace proton {
 		friend class SceneSerializer;
 		friend class SceneManager;
 		friend class PhysicsWorld;
+		friend class NetworkManager;
 		
 		friend class EditorLayer;
 		friend class EditorCamera;
