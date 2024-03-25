@@ -37,6 +37,14 @@ namespace proton {
 
 	bool SceneSerializer::Serialize(const std::string& filepath)
 	{
+		std::ofstream out(filepath);
+		out << Serialize();
+		out.close();
+		return true;
+	}
+
+	std::string SceneSerializer::Serialize()
+	{
 		PT_CORE_ASSERT(m_Scene, "Scene context not set!");
 		const auto& c = m_Scene->m_ClearColor;
 		json jsonObj = {
@@ -63,15 +71,7 @@ namespace proton {
 				if (relationship.Parent == entt::null)
 					jsonObj["Entities"].push_back(SerializeEntity(entity));
 			});
-
-		std::ofstream out(filepath);
-	#if PROTON_SERIALIZER_INDENT_JSON
-		out << jsonObj.dump(4);
-	#else
-		out << jsonObj;
-	#endif
-		out.close();
-		return true;
+		return jsonObj.dump();
 	}
 
 	// *****************************************

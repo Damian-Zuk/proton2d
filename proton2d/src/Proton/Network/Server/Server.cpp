@@ -1,5 +1,9 @@
 #include "ptpch.h"
 #include "Proton/Network/Server/Server.h"
+#include "Proton/Network/Common/PacketType.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Serialization/BufferStream.h"
+#include "Proton/Assets/SceneSerializer.h"
 
 #include <chrono>
 
@@ -10,15 +14,19 @@ namespace proton {
 	// Can only have one server instance per-process
 	static Server* s_Instance = nullptr;
 
-	Server::Server(NetworkManager* manager)
-		: m_NetworkManager(manager)
+	Server::Server(GameInstance* gameInstance)
+		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
+		// 256KB scratch buffer
+		m_ScratchBuffer.Allocate(256 * 1024);
 	}
 
 	Server::~Server()
 	{
 		if (m_NetworkThread.joinable())
 			m_NetworkThread.join();
+
+		m_ScratchBuffer.Release();
 	}
 
 	void Server::OnUpdate(float ts)
@@ -183,9 +191,7 @@ namespace proton {
 			client.ConnectionDesc = connectionInfo.m_szConnectionDescription;
 
 			PT_CORE_INFO("New connection from client {}", client.ID);
-
-			// User callback
-			//m_ClientConnectedCallback(client);
+			OnClientConnected(client);
 
 			break;
 		}
@@ -203,6 +209,24 @@ namespace proton {
 	void Server::PollConnectionStateChanges()
 	{
 		m_Interface->RunCallbacks();
+	}
+
+	void Server::OnClientConnected(const ClientInfo& clientInfo)
+	{
+		// Move logic to PacketType::ClientConnectionRequest handle in OnDataReceived?
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw<PacketType>(PacketType::InitializeScene);
+		SceneSerializer sceneSerializer(m_GameInstance->GetActiveScene());
+		stream.WriteString(sceneSerializer.Serialize());
+		SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+	}
+
+	void Server::OnClientDisconnected(const ClientInfo& clientInfo)
+	{
+	}
+
+	void Server::OnDataReceived(const ClientInfo& clientInfo, const Buffer& buffer)
+	{
 	}
 
 	void Server::PollIncomingMessages()
@@ -231,8 +255,8 @@ namespace proton {
 				continue;
 			}
 
-			//if (incomingMessage->m_cbSize)
-				//m_DataReceivedCallback(itClient->second, Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
+			if (incomingMessage->m_cbSize)
+				OnDataReceived(itClient->second, Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
 
 			// Release when done
 			incomingMessage->Release();

@@ -15,6 +15,7 @@
 
 namespace proton {
 
+	class GameInstance;
 	class NetworkManager;
 
 	class Client
@@ -25,7 +26,7 @@ namespace proton {
 			Disconnected = 0, Connected, Connecting, FailedToConnect
 		};
 	public:
-		Client(NetworkManager* manager);
+		Client(GameInstance* gameInstance);
 		~Client();
 
 		void ConnectToServer(const std::string& serverAddress);
@@ -53,8 +54,11 @@ namespace proton {
 		void PollIncomingMessages();
 		void PollConnectionStateChanges();
 
+		void OnDataReceived(Buffer buffer);
+
 		void OnFatalError(const std::string& message);
 	private:
+		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 
 		std::thread m_NetworkThread;

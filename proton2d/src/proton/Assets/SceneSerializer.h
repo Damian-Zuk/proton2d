@@ -15,6 +15,7 @@ namespace proton {
 		~SceneSerializer() = default;
 
 		bool Serialize(const std::string& filepath);
+		std::string Serialize();
 		json SerializeEntity(Entity entity, bool serializeUUID = true);
 
 		bool Deserialize(const std::string& filepath);

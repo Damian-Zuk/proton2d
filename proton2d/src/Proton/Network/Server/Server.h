@@ -24,12 +24,13 @@ namespace proton {
 	};
 
 	class NetworkManager;
+	class GameInstance;
 
 	class Server
 	{
 	public:
 	public:
-		Server(NetworkManager* manager);
+		Server(GameInstance* gameInstance);
 		~Server();
 
 		void OnUpdate(float ts);
@@ -70,11 +71,18 @@ namespace proton {
 		void SetClientNick(HSteamNetConnection hConn, const char* nick);
 		void PollConnectionStateChanges();
 
+		void OnClientConnected(const ClientInfo& clientInfo);
+		void OnClientDisconnected(const ClientInfo& clientInfo);
+
+		void OnDataReceived(const ClientInfo& clientInfo, const Buffer& buffer);
+
 		void OnFatalError(const std::string& message);
 	private:
+		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 
 		std::thread m_NetworkThread;
+		Buffer m_ScratchBuffer;
 
 		int m_Port = 0;
 		bool m_Running = false;

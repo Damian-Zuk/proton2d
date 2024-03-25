@@ -78,7 +78,7 @@ namespace proton {
 
 	void NetworkManager::StartServer()
 	{
-		m_Server = MakeUnique<Server>(this);
+		m_Server = MakeUnique<Server>(m_GameInstance);
 		m_Server->Start(m_Port);
 
 		m_IsNetworkServiceRunning = true;
@@ -88,7 +88,7 @@ namespace proton {
 
 	void NetworkManager::StartClient()
 	{
-		m_Client = MakeUnique<Client>(this);
+		m_Client = MakeUnique<Client>(m_GameInstance);
 		m_Client->ConnectToServer(m_IpAddress + ":" + std::to_string(m_Port));
 
 		m_IsNetworkServiceRunning = true;

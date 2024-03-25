@@ -46,6 +46,8 @@ namespace proton {
 
 		friend class Application;
 		friend class SceneManager;
+		friend class Client;
+		friend class Server;
 
 		friend class EditorLayer;
 		friend class SceneViewportPanel;

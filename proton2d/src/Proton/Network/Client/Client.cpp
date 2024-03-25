@@ -1,13 +1,16 @@
 #include "ptpch.h"
 #include "Proton/Network/Client/Client.h"
+#include "Proton/Network/Common/PacketType.h"
+#include "Proton/Serialization/BufferStream.h"
+#include "Proton/Core/GameInstance.h"
 
 namespace proton {
 
 	static std::unordered_map<HSteamNetConnection, Client*> s_ConnectionToInstanceMap;
 	static std::mutex s_MapMutex;
 
-	Client::Client(NetworkManager* manager)
-		: m_NetworkManager(manager)
+	Client::Client(GameInstance* gameInstance)
+		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
 	}
 
@@ -125,10 +128,28 @@ namespace proton {
 				return;
 			}
 
-			//m_DataReceivedCallback(Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
+			OnDataReceived(Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
 
 			// Release when done
 			incomingMessage->Release();
+		}
+	}
+
+	void Client::OnDataReceived(Buffer buffer)
+	{
+		BufferStreamReader stream(buffer);
+		PacketType packetType;
+		stream.ReadRaw<PacketType>(packetType);
+
+		switch (packetType)
+		{
+		case PacketType::InitializeScene:
+		{
+			std::string sceneJson;
+			stream.ReadString(sceneJson);
+			PT_CORE_TRACE(sceneJson);
+			break;
+		}
 		}
 	}
 
