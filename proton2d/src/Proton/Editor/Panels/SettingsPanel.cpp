@@ -70,10 +70,14 @@ namespace proton {
 
 			if (netMode == NetMode::ListenServer)
 			{
-				int count = EditorLayer::Get()->m_NetNumClients;
+				int numClients = EditorLayer::Get()->m_NetNumClients;
+				int count = numClients;
 				if (ImGui::InputInt("Number of clients", &count, 1, 1))
 				{
-					EditorLayer::Get()->m_NetNumClients = glm::clamp(count, 0, 10);
+					if (count > numClients)
+						EditorLayer::Get()->OnAddClientButton();
+					else
+						EditorLayer::Get()->OnRemoveClientButton();
 				}
 			}
 

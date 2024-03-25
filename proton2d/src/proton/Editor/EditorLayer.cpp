@@ -225,27 +225,7 @@ namespace proton {
 		{
 			for (uint32_t i = 0; i < m_NetNumClients; i++)
 			{
-				m_ClientInstances.push_back(EditorClientInstance{
-					MakeUnique<GameInstance>(),
-					MakeUnique<SceneViewportPanel>(),
-					i + 1
-				});
-
-				GameInstance* instance = m_ClientInstances.back().Instance.get();
-				SceneViewportPanel* viewport = m_ClientInstances.back().Viewport.get();
-
-				instance->m_IsMainInstance = false;
-				instance->m_InstanceID = i + 1;
-				instance->SetNetMode(NetMode::Client);
-
-				viewport->m_GameInstance = instance;
-				viewport->m_ImGuiWindowName = "Client " + std::to_string(i + 1);
-				viewport->m_IsMainViewport = false;
-				viewport->OnCreate();
-
-				instance->m_EditorViewport = viewport;
-				instance->Init();
-				instance->GetActiveScene()->BeginPlay();
+				OpenNewClientGameInstance(i + 1);
 			}
 		}
 	}
@@ -287,8 +267,66 @@ namespace proton {
 		m_SimulatedScenes--;
 	}
 
+	void EditorLayer::OnAddClientButton()
+	{
+		if (m_NetNumClients >= 10)
+			return;
+
+		m_NetNumClients++;
+		
+		if (m_GameInstance->HasSimulationStarted())
+		{
+			uint32_t instanceID = (uint32_t)m_ClientInstances.size() + 1;
+			if (m_FreeClientInstanceID.size())
+			{
+				instanceID = m_FreeClientInstanceID.back();
+				m_FreeClientInstanceID.pop_back();
+			}
+			OpenNewClientGameInstance(instanceID);
+		}
+	}
+
+	void EditorLayer::OnRemoveClientButton()
+	{
+		if (m_NetNumClients == 0)
+			return;
+
+		m_NetNumClients--;
+
+		if (m_GameInstance->HasSimulationStarted())
+		{
+			m_ClientInstancesToClose.push_back(m_ClientInstances.back().ID);
+		}
+	}
+
+	void EditorLayer::OpenNewClientGameInstance(uint32_t instanceID)
+	{
+		m_ClientInstances.push_back(EditorClientInstance{
+			MakeUnique<GameInstance>(),
+			MakeUnique<SceneViewportPanel>(),
+			instanceID
+		});
+
+		GameInstance* instance = m_ClientInstances.back().Instance.get();
+		SceneViewportPanel* viewport = m_ClientInstances.back().Viewport.get();
+
+		instance->m_IsMainInstance = false;
+		instance->m_InstanceID = instanceID;
+		instance->SetNetMode(NetMode::Client);
+
+		viewport->m_GameInstance = instance;
+		viewport->m_ImGuiWindowName = "Client " + std::to_string(instanceID);
+		viewport->m_IsMainViewport = false;
+		viewport->OnCreate();
+
+		instance->m_EditorViewport = viewport;
+		instance->Init();
+		instance->GetActiveScene()->BeginPlay();
+	}
+
 	void EditorLayer::CloseClientGameInstance(uint32_t instanceID)
 	{
+		m_NetNumClients--;
 		m_ClientInstancesToClose.push_back(instanceID);
 	}
 

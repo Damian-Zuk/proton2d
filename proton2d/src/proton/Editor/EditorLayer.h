@@ -53,9 +53,14 @@ namespace proton {
 		void OnPlayButton();
 		void OnStopButton();
 		void OnPauseButton();
+		
 		void OnBeginSceneSimulation(Scene* scene);
 		void OnStopSceneSimulation(Scene* scene);
 
+		void OnAddClientButton();
+		void OnRemoveClientButton();
+
+		void OpenNewClientGameInstance(uint32_t instanceID);
 		void CloseClientGameInstance(uint32_t instanceID);
 
 	private:
