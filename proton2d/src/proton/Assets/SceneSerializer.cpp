@@ -41,6 +41,7 @@ namespace proton {
 		const auto& c = m_Scene->m_ClearColor;
 		json jsonObj = {
 			{ "SceneName",          m_Scene->m_SceneName },
+			{ "InheritNetMode",     m_Scene->m_InheritNetMode },
 			{ "EnablePhysics",      m_Scene->m_EnablePhysics },
 			{ "GravityForce",       m_Scene->m_PhysicsWorld->m_Gravity },
 			{ "VelocityIterations", m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations },
@@ -85,6 +86,9 @@ namespace proton {
 			json jsonObj = json::parse(jsonData);
 			m_Scene->m_SceneName = jsonObj["SceneName"];
 			m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
+			if (jsonObj.contains("InheritNetMode"))
+				m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
+
 			m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
 			m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
 			m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations = jsonObj["PositionIterations"];

@@ -6,7 +6,7 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Core/Application.h"
-#include "Proton/Core/Project.h"
+#include "Proton/Core/ProjectSettings.h"
 #include "Proton/Core/GameInstance.h"
 
 #include "imgui.h"
@@ -19,7 +19,7 @@ namespace proton {
 	{
 		ImGui::Begin("Settings");
 
-		Project& project = Application::Get().GetGameInstance()->m_Project;
+		ProjectSettings& project = Application::Get().GetGameInstance()->m_ProjectSettings;
 
 		char buffer[256];
 		strcpy_s(buffer, project.m_StartScene.c_str());

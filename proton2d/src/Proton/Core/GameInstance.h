@@ -1,5 +1,5 @@
 #pragma once
-#include "Proton/Core/Project.h"
+#include "Proton/Core/ProjectSettings.h"
 #include "Proton/Network/Common/Network.h"
 
 namespace proton {
@@ -15,7 +15,7 @@ namespace proton {
 		GameInstance();
 		virtual ~GameInstance();
 
-		void Init();
+		void Init(bool loadStartScene = true);
 
 		void OnSceneSimulationStart(Scene* scene);
 		void OnSceneSimulationStop(Scene* scene);
@@ -38,7 +38,7 @@ namespace proton {
 
 		Unique<SceneManager> m_SceneManager;
 		Unique<NetworkManager> m_NetworkManager;
-		Project m_Project;
+		ProjectSettings m_ProjectSettings;
 
 	#ifdef PT_EDITOR
 		SceneViewportPanel* m_EditorViewport;

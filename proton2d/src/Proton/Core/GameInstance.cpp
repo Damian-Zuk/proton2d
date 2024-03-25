@@ -15,16 +15,16 @@ namespace proton {
 	{
 	}
 
-	void GameInstance::Init()
+	void GameInstance::Init(bool loadStartScene)
 	{
-		if (!m_Project.LoadProjectSettings())
+		if (!m_ProjectSettings.LoadProjectSettings())
 		{
 			PT_CORE_ERROR("Project settings loading failed!");
 		}
-		else
+		else if (loadStartScene)
 		{
-			m_SceneManager->Load(m_Project.m_StartScene);
-			m_SceneManager->SetActiveScene(m_Project.m_StartScene);
+			m_SceneManager->Load(m_ProjectSettings.m_StartScene);
+			m_SceneManager->SetActiveScene(m_ProjectSettings.m_StartScene);
 		}
 	}
 

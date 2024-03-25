@@ -3,8 +3,8 @@
 
 namespace proton {
 
-	// Can only have one server instance per-process
-	static Client* s_Instance = nullptr;
+	static std::unordered_map<HSteamNetConnection, Client*> s_ConnectionToInstanceMap;
+	static std::mutex s_MapMutex;
 
 	Client::Client(NetworkManager* manager)
 		: m_NetworkManager(manager)
@@ -40,8 +40,6 @@ namespace proton {
 
 	void Client::NetworkThreadFunc()
 	{
-		s_Instance = this;
-
 		// Reset connection status
 		m_ConnectionStatus = ConnectionStatus::Connecting;
 
@@ -75,6 +73,10 @@ namespace proton {
 			m_ConnectionStatus = ConnectionStatus::FailedToConnect;
 			return;
 		}
+
+		s_MapMutex.lock();
+		s_ConnectionToInstanceMap[m_Connection] = this;
+		s_MapMutex.unlock();
 
 		m_Running = true;
 		while (m_Running)
@@ -128,7 +130,6 @@ namespace proton {
 			// Release when done
 			incomingMessage->Release();
 		}
-
 	}
 
 	void Client::PollConnectionStateChanges()
@@ -136,7 +137,11 @@ namespace proton {
 		m_Interface->RunCallbacks();
 	}
 
-	void Client::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info) { s_Instance->OnConnectionStatusChanged(info); }
+	void Client::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info) 
+	{
+		std::lock_guard<std::mutex> lock(s_MapMutex);
+		s_ConnectionToInstanceMap.at(info->m_hConn)->OnConnectionStatusChanged(info);
+	}
 
 	void Client::OnConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* info)
 	{

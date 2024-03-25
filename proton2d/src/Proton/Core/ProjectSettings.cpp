@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Core/Project.h"
+#include "Proton/Core/ProjectSettings.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Utils/Utils.h"
@@ -11,7 +11,7 @@ namespace proton {
 
 	using json = nlohmann::json;
 
-	bool Project::LoadProjectSettings()
+	bool ProjectSettings::LoadProjectSettings()
 	{
 		if (!std::filesystem::exists(m_Filepath))
 		{
@@ -24,6 +24,15 @@ namespace proton {
 		{
 			PT_CORE_ERROR("'start_scene' missing in '{}'!", m_Filepath);
 			return false;
+		}
+
+		if (jsonObj.contains("server_ip"))
+		{
+			m_IpAddress = jsonObj.at("server_ip");
+		}
+		if (jsonObj.contains("port"))
+		{
+			m_Port = jsonObj.at("port");
 		}
 
 		m_StartScene = jsonObj.at("start_scene");
@@ -58,11 +67,14 @@ namespace proton {
 		return NetMode::Standalone;
 	}
 
-	void Project::WriteProjectSettings()
+	void ProjectSettings::WriteProjectSettings()
 	{
 		json jsonObj;
 		jsonObj["start_scene"] = m_StartScene;
-		jsonObj["net_mode"] = Application::Get().GetGameInstance()->GetNetMode();
+		NetMode netMode = Application::Get().GetGameInstance()->GetNetMode();
+		jsonObj["net_mode"] = NetModeToString(netMode);
+		jsonObj["server_ip"] = m_IpAddress;
+		jsonObj["port"] = 8192;
 		std::ofstream configFile(m_Filepath);
 		configFile << jsonObj.dump(4);
 		configFile.close();
