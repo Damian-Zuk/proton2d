@@ -64,13 +64,9 @@ namespace proton {
 			jsonObj["PrimaryCameraEntity"] = id;
 		}
 
-		m_Scene->m_Registry.view<IDComponent>().each([&](entt::entity id, auto& component)
-			{
-				Entity entity{ id, m_Scene };
-				auto& relationship = entity.GetComponent<RelationshipComponent>();
-				if (relationship.Parent == entt::null)
-					jsonObj["Entities"].push_back(SerializeEntity(entity));
-			});
+		for (Entity entity : m_Scene->m_Root)
+			jsonObj["Entities"].push_back(SerializeEntity(entity));
+
 		return jsonObj.dump();
 	}
 
@@ -78,35 +74,38 @@ namespace proton {
 	//       Deserialize Scene Function
 	// *****************************************
 
-	bool SceneSerializer::Deserialize(const std::string& filepath)
+	bool SceneSerializer::Deserialize(const std::string& jsonData)
+	{
+		json jsonObj = json::parse(jsonData);
+		m_Scene->m_SceneName = jsonObj["SceneName"];
+		m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
+		if (jsonObj.contains("InheritNetMode"))
+			m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
+
+		m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
+		m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
+		m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
+		json& c = jsonObj["ScreenClearColor"];
+		m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
+
+		json& entities = jsonObj["Entities"];
+		for (auto it = entities.rbegin(); it != entities.rend(); it++)
+			DeserializeEntity(*it);
+
+		if (jsonObj.contains("PrimaryCameraEntity"))
+		{
+			UUID id{ jsonObj["PrimaryCameraEntity"] };
+			m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
+		}
+		m_Scene->CalculateWorldPositions(false);
+		return true;
+	}
+
+	bool SceneSerializer::DeserializeFromFile(const std::string& filepath)
 	{
 		std::string jsonData = Utils::ReadFile(filepath);
 		if (jsonData.size())
-		{
-			json jsonObj = json::parse(jsonData);
-			m_Scene->m_SceneName = jsonObj["SceneName"];
-			m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
-			if (jsonObj.contains("InheritNetMode"))
-				m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
-
-			m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
-			m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
-			m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
-			json& c = jsonObj["ScreenClearColor"];
-			m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
-
-			json& entities = jsonObj["Entities"];
-			for (auto it = entities.rbegin(); it != entities.rend(); it++)
-				DeserializeEntity(*it);
-
-			if (jsonObj.contains("PrimaryCameraEntity"))
-			{
-				UUID id{ jsonObj["PrimaryCameraEntity"] };
-				m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
-			}
-			m_Scene->CalculateWorldPositions(false);
-			return true;
-		}
+			return Deserialize(jsonData);
 		return false;
 	}
 
@@ -403,9 +402,9 @@ namespace proton {
 			component.Color = { c[0], c[1], c[2], c[3] };
 
 			if (jsonData.contains("Spritesheet"))
-				sprite.SetSpritesheet(AssetManager::GetSpritesheet(jsonData["Spritesheet"]));
-
-			sprite.Generate();
+				sprite.SetSpritesheet(AssetManager::GetSpritesheet(jsonData["Spritesheet"]), &entity);
+			else
+				sprite.Generate(&entity);
 		}
 
 		// Deserialize CircleRendererComponent

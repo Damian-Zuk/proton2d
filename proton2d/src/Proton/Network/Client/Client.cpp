@@ -3,6 +3,9 @@
 #include "Proton/Network/Common/PacketType.h"
 #include "Proton/Serialization/BufferStream.h"
 #include "Proton/Core/GameInstance.h"
+#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/Scene.h"
 
 namespace proton {
 
@@ -145,9 +148,13 @@ namespace proton {
 		{
 		case PacketType::InitializeScene:
 		{
-			std::string sceneJson;
-			stream.ReadString(sceneJson);
-			PT_CORE_TRACE(sceneJson);
+			std::string jsonData;
+			stream.ReadString(jsonData);
+			SceneManager* sceneManager = m_GameInstance->GetSceneManager();
+			Scene* scene = sceneManager->CreateEmptyScene("server_level");
+			SceneSerializer serializer(scene);
+			serializer.Deserialize(jsonData);
+			sceneManager->SetActiveScene("server_level")->BeginPlay();
 			break;
 		}
 		}

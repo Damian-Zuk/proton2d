@@ -152,7 +152,7 @@ namespace proton {
 					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
 						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
-						nsc.ResizableSprite.Generate();
+						nsc.ResizableSprite.Generate(&m_SelectedEntity);
 					}
 				}
 				ImGui::SameLine();
@@ -162,7 +162,7 @@ namespace proton {
 					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
 						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
-						nsc.ResizableSprite.Generate();
+						nsc.ResizableSprite.Generate(&m_SelectedEntity);
 					}
 				}
 				ImGui::Columns(1);
@@ -332,7 +332,7 @@ namespace proton {
 							if (ImGui::Selectable(kv.first.c_str(), isSelected))
 							{
 								spritesheet = AssetManager::GetSpritesheet(kv.first);
-								sprite.SetSpritesheet(spritesheet);
+								sprite.SetSpritesheet(spritesheet, &m_SelectedEntity);
 							}
 
 							if (isSelected)
@@ -346,7 +346,7 @@ namespace proton {
 					float tileScale = sprite.m_TileScale;
 					if (ImGui::DragFloat("Tile Scale", &tileScale, 0.001f))
 					{
-						sprite.SetTileScale(tileScale);
+						sprite.SetTileScale(tileScale, &m_SelectedEntity);
 					}
 					ImGui::DragInt2("Tile Offset", (int*)glm::value_ptr(sprite.m_PositionOffset));
 					ImGui::Dummy({ 0.0f, 3.0f });
@@ -372,7 +372,7 @@ namespace proton {
 					ImGui::SameLine(); 
 					ImGui::CheckboxFlags("##tb_bottom_right", &edges, Edge_BottomRight);
 
-					sprite.SetEdges((uint8_t)edges);
+					sprite.SetEdges((uint8_t)edges, &m_SelectedEntity);
 					ImGui::Dummy({ 0, 3.0f });
 
 					// Tint color control

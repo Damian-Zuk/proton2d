@@ -71,7 +71,7 @@ namespace proton {
 		scene->m_GameInstance = m_GameInstance;
 
 		std::string filepath = "content/scenes/" + scenePath + ".scene.json";
-		if (!serializer.Deserialize(filepath))
+		if (!serializer.DeserializeFromFile(filepath))
 		{
 			PT_CORE_ERROR("Loading '{}' failed!", filepath);
 			return nullptr;
@@ -121,9 +121,9 @@ namespace proton {
 
 	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)
 	{
-		Shared<Scene> scene = MakeShared<Scene>("Unnamed Scene", "<Unsaved scene>");
+		Shared<Scene> scene = MakeShared<Scene>("Unnamed Scene", scenePath);
 		scene->m_GameInstance = m_GameInstance;
-		m_Scenes["<Unsaved scene>"] = scene;
+		m_Scenes[scenePath] = scene;
 		return scene.get();
 	}
 
