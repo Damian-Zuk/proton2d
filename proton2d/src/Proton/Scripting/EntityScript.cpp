@@ -2,6 +2,7 @@
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
+#include "Proton/Network/Common/NetworkManager.h"
 
 namespace proton {
 
@@ -13,6 +14,23 @@ namespace proton {
 	SceneManager* EntityScript::GetSceneManager()
 	{
 		return GetScene()->GetOwningGameInstance()->GetSceneManager();
+	}
+
+	bool EntityScript::HasAuthority() const
+	{
+		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
+		return netMode != NetMode::Client;
+	}
+
+	bool EntityScript::IsRunningServer() const
+	{
+		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
+		return netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer;
+	}
+
+	bool EntityScript::IsRunningClient() const
+	{
+		return !HasAuthority();
 	}
 
 	void EntityScript::SetFieldValueData(const std::string& fieldName, void* valuePtr)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Proton/Core/Buffer.h"
+#include "Proton/Network/Common/Common.h"
 
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
@@ -8,10 +8,8 @@
 #include <steam/steam_api.h>
 #endif
 
-#include <string>
-#include <map>
+#include <queue>
 #include <thread>
-#include <functional>
 
 namespace proton {
 
@@ -21,6 +19,7 @@ namespace proton {
 	class Client
 	{
 	public:
+		
 		enum class ConnectionStatus
 		{
 			Disconnected = 0, Connected, Connecting, FailedToConnect
@@ -41,13 +40,18 @@ namespace proton {
 			SendBuffer(Buffer(&data, sizeof(T)), reliable);
 		}
 
+		void SendPlayerAction(OnSendPlayerActionFunc sendFunction);
+
 		bool IsRunning() const { return m_Running; }
 		ConnectionStatus GetConnectionStatus() const { return m_ConnectionStatus; }
 		const std::string& GetConnectionDebugMessage() const { return m_ConnectionDebugMessage; }
+	
 	private:
+		void ProcessMessagesOnMainThread();
+
 		void NetworkThreadFunc();
 		void Shutdown();
-	private:
+
 		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
 		void OnConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* info);
 
@@ -57,11 +61,16 @@ namespace proton {
 		void OnDataReceived(Buffer buffer);
 
 		void OnFatalError(const std::string& message);
+
 	private:
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 
 		std::thread m_NetworkThread;
+		Buffer m_ScratchBuffer;
+
+		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
+		std::mutex m_QueueMutex;
 
 		ConnectionStatus m_ConnectionStatus = ConnectionStatus::Disconnected;
 		std::string m_ConnectionDebugMessage;

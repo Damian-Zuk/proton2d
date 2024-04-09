@@ -6,6 +6,8 @@
 
 namespace proton {
 
+	class GameModeBase;
+
 	// Entity class wrapper for the EnTT ECS
 	class Entity
 	{
@@ -97,6 +99,7 @@ namespace proton {
 			return scriptInstance;
 		}
 
+		EntityScript* GetScriptInstance(const std::string& className);
 		void RemoveScript(const std::string& scriptClassName);
 		
 		// Entity lifetime
@@ -112,6 +115,7 @@ namespace proton {
 
 		// Component getters
 		Scene* GetScene() const;
+		GameModeBase* GetGameMode() const;
 		UUID GetUUID() const;
 		const std::string& GetTag() const;
 		TransformComponent& GetTransform() const;

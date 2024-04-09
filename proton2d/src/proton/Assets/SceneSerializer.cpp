@@ -149,7 +149,7 @@ namespace proton {
 				jsonObj["Sprite"] = {
 					{ "Texture", GetFilepathRelative(s_TexturesPath, sprite.GetTexture()->GetPath())},
 					{ "FilterMode", sprite.GetTexture()->GetFilterMode() },
-					{ "Flip", { sprite.m_MirrorFlipX, sprite.m_MirrorFlipY } }
+					{ "Flip", { sprite.m_MirrorFlip.x, sprite.m_MirrorFlip.y } }
 				};
 
 				if (sprite.m_Spritesheet)
@@ -379,8 +379,8 @@ namespace proton {
 						spriteComponent.Sprite.SetTexture(texture);
 
 					spriteComponent.Sprite.GetTexture()->m_FilterMode = sprite["FilterMode"];
-					spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][0];
-					spriteComponent.Sprite.m_MirrorFlipX = sprite["Flip"][1];
+					spriteComponent.Sprite.m_MirrorFlip.x = sprite["Flip"][0];
+					spriteComponent.Sprite.m_MirrorFlip.y = sprite["Flip"][1];
 				}
 				else
 					PT_CORE_ERROR("Texture '{}' does not exist!", sprite["Texture"]);

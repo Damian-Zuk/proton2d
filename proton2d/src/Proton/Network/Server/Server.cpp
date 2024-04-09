@@ -1,9 +1,13 @@
 #include "ptpch.h"
 #include "Proton/Network/Server/Server.h"
 #include "Proton/Network/Common/PacketType.h"
+
 #include "Proton/Core/GameInstance.h"
-#include "Proton/Serialization/BufferStream.h"
 #include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Scene/Scene.h"
+#include "Proton/Scene/Components.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Scripting/GameModeBase.h"
 
 #include <chrono>
 
@@ -45,6 +49,11 @@ namespace proton {
 	void Server::Stop()
 	{
 		m_Running = false;
+	}
+
+	void Server::SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function)
+	{
+		m_OnRecvPlayerActionCallbacks[clientID] = function;
 	}
 
 	void Server::NetworkThreadFunc()
@@ -142,6 +151,7 @@ namespace proton {
 				//m_ClientDisconnectedCallback(itClient->second);
 
 				PT_CORE_INFO("Client {} disconnected", itClient->second.ID);
+				OnClientDisconnected(itClient->second);
 
 				m_ConnectedClients.erase(itClient);
 			}
@@ -214,19 +224,101 @@ namespace proton {
 	void Server::OnClientConnected(const ClientInfo& clientInfo)
 	{
 		// Move logic to PacketType::ClientConnectionRequest handle in OnDataReceived?
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw<PacketType>(PacketType::InitializeScene);
-		SceneSerializer sceneSerializer(m_GameInstance->GetActiveScene());
-		stream.WriteString(sceneSerializer.Serialize());
-		SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+		
+		m_GameInstance->GetActiveScene()->GetGameMode()->Server_OnClientConnected((uint32_t)clientInfo.ID);
+
+		// PacketType::InitializeScene
+		{
+			BufferStreamWriter stream(m_ScratchBuffer);
+			stream.WriteRaw(PacketType::InitializeScene);
+			SceneSerializer sceneSerializer(m_GameInstance->GetActiveScene());
+			stream.WriteString(sceneSerializer.Serialize());
+			SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+		}
 	}
 
 	void Server::OnClientDisconnected(const ClientInfo& clientInfo)
 	{
+		m_GameInstance->GetActiveScene()->GetGameMode()->Server_OnClientDisconnected((uint32_t)clientInfo.ID);
 	}
 
 	void Server::OnDataReceived(const ClientInfo& clientInfo, const Buffer& buffer)
 	{
+		BufferStreamReader stream(buffer);
+	}
+
+	void Server::OnTick() // Called from main thread
+	{
+		m_QueueMutex.lock();
+
+		while (!m_MessageQueue.empty())
+		{
+			ISteamNetworkingMessage*& message = m_MessageQueue.front();
+			Buffer buffer(message->m_pData, message->m_cbSize);
+			BufferStreamReader stream(buffer);
+			PacketType packetType;
+			stream.ReadRaw(packetType);
+
+			switch (packetType)
+			{
+
+			case PacketType::PlayerAction:
+				if (m_OnRecvPlayerActionCallbacks.find(message->m_conn) != m_OnRecvPlayerActionCallbacks.end())
+				{
+					OnRecvPlayerActionCallback& callback = m_OnRecvPlayerActionCallbacks.at(message->m_conn);
+					callback(stream);
+				}
+				else
+				{
+					PT_CORE_ERROR("OnRecvPlayerActionCallbacks[{}] was not defined!", (uint32_t)message->m_conn);
+				}
+				break;
+
+			default:
+				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
+				// TODO: disconnect client
+				break;
+			}
+
+			message->Release();
+			m_MessageQueue.pop();
+		}
+
+		m_QueueMutex.unlock();
+
+		Scene* scene = m_GameInstance->GetActiveScene();
+
+		// Replicate entitites with NetworkComponent
+		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
+		if (!view.size())
+			return;
+
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::UpdateReplicated);
+
+		for (auto e : view)
+		{
+			Entity entity(e, scene);
+
+			bool hasSpriteComponent = entity.HasComponent<SpriteComponent>();
+
+			stream.WriteRaw(ReplicatedEntityUpdateInfo{
+				entity.GetUUID(),
+				hasSpriteComponent
+			});
+
+			auto& transform = entity.GetTransform();
+			stream.WriteRaw(transform);
+
+			if (hasSpriteComponent)
+			{
+				auto& sprite = entity.GetSprite();
+				stream.WriteRaw(sprite.m_TilePos);
+				stream.WriteRaw(sprite.m_MirrorFlip);
+			}
+		}
+
+		SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
 
 	void Server::PollIncomingMessages()
@@ -256,10 +348,15 @@ namespace proton {
 			}
 
 			if (incomingMessage->m_cbSize)
-				OnDataReceived(itClient->second, Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
+			{
+				//OnDataReceived(itClient->second, Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
+				m_QueueMutex.lock();
+				m_MessageQueue.push(incomingMessage);
+				m_QueueMutex.unlock();
+			}
 
 			// Release when done
-			incomingMessage->Release();
+			//incomingMessage->Release();
 		}
 	}
 

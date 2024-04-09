@@ -19,6 +19,21 @@ void Player::OnRegisterFields()
 
 bool Player::OnCreate()
 {
+	AddComponent<NetworkComponent>();
+
+	if (m_IsLocalPlayer)
+		GetScene()->SetPrimaryCameraEntity(*this);
+
+	if (IsRunningClient())
+		return true;
+
+	if (IsRunningServer() && !m_IsLocalPlayer)
+	{
+		GetGameMode()->Server_SetOnRecvPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
+			stream.ReadRaw(m_ActionState);
+		});
+	}
+
 	// Set up animations
 	AddComponent<SpriteAnimationComponent>();
 	SpriteAnimation& animation = GetSpriteAnimation();
@@ -30,6 +45,7 @@ bool Player::OnCreate()
 	animation.SetFPS(8);
 
 	// Foot sensor is used to detect if player is touching the ground
+	// TODO: Move this to prefab
 	Entity footSensor = CreateChildEntity("FootSensor");
 	auto& bc = footSensor.AddComponent<BoxColliderComponent>();
 	bc.Size = { 0.38f, 0.38f };
@@ -42,17 +58,31 @@ bool Player::OnCreate()
 
 void Player::OnUpdate(float ts)
 {
+	if (m_IsLocalPlayer)
+	{
+		PlayerActionState prevState = m_ActionState;
+		m_ActionState.MoveRight = Input::IsKeyPressed(Key::D, this);
+		m_ActionState.MoveLeft = Input::IsKeyPressed(Key::A, this);
+		m_ActionState.Jump = Input::IsKeyPressed(Key::W, this);
+
+		if (IsRunningClient() && m_ActionState != prevState)
+		{
+			GetGameMode()->Client_SendPlayerAction([&](BufferStreamWriter& stream) {
+				stream.WriteRaw(m_ActionState);
+			});
+		}
+	}
+
+	if (IsRunningClient())
+		return;
+
 	// Get SpriteAnimation object reference
 	SpriteAnimation& animation = GetSpriteAnimation();
-
-	// Poll key states for player movement
-	bool moveRight = Input::IsKeyPressed(Key::D, this);
-	bool moveLeft = Input::IsKeyPressed(Key::A, this);
-	bool jump = Input::IsKeyPressed(Key::W, this);
-	bool move = moveRight || moveLeft;
 	
 	// Set player direction (right: 1.0, left: -1.0f)
-	m_Direction = moveRight ? 1.0f : (moveLeft ? -1.0f : m_Direction);
+	m_Direction = m_ActionState.MoveRight ? 1.0f : (m_ActionState.MoveLeft ? -1.0f : m_Direction);
+	
+	bool move = m_ActionState.MoveLeft || m_ActionState.MoveRight;
 
 	// Set horizontal velocity (acceleration)
 	SetLinearVelocityX(!move ? 0.0f : glm::clamp(
@@ -74,7 +104,7 @@ void Player::OnUpdate(float ts)
 	}
 
 	// Player pressed a jump key
-	if (jump && IsTouchingGround() && m_JumpTimer >= s_JumpDelay)
+	if (m_ActionState.Jump && IsTouchingGround() && m_JumpTimer >= s_JumpDelay)
 	{
 		ApplyLinearImpulse({ 0.0f,  m_JumpForce });
 		m_JumpTimer = 0.0f;

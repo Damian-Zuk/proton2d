@@ -1,11 +1,11 @@
 #include "ptpch.h"
 #include "Proton/Network/Client/Client.h"
 #include "Proton/Network/Common/PacketType.h"
-#include "Proton/Serialization/BufferStream.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Scene.h"
+#include "Proton/Scene/Entity.h"
 
 namespace proton {
 
@@ -15,6 +15,8 @@ namespace proton {
 	Client::Client(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
+		// 256KB scratch buffer
+		m_ScratchBuffer.Allocate(256 * 1024);
 	}
 
 	Client::~Client()
@@ -131,33 +133,90 @@ namespace proton {
 				return;
 			}
 
-			OnDataReceived(Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
+			// OnDataReceived(Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
+			m_QueueMutex.lock();
+			m_MessageQueue.push(incomingMessage);
+			m_QueueMutex.unlock();
+			// incomingMessage->Release();
+		}
+	}
+	
+	void Client::ProcessMessagesOnMainThread()
+	{
+		std::lock_guard<std::mutex> lock(m_QueueMutex);
+		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
 
-			// Release when done
-			incomingMessage->Release();
+		while (!m_MessageQueue.empty())
+		{
+			ISteamNetworkingMessage*& message = m_MessageQueue.front();
+			Buffer buffer(message->m_pData, message->m_cbSize);
+			BufferStreamReader stream(buffer);
+
+			PacketType packetType;
+			stream.ReadRaw(packetType);
+
+			switch (packetType)
+			{
+			case PacketType::UpdateReplicated:
+			{
+				Scene* scene = sceneManager->GetActiveScene();
+
+				while (stream.GetStreamPosition() < buffer.Size)
+				{
+					ReplicatedEntityUpdateInfo info;
+					stream.ReadRaw(info);
+
+					Entity entity = scene->FindByID(info.EntityUUID);
+
+					auto& transform = entity.GetTransform();
+					stream.ReadRaw(transform);
+
+					if (info.UpdateSpriteComponent)
+					{
+						auto& sprite = entity.GetSprite();
+						glm::uvec2 tilePos;
+						stream.ReadRaw(tilePos);
+						sprite.SetTile(tilePos.x, tilePos.y);
+						stream.ReadRaw(sprite.m_MirrorFlip);
+					}
+				}
+				break;
+			}
+
+			case PacketType::InitializeScene:
+			{
+				std::string jsonData;
+				stream.ReadString(jsonData);
+				Scene* scene = sceneManager->CreateEmptyScene("server_level");
+				SceneSerializer serializer(scene);
+				serializer.Deserialize(jsonData);
+
+				scene->EnablePhysics(false); // 'dumb-terminal' client
+				sceneManager->SetActiveScene("server_level")->BeginPlay();
+				break;
+			}
+
+			default:
+				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
+				break;
+			}
+
+			message->Release();
+			m_MessageQueue.pop();
 		}
 	}
 
-	void Client::OnDataReceived(Buffer buffer)
+	void Client::OnDataReceived(Buffer buffer) // Client network thread
 	{
-		BufferStreamReader stream(buffer);
-		PacketType packetType;
-		stream.ReadRaw<PacketType>(packetType);
 
-		switch (packetType)
-		{
-		case PacketType::InitializeScene:
-		{
-			std::string jsonData;
-			stream.ReadString(jsonData);
-			SceneManager* sceneManager = m_GameInstance->GetSceneManager();
-			Scene* scene = sceneManager->CreateEmptyScene("server_level");
-			SceneSerializer serializer(scene);
-			serializer.Deserialize(jsonData);
-			sceneManager->SetActiveScene("server_level")->BeginPlay();
-			break;
-		}
-		}
+	}
+
+	void Client::SendPlayerAction(OnSendPlayerActionFunc sendFunction)
+	{
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::PlayerAction);
+		sendFunction(stream);
+		SendBuffer(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
 
 	void Client::PollConnectionStateChanges()

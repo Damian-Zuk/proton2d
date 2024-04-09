@@ -64,7 +64,8 @@ namespace proton {
 
 	void Sprite::MirrorFlip(bool mirror_x, bool mirror_y)
 	{
-		m_MirrorFlipX = mirror_x, m_MirrorFlipY = mirror_y;
+		m_MirrorFlip.x = mirror_x;
+		m_MirrorFlip.y = mirror_y;
 	}
 
 	void Sprite::CalculateTextureCoords()

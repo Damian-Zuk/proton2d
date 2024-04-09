@@ -16,6 +16,7 @@ namespace proton {
 	class Entity;
 	class PhysicsWorld;
 	class GameInstance;
+	class GameModeBase;
 
 	enum class SceneState
 	{
@@ -61,11 +62,12 @@ namespace proton {
 		bool IsCursorHoveringEntity(Entity entity);
 		std::vector<Entity> GetEntitiesOnCursorLocation();
 
+		void EnablePhysics(bool enabled);
+
 		bool IsPhysicsEnabled() const;
 		bool IsPhysicsWorldInitialized() const;
 		bool IsSimulated() const { return m_SceneState != SceneState::Stop; };
 		bool IsPaused() const { return m_SceneState == SceneState::Paused; };
-
 
 		const std::string& GetFilepath() const;
 		SceneState GetSceneState() const { return m_SceneState; }
@@ -78,6 +80,16 @@ namespace proton {
 		auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
 		GameInstance* GetOwningGameInstance() { return m_GameInstance; }
+
+		GameModeBase* GetGameMode() { return m_GameMode; }
+
+		template<typename TGameMode>
+		GameModeBase* SetGameMode()
+		{
+			m_GameMode = new TGameMode();
+			m_GameMode->m_Scene = this;
+			return m_GameMode;
+		}
 
 	private:
 		void OnUpdate(float ts);
@@ -94,6 +106,9 @@ namespace proton {
 		SceneState m_SceneState = SceneState::Stop;
 		bool m_InheritNetMode = true;
 		GameInstance* m_GameInstance = nullptr;
+		
+		GameModeBase* m_GameMode = nullptr;
+		std::string m_GameModeClassName = "MyGameMode";
 
 		// General
 		std::string m_SceneName;
@@ -126,6 +141,7 @@ namespace proton {
 		friend class SceneManager;
 		friend class PhysicsWorld;
 		friend class GameInstance;
+		friend class GameModeBase;
 		friend class NetworkManager;
 		
 		friend class EditorLayer;

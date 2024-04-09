@@ -43,6 +43,7 @@ namespace proton {
 	void GameInstance::OnUpdate(float ts)
 	{
 		m_SceneManager->OnUpdate(ts);
+		m_NetworkManager->OnUpdate(ts);
 	}
 
 	Scene* GameInstance::GetActiveScene()
@@ -53,6 +54,11 @@ namespace proton {
 	SceneManager* GameInstance::GetSceneManager()
 	{
 		return m_SceneManager.get();
+	}
+
+	NetworkManager* GameInstance::GetNetworkManager()
+	{
+		return m_NetworkManager.get();
 	}
 
 	void GameInstance::SetNetMode(NetMode mode)

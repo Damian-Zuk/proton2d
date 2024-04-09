@@ -50,7 +50,7 @@ namespace proton {
 
     void SpriteAnimation::Update(float ts)
     {
-        if (!m_CurrentAnimation->FrameCount)
+        if (!m_CurrentAnimation || !m_CurrentAnimation->FrameCount)
             return;
 
         if (m_CurrentAnimation->PlayMode == AnimationPlayMode::PAUSED)
@@ -82,6 +82,15 @@ namespace proton {
     bool SpriteAnimation::FinishedPlaying()
     {
         return m_CurrentFrame == m_CurrentAnimation->FrameCount;
+    }
+
+    AnimationPlayMode SpriteAnimation::GetCurrentAnimationPlayMode() const
+    {
+        if (m_CurrentAnimationIndex != -1)
+        {
+            return m_CurrentAnimation->PlayMode;
+        }
+        return AnimationPlayMode::PAUSED;
     }
 
     void SpriteAnimation::SetFPS(uint16_t fps)

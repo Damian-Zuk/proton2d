@@ -249,6 +249,7 @@ namespace proton {
 	{
 		if (!scene->m_GameInstance->IsMainInstance())
 			return;
+
 		m_SceneBackup[scene->m_SceneFilepath] = scene->CreateSceneCopy();
 		m_SimulatedScenes++;
 	}
@@ -257,12 +258,15 @@ namespace proton {
 	{
 		if (!scene->m_GameInstance->IsMainInstance())
 			return;
+
 		bool isActiveScene = scene == m_ActiveScene;
 		std::string sceneFilepath = scene->m_SceneFilepath;
 		SceneManager* manager = m_GameInstance->GetSceneManager();
 		manager->m_Scenes[sceneFilepath] = m_SceneBackup.at(sceneFilepath);
+			
 		if (isActiveScene)
 			manager->SetActiveScene(sceneFilepath);
+			
 		m_SceneBackup.erase(sceneFilepath);
 		m_SimulatedScenes--;
 	}

@@ -1,5 +1,5 @@
 #pragma once
-#include "Proton/Network/Common/Network.h"
+#include "Proton/Network/Common/Common.h"
 
 namespace proton {
 
@@ -16,6 +16,8 @@ namespace proton {
 		NetworkManager(GameInstance* instance, SceneManager* manager);
 		virtual ~NetworkManager();
 
+		void OnUpdate(float ts);
+
 		void OnSceneSimulationStart(Scene* scene);
 		void OnSceneSimulationStop(Scene* scene);
 
@@ -27,24 +29,34 @@ namespace proton {
 
 		void SetNetMode(NetMode mode);
 		NetMode GetNetMode() const { return m_NetMode; }
+		bool IsNetModeServer() const { return m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer; }
+
+		void SetServerTickRate(uint16_t tickRate);
+
+		Client* GetClient();
+		Server* GetServer();
 
 	private:
 		void CheckNetworkResourcesRelease();
 
 	private:
 		NetMode m_NetMode = NetMode::ListenServer;
-		uint32_t m_NetworkedSceneCount = 0;
 
 		std::string m_IpAddress = "127.0.0.1";
 		int m_Port = 8192;
 
-		bool m_IsNetworkServiceRunning = false;
+		uint16_t m_ServerTickRate = 128;
+		float m_ServerTickTime = 1.0f / m_ServerTickRate;
+		float m_ServerTickElapsed = 0.0f;
 
 		GameInstance* m_GameInstance;
 		SceneManager* m_SceneManager;
 
 		Unique<Client> m_Client;
 		Unique<Server> m_Server;
+
+		bool m_IsNetworkServiceRunning = false;
+		uint32_t m_NetworkedSceneCount = 0;
 
 		static uint32_t s_NetworkServicesRunning; // across all editor's game instances (server + clients)
 		static bool s_NetworkResourcesFreed; // free resources after all network services finished running

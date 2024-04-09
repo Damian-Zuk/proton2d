@@ -27,6 +27,7 @@ namespace proton {
 
 	// Forward declaration
 	class SceneManager;
+	class NetworkManager;
 
 	// Base class for entity scripts.
 	// - Use ENTITY_SCRIPT_CLASS in derived classes for registration.
@@ -53,6 +54,10 @@ namespace proton {
 		// Use glm::value_ptr for FloatX and IntX field types.
 		// Supported variable types are listed inside ScriptFieldType enum.
 		void RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor = true);
+
+		bool HasAuthority() const;
+		bool IsRunningServer() const;
+		bool IsRunningClient() const;
 
 		SceneManager* GetSceneManager();
 

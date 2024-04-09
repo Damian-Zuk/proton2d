@@ -13,6 +13,12 @@ namespace proton
 	{
 	}
 
+	EntityScript* Entity::GetScriptInstance(const std::string& className)
+	{
+		auto& component = GetComponent<ScriptComponent>();
+		return component.Scripts.at(className);
+	}
+
 	void Entity::RemoveScript(const std::string& scriptClassName)
 	{
 		auto& component = GetComponent<ScriptComponent>();
@@ -138,6 +144,11 @@ namespace proton
 	Scene* Entity::GetScene() const
 	{
 		return m_Scene;
+	}
+
+	GameModeBase* Entity::GetGameMode() const
+	{
+		return m_Scene->GetGameMode();
 	}
 
 	UUID Entity::GetUUID() const

@@ -5,6 +5,22 @@ enum PlayerState : uint16_t
 	Idle, Run, Jump, Land
 };
 
+struct PlayerActionState
+{
+	bool MoveLeft = false;
+	bool MoveRight = false;
+	bool Jump = false;
+
+	bool operator==(const PlayerActionState& other) const {
+		return other.MoveLeft == MoveLeft
+			&& other.MoveRight == MoveRight
+			&& other.Jump == Jump;
+	}
+	bool operator!=(const PlayerActionState& other) const {
+		return !(other == *this);
+	}
+};
+
 class Player : public EntityScript
 {
 public:
@@ -18,6 +34,11 @@ private:
 	bool IsTouchingGround() const { return *m_FootSensorContactCount > 0; }
 
 private:
+	bool m_IsLocalPlayer = true;
+	uint32_t m_ClientID = 0;
+
+	PlayerActionState m_ActionState;
+
 	float m_PlayerMaxSpeed = 6.0f;
 	float m_JumpForce = 20.0f;
 	float m_PlayerAcceleration = 40.0f;
@@ -28,4 +49,6 @@ private:
 	float m_JumpTimer = 0.0f;
 
 	uint32_t* m_FootSensorContactCount;
+
+	friend class MyGameMode;
 };

@@ -115,4 +115,10 @@ namespace proton {
 	{
 		SpriteAnimation SpriteAnimation;
 	};
+
+	struct NetworkComponent
+	{
+		bool Replicated = true;
+		//std::vector<ReplicatedScriptField> ReplicatedScriptFields;
+	};
 }

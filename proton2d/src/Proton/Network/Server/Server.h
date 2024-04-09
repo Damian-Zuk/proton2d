@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Proton/Core/Buffer.h"
+#include "Proton/Network/Common/Common.h"
 
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
@@ -8,10 +8,8 @@
 #include <steam/steam_api.h>
 #endif
 
-#include <string>
-#include <map>
 #include <thread>
-#include <functional>
+#include <queue>
 
 namespace proton {
 
@@ -28,7 +26,6 @@ namespace proton {
 
 	class Server
 	{
-	public:
 	public:
 		Server(GameInstance* gameInstance);
 		~Server();
@@ -60,6 +57,9 @@ namespace proton {
 
 		bool IsRunning() const { return m_Running; }
 		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
+
+		void SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
+
 	private:
 		void NetworkThreadFunc(); // Server thread
 
@@ -77,6 +77,8 @@ namespace proton {
 		void OnDataReceived(const ClientInfo& clientInfo, const Buffer& buffer);
 
 		void OnFatalError(const std::string& message);
+
+		void OnTick(); // Called from main thread
 	private:
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
@@ -87,6 +89,11 @@ namespace proton {
 		int m_Port = 0;
 		bool m_Running = false;
 		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
+
+		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
+		std::mutex m_QueueMutex;
+
+		std::unordered_map<uint32_t, OnRecvPlayerActionCallback> m_OnRecvPlayerActionCallbacks;
 
 		std::atomic<bool> m_NetworkThreadFinished = false;
 

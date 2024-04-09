@@ -19,11 +19,13 @@ namespace proton {
 		void SetTile(uint32_t x, uint32_t y);
 		void SetTileX(uint32_t x);
 		void SetTileY(uint32_t y);
-
 		void SetTileSize(uint32_t tilesWidth, uint32_t tilesHeight);
+
 		const glm::uvec2& GetTileSize() const { return m_TileSize; }
 		const glm::uvec2& GetTilePos() const { return m_TilePos; }
 		const glm::uvec2& GetPixelSize() const { return m_PixelSize; }
+		const glm::bvec2& GetMirrorFlip() const { return m_MirrorFlip; }
+
 		float GetAspectRatio() const { return (float)m_PixelSize.x / (float)m_PixelSize.y; }
 
 		void MirrorFlip(bool mirror_x, bool mirror_y);
@@ -43,12 +45,15 @@ namespace proton {
 		glm::uvec2 m_PixelSize = { 0, 0 };
 		glm::uvec2 m_TilePos   = { 0, 0 };
 		glm::uvec2 m_TileSize  = { 1, 1 };
-		bool m_MirrorFlipX = false, m_MirrorFlipY = false;
+		glm::bvec2 m_MirrorFlip = { false, false };
 
 		friend class Renderer;
 		friend class Scene;
 		friend class Entity;
 		friend class AssetManager;
+
+		friend class Server;
+		friend class Client;
 
 		friend class InspectorPanel;
 		friend class SceneSerializer;

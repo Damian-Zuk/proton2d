@@ -254,9 +254,9 @@ namespace proton {
 					// Mirror flip
 					ImGui::Text("Mirror Flip");
 					ImGui::SameLine();
-					ImGui::Checkbox("X##Flip", &sprite.m_MirrorFlipX);
+					ImGui::Checkbox("X##Flip", &sprite.m_MirrorFlip.x);
 					ImGui::SameLine();
-					ImGui::Checkbox("Y##Flip", &sprite.m_MirrorFlipY);
+					ImGui::Checkbox("Y##Flip", &sprite.m_MirrorFlip.y);
 					ImGui::Dummy({ 0, 1 });
 
 					// Texture filter mode

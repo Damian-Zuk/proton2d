@@ -24,6 +24,10 @@
 #include "Proton/Scene/PrefabManager.h"
 
 #include "Proton/Scripting/EntityScript.h"
+#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameModeFactory.h"
+
+#include "Proton/Network/Common/NetworkManager.h"
 
 #ifdef PT_EDITOR
 #include <imgui/imgui.h>

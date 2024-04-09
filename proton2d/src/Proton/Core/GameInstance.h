@@ -1,6 +1,6 @@
 #pragma once
 #include "Proton/Core/ProjectSettings.h"
-#include "Proton/Network/Common/Network.h"
+#include "Proton/Network/Common/Common.h"
 
 namespace proton {
 
@@ -24,6 +24,8 @@ namespace proton {
 
 		Scene* GetActiveScene();
 		SceneManager* GetSceneManager();
+
+		NetworkManager* GetNetworkManager();
 
 		void SetNetMode(NetMode mode);
 		NetMode GetNetMode() const;

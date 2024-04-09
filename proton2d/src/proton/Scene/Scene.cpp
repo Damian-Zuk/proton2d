@@ -3,6 +3,8 @@
 #include "Proton/Scene/Entity.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scripting/EntityScript.h"
+#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameModeFactory.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Input.h"
@@ -22,11 +24,15 @@ namespace proton {
 		: m_SceneName(name), m_SceneFilepath(filepath),
 		m_PhysicsWorld(MakeUnique<PhysicsWorld>(this))
 	{
+		// TODO: move
+		GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
 	}
 
 	Scene::~Scene()
 	{
-		Stop();
+		if (m_PhysicsWorld->IsInitialized())
+			m_PhysicsWorld->DestroyWorld();
+
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view)
 		{
@@ -178,10 +184,14 @@ namespace proton {
 		EditorLayer::Get()->OnBeginSceneSimulation(this);
 	#endif
 
+		m_SceneState = SceneState::Play;
+		
 		if (m_EnablePhysics)
 			m_PhysicsWorld->BuildWorld();
 
-		m_SceneState = SceneState::Play;
+		if (m_GameMode)
+			m_GameMode->OnCreate();
+
 		m_GameInstance->OnSceneSimulationStart(this);
 	}
 
@@ -200,6 +210,13 @@ namespace proton {
 
 		if (m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->DestroyWorld();
+
+		if (m_GameMode)
+		{
+			m_GameMode->OnDestroy();
+			delete m_GameMode;
+			m_GameMode = GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);;
+		}
 
 		m_SceneState = SceneState::Stop;
 		m_GameInstance->OnSceneSimulationStop(this);
@@ -389,6 +406,9 @@ namespace proton {
 				CalculateWorldPositions(true);
 			}
 
+			if (m_GameMode)
+				m_GameMode->OnUpdate(ts);
+
 			// Update scripts
 			UpdateScripts(ts);
 
@@ -479,8 +499,8 @@ namespace proton {
 			
 			// Sprite mirror flip
 			glm::vec3 scale = {
-				transform.Scale.x * (sprite.Sprite.m_MirrorFlipX ? -1.0f : 1.0f),
-				transform.Scale.y * (sprite.Sprite.m_MirrorFlipY ? -1.0f : 1.0f), 1.0f
+				transform.Scale.x * (sprite.Sprite.m_MirrorFlip.x ? -1.0f : 1.0f),
+				transform.Scale.y * (sprite.Sprite.m_MirrorFlip.y ? -1.0f : 1.0f), 1.0f
 			};
 
 			glm::mat4 transformMatrix = Math::GetTransform(transform.WorldPosition, scale, transform.Rotation);
@@ -670,6 +690,11 @@ namespace proton {
 			}
 		}
 		return entities;
+	}
+
+	void Scene::EnablePhysics(bool enabled)
+	{
+		m_EnablePhysics = enabled;
 	}
 
 	const glm::vec3& Scene::GetPrimaryCameraPosition()

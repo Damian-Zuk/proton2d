@@ -23,17 +23,32 @@ namespace proton {
 
 	NetworkManager::~NetworkManager()
 	{
-		if (m_IsNetworkServiceRunning)
+		if (!m_IsNetworkServiceRunning)
+			return;
+
+		if (IsNetModeServer())
+			StopServer();
+		else
+			StopClient();
+	}
+
+	void NetworkManager::OnUpdate(float ts)
+	{
+		if (!m_IsNetworkServiceRunning)
+			return;
+
+		if (IsNetModeServer())
 		{
-			if (m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer)
+			if (m_ServerTickElapsed <= 0)
 			{
-				StopServer();
+				m_Server->OnTick();
+				m_ServerTickElapsed = m_ServerTickTime;
 			}
-			else if (m_NetMode == NetMode::Client)
-			{
-				StopClient();
-			}
+			else
+				m_ServerTickElapsed -= ts;
 		}
+		else
+			m_Client->ProcessMessagesOnMainThread();
 	}
 
 	void NetworkManager::OnSceneSimulationStart(Scene* scene)
@@ -43,17 +58,13 @@ namespace proton {
 
 		m_NetworkedSceneCount++;
 
-		if (!m_IsNetworkServiceRunning)
-		{
-			if (m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer)
-			{
-				StartServer();
-			}
-			else if (m_NetMode == NetMode::Client)
-			{
-				StartClient();
-			}
-		}
+		if (m_IsNetworkServiceRunning)
+			return;
+
+		if (IsNetModeServer())
+			StartServer();
+		else
+			StartClient();
 	}
 
 	void NetworkManager::OnSceneSimulationStop(Scene* scene)
@@ -65,14 +76,10 @@ namespace proton {
 
 		if (m_IsNetworkServiceRunning && m_NetworkedSceneCount == 0)
 		{
-			if (m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer)
-			{
+			if (IsNetModeServer())
 				StopServer();
-			}
-			else if (m_NetMode == NetMode::Client)
-			{
+			else
 				StopClient();
-			}
 		}
 	}
 
@@ -136,11 +143,27 @@ namespace proton {
 		m_NetMode = mode;
 	}
 
+	void NetworkManager::SetServerTickRate(uint16_t tickRate)
+	{
+		m_ServerTickRate = tickRate;
+		m_ServerTickTime = 1.0f / tickRate;
+	}
+
+	Client* NetworkManager::GetClient()
+	{
+		return m_Client.get();
+	}
+
+	Server* NetworkManager::GetServer()
+	{
+		return m_Server.get();
+	}
+
 	void NetworkManager::CheckNetworkResourcesRelease()
 	{
 		if (!s_NetworkResourcesFreed && !s_NetworkServicesRunning)
 		{
-			PT_CORE_INFO("Network resources have been released");
+			_PT_CORE_INFO("Network resources have been released");
 			GameNetworkingSockets_Kill();
 			s_NetworkResourcesFreed = true;
 		}

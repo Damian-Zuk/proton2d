@@ -29,6 +29,8 @@ namespace proton {
 		// Used for AnimationPlayMode::PLAY_ONCE
 		bool FinishedPlaying();
 
+		AnimationPlayMode GetCurrentAnimationPlayMode() const;
+
 		void SetFPS(uint16_t fps);
 		uint16_t GetFPS() const { return m_FPS; }
 
@@ -57,5 +59,7 @@ namespace proton {
 
 		friend class Scene;
 		friend class Entity;
+		friend class Server;
+		friend class Client;
 	};
 }
