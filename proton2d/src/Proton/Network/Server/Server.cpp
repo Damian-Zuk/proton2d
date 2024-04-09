@@ -56,6 +56,16 @@ namespace proton {
 		m_OnRecvPlayerActionCallbacks[clientID] = function;
 	}
 
+	void Server::OnEntityCreated(Entity entity)
+	{
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::EntitySpawn);
+		SceneSerializer serializer(entity.GetScene());
+		std::string jsonData = serializer.SerializeEntityToString(entity);
+		stream.WriteString(jsonData);
+		SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+	}
+
 	void Server::NetworkThreadFunc()
 	{
 		s_Instance = this;
@@ -225,16 +235,9 @@ namespace proton {
 	{
 		// Move logic to PacketType::ClientConnectionRequest handle in OnDataReceived?
 		
-		m_GameInstance->GetActiveScene()->GetGameMode()->Server_OnClientConnected((uint32_t)clientInfo.ID);
+		std::lock_guard<std::mutex> lock(m_ClientQueueMutex);
+		m_ConnectedClientQueue.push(clientInfo);
 
-		// PacketType::InitializeScene
-		{
-			BufferStreamWriter stream(m_ScratchBuffer);
-			stream.WriteRaw(PacketType::InitializeScene);
-			SceneSerializer sceneSerializer(m_GameInstance->GetActiveScene());
-			stream.WriteString(sceneSerializer.Serialize());
-			SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-		}
 	}
 
 	void Server::OnClientDisconnected(const ClientInfo& clientInfo)
@@ -250,6 +253,34 @@ namespace proton {
 	void Server::OnTick() // Called from main thread
 	{
 		m_QueueMutex.lock();
+
+		m_ClientQueueMutex.lock();
+		while (!m_ConnectedClientQueue.empty())
+		{
+			ClientInfo& clientInfo = m_ConnectedClientQueue.front();
+			{
+				BufferStreamWriter stream(m_ScratchBuffer);
+				stream.WriteRaw(PacketType::ConnectionAccepted);
+				stream.WriteRaw(clientInfo.ID);
+				SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+			}
+
+			// PacketType::InitializeScene
+			//{
+			//	BufferStreamWriter stream(m_ScratchBuffer);
+			//	stream.WriteRaw(PacketType::InitializeScene);
+			//	SceneSerializer sceneSerializer(m_GameInstance->GetActiveScene());
+			//	std::string jsonData = sceneSerializer.Serialize();
+			//	stream.WriteString(jsonData);
+			//	SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+			//}
+
+			m_GameInstance->GetActiveScene()->GetGameMode()->Server_OnClientConnected((uint32_t)clientInfo.ID);
+
+			m_ConnectedClientQueue.pop();
+		}
+		m_ClientQueueMutex.unlock();
+
 
 		while (!m_MessageQueue.empty())
 		{

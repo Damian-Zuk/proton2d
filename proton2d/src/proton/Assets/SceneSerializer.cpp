@@ -131,12 +131,20 @@ namespace proton {
 		// Serialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
 		auto& position = transform.LocalPosition;
-		jsonObj["Transform"] = 
-		{
+		jsonObj["Transform"] = {
 			{ "Position", { round(position.x), round(position.y), round(position.z) } },
 			{ "Rotation", round(transform.Rotation) },
 			{ "Scale", { round(transform.Scale.x), round(transform.Scale.y) } }
 		};
+
+		// Serialize NetworkComponent
+		if (entity.HasComponent<NetworkComponent>())
+		{
+			auto& netComponent = entity.GetComponent<NetworkComponent>();
+			jsonObj["Network"] = {
+				{ "Replicated", true }
+			};
+		}
 
 		// Serialize SpriteComponent
 		if (entity.HasComponent<SpriteComponent>())
@@ -332,6 +340,11 @@ namespace proton {
 		return jsonObj;
 	}
 
+	std::string SceneSerializer::SerializeEntityToString(Entity entity, bool serializeUUID)
+	{
+		return SerializeEntity(entity, serializeUUID).dump();
+	}
+
 	// *****************************************
 	//       Deserialize Entity Function
 	// *****************************************
@@ -351,6 +364,13 @@ namespace proton {
 		transform.LocalPosition = { position[0], position[1], position[2] };
 		transform.Scale    = { scale[0], scale[1] };
 		transform.Rotation = rotation;
+
+		// Deserialize NetworkComponent
+		if (jsonObj.contains("Network"))
+		{
+			auto& netComponent = entity.AddComponent<NetworkComponent>();
+			netComponent.Replicated = jsonObj.at("Network").at("Replicated");
+		}
 
 		// Deserialize SpriteComponent
 		if (jsonObj.contains("Sprite"))
@@ -466,7 +486,7 @@ namespace proton {
 			auto& rb = entity.AddComponent<RigidbodyComponent>();
 			rb.Type = jsonObj["Rigidbody"]["Type"];
 			rb.FixedRotation = jsonObj["Rigidbody"]["FixedRotation"];
-			if (m_Scene->GetSceneState() != SceneState::Stop)
+			if (m_Scene->IsPhysicsWorldInitialized())
 				m_Scene->m_PhysicsWorld->CreateRuntimeBody(entity);
 		}
 

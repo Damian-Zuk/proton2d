@@ -1,10 +1,10 @@
 {
-    "UUID": 14561715589732361200,
+    "UUID": 7343021059492634130,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            2.02879,
-            -0.73059,
+            2.45968,
+            0.0,
             0.1
         ],
         "Rotation": 0.0,
@@ -12,6 +12,9 @@
             2.5,
             2.5
         ]
+    },
+    "Network": {
+        "Replicated": true
     },
     "Sprite": {
         "Texture": "character.png",

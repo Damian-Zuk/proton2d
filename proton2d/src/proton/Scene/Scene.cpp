@@ -54,7 +54,8 @@ namespace proton {
 	using ComponentsToCopy =
 		ComponentGroup<TransformComponent, CameraComponent,
 		SpriteComponent, CircleRendererComponent, ResizableSpriteComponent,
-		RigidbodyComponent, BoxColliderComponent, CircleColliderComponent>;
+		RigidbodyComponent, BoxColliderComponent, CircleColliderComponent,
+		NetworkComponent>;
 
 	template<typename... TComponent>
 	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
@@ -185,14 +186,14 @@ namespace proton {
 	#endif
 
 		m_SceneState = SceneState::Play;
+
+		m_GameInstance->OnSceneSimulationStart(this);
 		
 		if (m_EnablePhysics)
 			m_PhysicsWorld->BuildWorld();
 
 		if (m_GameMode)
 			m_GameMode->OnCreate();
-
-		m_GameInstance->OnSceneSimulationStart(this);
 	}
 
 	void Scene::Pause(bool pause)

@@ -17,6 +17,7 @@ namespace proton {
 		bool Serialize(const std::string& filepath);
 		std::string Serialize();
 		json SerializeEntity(Entity entity, bool serializeUUID = true);
+		std::string SerializeEntityToString(Entity entity, bool serializeUUID = true);
 
 		bool Deserialize(const std::string& jsonData);
 		bool DeserializeFromFile(const std::string& filepath);

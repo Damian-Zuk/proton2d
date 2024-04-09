@@ -2,6 +2,7 @@
 using namespace proton;
 
 #include "Player.h"
+#include "MyGameMode.h"
 
 // Internal script parameters
 static constexpr float s_JumpDelay = 0.2f;
@@ -15,18 +16,23 @@ void Player::OnRegisterFields()
 	RegisterField(ScriptFieldType::Float, "PlayerAcceleration", &m_PlayerAcceleration);
 	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
 	RegisterField(ScriptFieldType::Float, "GravityModifier", &m_GravityModifier);
+	RegisterField(ScriptFieldType::Int, "ClientID", &m_ClientID, false);
 }
 
 bool Player::OnCreate()
 {
-	AddComponent<NetworkComponent>();
+	uint32_t gameModeClientID = GetScene()->CastGameModeTo<MyGameMode>()->GetLocalPlayerID();
+	m_IsLocalPlayer = m_ClientID == gameModeClientID;
 
 	if (m_IsLocalPlayer)
 		GetScene()->SetPrimaryCameraEntity(*this);
 
 	if (IsRunningClient())
+	{
+		PT_TRACE("GameMode::ClientID={}", gameModeClientID);
+		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
 		return true;
-
+	}
 	if (IsRunningServer() && !m_IsLocalPlayer)
 	{
 		GetGameMode()->Server_SetOnRecvPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {

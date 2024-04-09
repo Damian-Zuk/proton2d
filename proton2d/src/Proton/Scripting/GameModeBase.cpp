@@ -20,6 +20,11 @@ namespace proton {
         server->SetOnRecvPlayerActionCallback(clientID, function);
     }
 
+    void GameModeBase::Server_OnEntityCreated(Entity entity)
+    {
+        GetNetworkManager()->GetServer()->OnEntityCreated(entity);
+    }
+
     void GameModeBase::Client_SendPlayerAction(OnSendPlayerActionFunc function)
     {
         Client* client = m_Scene->m_GameInstance->GetNetworkManager()->GetClient();
@@ -51,6 +56,11 @@ namespace proton {
     Scene* GameModeBase::GetScene() const
     {
         return m_Scene;
+    }
+
+    NetworkManager* GameModeBase::GetNetworkManager() const
+    {
+        return m_Scene->m_GameInstance->GetNetworkManager();
     }
 
 }

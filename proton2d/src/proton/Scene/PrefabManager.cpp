@@ -2,6 +2,9 @@
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Utils/Utils.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/Server/Server.h"
 
 #include <fstream>
 #ifdef PT_EDITOR
@@ -88,6 +91,16 @@ namespace proton {
 		auto& transform = entity.GetComponent<TransformComponent>();
 		transform.WorldPosition.x = camera.x;
 		transform.WorldPosition.y = camera.y;
+
+		// TODO: move this 
+		//if (scene->IsSimulated())
+		//{
+		//	NetworkManager* manager = scene->GetOwningGameInstance()->GetNetworkManager();
+		//	if (manager->IsNetModeServer())
+		//	{
+		//		manager->GetServer()->OnEntityCreated(entity);
+		//	}
+		//}
 		
 		return entity;
 	}

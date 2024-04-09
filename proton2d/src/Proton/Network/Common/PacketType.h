@@ -7,16 +7,17 @@ namespace proton {
 		None = 0,
 
 		// [Server -> Client]
-		InitializeScene = 1,
+		ConnectionAccepted = 1,
+		InitializeScene = 2,
 
-		GameStateUpdate = 2,
+		GameStateUpdate = 10,
 
-		EntitySpawn = 4,
-		EntityDestroy = 5,
-		UpdateReplicated = 6,
+		EntitySpawn = 11,
+		EntityDestroy = 12,
+		UpdateReplicated = 13,
 
 		// [Client -> Server]
-		PlayerAction = 5,
+		PlayerAction = 100,
 	};
 
 	std::string PacketTypeToString(PacketType packetType);

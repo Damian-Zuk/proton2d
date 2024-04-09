@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Proton/Network/Common/Common.h"
+#include "Proton/Scene/Entity.h"
 
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
@@ -60,6 +61,8 @@ namespace proton {
 
 		void SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
 
+		void OnEntityCreated(Entity entity);
+
 	private:
 		void NetworkThreadFunc(); // Server thread
 
@@ -92,6 +95,9 @@ namespace proton {
 
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_QueueMutex;
+
+		std::queue<ClientInfo> m_ConnectedClientQueue;
+		std::mutex m_ClientQueueMutex;
 
 		std::unordered_map<uint32_t, OnRecvPlayerActionCallback> m_OnRecvPlayerActionCallbacks;
 

@@ -6,6 +6,7 @@
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
+#include "Proton/Scripting/GameModeBase.h"
 
 namespace proton {
 
@@ -157,6 +158,23 @@ namespace proton {
 
 			switch (packetType)
 			{
+			case PacketType::ConnectionAccepted:
+				uint32_t clientID;
+				stream.ReadRaw(clientID);
+				m_GameInstance->GetActiveScene()->GetGameMode()->Client_OnConnected(clientID);
+				PT_CORE_TRACE("ConnectionAccepted");
+				break;
+
+			case PacketType::EntitySpawn:
+			{
+				std::string jsonData;
+				stream.ReadString(jsonData);
+				Scene* scene = m_GameInstance->GetActiveScene();
+				SceneSerializer serializer(scene);
+				Entity entity = serializer.DeserializeEntity(json::parse(jsonData));
+				PT_CORE_TRACE("EntitySpawn: {}", entity.GetTag());
+				break;
+			}
 			case PacketType::UpdateReplicated:
 			{
 				Scene* scene = sceneManager->GetActiveScene();
@@ -193,6 +211,7 @@ namespace proton {
 
 				scene->EnablePhysics(false); // 'dumb-terminal' client
 				sceneManager->SetActiveScene("server_level")->BeginPlay();
+				PT_CORE_TRACE("InitializeScene");
 				break;
 			}
 

@@ -9,8 +9,8 @@ bool MyGameMode::OnCreate()
 	if (HasAuthority())
 	{
 		auto& spawn = GetScene()->FindByTag("PlayerSpawn1").GetTransform();
-		Entity localPlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
-		localPlayer.SetWorldPosition(spawn.WorldPosition);
+		m_LocalPlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
+		m_LocalPlayer.SetWorldPosition(spawn.WorldPosition);
 	}
 
 	return true;
@@ -31,9 +31,15 @@ void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 	auto& spawn = GetScene()->FindByTag("PlayerSpawn2").GetTransform();
 	Entity remotePlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
 	remotePlayer.SetWorldPosition(spawn.WorldPosition);
-	Player* script = dynamic_cast<Player*>(remotePlayer.GetScriptInstance("Player"));
+	Player* script = remotePlayer.CastTo<Player>();
 	script->m_IsLocalPlayer = false;
 	script->m_ClientID = clientID;
+
+	Server_OnEntityCreated(remotePlayer);
+	Server_OnEntityCreated(m_LocalPlayer);
+	for (auto& [playerID, player] : m_RemotePlayers)
+		Server_OnEntityCreated(player);
+	
 	m_RemotePlayers[clientID] = remotePlayer;
 }
 
@@ -44,3 +50,15 @@ void MyGameMode::Server_OnClientDisconnected(uint32_t clientID)
 	m_RemotePlayers.at(clientID).Destroy();
 	m_RemotePlayers.erase(clientID);
 }
+
+void MyGameMode::Client_OnConnected(uint32_t clientID)
+{
+	m_LocalPlayerID = clientID;
+}
+
+uint32_t MyGameMode::GetLocalPlayerID() const
+{
+	return m_LocalPlayerID;
+}
+
+

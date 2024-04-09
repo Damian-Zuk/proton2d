@@ -91,6 +91,12 @@ namespace proton {
 			return m_GameMode;
 		}
 
+		template<typename TGameMode>
+		TGameMode* CastGameModeTo()
+		{
+			return dynamic_cast<TGameMode*>(m_GameMode);
+		}
+
 	private:
 		void OnUpdate(float ts);
 		void UpdateScripts(float ts);

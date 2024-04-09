@@ -99,9 +99,16 @@ namespace proton {
 			return scriptInstance;
 		}
 
-		EntityScript* GetScriptInstance(const std::string& className);
 		void RemoveScript(const std::string& scriptClassName);
 		
+		template<typename TScriptClass>
+		TScriptClass* CastTo()
+		{
+			auto& component = GetComponent<ScriptComponent>();
+			EntityScript* base = component.Scripts.at(TScriptClass::__ScriptClassName);
+			return dynamic_cast<TScriptClass*>(base);
+		}
+
 		// Entity lifetime
 		bool IsValid();
 		void Destroy();

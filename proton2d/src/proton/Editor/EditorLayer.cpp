@@ -325,7 +325,9 @@ namespace proton {
 
 		instance->m_EditorViewport = viewport;
 		instance->Init();
-		instance->GetActiveScene()->BeginPlay();
+		Scene* scene = instance->GetActiveScene();
+		scene->EnablePhysics(false);
+		scene->BeginPlay();
 	}
 
 	void EditorLayer::CloseClientGameInstance(uint32_t instanceID)

@@ -120,6 +120,16 @@ namespace proton {
 
 		ImGui::Dummy({ 0, 5 });
 
+		bool bNetworkComponent = m_SelectedEntity.HasComponent<NetworkComponent>();
+		if (ImGui::Checkbox("Replicated", &bNetworkComponent))
+		{
+			if (bNetworkComponent)
+				m_SelectedEntity.AddComponent<NetworkComponent>();
+			else
+				m_SelectedEntity.RemoveComponent<NetworkComponent>();
+		}
+		ImGui::Dummy({ 0, 5 });
+
 		// ******************************************************
 		// Transform Component UI
 		// ******************************************************
