@@ -20,9 +20,14 @@ namespace proton {
         server->SetOnRecvPlayerActionCallback(clientID, function);
     }
 
-    void GameModeBase::Server_OnEntityCreated(Entity entity)
+    void GameModeBase::Server_OnEntityCreated(Entity entity, uint32_t specificClientID)
     {
-        GetNetworkManager()->GetServer()->OnEntityCreated(entity);
+        GetNetworkManager()->GetServer()->OnEntityCreated(entity, specificClientID);
+    }
+
+    void GameModeBase::Server_OnEntityDestroyed(Entity entity)
+    {
+        GetNetworkManager()->GetServer()->OnEntityDestroyed(entity);
     }
 
     void GameModeBase::Client_SendPlayerAction(OnSendPlayerActionFunc function)

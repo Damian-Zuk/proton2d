@@ -12,33 +12,26 @@ bool MyGameMode::OnCreate()
 		m_LocalPlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
 		m_LocalPlayer.SetWorldPosition(spawn.WorldPosition);
 	}
-
 	return true;
-}
-
-void MyGameMode::OnUpdate(float ts)
-{
-}
-
-void MyGameMode::OnDestroy()
-{
 }
 
 void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 {
 	PT_TRACE("{}", clientID);
-	// Spawn player entity...
 	auto& spawn = GetScene()->FindByTag("PlayerSpawn2").GetTransform();
 	Entity remotePlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
 	remotePlayer.SetWorldPosition(spawn.WorldPosition);
+	
 	Player* script = remotePlayer.CastTo<Player>();
 	script->m_IsLocalPlayer = false;
 	script->m_ClientID = clientID;
 
 	Server_OnEntityCreated(remotePlayer);
-	Server_OnEntityCreated(m_LocalPlayer);
+
+	// Send info about all clients to connected client
+	Server_OnEntityCreated(m_LocalPlayer, clientID);
 	for (auto& [playerID, player] : m_RemotePlayers)
-		Server_OnEntityCreated(player);
+		Server_OnEntityCreated(player, clientID);
 	
 	m_RemotePlayers[clientID] = remotePlayer;
 }
@@ -46,8 +39,9 @@ void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 void MyGameMode::Server_OnClientDisconnected(uint32_t clientID)
 {
 	PT_TRACE("{}", clientID);
-	// Destroy player entity...
-	m_RemotePlayers.at(clientID).Destroy();
+	Entity entity = m_RemotePlayers.at(clientID);
+	Server_OnEntityDestroyed(entity);
+	entity.Destroy();
 	m_RemotePlayers.erase(clientID);
 }
 

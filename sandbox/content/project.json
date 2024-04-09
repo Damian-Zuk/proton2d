@@ -1,6 +1,6 @@
 {
-    "start_scene": "level_1",
     "net_mode": "Client",
+    "port": 8192,
     "server_ip": "127.0.0.1",
-    "port": 8192
+    "start_scene": "level_0"
 }

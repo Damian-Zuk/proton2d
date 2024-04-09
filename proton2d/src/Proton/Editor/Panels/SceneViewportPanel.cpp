@@ -160,7 +160,7 @@ namespace proton {
 		// Dispatch mouse events
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			if (!m_IsMainViewport || !m_IsViewportFocused)
+			if (!m_IsMainViewport || !m_IsViewportFocused || m_ActiveScene->IsSimulated())
 				return false;
 
 			SceneState state = m_ActiveScene->GetSceneState();

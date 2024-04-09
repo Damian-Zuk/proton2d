@@ -185,6 +185,12 @@ namespace proton {
 		EditorLayer::Get()->OnBeginSceneSimulation(this);
 	#endif
 
+	#ifdef PROTON_DISTRIBUTION
+		NetMode mode = m_GameInstance->GetNetMode();
+		if (mode == NetMode::Client && m_InheritNetMode)
+			m_EnablePhysics = false; // dumb client
+	#endif
+
 		m_SceneState = SceneState::Play;
 
 		m_GameInstance->OnSceneSimulationStart(this);

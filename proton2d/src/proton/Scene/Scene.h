@@ -92,7 +92,7 @@ namespace proton {
 		}
 
 		template<typename TGameMode>
-		TGameMode* CastGameModeTo()
+		TGameMode* GameModeCastTo()
 		{
 			return dynamic_cast<TGameMode*>(m_GameMode);
 		}

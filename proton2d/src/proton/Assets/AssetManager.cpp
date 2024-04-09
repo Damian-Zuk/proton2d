@@ -116,7 +116,7 @@ namespace proton {
 		textureList = Utils::ScanDirectoryRecursive("content/textures",
 			{ ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd" });
 
-		for (auto& s : json::parse(Utils::ReadFile("content/spritesheet.json")))
+		for (auto& s : json::parse(Utils::ReadFile("content/meta.json")))
 		{
 			std::string filepath = s["file_path"];
 			uint32_t width = s["tile_width"], height = s["tile_height"];

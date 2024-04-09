@@ -109,6 +109,12 @@ namespace proton {
 			return dynamic_cast<TScriptClass*>(base);
 		}
 
+		template<typename TGameMode>
+		TGameMode* GameModeCastTo()
+		{
+			return m_Scene->GameModeCastTo<TGameMode>();
+		}
+
 		// Entity lifetime
 		bool IsValid();
 		void Destroy();

@@ -61,7 +61,8 @@ namespace proton {
 
 		void SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
 
-		void OnEntityCreated(Entity entity);
+		void OnEntityCreated(Entity entity, HSteamNetConnection specificClient = 0);
+		void OnEntityDestroyed(Entity entity);
 
 	private:
 		void NetworkThreadFunc(); // Server thread

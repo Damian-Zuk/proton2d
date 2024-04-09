@@ -56,13 +56,24 @@ namespace proton {
 		m_OnRecvPlayerActionCallbacks[clientID] = function;
 	}
 
-	void Server::OnEntityCreated(Entity entity)
+	void Server::OnEntityCreated(Entity entity, HSteamNetConnection specificClient)
 	{
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::EntitySpawn);
 		SceneSerializer serializer(entity.GetScene());
 		std::string jsonData = serializer.SerializeEntityToString(entity);
 		stream.WriteString(jsonData);
+		if (specificClient)
+			SendBufferToClient(specificClient, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+		else
+			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+	}
+
+	void Server::OnEntityDestroyed(Entity entity)
+	{
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::EntityDestroy);
+		stream.WriteRaw(entity.GetUUID());
 		SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
 

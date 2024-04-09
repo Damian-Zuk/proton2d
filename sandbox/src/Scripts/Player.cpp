@@ -21,18 +21,20 @@ void Player::OnRegisterFields()
 
 bool Player::OnCreate()
 {
-	uint32_t gameModeClientID = GetScene()->CastGameModeTo<MyGameMode>()->GetLocalPlayerID();
-	m_IsLocalPlayer = m_ClientID == gameModeClientID;
+	m_IsLocalPlayer = m_ClientID == GameModeCastTo<MyGameMode>()->GetLocalPlayerID();
+
+	GetTransform().WorldPosition.z = 0.1f;
+	GetTransform().LocalPosition.z = 0.1f;
 
 	if (m_IsLocalPlayer)
 		GetScene()->SetPrimaryCameraEntity(*this);
 
 	if (IsRunningClient())
 	{
-		PT_TRACE("GameMode::ClientID={}", gameModeClientID);
 		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
 		return true;
 	}
+
 	if (IsRunningServer() && !m_IsLocalPlayer)
 	{
 		GetGameMode()->Server_SetOnRecvPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
@@ -50,14 +52,13 @@ bool Player::OnCreate()
 	animation.AddAnimation(Land,  9, AnimationPlayMode::PLAY_ONCE);
 	animation.SetFPS(8);
 
-	// Foot sensor is used to detect if player is touching the ground
-	// TODO: Move this to prefab
-	Entity footSensor = CreateChildEntity("FootSensor");
-	auto& bc = footSensor.AddComponent<BoxColliderComponent>();
-	bc.Size = { 0.38f, 0.38f };
-	bc.Offset = { 0.0f, -0.8f };
-	bc.IsSensor = true;
-	m_FootSensorContactCount = &bc.ContactCallback.ContactCount;
+	// Ground sensor is used to detect if player is touching the ground
+	Entity groundSensor = CreateChildEntity("GroundSensor");
+	auto& collider = groundSensor.AddComponent<BoxColliderComponent>();
+	collider.Size = { 0.38f, 0.38f };
+	collider.Offset = { 0.0f, -0.8f };
+	collider.IsSensor = true;
+	m_GroundSensorContactCount = &collider.ContactCallback.ContactCount;
 
 	return true;
 }

@@ -11,35 +11,6 @@ namespace proton {
 
 	using json = nlohmann::json;
 
-	bool ProjectSettings::LoadProjectSettings()
-	{
-		if (!std::filesystem::exists(m_Filepath))
-		{
-			PT_CORE_ERROR("'{}' file not found!", m_Filepath);
-			return false;
-		}
-
-		json jsonObj = jsonObj.parse(Utils::ReadFile(m_Filepath));
-		if (!jsonObj.contains("start_scene"))
-		{
-			PT_CORE_ERROR("'start_scene' missing in '{}'!", m_Filepath);
-			return false;
-		}
-
-		if (jsonObj.contains("server_ip"))
-		{
-			m_IpAddress = jsonObj.at("server_ip");
-		}
-		if (jsonObj.contains("port"))
-		{
-			m_Port = jsonObj.at("port");
-		}
-
-		m_StartScene = jsonObj.at("start_scene");
-
-		return true;
-	}
-
 	static std::string NetModeToString(NetMode netMode)
 	{
 		switch (netMode)
@@ -65,6 +36,42 @@ namespace proton {
 		if (netModeStr == "Client")
 			return NetMode::Client;
 		return NetMode::Standalone;
+	}
+
+	bool ProjectSettings::LoadProjectSettings()
+	{
+		if (!std::filesystem::exists(m_Filepath))
+		{
+			PT_CORE_ERROR("'{}' file not found!", m_Filepath);
+			return false;
+		}
+
+		json jsonObj = jsonObj.parse(Utils::ReadFile(m_Filepath));
+		if (!jsonObj.contains("start_scene"))
+		{
+			PT_CORE_ERROR("'start_scene' missing in '{}'!", m_Filepath);
+			return false;
+		}
+
+		if (jsonObj.contains("server_ip"))
+		{
+			m_IpAddress = jsonObj.at("server_ip");
+		}
+		if (jsonObj.contains("port"))
+		{
+			m_Port = jsonObj.at("port");
+		}
+	#ifdef PROTON_DISTRIBUTION
+		if (jsonObj.contains("net_mode"))
+		{
+			NetMode mode = StringToNetMode(jsonObj.at("net_mode"));
+			Application::Get().GetGameInstance()->SetNetMode(mode);
+		}
+	#endif
+
+		m_StartScene = jsonObj.at("start_scene");
+
+		return true;
 	}
 
 	void ProjectSettings::WriteProjectSettings()

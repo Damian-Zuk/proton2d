@@ -159,11 +159,13 @@ namespace proton {
 			switch (packetType)
 			{
 			case PacketType::ConnectionAccepted:
+			{
 				uint32_t clientID;
 				stream.ReadRaw(clientID);
-				m_GameInstance->GetActiveScene()->GetGameMode()->Client_OnConnected(clientID);
 				PT_CORE_TRACE("ConnectionAccepted");
+				m_GameInstance->GetActiveScene()->GetGameMode()->Client_OnConnected(clientID);
 				break;
+			}
 
 			case PacketType::EntitySpawn:
 			{
@@ -175,6 +177,17 @@ namespace proton {
 				PT_CORE_TRACE("EntitySpawn: {}", entity.GetTag());
 				break;
 			}
+
+			case PacketType::EntityDestroy:
+			{
+				UUID EntityUUID;
+				stream.ReadRaw(EntityUUID);
+				Entity entity = m_GameInstance->GetActiveScene()->FindByID(EntityUUID);
+				PT_CORE_TRACE("EntityDestroy: {}", entity.GetTag());
+				entity.Destroy();
+				break;
+			}
+
 			case PacketType::UpdateReplicated:
 			{
 				Scene* scene = sceneManager->GetActiveScene();

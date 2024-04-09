@@ -31,7 +31,7 @@ public:
 	virtual void OnUpdate(float ts) override;
 
 private:
-	bool IsTouchingGround() const { return *m_FootSensorContactCount > 0; }
+	bool IsTouchingGround() const { return *m_GroundSensorContactCount > 0; }
 
 private:
 	bool m_IsLocalPlayer = true;
@@ -48,7 +48,7 @@ private:
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
 
-	uint32_t* m_FootSensorContactCount;
+	uint32_t* m_GroundSensorContactCount;
 
 	friend class MyGameMode;
 };

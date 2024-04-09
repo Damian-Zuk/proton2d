@@ -252,6 +252,7 @@ namespace proton {
 
 		m_SceneBackup[scene->m_SceneFilepath] = scene->CreateSceneCopy();
 		m_SimulatedScenes++;
+		SelectEntity({});
 	}
 
 	void EditorLayer::OnStopSceneSimulation(Scene* scene)

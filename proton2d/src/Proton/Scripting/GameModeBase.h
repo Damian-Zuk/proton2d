@@ -23,7 +23,8 @@ namespace proton {
 		virtual void Client_OnDisconnected() {}
 
 		void Server_SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
-		void Server_OnEntityCreated(Entity entity);
+		void Server_OnEntityCreated(Entity entity, uint32_t specificClientID = 0);
+		void Server_OnEntityDestroyed(Entity entity);
 		
 		void Client_SendPlayerAction(OnSendPlayerActionFunc function);
 	
@@ -37,7 +38,7 @@ namespace proton {
 		template<typename TGameMode>
 		TGameMode* CastTo()
 		{
-			return m_Scene->CastGameModeTo<TGameMode>();
+			return m_Scene->GameModeCastTo<TGameMode>();
 		}
 
 	private:
