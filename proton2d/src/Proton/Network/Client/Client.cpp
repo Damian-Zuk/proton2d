@@ -142,7 +142,7 @@ namespace proton {
 		}
 	}
 	
-	void Client::ProcessMessagesOnMainThread()
+	void Client::MainThread_ProcessMessages()
 	{
 		std::lock_guard<std::mutex> lock(m_QueueMutex);
 		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
@@ -162,7 +162,7 @@ namespace proton {
 			{
 				uint32_t clientID;
 				stream.ReadRaw(clientID);
-				PT_CORE_TRACE("ConnectionAccepted");
+				PT_CORE_TRACE("ConnectionAccepted: client_id={}", clientID);
 				m_GameInstance->GetActiveScene()->GetGameMode()->Client_OnConnected(clientID);
 				break;
 			}
@@ -174,7 +174,7 @@ namespace proton {
 				Scene* scene = m_GameInstance->GetActiveScene();
 				SceneSerializer serializer(scene);
 				Entity entity = serializer.DeserializeEntity(json::parse(jsonData));
-				PT_CORE_TRACE("EntitySpawn: {}", entity.GetTag());
+				PT_CORE_TRACE("EntitySpawn: name='{}'", entity.GetTag());
 				break;
 			}
 
@@ -183,7 +183,7 @@ namespace proton {
 				UUID EntityUUID;
 				stream.ReadRaw(EntityUUID);
 				Entity entity = m_GameInstance->GetActiveScene()->FindByID(EntityUUID);
-				PT_CORE_TRACE("EntityDestroy: {}", entity.GetTag());
+				PT_CORE_TRACE("EntityDestroy: name='{}'", entity.GetTag());
 				entity.Destroy();
 				break;
 			}

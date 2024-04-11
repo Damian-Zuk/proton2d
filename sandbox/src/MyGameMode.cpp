@@ -9,8 +9,8 @@ bool MyGameMode::OnCreate()
 	if (HasAuthority())
 	{
 		auto& spawn = GetScene()->FindByTag("PlayerSpawn1").GetTransform();
-		m_LocalPlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
-		m_LocalPlayer.SetWorldPosition(spawn.WorldPosition);
+		m_LocalPlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json").CastTo<Player>();
+		m_LocalPlayer->SetWorldPosition(spawn.WorldPosition);
 	}
 	return true;
 }
@@ -18,28 +18,29 @@ bool MyGameMode::OnCreate()
 void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 {
 	PT_TRACE("{}", clientID);
-	auto& spawn = GetScene()->FindByTag("PlayerSpawn2").GetTransform();
-	Entity remotePlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
-	remotePlayer.SetWorldPosition(spawn.WorldPosition);
+	std::string spawnPoint = "PlayerSpawn" + std::to_string(1 + (m_RemotePlayers.size() + 1) % 5);
+	auto& spawn = GetScene()->FindByTag(spawnPoint).GetTransform();
+	Entity entity = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
+	Player* player = entity.CastTo<Player>();
 	
-	Player* script = remotePlayer.CastTo<Player>();
-	script->m_IsLocalPlayer = false;
-	script->m_ClientID = clientID;
+	player->SetWorldPosition(spawn.WorldPosition);
+	player->m_IsLocalPlayer = false;
+	player->m_ClientID = clientID;
 
-	Server_OnEntityCreated(remotePlayer);
+	Server_OnEntityCreated(*player);
 
 	// Send info about all clients to connected client
-	Server_OnEntityCreated(m_LocalPlayer, clientID);
+	Server_OnEntityCreated(*m_LocalPlayer, clientID);
 	for (auto& [playerID, player] : m_RemotePlayers)
-		Server_OnEntityCreated(player, clientID);
+		Server_OnEntityCreated(*player, clientID);
 	
-	m_RemotePlayers[clientID] = remotePlayer;
+	m_RemotePlayers[clientID] = player;
 }
 
 void MyGameMode::Server_OnClientDisconnected(uint32_t clientID)
 {
 	PT_TRACE("{}", clientID);
-	Entity entity = m_RemotePlayers.at(clientID);
+	Entity entity = *m_RemotePlayers.at(clientID);
 	Server_OnEntityDestroyed(entity);
 	entity.Destroy();
 	m_RemotePlayers.erase(clientID);

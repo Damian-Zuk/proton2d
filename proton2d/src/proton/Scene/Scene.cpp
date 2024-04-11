@@ -20,18 +20,28 @@
 
 namespace proton {
 
-	Scene::Scene(const std::string& name, const std::string& filepath)
+	Scene::Scene(const std::string& name,
+		const std::string& filepath, 
+		const std::string& gameModeClass)
 		: m_SceneName(name), m_SceneFilepath(filepath),
-		m_PhysicsWorld(MakeUnique<PhysicsWorld>(this))
+		  m_PhysicsWorld(MakeUnique<PhysicsWorld>(this))
 	{
-		// TODO: move
-		GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
+		if (gameModeClass.length() && gameModeClass != "GameModeBase")
+		{
+			m_GameModeClassName = gameModeClass;
+			GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
+		}
+		else
+			m_GameMode = new GameModeBase();
 	}
 
 	Scene::~Scene()
 	{
 		if (m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->DestroyWorld();
+
+		if (m_GameMode)
+			delete m_GameMode;
 
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view)
@@ -97,9 +107,7 @@ namespace proton {
 
 	Shared<Scene> Scene::CreateSceneCopy()
 	{
-		Shared<Scene> newScene = MakeShared<Scene>();
-		newScene->m_SceneName = m_SceneName;
-		newScene->m_SceneFilepath = m_SceneFilepath;
+		Shared<Scene> newScene = MakeShared<Scene>(m_SceneName, m_SceneFilepath, m_GameModeClassName);
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
 		newScene->m_GameInstance = m_GameInstance;
@@ -218,12 +226,8 @@ namespace proton {
 		if (m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->DestroyWorld();
 
-		if (m_GameMode)
-		{
-			m_GameMode->OnDestroy();
-			delete m_GameMode;
-			m_GameMode = GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);;
-		}
+		m_GameMode->OnDestroy();
+		m_GameMode = GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);;
 
 		m_SceneState = SceneState::Stop;
 		m_GameInstance->OnSceneSimulationStop(this);
@@ -396,6 +400,11 @@ namespace proton {
 		}
 	}
 
+	void Scene::SetGameModeByClassName(const std::string& gameModeClassName)
+	{
+		GameModeFactory::Get().InstantiateGameMode(this, gameModeClassName);
+	}
+
 	void Scene::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
@@ -562,6 +571,13 @@ namespace proton {
 			camera.Camera.SetAspectRatio((float)width / float(height));
 		}
 		m_DefaultCamera.SetAspectRatio((float)width / float(height));
+	}
+
+	void Scene::ReleaseGameMode()
+	{
+		if (m_GameMode)
+			delete m_GameMode;
+		m_GameMode = nullptr;
 	}
 
 	void Scene::CachePrimaryCameraPosition()

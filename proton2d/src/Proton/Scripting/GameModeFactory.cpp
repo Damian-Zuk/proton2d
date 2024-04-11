@@ -1,7 +1,15 @@
 #include "ptpch.h"
 #include "Proton/Scripting/GameModeFactory.h"
+#include "Proton/Scripting/GameModeBase.h"
 
 namespace proton {
+
+	GameModeFactory::GameModeFactory()
+	{
+		m_GameModeRegistry["GameModeBase"] = [&](Scene* scene) {
+				return scene->SetGameMode<GameModeBase>();
+			};
+	}
 
 	GameModeFactory& GameModeFactory::Get()
 	{

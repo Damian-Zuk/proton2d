@@ -63,6 +63,8 @@ namespace proton {
 
 		friend class Client;
 		friend class Server;
+
+		friend class SettingsPanel;
 	};
 
 }

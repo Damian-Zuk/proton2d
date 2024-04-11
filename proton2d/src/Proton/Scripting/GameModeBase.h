@@ -41,6 +41,9 @@ namespace proton {
 			return m_Scene->GameModeCastTo<TGameMode>();
 		}
 
+	public:
+		static inline const char __ClassName[] = "GameModeBase";
+
 	private:
 		Scene* m_Scene;
 

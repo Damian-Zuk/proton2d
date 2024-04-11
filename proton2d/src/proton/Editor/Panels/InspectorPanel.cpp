@@ -8,6 +8,8 @@
 #include "Proton/Utils/Utils.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scripting/GameModeFactory.h"
+#include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Scene/EntityComponent.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
@@ -569,11 +571,26 @@ namespace proton {
 		ImGui::Dummy({ 0.0f, 3.0f });
 
 		// Scene name
-		static char sceneName[256] = {0};
-		ImGui::Text("Scene Name");
-		strcpy_s(sceneName, m_ActiveScene->m_SceneName.c_str());
-		if (ImGui::InputText("##scene_name", sceneName, 256))
-			m_ActiveScene->m_SceneName = sceneName;
+		//static char sceneName[256] = {0};
+		//ImGui::Text("Scene Name");
+		//strcpy_s(sceneName, m_ActiveScene->m_SceneName.c_str());
+		//if (ImGui::InputText("##scene_name", sceneName, 256))
+		//	m_ActiveScene->m_SceneName = sceneName;
+
+		// Select game mode
+		const std::string& selectedGameMode = m_ActiveScene->m_GameModeClassName;
+		if (ImGui::BeginCombo("##gameMode", selectedGameMode.c_str()))
+		{
+			for (auto& [className, instanciateFunc] : GameModeFactory::Get().m_GameModeRegistry)
+			{
+				bool selected = selectedGameMode == className;
+				if (ImGui::Selectable(className.c_str(), selected))
+				{
+					m_ActiveScene->SetGameModeByClassName(className);
+				}
+			}
+			ImGui::EndCombo();
+		}
 
 		// Screen clear color
 		ImGui::Dummy({ 0.0f, 5.0f });
@@ -607,7 +624,7 @@ namespace proton {
 		ImGui::Dummy({ 0.0f, 5.0f });
 
 		// Network
-		ImGui::Text("Networking");
+		ImGui::Text("Network");
 		ImGui::Dummy({ 0.0f, 3.0f });
 		ImGui::Separator();
 

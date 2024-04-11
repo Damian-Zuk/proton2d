@@ -1,5 +1,7 @@
 #pragma once
 
+class Player;
+
 class MyGameMode : public GameModeBase
 {
 public:
@@ -15,7 +17,7 @@ public:
 	uint32_t GetLocalPlayerID() const;
 
 private:
-	std::map<uint32_t, Entity> m_RemotePlayers;
-	Entity m_LocalPlayer;
+	std::map<uint32_t, Player*> m_RemotePlayers;
+	Player* m_LocalPlayer;
 	uint32_t m_LocalPlayerID = 0;
 };

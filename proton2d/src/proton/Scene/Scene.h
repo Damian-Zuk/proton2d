@@ -31,7 +31,10 @@ namespace proton {
 	class Scene
 	{
 	public:
-		Scene(const std::string& name = "Unnamed scene", const std::string& filepath = "");
+		Scene(const std::string& name = "Unnamed scene",
+			const std::string& filepath = "",
+			const std::string& gameModeClass = "");
+
 		virtual ~Scene();
 
 		Shared<Scene> CreateSceneCopy();
@@ -81,15 +84,17 @@ namespace proton {
 
 		GameInstance* GetOwningGameInstance() { return m_GameInstance; }
 
-		GameModeBase* GetGameMode() { return m_GameMode; }
-
 		template<typename TGameMode>
 		GameModeBase* SetGameMode()
 		{
+			ReleaseGameMode();
+			m_GameModeClassName = TGameMode::__ClassName;
 			m_GameMode = new TGameMode();
 			m_GameMode->m_Scene = this;
 			return m_GameMode;
 		}
+
+		void SetGameModeByClassName(const std::string& gameModeClassName);
 
 		template<typename TGameMode>
 		TGameMode* GameModeCastTo()
@@ -97,11 +102,14 @@ namespace proton {
 			return dynamic_cast<TGameMode*>(m_GameMode);
 		}
 
+		GameModeBase* GetGameMode() const { return m_GameMode; }
+
 	private:
 		void OnUpdate(float ts);
 		void UpdateScripts(float ts);
 		void RenderScene(const Camera& camera);
 		void OnViewportResize(uint32_t width, uint32_t height);
+		void ReleaseGameMode();
 
 		void CachePrimaryCameraPosition();
 		void CacheCursorWorldPosition();
@@ -114,7 +122,7 @@ namespace proton {
 		GameInstance* m_GameInstance = nullptr;
 		
 		GameModeBase* m_GameMode = nullptr;
-		std::string m_GameModeClassName = "MyGameMode";
+		std::string m_GameModeClassName = "GameModeBase";
 
 		// General
 		std::string m_SceneName;

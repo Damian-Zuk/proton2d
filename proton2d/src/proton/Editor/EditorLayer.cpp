@@ -325,8 +325,13 @@ namespace proton {
 		viewport->OnCreate();
 
 		instance->m_EditorViewport = viewport;
-		instance->Init();
-		Scene* scene = instance->GetActiveScene();
+		instance->Init(false);
+
+		SceneManager* sceneManager = instance->GetSceneManager();
+		Shared<Scene> scene = m_ActiveScene->CreateSceneCopy();
+		sceneManager->m_Scenes[m_ActiveScene->m_SceneFilepath] = scene;
+		sceneManager->SetActiveScene(m_ActiveScene->m_SceneFilepath);
+		scene->m_GameInstance = instance;
 		scene->EnablePhysics(false);
 		scene->BeginPlay();
 	}

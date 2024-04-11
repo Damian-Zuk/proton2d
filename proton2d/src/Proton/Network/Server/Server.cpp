@@ -342,17 +342,23 @@ namespace proton {
 		{
 			Entity entity(e, scene);
 
-			bool hasSpriteComponent = entity.HasComponent<SpriteComponent>();
+			bool replicateSprite = false;
+			if (entity.HasComponent<SpriteComponent>())
+			{
+				auto& sprite = entity.GetSprite();
+				if (sprite.m_Spritesheet)
+					replicateSprite = true;
+			}
 
 			stream.WriteRaw(ReplicatedEntityUpdateInfo{
 				entity.GetUUID(),
-				hasSpriteComponent
+				replicateSprite
 			});
 
 			auto& transform = entity.GetTransform();
 			stream.WriteRaw(transform);
 
-			if (hasSpriteComponent)
+			if (replicateSprite)
 			{
 				auto& sprite = entity.GetSprite();
 				stream.WriteRaw(sprite.m_TilePos);

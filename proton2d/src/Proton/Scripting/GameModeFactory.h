@@ -16,6 +16,7 @@ namespace proton {
 	class GameModeFactory
 	{
 	public:
+		GameModeFactory();
 		using InstantiateGameModeFunction = std::function<GameModeBase* (Scene* scene)>;
 
 		static GameModeFactory& Get(); // Get singleton instance

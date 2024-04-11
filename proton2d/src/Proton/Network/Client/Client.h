@@ -47,7 +47,7 @@ namespace proton {
 		const std::string& GetConnectionDebugMessage() const { return m_ConnectionDebugMessage; }
 	
 	private:
-		void ProcessMessagesOnMainThread();
+		void MainThread_ProcessMessages();
 
 		void NetworkThreadFunc();
 		void Shutdown();

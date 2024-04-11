@@ -8,6 +8,7 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/ProjectSettings.h"
 #include "Proton/Core/GameInstance.h"
+#include "Proton/Network/Common/NetworkManager.h"
 
 #include "imgui.h"
 
@@ -79,10 +80,18 @@ namespace proton {
 					else
 						EditorLayer::Get()->OnRemoveClientButton();
 				}
+
+				NetworkManager* networkManager = m_ActiveScene->m_GameInstance->GetNetworkManager();
+				int tickRate = networkManager->m_ServerTickRate;
+				if (ImGui::SliderInt("Server tick rate", &tickRate, 1, 128))
+				{
+					networkManager->SetServerTickRate(tickRate);
+				}
 			}
 
 			ImGui::TreePop();
 		}
+
 		ImGui::Dummy({ 0, 5 });
 
 		if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
