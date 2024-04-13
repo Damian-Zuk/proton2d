@@ -9,8 +9,16 @@ namespace proton {
 		{
 		case PacketType::None:
 			return "PacketType::None";
-		case PacketType::InitializeScene:
-			return "PacketType::InitializeScene";
+		case PacketType::ConnectionAccepted:
+			return "PacketType::ConnectionAccepted";
+		case PacketType::EntitySpawn:
+			return "PacketType::EntitySpawn";
+		case PacketType::EntityDestroy:
+			return "PacketType::EntityDestroy";
+		case PacketType::UpdateReplicated:
+			return "PacketType::EntityDestroy";
+		case PacketType::PlayerAction:
+			return "PacketType::PlayerAction";
 		}
 		return "PacketType::<Invalid>";
 	}

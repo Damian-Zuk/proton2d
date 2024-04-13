@@ -15,24 +15,11 @@ namespace proton {
 		virtual void OnUpdate(float ts) {}
 		virtual void OnDestroy() {}
 
-		// TODO: change clientID to something else
-		virtual void Server_OnClientConnected(uint32_t clientID) {}
-		virtual void Server_OnClientDisconnected(uint32_t clientID) {}
-
-		virtual void Client_OnConnected(uint32_t clientID) {}
-		virtual void Client_OnDisconnected() {}
-
-		void Server_SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
-		void Server_OnEntityCreated(Entity entity, uint32_t specificClientID = 0);
-		void Server_OnEntityDestroyed(Entity entity);
-		
-		void Client_SendPlayerAction(OnSendPlayerActionFunc function);
-	
-		bool HasAuthority() const;
-		bool IsRunningServer() const;
-		bool IsRunningClient() const;
+		Entity FindByTag(const std::string& tag);
+		Entity SpawnPrefab(const std::string& prefab);
 
 		Scene* GetScene() const;
+		SceneManager* GetSceneManager() const;
 		NetworkManager* GetNetworkManager() const;
 
 		template<typename TGameMode>
@@ -40,6 +27,27 @@ namespace proton {
 		{
 			return m_Scene->GameModeCastTo<TGameMode>();
 		}
+
+		// Networking methods
+
+		virtual void Server_OnClientConnected(uint32_t clientID) {}
+		virtual void Server_OnClientDisconnected(uint32_t clientID) {}
+
+		virtual void Client_OnConnected(uint32_t clientID) {}
+		virtual void Client_OnDisconnected() {}
+
+		void Server_OnEntityCreated(Entity entity, uint32_t specificClientID = 0);
+		void Server_OnEntityDestroyed(Entity entity, uint32_t specificClientID = 0);
+
+		void Server_OnEntityCreated(EntityScript* script, uint32_t specificClientID = 0);
+		void Server_OnEntityDestroyed(EntityScript* script, uint32_t specificClientID = 0);
+		
+		void Server_SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
+		void Client_SendPlayerAction(OnSendPlayerActionFunc function);
+	
+		bool HasAuthority() const;
+		bool IsRunningServer() const;
+		bool IsRunningClient() const;
 
 	public:
 		static inline const char __ClassName[] = "GameModeBase";

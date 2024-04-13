@@ -11,10 +11,20 @@
 #include <steam/steam_api.h>
 #endif
 
+#define _
+
 namespace proton {
 
 	uint32_t NetworkManager::s_NetworkServicesRunning = 0;
 	bool NetworkManager::s_NetworkResourcesFreed = false;
+	ComponentBitset NetworkManager::s_ComponentSupportedRepBitset;
+
+	void NetworkManager::StaticInit()
+	{
+		s_ComponentSupportedRepBitset
+			.set((size_t)ComponentTypeID::Transform)
+			.set((size_t)ComponentTypeID::Sprite);
+	}
 
 	NetworkManager::NetworkManager(GameInstance* instance, SceneManager* manager)
 		: m_GameInstance(instance), m_SceneManager(manager)
@@ -41,7 +51,7 @@ namespace proton {
 		{
 			if (m_ServerTickElapsed <= 0)
 			{
-				m_Server->OnTick();
+				m_Server->MainThread_OnTick();
 				m_ServerTickElapsed = m_ServerTickTime;
 			}
 			else

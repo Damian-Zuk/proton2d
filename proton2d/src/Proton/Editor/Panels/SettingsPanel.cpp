@@ -28,7 +28,7 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Project", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			ImGui::Text("Start scene");
+			ImGui::Text("Start Scene");
 			ImGui::SameLine();
 			ImGui::PushItemWidth(120.0f);
 			if (ImGui::InputText("##start_scene", buffer, 256))
@@ -37,7 +37,7 @@ namespace proton {
 			}
 		
 			ImGui::SameLine();
-			if (ImGui::Button("Apply"))
+			if (ImGui::Button("Set"))
 			{
 				project.WriteProjectSettings();
 			}
@@ -49,10 +49,10 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			constexpr char* netModesNames[] = { "Standalone", "Listen server" };
+			constexpr char* netModesNames[] = { "Standalone", "Listen Server" };
 			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
 
-			ImGui::Text("Net mode");
+			ImGui::Text("Net Mode");
 			ImGui::SameLine();
 			ImGui::PushItemWidth(150.0f);
 			if (ImGui::BeginCombo("##net_mode", netModesNames[(uint8_t)netMode]))
@@ -73,7 +73,7 @@ namespace proton {
 			{
 				int numClients = EditorLayer::Get()->m_NetNumClients;
 				int count = numClients;
-				if (ImGui::InputInt("Number of clients", &count, 1, 1))
+				if (ImGui::InputInt("Number of Clients", &count, 1, 1))
 				{
 					if (count > numClients)
 						EditorLayer::Get()->OnAddClientButton();
@@ -83,7 +83,7 @@ namespace proton {
 
 				NetworkManager* networkManager = m_ActiveScene->m_GameInstance->GetNetworkManager();
 				int tickRate = networkManager->m_ServerTickRate;
-				if (ImGui::SliderInt("Server tick rate", &tickRate, 1, 128))
+				if (ImGui::SliderInt("Server Tick Rate", &tickRate, 1, 128))
 				{
 					networkManager->SetServerTickRate(tickRate);
 				}
@@ -98,10 +98,10 @@ namespace proton {
 		{
 			SceneViewportPanel* viewportPanel = EditorLayer::GetSceneViewportPanel();
 			ImGui::Dummy({ 0, 2 });
-			ImGui::Checkbox("Selection outline", &viewportPanel->m_ShowSelectionOutline);
-			ImGui::Checkbox("Selection collider", &viewportPanel->m_ShowSelectionCollider);
-			ImGui::Checkbox("Show colliders", &viewportPanel->m_ShowAllColliders);
-			ImGui::Checkbox("Runtime camera", &EditorLayer::GetCamera()->m_UseInRuntime);
+			ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
+			ImGui::Checkbox("Selection Collider", &viewportPanel->m_ShowSelectionCollider);
+			ImGui::Checkbox("Show Colliders", &viewportPanel->m_ShowAllColliders);
+			ImGui::Checkbox("Runtime Camera", &EditorLayer::GetCamera()->m_UseInRuntime);
 			ImGui::TreePop();
 		}
 		ImGui::Dummy({ 0, 5 });
@@ -119,7 +119,7 @@ namespace proton {
 
 			ImGui::PushItemWidth(100.0f);
 			float timeScale = Application::Get().m_TimeScale;
-			if (ImGui::DragFloat("Time scale", &timeScale, 0.01f, 0.0f)
+			if (ImGui::DragFloat("Time Scale", &timeScale, 0.01f, 0.0f)
 				&& timeScale >= 0.0f)
 			{
 				Application::Get().m_TimeScale = timeScale;

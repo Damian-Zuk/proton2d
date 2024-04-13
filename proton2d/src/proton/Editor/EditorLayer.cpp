@@ -328,10 +328,14 @@ namespace proton {
 		instance->Init(false);
 
 		SceneManager* sceneManager = instance->GetSceneManager();
-		Shared<Scene> scene = m_ActiveScene->CreateSceneCopy();
+		Shared<Scene> scene;
+		if (m_ActiveScene->IsSimulated())
+			scene = m_SceneBackup.at(m_ActiveScene->m_SceneFilepath)->CreateSceneCopy(instance);
+		else
+			scene = m_ActiveScene->CreateSceneCopy(instance);
+
 		sceneManager->m_Scenes[m_ActiveScene->m_SceneFilepath] = scene;
 		sceneManager->SetActiveScene(m_ActiveScene->m_SceneFilepath);
-		scene->m_GameInstance = instance;
 		scene->EnablePhysics(false);
 		scene->BeginPlay();
 	}
@@ -392,6 +396,9 @@ namespace proton {
 		style.Colors[ImGuiCol_Button] = ImVec4(0.4f, 0.18f, 0.19f, 1.0f);
 		style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.5f, 0.18f, 0.19f, 1.0f);
 		style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.6f, 0.18f, 0.19f, 1.0f);
+
+		style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.4f, 0.18f, 0.19f, 1.0f);
+		style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.6f, 0.18f, 0.19f, 1.0f);
 
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.7f);
 		style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);

@@ -49,6 +49,7 @@ namespace proton {
 		const auto& c = m_Scene->m_ClearColor;
 		json jsonObj = {
 			{ "SceneName",          m_Scene->m_SceneName },
+			{ "GameModeClass",      m_Scene->m_GameModeClassName },
 			{ "InheritNetMode",     m_Scene->m_InheritNetMode },
 			{ "EnablePhysics",      m_Scene->m_EnablePhysics },
 			{ "GravityForce",       m_Scene->m_PhysicsWorld->m_Gravity },
@@ -81,6 +82,9 @@ namespace proton {
 		m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
 		if (jsonObj.contains("InheritNetMode"))
 			m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
+
+		if (jsonObj.contains("GameModeClass"))
+			m_Scene->SetGameModeByClassName(jsonObj.at("GameModeClass"));
 
 		m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
 		m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
@@ -142,7 +146,7 @@ namespace proton {
 		{
 			auto& netComponent = entity.GetComponent<NetworkComponent>();
 			jsonObj["Network"] = {
-				{ "Replicated", true }
+				{ "ReplicatedComponentsBitset", netComponent.ComponentBitset.to_string() }
 			};
 		}
 
@@ -369,7 +373,12 @@ namespace proton {
 		if (jsonObj.contains("Network"))
 		{
 			auto& netComponent = entity.AddComponent<NetworkComponent>();
-			netComponent.Replicated = jsonObj.at("Network").at("Replicated");
+			auto& netJson = jsonObj.at("Network");
+			if (netJson.contains("ReplicatedComponentsBitset"))
+			{
+				std::string bitsetStr = netJson.at("ReplicatedComponentsBitset");
+				netComponent.ComponentBitset = ComponentBitset(bitsetStr);
+			}
 		}
 
 		// Deserialize SpriteComponent

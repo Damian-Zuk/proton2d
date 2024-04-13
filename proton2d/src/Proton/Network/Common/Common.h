@@ -1,6 +1,7 @@
 #pragma once
 #include "Proton/Core/UUID.h"
 #include "Proton/Serialization/BufferStream.h"
+#include "Proton/Scene/Components.h"
 
 //class EntityScript;
 
@@ -12,6 +13,12 @@ namespace proton {
 		ListenServer = 1,
 		DedicatedServer = 2,
 		Client = 3,
+	};
+
+	enum class ConnectionStatus : uint8_t
+	{
+		Connected = 0,
+		Disconnected = 1
 	};
 
 	enum class ReplicationMode : uint8_t
@@ -32,12 +39,6 @@ namespace proton {
 	//{
 	//
 	//};
-
-	struct ReplicatedEntityUpdateInfo
-	{
-		UUID EntityUUID;
-		bool UpdateSpriteComponent = false;
-	};
 
 	using OnRecvPlayerActionCallback = std::function<void(BufferStreamReader& stream)>;
 	using OnSendPlayerActionFunc = std::function<void(BufferStreamWriter& stream)>;

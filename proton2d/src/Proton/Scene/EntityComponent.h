@@ -50,4 +50,14 @@ namespace proton {
 		return component;
 	}
 
+	// AddComponent<NetworkComponent>
+	template<>
+	NetworkComponent& Entity::AddComponent() const
+	{
+		PT_CORE_ASSERT(!HasComponent<NetworkComponent>(), "Entity already has component!");
+		auto& component = m_Scene->m_Registry.emplace<NetworkComponent>(m_Handle);
+		component.ComponentBitset.flip((size_t)ComponentTypeID::Transform);
+		return component;
+	}
+
 }

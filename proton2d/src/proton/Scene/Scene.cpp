@@ -12,6 +12,9 @@
 #include "Proton/Utils/Utils.h"
 #include "Proton/Physics/PhysicsWorld.h"
 
+#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/Server/Server.h"
+
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
@@ -105,12 +108,15 @@ namespace proton {
 	}
 	/////////////////////////////////////////////////////////////////////////////////////////////
 
-	Shared<Scene> Scene::CreateSceneCopy()
+	Shared<Scene> Scene::CreateSceneCopy(GameInstance* gameInstance)
 	{
 		Shared<Scene> newScene = MakeShared<Scene>(m_SceneName, m_SceneFilepath, m_GameModeClassName);
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
-		newScene->m_GameInstance = m_GameInstance;
+		if (gameInstance)
+			newScene->m_GameInstance = gameInstance;
+		else	
+			newScene->m_GameInstance = m_GameInstance;
 
 		auto& dstSceneRegistry = newScene->m_Registry;
 		std::unordered_map<UUID, entt::entity> enttMap;
@@ -250,16 +256,25 @@ namespace proton {
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<RelationshipComponent>();
 		m_EntityMap[id] = entity;
+		
 		if (addToSceneRoot)
-		{
 			m_Root.push_back(entity);
-		}
+
+		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
+		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer())
+			networkManager->GetServer()->QueueAddCreatedEntity(entity);
+
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity, bool popHierarchy)
 	{
 		if (!entity.IsValid()) return;
+
+		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
+		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer()
+			&& entity.HasComponent<NetworkComponent>())
+			networkManager->GetServer()->OnEntityDestroyed(entity);
 
 		if (entity.HasComponent<ScriptComponent>())
 			entity.DestroyAllScripts();
@@ -449,6 +464,9 @@ namespace proton {
 	void Scene::UpdateScripts(float ts)
 	{
 		PROFILE_FUNCTION();
+		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
+		bool isNetModeClient = networkManager->IsNetModeClient();
+
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view)
 		{
@@ -457,6 +475,10 @@ namespace proton {
 			{
 				if (!scriptInstance->m_Initialized)
 				{
+					if (isNetModeClient && m_Registry.any_of<NetworkComponent>(entity)
+						&& !networkManager->m_ClientGameStateInitialized)
+						continue; // Do not update scripts before game state verified after client connected
+
 					scriptInstance->m_Initialized = true;
 					if (!scriptInstance->OnCreate())
 					{

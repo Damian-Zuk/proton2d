@@ -22,6 +22,7 @@ namespace proton {
 		std::string ConnectionDesc;
 	};
 
+	// Forward declarations
 	class NetworkManager;
 	class GameInstance;
 
@@ -31,11 +32,42 @@ namespace proton {
 		Server(GameInstance* gameInstance);
 		~Server();
 
-		void OnUpdate(float ts);
-
+	private:
 		void Start(int port);
 		void Stop();
 
+		// Game server functionality
+		void MainThread_OnTick();
+
+		void SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
+		void QueueAddCreatedEntity(Entity entity, ClientID specificClient = 0);
+
+		void OnClientConnected(const ClientInfo& clientInfo);
+		void OnClientDisconnected(const ClientInfo& clientInfo);
+		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
+
+		void OnEntityCreated(Entity entity, ClientID specificClient = 0);
+		void OnEntityDestroyed(Entity entity, ClientID specificClient = 0);
+
+		void ProcessConnectionStatusQueue();
+		void ProcessMessages();
+		void SendReplicationData();
+
+		// Server lower-level functionality
+		void NetworkThreadFunction(); 
+
+		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
+		void OnConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* info);
+
+		void PollIncomingMessages();
+		void PollConnectionStateChanges();
+		void OnFatalError(const std::string& message);
+
+		// Client functionality
+		void SetClientNick(HSteamNetConnection hConn, const char* nick);
+		void KickClient(ClientID clientID);
+
+		// Sending buffer to clients
 		void SendBufferToClient(ClientID clientID, Buffer buffer, bool reliable = true);
 		void SendBufferToAllClients(Buffer buffer, ClientID excludeClientID = 0, bool reliable = true);
 
@@ -54,61 +86,55 @@ namespace proton {
 			SendBufferToAllClients(Buffer(&data, sizeof(T)), excludeClientID, reliable);
 		}
 
-		void KickClient(ClientID clientID);
-
+		// Other
 		bool IsRunning() const { return m_Running; }
 		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
 
-		void SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
-
-		void OnEntityCreated(Entity entity, HSteamNetConnection specificClient = 0);
-		void OnEntityDestroyed(Entity entity);
-
 	private:
-		void NetworkThreadFunc(); // Server thread
-
-		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
-		void OnConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* info);
-
-		// Server functionality
-		void PollIncomingMessages();
-		void SetClientNick(HSteamNetConnection hConn, const char* nick);
-		void PollConnectionStateChanges();
-
-		void OnClientConnected(const ClientInfo& clientInfo);
-		void OnClientDisconnected(const ClientInfo& clientInfo);
-
-		void OnDataReceived(const ClientInfo& clientInfo, const Buffer& buffer);
-
-		void OnFatalError(const std::string& message);
-
-		void OnTick(); // Called from main thread
-	private:
-		GameInstance* m_GameInstance;
-		NetworkManager* m_NetworkManager;
-
-		std::thread m_NetworkThread;
-		Buffer m_ScratchBuffer;
-
-		int m_Port = 0;
-		bool m_Running = false;
-		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
-
-		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
-		std::mutex m_QueueMutex;
-
-		std::queue<ClientInfo> m_ConnectedClientQueue;
-		std::mutex m_ClientQueueMutex;
-
-		std::unordered_map<uint32_t, OnRecvPlayerActionCallback> m_OnRecvPlayerActionCallbacks;
-
-		std::atomic<bool> m_NetworkThreadFinished = false;
-
+		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;
 		HSteamListenSocket m_ListenSocket = 0u;
 		HSteamNetPollGroup m_PollGroup = 0u;
+		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
+
+		// Network Thread
+		std::thread m_NetworkThread;
+		std::atomic<bool> m_NetworkThreadFinished = false;
+		bool m_Running = false;
+		int m_Port = 0;
+
+		// Buffer for writting messages using BufferStreamWriter
+		Buffer m_ScratchBuffer;
+
+		// Queues
+		struct ClientConnectionStatusChangeInfo
+		{
+			ClientInfo ClientInfo;
+			ConnectionStatus Status;
+		};
+		std::queue<ClientConnectionStatusChangeInfo> m_ClientStatusChangeQueue;
+		std::mutex m_ClientStatusQueueMutex;
+
+		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
+		std::mutex m_MessageQueueMutex;
+
+		struct EntityQueueEntry
+		{
+			Entity entity;
+			ClientID client; // 0 - send to all clients
+		};
+		std::queue<EntityQueueEntry> m_OnCreatedEntityQueue;
+
+		// Player action callbacks
+		std::unordered_map<uint32_t, OnRecvPlayerActionCallback> m_PlayerActionCallbacks;
+
+		// Other
+		GameInstance* m_GameInstance;
+		NetworkManager* m_NetworkManager;
 
 		friend class NetworkManager;
+		friend class GameModeBase;
+		friend class Scene;
 	};
 
 }

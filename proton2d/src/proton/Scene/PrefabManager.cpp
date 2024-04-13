@@ -6,10 +6,12 @@
 #include "Proton/Network/Common/NetworkManager.h"
 #include "Proton/Network/Server/Server.h"
 
-#include <fstream>
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
 #endif
+
+#include <fstream>
+#include <filesystem>
 
 namespace proton {
 
@@ -20,15 +22,25 @@ namespace proton {
 		if (!s_Instance)
 		{
 			s_Instance = new PrefabManager();
-			s_Instance->ReloadAllPrefabs();
+			s_Instance->ReloadAll();
 		}
 	}
 
-	void PrefabManager::ReloadAllPrefabs()
+	void PrefabManager::ReloadAll()
 	{
 		s_Instance->m_PrefabsJsonData.clear();
-		for (const auto& prefabFile : Utils::ScanDirectoryRecursive("content/prefabs", { ".prefab.json" }))
-			LoadPrefab(prefabFile);
+
+		for (const auto& entry : std::filesystem::recursive_directory_iterator("content/prefabs"))
+		{
+			if (entry.is_directory())
+				continue;
+
+			auto& path = std::filesystem::relative(entry.path(), "content/prefabs");
+			std::string filepath = path.replace_extension().replace_extension().string();
+			std::replace(filepath.begin(), filepath.end(), '\\', '/');
+
+			LoadPrefab(filepath);
+		}
 	}
 
 	void PrefabManager::CreatePrefabFromEntity(Entity entity)
@@ -44,7 +56,7 @@ namespace proton {
 
 	bool PrefabManager::LoadPrefab(const std::string& prefabPath)
 	{
-		std::string rawData = Utils::ReadFile("content/prefabs/" + prefabPath);
+		std::string rawData = Utils::ReadFile("content/prefabs/" + prefabPath + ".prefab.json");
 		if (rawData.size())
 		{
 			json jsonData = json::parse(rawData);
@@ -58,7 +70,7 @@ namespace proton {
 	{
 		if (Exists(prefabPath))
 		{
-			if (remove(("content/prefabs/" + prefabPath).c_str()) == 0)
+			if (remove(("content/prefabs/" + prefabPath + ".prefab.json").c_str()) == 0)
 			{
 				s_Instance->m_PrefabsJsonData.erase(prefabPath);
 				return true;
@@ -72,7 +84,7 @@ namespace proton {
 		return s_Instance->m_PrefabsJsonData.find(prefabPath) != s_Instance->m_PrefabsJsonData.end();
 	}
 
-	Entity PrefabManager::SpawnPrefab(Scene* scene, const std::string& prefabPath)
+	Entity PrefabManager::Spawn(Scene* scene, const std::string& prefabPath)
 	{
 		if (!Exists(prefabPath))
 		{
@@ -91,16 +103,6 @@ namespace proton {
 		auto& transform = entity.GetComponent<TransformComponent>();
 		transform.WorldPosition.x = camera.x;
 		transform.WorldPosition.y = camera.y;
-
-		// TODO: move this 
-		//if (scene->IsSimulated())
-		//{
-		//	NetworkManager* manager = scene->GetOwningGameInstance()->GetNetworkManager();
-		//	if (manager->IsNetModeServer())
-		//	{
-		//		manager->GetServer()->OnEntityCreated(entity);
-		//	}
-		//}
 		
 		return entity;
 	}

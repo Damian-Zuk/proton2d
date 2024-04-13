@@ -1,10 +1,10 @@
 {
-    "UUID": 7343021059492634130,
+    "UUID": 6276905017981106418,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            2.45968,
-            0.0,
+            -9.08326,
+            -0.871,
             0.1
         ],
         "Rotation": 0.0,
@@ -14,7 +14,7 @@
         ]
     },
     "Network": {
-        "Replicated": true
+        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000001000"
     },
     "Sprite": {
         "Texture": "character.png",
@@ -68,6 +68,10 @@
         {
             "ClassName": "Player",
             "Fields": [
+                {
+                    "FieldName": "ClientID",
+                    "Value": 0
+                },
                 {
                     "FieldName": "GravityModifier",
                     "Value": -10.0

@@ -2,6 +2,7 @@
 #include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"
+#include "Proton/Scene/PrefabManager.h"
 
 #include "Proton/Network/Common/NetworkManager.h"
 #include "Proton/Network/Client/Client.h"
@@ -9,7 +10,7 @@
 
 namespace proton {
 
-    void GameModeBase::Server_SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function)
+    void GameModeBase::Server_SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function)
     {
         Server* server = m_Scene->m_GameInstance->GetNetworkManager()->GetServer();
         if (!server)
@@ -17,17 +18,7 @@ namespace proton {
             PT_CORE_ERROR("Server instance is not running");
             return;
         }
-        server->SetOnRecvPlayerActionCallback(clientID, function);
-    }
-
-    void GameModeBase::Server_OnEntityCreated(Entity entity, uint32_t specificClientID)
-    {
-        GetNetworkManager()->GetServer()->OnEntityCreated(entity, specificClientID);
-    }
-
-    void GameModeBase::Server_OnEntityDestroyed(Entity entity)
-    {
-        GetNetworkManager()->GetServer()->OnEntityDestroyed(entity);
+        server->SetPlayerActionCallback(clientID, function);
     }
 
     void GameModeBase::Client_SendPlayerAction(OnSendPlayerActionFunc function)
@@ -39,6 +30,26 @@ namespace proton {
             return;
         }
         client->SendPlayerAction(function);
+    }
+
+    void GameModeBase::Server_OnEntityCreated(Entity entity, uint32_t specificClientID)
+    {
+        GetNetworkManager()->GetServer()->OnEntityCreated(entity, specificClientID);
+    }
+
+    void GameModeBase::Server_OnEntityDestroyed(Entity entity, uint32_t specificClientID)
+    {
+        GetNetworkManager()->GetServer()->OnEntityDestroyed(entity, specificClientID);
+    }
+
+    void GameModeBase::Server_OnEntityCreated(EntityScript* script, uint32_t specificClientID)
+    {
+        Server_OnEntityCreated(*(Entity*)script, specificClientID);
+    }
+
+    void GameModeBase::Server_OnEntityDestroyed(EntityScript* script, uint32_t specificClientID)
+    {
+        Server_OnEntityDestroyed(*(Entity*)script, specificClientID);
     }
 
     bool GameModeBase::HasAuthority() const
@@ -58,9 +69,24 @@ namespace proton {
         return !HasAuthority();
     }
 
+    Entity GameModeBase::FindByTag(const std::string& tag)
+    {
+        return m_Scene->FindByTag(tag);
+    }
+
+    Entity GameModeBase::SpawnPrefab(const std::string& prefab)
+    {
+        return PrefabManager::Spawn(m_Scene, prefab);
+    }
+
     Scene* GameModeBase::GetScene() const
     {
         return m_Scene;
+    }
+
+    SceneManager* GameModeBase::GetSceneManager() const
+    {
+        return m_Scene->m_GameInstance->GetSceneManager();
     }
 
     NetworkManager* GameModeBase::GetNetworkManager() const

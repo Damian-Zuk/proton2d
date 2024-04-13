@@ -30,6 +30,8 @@ namespace proton {
 		void SetNetMode(NetMode mode);
 		NetMode GetNetMode() const { return m_NetMode; }
 		bool IsNetModeServer() const { return m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer; }
+		bool IsNetModeClient() const { return m_NetMode == NetMode::Client; }
+		bool IsNetServiceRunning() const { return m_IsNetworkServiceRunning; }
 
 		void SetServerTickRate(uint16_t tickRate);
 
@@ -39,6 +41,10 @@ namespace proton {
 	private:
 		void CheckNetworkResourcesRelease();
 
+		static void StaticInit();
+
+		static const ComponentBitset& GetSupportedComponentRepBitset() { return s_ComponentSupportedRepBitset; }
+		
 	private:
 		NetMode m_NetMode = NetMode::ListenServer;
 
@@ -49,6 +55,8 @@ namespace proton {
 		float m_ServerTickTime = 1.0f / m_ServerTickRate;
 		float m_ServerTickElapsed = 0.0f;
 
+		bool m_ClientGameStateInitialized = false;
+
 		GameInstance* m_GameInstance;
 		SceneManager* m_SceneManager;
 
@@ -58,13 +66,17 @@ namespace proton {
 		bool m_IsNetworkServiceRunning = false;
 		uint32_t m_NetworkedSceneCount = 0;
 
+		static ComponentBitset s_ComponentSupportedRepBitset;
 		static uint32_t s_NetworkServicesRunning; // across all editor's game instances (server + clients)
 		static bool s_NetworkResourcesFreed; // free resources after all network services finished running
 
+		friend class Application;
+		friend class Scene;
 		friend class Client;
 		friend class Server;
 
 		friend class SettingsPanel;
+		friend class InspectorPanel;
 	};
 
 }

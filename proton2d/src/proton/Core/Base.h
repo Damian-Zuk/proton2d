@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <bitset>
 
 #ifndef PROTON_DISTRIBUTION
 	#define PT_EDITOR
@@ -30,6 +31,8 @@
 
 namespace proton 
 {
+	typedef std::bitset<128> ComponentBitset;
+
 	template <typename T>
 	using Shared = std::shared_ptr<T>;
 

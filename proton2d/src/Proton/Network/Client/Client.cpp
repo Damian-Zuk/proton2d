@@ -1,6 +1,8 @@
 #include "ptpch.h"
 #include "Proton/Network/Client/Client.h"
 #include "Proton/Network/Common/PacketType.h"
+#include "Proton/Network/Common/NetworkManager.h"
+
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Scene/SceneManager.h"
@@ -11,13 +13,13 @@
 namespace proton {
 
 	static std::unordered_map<HSteamNetConnection, Client*> s_ConnectionToInstanceMap;
-	static std::mutex s_MapMutex;
+	static std::mutex s_InstanceMapMutex;
 
 	Client::Client(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
-		// 256KB scratch buffer
-		m_ScratchBuffer.Allocate(256 * 1024);
+		// 1 MB scratch buffer
+		m_ScratchBuffer.Allocate(1048576);
 	}
 
 	Client::~Client()
@@ -35,7 +37,7 @@ namespace proton {
 			m_NetworkThread.join();
 
 		m_ServerAddress = serverAddress;
-		m_NetworkThread = std::thread([this]() { NetworkThreadFunc(); });
+		m_NetworkThread = std::thread([this]() { NetworkThreadFunction(); });
 	}
 
 	void Client::Disconnect()
@@ -47,7 +49,194 @@ namespace proton {
 			m_NetworkThread.join();
 	}
 
-	void Client::NetworkThreadFunc()
+	void Client::Shutdown()
+	{
+		m_Running = false;
+	}
+
+	void Client::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
+	{
+		std::lock_guard<std::mutex> lock(m_QueueMutex);
+		m_MessageQueue.push(incomingMessage);
+	}
+
+	void Client::VerifyGameState()
+	{
+		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
+		Scene* scene = sceneManager->GetActiveScene()
+			;
+		BufferStreamWriter writer(m_ScratchBuffer);
+		writer.WriteRaw(PacketType::VerifyGameState);
+
+		auto view = scene->GetAllEntitiesWith<IDComponent, NetworkComponent>();
+		for (entt::entity e : view)
+		{
+			auto& id = view.get<IDComponent>(e);
+			writer.WriteRaw(id.ID);
+		}
+
+		SendBuffer(Buffer(m_ScratchBuffer, writer.GetStreamPosition()));
+	}
+
+	void Client::SendPlayerAction(OnSendPlayerActionFunc sendFunction)
+	{
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::PlayerAction);
+		sendFunction(stream);
+		SendBuffer(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+	}
+
+	void Client::MainThread_ProcessMessages()
+	{
+		std::lock_guard<std::mutex> lock(m_QueueMutex);
+		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
+		Scene* scene = sceneManager->GetActiveScene();
+
+		while (!m_MessageQueue.empty())
+		{
+			ISteamNetworkingMessage* message = m_MessageQueue.front();
+			Buffer buffer(message->m_pData, message->m_cbSize);
+			BufferStreamReader stream(buffer);
+
+			PacketType packetType;
+			stream.ReadRaw(packetType);
+
+			switch (packetType)
+			{
+
+			case PacketType::ConnectionAccepted:
+			{
+				stream.ReadRaw(m_ServerClientID);
+				m_JustConnected = true;
+				VerifyGameState();
+				PT_CORE_TRACE("ConnectionAccepted: client_id={}", m_ServerClientID);
+				break;
+			}
+
+			case PacketType::GameStateUpdate:
+			{
+				uint32_t created, destroyed;
+				stream.ReadRaw(created);
+				stream.ReadRaw(destroyed);
+
+				for (uint32_t i = 0; i < created; i++)
+				{
+					std::string jsonData;
+					stream.ReadString(jsonData);
+					json jsonParsed = json::parse(jsonData);
+
+					if (scene->FindByID((UUID)jsonParsed.at("UUID")))
+						continue; // Entity already exists
+
+					SceneSerializer serializer(scene);
+					Entity entity = serializer.DeserializeEntity(jsonParsed);
+				}
+
+				for (uint32_t i = 0; i < destroyed; i++)
+				{
+					UUID uuid;
+					stream.ReadRaw(uuid);
+					Entity entity = scene->FindByID(uuid);
+
+					if (!entity)
+						continue; // Entity does not exists
+					
+					entity.Destroy();
+				}
+
+				if (m_JustConnected)
+				{
+					scene->GetGameMode()->Client_OnConnected(m_ServerClientID);
+					m_NetworkManager->m_ClientGameStateInitialized = true;
+					m_JustConnected = false;
+				}
+				break;
+			}
+
+			case PacketType::EntitySpawn:
+			{
+				std::string jsonData;
+				stream.ReadString(jsonData);
+				json jsonParsed = json::parse(jsonData);
+
+				if (scene->FindByID((UUID)jsonParsed.at("UUID")))
+					break; // Entity already exists
+				
+				SceneSerializer serializer(scene);
+				Entity entity = serializer.DeserializeEntity(jsonParsed);
+				break;
+			}
+
+			case PacketType::EntityDestroy:
+			{
+				UUID uuid;
+				stream.ReadRaw(uuid);
+				Entity entity = scene->FindByID(uuid);
+
+				if (!entity)
+					break; // Entity does not exists
+				
+				entity.Destroy();
+				break;
+			}
+
+			case PacketType::UpdateReplicated:
+			{
+				while (stream.GetStreamPosition() < buffer.Size - sizeof(uint64) * 2)
+				{
+					uint64_t entityStreamStart = stream.GetStreamPosition();
+					uint64_t entityBufferSize;
+					UUID entityUUID;
+
+					stream.ReadRaw(entityBufferSize);
+					stream.ReadRaw(entityUUID);
+
+					Entity entity = scene->FindByID(entityUUID);
+
+					if (!entity.IsValid())
+					{
+						stream.SetStreamPosition(entityStreamStart + entityBufferSize);
+						continue;
+					}
+
+					if (!entity.HasComponent<NetworkComponent>())
+					{
+						PT_CORE_ERROR("UpdateReplicated: Entity {} missing NetworkComponent!", entityUUID);
+						stream.SetStreamPosition(entityStreamStart + entityBufferSize);
+						continue;
+					}
+
+					// Entity is valid, read replicated data
+					auto& net = entity.GetComponent<NetworkComponent>();
+
+					if (net.IsReplicated(ComponentTypeID::Transform))
+					{
+						auto& transform = entity.GetTransform();
+						stream.ReadRaw(transform);
+					}
+
+					if (net.IsReplicated(ComponentTypeID::Sprite))
+					{
+						auto& sprite = entity.GetSprite();
+						stream.ReadRaw(sprite.m_TilePos);
+						stream.ReadRaw(sprite.m_MirrorFlip);
+						sprite.CalculateTextureCoords();
+					}
+				}
+				break;
+			}
+
+			default:
+				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
+				break;
+			}
+
+			message->Release();
+			m_MessageQueue.pop();
+		}
+	}
+
+	void Client::NetworkThreadFunction()
 	{
 		// Reset connection status
 		m_ConnectionStatus = ConnectionStatus::Connecting;
@@ -83,9 +272,9 @@ namespace proton {
 			return;
 		}
 
-		s_MapMutex.lock();
+		s_InstanceMapMutex.lock();
 		s_ConnectionToInstanceMap[m_Connection] = this;
-		s_MapMutex.unlock();
+		s_InstanceMapMutex.unlock();
 
 		m_Running = true;
 		while (m_Running)
@@ -99,11 +288,6 @@ namespace proton {
 		m_ConnectionStatus = ConnectionStatus::Disconnected;
 
 		m_NetworkThreadFinished = true;
-	}
-
-	void Client::Shutdown()
-	{
-		m_Running = false;
 	}
 
 	void Client::SendBuffer(Buffer buffer, bool reliable)
@@ -134,121 +318,8 @@ namespace proton {
 				return;
 			}
 
-			// OnDataReceived(Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
-			m_QueueMutex.lock();
-			m_MessageQueue.push(incomingMessage);
-			m_QueueMutex.unlock();
-			// incomingMessage->Release();
+			OnDataReceived(incomingMessage);
 		}
-	}
-	
-	void Client::MainThread_ProcessMessages()
-	{
-		std::lock_guard<std::mutex> lock(m_QueueMutex);
-		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
-
-		while (!m_MessageQueue.empty())
-		{
-			ISteamNetworkingMessage*& message = m_MessageQueue.front();
-			Buffer buffer(message->m_pData, message->m_cbSize);
-			BufferStreamReader stream(buffer);
-
-			PacketType packetType;
-			stream.ReadRaw(packetType);
-
-			switch (packetType)
-			{
-			case PacketType::ConnectionAccepted:
-			{
-				uint32_t clientID;
-				stream.ReadRaw(clientID);
-				PT_CORE_TRACE("ConnectionAccepted: client_id={}", clientID);
-				m_GameInstance->GetActiveScene()->GetGameMode()->Client_OnConnected(clientID);
-				break;
-			}
-
-			case PacketType::EntitySpawn:
-			{
-				std::string jsonData;
-				stream.ReadString(jsonData);
-				Scene* scene = m_GameInstance->GetActiveScene();
-				SceneSerializer serializer(scene);
-				Entity entity = serializer.DeserializeEntity(json::parse(jsonData));
-				PT_CORE_TRACE("EntitySpawn: name='{}'", entity.GetTag());
-				break;
-			}
-
-			case PacketType::EntityDestroy:
-			{
-				UUID EntityUUID;
-				stream.ReadRaw(EntityUUID);
-				Entity entity = m_GameInstance->GetActiveScene()->FindByID(EntityUUID);
-				PT_CORE_TRACE("EntityDestroy: name='{}'", entity.GetTag());
-				entity.Destroy();
-				break;
-			}
-
-			case PacketType::UpdateReplicated:
-			{
-				Scene* scene = sceneManager->GetActiveScene();
-
-				while (stream.GetStreamPosition() < buffer.Size)
-				{
-					ReplicatedEntityUpdateInfo info;
-					stream.ReadRaw(info);
-
-					Entity entity = scene->FindByID(info.EntityUUID);
-
-					auto& transform = entity.GetTransform();
-					stream.ReadRaw(transform);
-
-					if (info.UpdateSpriteComponent)
-					{
-						auto& sprite = entity.GetSprite();
-						glm::uvec2 tilePos;
-						stream.ReadRaw(tilePos);
-						sprite.SetTile(tilePos.x, tilePos.y);
-						stream.ReadRaw(sprite.m_MirrorFlip);
-					}
-				}
-				break;
-			}
-
-			case PacketType::InitializeScene:
-			{
-				std::string jsonData;
-				stream.ReadString(jsonData);
-				Scene* scene = sceneManager->CreateEmptyScene("server_level");
-				SceneSerializer serializer(scene);
-				serializer.Deserialize(jsonData);
-
-				scene->EnablePhysics(false); // 'dumb-terminal' client
-				sceneManager->SetActiveScene("server_level")->BeginPlay();
-				PT_CORE_TRACE("InitializeScene");
-				break;
-			}
-
-			default:
-				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
-				break;
-			}
-
-			message->Release();
-			m_MessageQueue.pop();
-		}
-	}
-
-	void Client::OnDataReceived(Buffer buffer) // Client network thread
-	{
-
-	}
-
-	void Client::SendPlayerAction(OnSendPlayerActionFunc sendFunction)
-	{
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::PlayerAction);
-		sendFunction(stream);
-		SendBuffer(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
 
 	void Client::PollConnectionStateChanges()
@@ -258,7 +329,7 @@ namespace proton {
 
 	void Client::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info) 
 	{
-		std::lock_guard<std::mutex> lock(s_MapMutex);
+		std::lock_guard<std::mutex> lock(s_InstanceMapMutex);
 		s_ConnectionToInstanceMap.at(info->m_hConn)->OnConnectionStatusChanged(info);
 	}
 
@@ -329,6 +400,5 @@ namespace proton {
 		PT_CORE_ERROR(message);
 		m_Running = false;
 	}
-
 
 }

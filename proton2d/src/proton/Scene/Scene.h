@@ -37,7 +37,7 @@ namespace proton {
 
 		virtual ~Scene();
 
-		Shared<Scene> CreateSceneCopy();
+		Shared<Scene> CreateSceneCopy(GameInstance* gameInstance = nullptr);
 
 		void BeginPlay(); // SceneState::Play
 		void Pause(bool pause = true); // SceneState::Pause

@@ -8,41 +8,39 @@ bool MyGameMode::OnCreate()
 {
 	if (HasAuthority())
 	{
-		auto& spawn = GetScene()->FindByTag("PlayerSpawn1").GetTransform();
-		m_LocalPlayer = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json").CastTo<Player>();
-		m_LocalPlayer->SetWorldPosition(spawn.WorldPosition);
+		// Spawn local player for listen server
+		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
+		m_LocalPlayer = SpawnPrefab("Player").As<Player>();
+		m_LocalPlayer->SetWorldPosition(spawnTransform.WorldPosition);
 	}
 	return true;
 }
 
 void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 {
-	PT_TRACE("{}", clientID);
-	std::string spawnPoint = "PlayerSpawn" + std::to_string(1 + (m_RemotePlayers.size() + 1) % 5);
-	auto& spawn = GetScene()->FindByTag(spawnPoint).GetTransform();
-	Entity entity = PrefabManager::SpawnPrefab(GetScene(), "Player.prefab.json");
-	Player* player = entity.CastTo<Player>();
-	
-	player->SetWorldPosition(spawn.WorldPosition);
+	PT_TRACE("client_id={}", clientID);
+		
+	// Spawn Player object for connected client
+	Player* player = SpawnPrefab("Player").As<Player>();
+
+	// Get spawn point position
+	uint32_t spawnPoint = (m_RemotePlayers.size() + 1) % 4;
+	auto& spawnTransform = FindByTag("PlayerSpawn" + std::to_string(spawnPoint)).GetTransform();
+
+	// Set player properties
+	player->SetWorldPosition(spawnTransform.WorldPosition);
 	player->m_IsLocalPlayer = false;
 	player->m_ClientID = clientID;
-
-	Server_OnEntityCreated(*player);
-
-	// Send info about all clients to connected client
-	Server_OnEntityCreated(*m_LocalPlayer, clientID);
-	for (auto& [playerID, player] : m_RemotePlayers)
-		Server_OnEntityCreated(*player, clientID);
 	
 	m_RemotePlayers[clientID] = player;
 }
 
 void MyGameMode::Server_OnClientDisconnected(uint32_t clientID)
 {
-	PT_TRACE("{}", clientID);
-	Entity entity = *m_RemotePlayers.at(clientID);
-	Server_OnEntityDestroyed(entity);
-	entity.Destroy();
+	PT_TRACE("client_id={}", clientID);
+	
+	Player* player = m_RemotePlayers.at(clientID);
+	player->Destroy();
 	m_RemotePlayers.erase(clientID);
 }
 
@@ -55,5 +53,3 @@ uint32_t MyGameMode::GetLocalPlayerID() const
 {
 	return m_LocalPlayerID;
 }
-
-

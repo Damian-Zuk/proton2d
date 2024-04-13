@@ -345,7 +345,7 @@ namespace proton {
 				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
 				std::filesystem::path path(path_wchar);
 
-				Entity entity = PrefabManager::SpawnPrefab(m_ActiveScene, path.string());
+				Entity entity = PrefabManager::Spawn(m_ActiveScene, path.string());
 				auto& transform = entity.GetComponent<TransformComponent>();
 				glm::vec2 cameraPos = m_ActiveScene->GetCursorWorldPosition();
 				entity.SetWorldPosition({ cameraPos.x, cameraPos.y, transform.WorldPosition.z });
@@ -355,7 +355,7 @@ namespace proton {
 			{
 				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
 				std::filesystem::path path(path_wchar);
-				std::string sceneFilepath = path.replace_extension().replace_extension().string();
+				std::string sceneFilepath = path.string();
 				m_GameInstance->m_SceneManager->Load(sceneFilepath);
 				m_GameInstance->m_SceneManager->SetActiveScene(sceneFilepath);
 			}

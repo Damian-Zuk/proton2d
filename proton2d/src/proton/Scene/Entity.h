@@ -61,6 +61,7 @@ namespace proton {
 		template<> RigidbodyComponent& AddComponent() const;
 		template<> BoxColliderComponent& AddComponent() const;
 		template<> SpriteAnimationComponent& AddComponent() const;
+		template<> NetworkComponent& AddComponent() const;
 
 		template <typename TComponent>
 		void RemoveComponent()
@@ -102,7 +103,7 @@ namespace proton {
 		void RemoveScript(const std::string& scriptClassName);
 		
 		template<typename TScriptClass>
-		TScriptClass* CastTo()
+		TScriptClass* As()
 		{
 			auto& component = GetComponent<ScriptComponent>();
 			EntityScript* base = component.Scripts.at(TScriptClass::__ScriptClassName);

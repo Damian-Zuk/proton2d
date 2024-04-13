@@ -14,6 +14,7 @@
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Network/Common/NetworkManager.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -570,14 +571,8 @@ namespace proton {
 		ImGui::Separator();
 		ImGui::Dummy({ 0.0f, 3.0f });
 
-		// Scene name
-		//static char sceneName[256] = {0};
-		//ImGui::Text("Scene Name");
-		//strcpy_s(sceneName, m_ActiveScene->m_SceneName.c_str());
-		//if (ImGui::InputText("##scene_name", sceneName, 256))
-		//	m_ActiveScene->m_SceneName = sceneName;
-
 		// Select game mode
+		ImGui::Text("Game Mode");
 		const std::string& selectedGameMode = m_ActiveScene->m_GameModeClassName;
 		if (ImGui::BeginCombo("##gameMode", selectedGameMode.c_str()))
 		{
@@ -659,25 +654,34 @@ namespace proton {
 		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 		
-		size_t componentTypeID = typeid(T).hash_code();
-		bool canBeRemoved = !std::is_same<T, TagComponent>::value && !std::is_same<T, TransformComponent>::value;
-		bool keepComponent = true;
-		bool opened = true;
+		bool opened = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 
-		if (canBeRemoved)
-			opened = ImGui::CollapsingHeader((name + "##" + std::to_string(componentTypeID)).c_str(), &keepComponent, treeNodeFlags);
-		else
-			opened = ImGui::TreeNodeEx((void*)componentTypeID, treeNodeFlags, name.c_str());
+		bool removeComponent = false;
+		if (!std::is_same<T, TagComponent>::value && !std::is_same<T, TransformComponent>::value)
+		{
+			ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
+			removeComponent = ImGui::Button(("Remove##" + name).c_str());
+		}
+
+		NetworkComponent* networkComponent = nullptr;
+		if (m_SelectedEntity.HasComponent<NetworkComponent>())
+			networkComponent = &m_SelectedEntity.GetComponent<NetworkComponent>();
 
 		if (opened)
 		{
 			ImGui::Dummy({ 0.0f, 3.0f });
+			if (networkComponent && NetworkManager::GetSupportedComponentRepBitset().test(T::TypeID()))
+			{
+				auto& bitset = networkComponent->ComponentBitset;
+				bool replicated = bitset.test(T::TypeID());
+				if (ImGui::Checkbox("Network Replication", &replicated))
+					bitset.flip(T::TypeID());
+			}
 			drawContentFunction(component);
-			if (!canBeRemoved)
-				ImGui::TreePop();
+			ImGui::TreePop();
 		}
 
-		if (!keepComponent)
+		if (removeComponent)
 			m_SelectedEntity.RemoveComponent<T>();
 
 		ImGui::Dummy({ 0.0f, 3.0f });

@@ -5,7 +5,7 @@
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Scene/Scene.h"
-#include "Proton/Scene/Components.h"
+#include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scripting/GameModeBase.h"
 
@@ -21,8 +21,8 @@ namespace proton {
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
-		// 256KB scratch buffer
-		m_ScratchBuffer.Allocate(256 * 1024);
+		// 1 MB scratch buffer
+		m_ScratchBuffer.Allocate(1048576);
 	}
 
 	Server::~Server()
@@ -33,17 +33,16 @@ namespace proton {
 		m_ScratchBuffer.Release();
 	}
 
-	void Server::OnUpdate(float ts)
-	{
-	}
-
 	void Server::Start(int port)
 	{
 		if (m_Running)
+		{
+			PT_CORE_WARN("Server is already running!");
 			return;
+		}
 
 		m_Port = port;
-		m_NetworkThread = std::thread([this]() { NetworkThreadFunc(); });
+		m_NetworkThread = std::thread([this]() { NetworkThreadFunction(); });
 	}
 
 	void Server::Stop()
@@ -51,33 +50,252 @@ namespace proton {
 		m_Running = false;
 	}
 
-	void Server::SetOnRecvPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function)
+	void Server::MainThread_OnTick()
 	{
-		m_OnRecvPlayerActionCallbacks[clientID] = function;
+		ProcessConnectionStatusQueue();
+		ProcessMessages();
+		SendReplicationData();
 	}
 
-	void Server::OnEntityCreated(Entity entity, HSteamNetConnection specificClient)
+	void Server::SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function)
+	{
+		m_PlayerActionCallbacks[clientID] = function;
+	}
+
+	void Server::QueueAddCreatedEntity(Entity entity, ClientID specificClient)
+	{
+		m_OnCreatedEntityQueue.push({ entity, specificClient });
+	}
+
+	void Server::OnClientConnected(const ClientInfo& clientInfo)
+	{
+		std::lock_guard<std::mutex> lock(m_ClientStatusQueueMutex);
+		m_ClientStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connected });
+	}
+
+	void Server::OnClientDisconnected(const ClientInfo& clientInfo)
+	{
+		std::lock_guard<std::mutex> lock(m_ClientStatusQueueMutex);
+		m_ClientStatusChangeQueue.push({ clientInfo, ConnectionStatus::Disconnected });
+	}
+
+	void Server::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
+	{
+		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
+		m_MessageQueue.push(incomingMessage);
+	}
+
+	void Server::OnEntityCreated(Entity entity, ClientID specificClient)
 	{
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::EntitySpawn);
 		SceneSerializer serializer(entity.GetScene());
 		std::string jsonData = serializer.SerializeEntityToString(entity);
 		stream.WriteString(jsonData);
+
+		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
 		if (specificClient)
-			SendBufferToClient(specificClient, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+			SendBufferToClient(specificClient, buffer);
 		else
-			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+			SendBufferToAllClients(buffer);
 	}
 
-	void Server::OnEntityDestroyed(Entity entity)
+	void Server::OnEntityDestroyed(Entity entity, ClientID specificClient)
 	{
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::EntityDestroy);
 		stream.WriteRaw(entity.GetUUID());
+
+		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
+		if (specificClient)
+			SendBufferToClient(specificClient, buffer);
+		else
+			SendBufferToAllClients(buffer);
+	}
+
+	void Server::ProcessConnectionStatusQueue()
+	{
+		std::lock_guard<std::mutex> lock(m_ClientStatusQueueMutex);
+		while (!m_ClientStatusChangeQueue.empty())
+		{
+			ClientConnectionStatusChangeInfo& info = m_ClientStatusChangeQueue.front();
+
+			if (info.Status == ConnectionStatus::Connected)
+			{
+				BufferStreamWriter stream(m_ScratchBuffer);
+				stream.WriteRaw(PacketType::ConnectionAccepted);
+				stream.WriteRaw(info.ClientInfo.ID);
+				SendBufferToClient(info.ClientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+
+				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+				gameMode->Server_OnClientConnected(info.ClientInfo.ID);
+			}
+			else if (info.Status == ConnectionStatus::Disconnected)
+			{
+				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+				gameMode->Server_OnClientDisconnected(info.ClientInfo.ID);
+			}
+
+			m_ClientStatusChangeQueue.pop();
+		}
+	}
+
+	void Server::ProcessMessages()
+	{
+		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
+		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
+		Scene* scene = sceneManager->GetActiveScene();
+
+		while (!m_MessageQueue.empty())
+		{
+			ISteamNetworkingMessage* message = m_MessageQueue.front();
+			Buffer buffer(message->m_pData, message->m_cbSize);
+			BufferStreamReader stream(buffer);
+			PacketType packetType;
+			stream.ReadRaw(packetType);
+
+			switch (packetType)
+			{
+
+			case PacketType::VerifyGameState:
+			{
+				std::vector<UUID> clientState;
+				std::vector<UUID> serverState;
+
+				while (stream.GetStreamPosition() < buffer.Size)
+				{
+					uint64_t id = 0;
+					stream.ReadRaw(id);
+					clientState.push_back(id);
+				}
+
+				auto view = scene->GetAllEntitiesWith<IDComponent, NetworkComponent>();
+				for (entt::entity e : view)
+				{
+					auto& id = view.get<IDComponent>(e);
+					serverState.push_back(id.ID);
+				}
+
+				uint32_t created = 0, destroyed = 0;
+
+				BufferStreamWriter writer(m_ScratchBuffer);
+				writer.WriteRaw(PacketType::GameStateUpdate);
+				writer.WriteZero(sizeof(uint32_t) * 2);
+
+				for (const auto& uuid : serverState)
+				{
+					if (std::find(clientState.begin(), clientState.end(), uuid) == clientState.end())
+					{
+						Entity entity = scene->FindByID(uuid);
+						SceneSerializer serializer(entity.GetScene());
+						std::string jsonData = serializer.SerializeEntityToString(entity);
+						writer.WriteString(jsonData);
+						created++;
+					}
+				}
+
+				for (const auto& uuid : clientState)
+				{
+					if (std::find(serverState.begin(), serverState.end(), uuid) == serverState.end())
+					{
+						writer.WriteRaw(uuid);
+						destroyed++;
+					}
+				}
+
+				uint64_t streamEnd = writer.GetStreamPosition();
+				writer.SetStreamPosition(sizeof(PacketType));
+				writer.WriteRaw(created);
+				writer.WriteRaw(destroyed);
+				SendBufferToClient(message->GetConnection(), Buffer(m_ScratchBuffer, streamEnd));
+
+				PT_CORE_TRACE("VerifyGameState: client_id={}, created={}, destroyed={}", message->GetConnection(), created, destroyed);
+				break;
+			}
+
+			case PacketType::PlayerAction:
+			{
+				if (m_PlayerActionCallbacks.find(message->m_conn) != m_PlayerActionCallbacks.end())
+				{
+					OnRecvPlayerActionCallback& callback = m_PlayerActionCallbacks.at(message->m_conn);
+					callback(stream);
+				}
+				else
+					PT_CORE_ERROR("OnRecvPlayerActionCallbacks[{}] was not defined!", (uint32_t)message->m_conn);
+				
+				break;
+			}
+
+			default:
+				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
+				break;
+			}
+
+			message->Release();
+			m_MessageQueue.pop();
+		}
+	}
+
+	void Server::SendReplicationData()
+	{
+		Scene* scene = m_GameInstance->GetActiveScene();
+
+		// Process created entities queue
+		while (!m_OnCreatedEntityQueue.empty())
+		{
+			EntityQueueEntry& entry = m_OnCreatedEntityQueue.front();
+			
+			if (entry.entity.HasComponent<NetworkComponent>())
+				OnEntityCreated(entry.entity, entry.client);
+			
+			m_OnCreatedEntityQueue.pop();
+		}
+
+		// Replicate entitites with NetworkComponent
+		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
+		
+		if (view.empty())
+			return;
+		
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::UpdateReplicated);
+
+		for (entt::entity e : view)
+		{
+			Entity entity(e, scene);
+			auto& net = view.get<NetworkComponent>(e);
+
+			uint64_t entityStreamStart = stream.GetStreamPosition();
+			uint64_t entityBufferSize = 0;
+
+			stream.WriteZero(sizeof(entityBufferSize));
+			stream.WriteRaw(entity.GetUUID());
+
+			if (net.IsReplicated(ComponentTypeID::Transform))
+			{
+				auto& transform = entity.GetTransform();
+				stream.WriteRaw(transform);
+			}
+
+			if (net.IsReplicated(ComponentTypeID::Sprite))
+			{
+				auto& sprite = entity.GetSprite();
+				stream.WriteRaw(sprite.GetTilePos());
+				stream.WriteRaw(sprite.GetMirrorFlip());
+			}
+
+			uint64_t entityStreamEnd = stream.GetStreamPosition();
+			entityBufferSize = entityStreamEnd - entityStreamStart;
+				
+			stream.SetStreamPosition(entityStreamStart);
+			stream.WriteRaw(entityBufferSize);
+			stream.SetStreamPosition(entityStreamEnd);
+		}
+
 		SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
 
-	void Server::NetworkThreadFunc()
+	void Server::NetworkThreadFunction()
 	{
 		s_Instance = this;
 		m_Running = true;
@@ -143,7 +361,10 @@ namespace proton {
 		m_NetworkThreadFinished = true;
 	}
 
-	void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info) { s_Instance->OnConnectionStatusChanged(info); }
+	void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info) 
+	{ 
+		s_Instance->OnConnectionStatusChanged(info); 
+	}
 
 	void Server::OnConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* status)
 	{
@@ -237,138 +458,6 @@ namespace proton {
 		}
 	}
 
-	void Server::PollConnectionStateChanges()
-	{
-		m_Interface->RunCallbacks();
-	}
-
-	void Server::OnClientConnected(const ClientInfo& clientInfo)
-	{
-		// Move logic to PacketType::ClientConnectionRequest handle in OnDataReceived?
-		
-		std::lock_guard<std::mutex> lock(m_ClientQueueMutex);
-		m_ConnectedClientQueue.push(clientInfo);
-
-	}
-
-	void Server::OnClientDisconnected(const ClientInfo& clientInfo)
-	{
-		m_GameInstance->GetActiveScene()->GetGameMode()->Server_OnClientDisconnected((uint32_t)clientInfo.ID);
-	}
-
-	void Server::OnDataReceived(const ClientInfo& clientInfo, const Buffer& buffer)
-	{
-		BufferStreamReader stream(buffer);
-	}
-
-	void Server::OnTick() // Called from main thread
-	{
-		m_QueueMutex.lock();
-
-		m_ClientQueueMutex.lock();
-		while (!m_ConnectedClientQueue.empty())
-		{
-			ClientInfo& clientInfo = m_ConnectedClientQueue.front();
-			{
-				BufferStreamWriter stream(m_ScratchBuffer);
-				stream.WriteRaw(PacketType::ConnectionAccepted);
-				stream.WriteRaw(clientInfo.ID);
-				SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-			}
-
-			// PacketType::InitializeScene
-			//{
-			//	BufferStreamWriter stream(m_ScratchBuffer);
-			//	stream.WriteRaw(PacketType::InitializeScene);
-			//	SceneSerializer sceneSerializer(m_GameInstance->GetActiveScene());
-			//	std::string jsonData = sceneSerializer.Serialize();
-			//	stream.WriteString(jsonData);
-			//	SendBufferToClient(clientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-			//}
-
-			m_GameInstance->GetActiveScene()->GetGameMode()->Server_OnClientConnected((uint32_t)clientInfo.ID);
-
-			m_ConnectedClientQueue.pop();
-		}
-		m_ClientQueueMutex.unlock();
-
-
-		while (!m_MessageQueue.empty())
-		{
-			ISteamNetworkingMessage*& message = m_MessageQueue.front();
-			Buffer buffer(message->m_pData, message->m_cbSize);
-			BufferStreamReader stream(buffer);
-			PacketType packetType;
-			stream.ReadRaw(packetType);
-
-			switch (packetType)
-			{
-
-			case PacketType::PlayerAction:
-				if (m_OnRecvPlayerActionCallbacks.find(message->m_conn) != m_OnRecvPlayerActionCallbacks.end())
-				{
-					OnRecvPlayerActionCallback& callback = m_OnRecvPlayerActionCallbacks.at(message->m_conn);
-					callback(stream);
-				}
-				else
-				{
-					PT_CORE_ERROR("OnRecvPlayerActionCallbacks[{}] was not defined!", (uint32_t)message->m_conn);
-				}
-				break;
-
-			default:
-				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
-				// TODO: disconnect client
-				break;
-			}
-
-			message->Release();
-			m_MessageQueue.pop();
-		}
-
-		m_QueueMutex.unlock();
-
-		Scene* scene = m_GameInstance->GetActiveScene();
-
-		// Replicate entitites with NetworkComponent
-		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
-		if (!view.size())
-			return;
-
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::UpdateReplicated);
-
-		for (auto e : view)
-		{
-			Entity entity(e, scene);
-
-			bool replicateSprite = false;
-			if (entity.HasComponent<SpriteComponent>())
-			{
-				auto& sprite = entity.GetSprite();
-				if (sprite.m_Spritesheet)
-					replicateSprite = true;
-			}
-
-			stream.WriteRaw(ReplicatedEntityUpdateInfo{
-				entity.GetUUID(),
-				replicateSprite
-			});
-
-			auto& transform = entity.GetTransform();
-			stream.WriteRaw(transform);
-
-			if (replicateSprite)
-			{
-				auto& sprite = entity.GetSprite();
-				stream.WriteRaw(sprite.m_TilePos);
-				stream.WriteRaw(sprite.m_MirrorFlip);
-			}
-		}
-
-		SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-	}
-
 	void Server::PollIncomingMessages()
 	{
 		// Process all messages
@@ -396,22 +485,30 @@ namespace proton {
 			}
 
 			if (incomingMessage->m_cbSize)
-			{
-				//OnDataReceived(itClient->second, Buffer(incomingMessage->m_pData, incomingMessage->m_cbSize));
-				m_QueueMutex.lock();
-				m_MessageQueue.push(incomingMessage);
-				m_QueueMutex.unlock();
-			}
-
-			// Release when done
-			//incomingMessage->Release();
+				OnDataReceived(incomingMessage);
 		}
+	}
+
+	void Server::PollConnectionStateChanges()
+	{
+		m_Interface->RunCallbacks();
+	}
+
+	void Server::OnFatalError(const std::string& message)
+	{
+		PT_CORE_CRITICAL(message);
+		m_Running = false;
 	}
 
 	void Server::SetClientNick(HSteamNetConnection hConn, const char* nick)
 	{
 		// Set the connection name, too, which is useful for debugging
 		m_Interface->SetConnectionName(hConn, nick);
+	}
+
+	void Server::KickClient(ClientID clientID)
+	{
+		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
 	}
 
 	void Server::SendBufferToClient(ClientID clientID, Buffer buffer, bool reliable)
@@ -436,17 +533,6 @@ namespace proton {
 	void Server::SendStringToAllClients(const std::string& string, ClientID excludeClientID, bool reliable)
 	{
 		SendBufferToAllClients(Buffer(string.data(), string.size()), excludeClientID, reliable);
-	}
-
-	void Server::KickClient(ClientID clientID)
-	{
-		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
-	}
-
-	void Server::OnFatalError(const std::string& message)
-	{
-		PT_CORE_CRITICAL(message);
-		m_Running = false;
 	}
 
 }

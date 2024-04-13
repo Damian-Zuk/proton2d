@@ -12,6 +12,7 @@
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Assets/AssetManager.h"
+#include "Proton/Network/Common/NetworkManager.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "Proton/Platform/Windows/WindowsWindow.h"
@@ -56,6 +57,7 @@ namespace proton {
 
 		AssetManager::Init();
 		Renderer::Init();
+		NetworkManager::StaticInit();
 
 	#ifdef PT_EDITOR
 		m_EditorLayer = EditorLayer::Get();

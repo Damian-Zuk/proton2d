@@ -37,7 +37,7 @@ bool Player::OnCreate()
 
 	if (IsRunningServer() && !m_IsLocalPlayer)
 	{
-		GetGameMode()->Server_SetOnRecvPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
+		GetGameMode()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
 			stream.ReadRaw(m_ActionState);
 		});
 	}

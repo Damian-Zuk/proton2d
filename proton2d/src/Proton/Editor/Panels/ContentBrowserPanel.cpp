@@ -166,7 +166,7 @@ namespace proton {
 				else if (icon == m_SceneIcon.get())
 					type = "CONTENT_BROWSER_SCENE";
 
-				std::filesystem::path relative = stripFirstDir(path);
+				std::filesystem::path relative = stripFirstDir(path).replace_extension().replace_extension();
 				const wchar_t* itemPath = relative.c_str();
 				ImGui::SetDragDropPayload(type.c_str(), itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
 				ImGui::EndDragDropSource();
