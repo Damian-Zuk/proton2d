@@ -1,19 +1,36 @@
 #include "ptpch.h"
 #include "Proton/Network/Server/Server.h"
 #include "Proton/Network/Common/PacketType.h"
+#include "Proton/Network/Common/NetworkManager.h"
 
 #include "Proton/Core/GameInstance.h"
+#include "Proton/Core/Timer.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scripting/GameModeBase.h"
 
-#include <chrono>
+#ifdef PT_EDITOR
+#include "Proton/Editor/Panels/InfoPanel.h"
+#endif
 
+#include <chrono>
+#include <iomanip>
 #include <spdlog/spdlog.h>
 
+#ifdef PROTON_DISTRIBUTION
+static constexpr bool s_EnableNetworkStatistics = false;
+#else
+static constexpr bool s_EnableNetworkStatistics = true;
+#endif
+
+
 namespace proton {
+
+	// 1 MB scratch buffer for writting messages
+	constexpr static size_t s_ScratchBufferSize = 1048576;
+	constexpr static size_t s_DetailedStatusBufferSize = 2048;
 
 	// Can only have one server instance per-process
 	static Server* s_Instance = nullptr;
@@ -21,8 +38,10 @@ namespace proton {
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
-		// 1 MB scratch buffer
-		m_ScratchBuffer.Allocate(1048576);
+		m_ScratchBuffer.Allocate(s_ScratchBufferSize);
+
+		if constexpr (s_EnableNetworkStatistics)
+			GenerateStatsLogsFilename();
 	}
 
 	Server::~Server()
@@ -31,6 +50,9 @@ namespace proton {
 			m_NetworkThread.join();
 
 		m_ScratchBuffer.Release();
+
+		for (auto& it : m_NetworkStats)
+			it.second.Detailed.Release();
 	}
 
 	void Server::Start(int port)
@@ -50,11 +72,36 @@ namespace proton {
 		m_Running = false;
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////                        Game Server and Entity Replication Functionality                       ////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	void Server::MainThread_OnTick()
 	{
 		ProcessConnectionStatusQueue();
 		ProcessMessages();
 		SendReplicationData();
+
+		if constexpr(s_EnableNetworkStatistics)
+			UpdateNetworkStatistics();
+	}
+
+	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
+	{
+		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
+		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connected });
+	}
+
+	void Server::OnClientDisconnected(const ClientInfo& clientInfo) // Called from Network Thread
+	{
+		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
+		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Disconnected });
+	}
+
+	void Server::OnDataReceived(ISteamNetworkingMessage* incomingMessage) // Called from Network Thread
+	{
+		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
+		m_MessageQueue.push(incomingMessage);
 	}
 
 	void Server::SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function)
@@ -65,24 +112,6 @@ namespace proton {
 	void Server::QueueAddCreatedEntity(Entity entity, ClientID specificClient)
 	{
 		m_OnCreatedEntityQueue.push({ entity, specificClient });
-	}
-
-	void Server::OnClientConnected(const ClientInfo& clientInfo)
-	{
-		std::lock_guard<std::mutex> lock(m_ClientStatusQueueMutex);
-		m_ClientStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connected });
-	}
-
-	void Server::OnClientDisconnected(const ClientInfo& clientInfo)
-	{
-		std::lock_guard<std::mutex> lock(m_ClientStatusQueueMutex);
-		m_ClientStatusChangeQueue.push({ clientInfo, ConnectionStatus::Disconnected });
-	}
-
-	void Server::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
-	{
-		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
-		m_MessageQueue.push(incomingMessage);
 	}
 
 	void Server::OnEntityCreated(Entity entity, ClientID specificClient)
@@ -115,11 +144,12 @@ namespace proton {
 
 	void Server::ProcessConnectionStatusQueue()
 	{
-		std::lock_guard<std::mutex> lock(m_ClientStatusQueueMutex);
-		while (!m_ClientStatusChangeQueue.empty())
+		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
+		while (!m_ClientConnStatusChangeQueue.empty())
 		{
-			ClientConnectionStatusChangeInfo& info = m_ClientStatusChangeQueue.front();
+			ClientConnectionStatusChangeInfo& info = m_ClientConnStatusChangeQueue.front();
 
+			// Client has been connected
 			if (info.Status == ConnectionStatus::Connected)
 			{
 				BufferStreamWriter stream(m_ScratchBuffer);
@@ -129,14 +159,23 @@ namespace proton {
 
 				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
 				gameMode->Server_OnClientConnected(info.ClientInfo.ID);
+
+				if constexpr (s_EnableNetworkStatistics)
+					InitNetworkStatsForClient(info.ClientInfo.ID);
 			}
+
+			// Client has been disconnected
 			else if (info.Status == ConnectionStatus::Disconnected)
 			{
 				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
 				gameMode->Server_OnClientDisconnected(info.ClientInfo.ID);
+
+				// Client network statistics
+				if constexpr (s_EnableNetworkStatistics)
+					ReleaseNetworkStatsForClient(info.ClientInfo.ID);
 			}
 
-			m_ClientStatusChangeQueue.pop();
+			m_ClientConnStatusChangeQueue.pop();
 		}
 	}
 
@@ -184,23 +223,23 @@ namespace proton {
 
 				for (const auto& uuid : serverState)
 				{
-					if (std::find(clientState.begin(), clientState.end(), uuid) == clientState.end())
-					{
-						Entity entity = scene->FindByID(uuid);
-						SceneSerializer serializer(entity.GetScene());
-						std::string jsonData = serializer.SerializeEntityToString(entity);
-						writer.WriteString(jsonData);
-						created++;
-					}
+					if (std::find(clientState.begin(), clientState.end(), uuid) != clientState.end())
+						continue;
+
+					Entity entity = scene->FindByID(uuid);
+					SceneSerializer serializer(entity.GetScene());
+					std::string jsonData = serializer.SerializeEntityToString(entity);
+					writer.WriteString(jsonData);
+					created++;
 				}
 
 				for (const auto& uuid : clientState)
 				{
-					if (std::find(serverState.begin(), serverState.end(), uuid) == serverState.end())
-					{
-						writer.WriteRaw(uuid);
-						destroyed++;
-					}
+					if (std::find(serverState.begin(), serverState.end(), uuid) != serverState.end())
+						continue;
+
+					writer.WriteRaw(uuid);
+					destroyed++;
 				}
 
 				uint64_t streamEnd = writer.GetStreamPosition();
@@ -221,13 +260,14 @@ namespace proton {
 					callback(stream);
 				}
 				else
-					PT_CORE_ERROR("OnRecvPlayerActionCallbacks[{}] was not defined!", (uint32_t)message->m_conn);
+					PT_CORE_ERROR("PlayerActionCallback was not defined! client_id={}", (uint32_t)message->m_conn);
 				
 				break;
 			}
 
 			default:
 				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
+				// TODO: Kick client
 				break;
 			}
 
@@ -290,10 +330,120 @@ namespace proton {
 			stream.SetStreamPosition(entityStreamStart);
 			stream.WriteRaw(entityBufferSize);
 			stream.SetStreamPosition(entityStreamEnd);
+
+			if constexpr (s_EnableNetworkStatistics)
+				m_ReplicationStats.RepEntitiesCount++;
 		}
+
+		if constexpr (s_EnableNetworkStatistics)
+			m_ReplicationStats.RepPacketCount++;
 
 		SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////                           Network Traffic and Replication Statistics                          ////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void Server::InitNetworkStatsForClient(ClientID clientID)
+	{
+		Buffer detailedConnStatusBuffer;
+		detailedConnStatusBuffer.Allocate(s_DetailedStatusBufferSize);
+		m_NetworkStats[clientID].Detailed = detailedConnStatusBuffer;
+
+		if (m_NetworkManager->m_SaveStatsForClientID == 0)
+		{
+			m_NetworkManager->m_SaveStatsForClientID = clientID;
+		}
+	}
+
+	void Server::ReleaseNetworkStatsForClient(ClientID clientID)
+	{
+		m_NetworkStats.at(clientID).Detailed.Release();
+		m_NetworkStats.erase(clientID);
+
+		if (m_NetworkManager->m_SaveStatsForClientID == clientID)
+		{
+			m_NetworkManager->m_SaveStatsForClientID =
+				m_ConnectedClients.size() ? m_ConnectedClients.begin()->first : 0;
+		}
+	}
+
+	void Server::UpdateNetworkStatistics()
+	{
+		static Timer timer;
+		if (timer.Elapsed() >= m_StatsUpdateInterval)
+		{
+			for (auto& [hConn, stats] : m_NetworkStats)
+			{
+				m_Interface->GetConnectionRealTimeStatus(hConn, &stats.RealTime, 0, NULL);
+				m_Interface->GetDetailedConnectionStatus(hConn, (char*)stats.Detailed.Data, s_DetailedStatusBufferSize);
+
+				NetworkManager* m = m_NetworkManager;
+				if (m->m_SaveNetworkStatsToLogFile && (hConn == m->m_SaveStatsForClientID || m->m_SaveStatsForAllClients))
+				{
+					SaveStatsLogsToFile(hConn, stats.RealTime);
+				}
+			}
+			timer.Reset();
+		}
+	}
+
+	static inline double round(float f)
+	{
+		return std::round((double)f * 100000) / 100000;
+	}
+
+	void Server::SaveStatsLogsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status)
+	{
+		int in = (int)status.m_flInBytesPerSec;
+		int out = (int)status.m_flOutBytesPerSec;
+		int ping = status.m_nPing;
+		int replicated = m_ReplicationStats.RepEntitiesCount / m_ReplicationStats.RepPacketCount;
+		m_ReplicationStats = { 0 , 0 };
+
+		if (in == 0 && out == 0)
+			return;
+
+		static Timer timer;
+
+		std::ofstream logFile("logs/" + m_StatsLogsFilename, std::ios_base::app);
+		if (!m_StatsLogsHeaderWritten)
+		{
+			// Write header to log file
+			logFile << "# scene=" << m_GameInstance->GetActiveScene()->GetFilepath() << "\r\n";
+			logFile << "# tick_rate=" << m_NetworkManager->m_ServerTickRate << "\r\n";
+			logFile << "# client_id; timepoint; in_bps; out_bps; ping; rep_count\r\n";
+			m_StatsLogsHeaderWritten = true;
+			timer.Reset();
+		}
+
+		logFile  << clientID << "; " 
+			<< round(timer.Elapsed()) << "; "
+			<< in << "; " 
+			<< out << "; " 
+			<< ping << "; "
+			<< replicated << "\r\n";
+
+		logFile.close();
+	}
+
+	void Server::GenerateStatsLogsFilename()
+	{
+		auto now = std::chrono::system_clock::now();
+		auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+		std::tm bt{};
+		localtime_s(&bt, &in_time_t);
+
+		std::ostringstream oss;
+		oss << "NetworkStats_" << std::put_time(&bt, "%Y%m%d_%H%M%S") << ".log";
+		m_StatsLogsFilename = oss.str();
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////               Network Thread and GameNetworkingSockets Interface Implementation               ////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void Server::NetworkThreadFunction()
 	{

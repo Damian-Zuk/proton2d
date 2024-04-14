@@ -5,6 +5,9 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/Server/Server.h"
 
 #include "imgui.h"
 
@@ -14,7 +17,7 @@ namespace proton {
 
 	void InfoPanel::OnImGuiRender()
 	{
-		m_FrameTime = Application::Get().m_FrameTime;
+		m_FrameTime = Application::GetLastFrameTime();
 
 		if (m_RefreshStatsTimer <= 0.0f)
 		{
@@ -46,24 +49,127 @@ namespace proton {
 
 		ImGui::Begin("Info");
 
-		ImGui::Dummy({ 0, 5 });
-		uint32_t entitiesCount = m_ActiveScene ? m_ActiveScene->GetEntitiesCount() : 0;
-		uint32_t scriptedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
-		ImGui::Text("Entities: %i (%i scripted)", entitiesCount, scriptedEntitiesCount);
-		ImGui::Text("OpenGL Draw Calls: %i", m_ActiveScene ? Renderer::GetDrawCallsCount() : 0);
+		if (ImGui::TreeNodeEx("General", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 5 });
+			uint32_t entitiesCount = m_ActiveScene ? m_ActiveScene->GetEntitiesCount() : 0;
+			uint32_t scriptedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
+			ImGui::Text("Entities: %i (%i scripted)", entitiesCount, scriptedEntitiesCount);
+			ImGui::Text("OpenGL Draw Calls: %i", m_ActiveScene ? Renderer::GetDrawCallsCount() : 0);
 
-		ImGui::Dummy({ 0, 10 });
-		ImGui::Text("Frame time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
+			ImGui::Dummy({ 0, 10 });
+			ImGui::Text("Frame time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
 
-		float max = 0.0f;
-		for (uint32_t i = 0; i < s_FrameTimePlotValuesCount; i++)
-			max = m_FrameTimeHistory[i] > max ? m_FrameTimeHistory[i] : max;
+			float max = 0.0f;
+			for (uint32_t i = 0; i < s_FrameTimePlotValuesCount; i++)
+				max = m_FrameTimeHistory[i] > max ? m_FrameTimeHistory[i] : max;
 
-		ImGui::Text("   max:\n%f\n   avg:\n%f", max, m_AvgFrameTime);
-		ImGui::SameLine();
-		ImGui::PlotLines("##Frame_Time", m_FrameTimeHistory, s_FrameTimePlotValuesCount, m_FrameTimeValuesOffset, NULL, 0.0f, glm::max(max * 1.1f, 1.0f / 60.0f), ImVec2(0, 80));
+			ImGui::Text("   max:\n%f\n   avg:\n%f", max, m_AvgFrameTime);
+			ImGui::SameLine();
+			ImGui::PlotLines("##Frame_Time", m_FrameTimeHistory, s_FrameTimePlotValuesCount, m_FrameTimeValuesOffset, NULL, 0.0f, glm::max(max * 1.1f, 1.0f / 60.0f), ImVec2(0, 80));
+			ImGui::TreePop();
+		}
+
+		ImGui::Dummy({ 0, 15 });
+		if (ImGui::TreeNodeEx("Network Statistics", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 5 });
+			DrawNetworkStats();
+			ImGui::TreePop();
+		}
+
 		ImGui::End();
 		m_FrameCount++;
+	}
+
+	void InfoPanel::DrawNetworkStats()
+	{
+		static HSteamNetConnection selectedConn = 0;
+		NetworkManager* networkManager = Application::GetGameInstance()->GetNetworkManager();
+
+		ImGui::Checkbox("Log To File", &networkManager->m_SaveNetworkStatsToLogFile);
+		if (networkManager->m_SaveNetworkStatsToLogFile)
+		{
+			ImGui::SameLine(); ImGui::Dummy({ 3, 0 }); ImGui::SameLine();
+			ImGui::Checkbox("All Clients", &networkManager->m_SaveStatsForAllClients);
+		}
+		ImGui::Dummy({ 0, 5 });
+
+		if (!networkManager->IsNetModeServer() || !networkManager->IsNetServiceRunning())
+		{
+			ImGui::Text("Stats not available: Server is not running.");
+			return;
+		}
+
+		Server* server = networkManager->GetServer();
+		const auto& statsAll = server->GetNetworkStats();
+
+		if (statsAll.empty())
+		{
+			ImGui::Text("Stats not available: No clients connected.");
+			selectedConn = 0;
+			return;
+		}
+
+		if (selectedConn == 0 || statsAll.find(selectedConn) == statsAll.end())
+			selectedConn = statsAll.begin()->first;
+
+		networkManager->m_SaveStatsForClientID = selectedConn;
+
+		ImGui::PushItemWidth(150.0f);
+		if (ImGui::BeginCombo("Client Connection", std::to_string(selectedConn).c_str()))
+		{
+			for (const auto& [hConn, stats] : statsAll)
+			{
+				if (ImGui::Selectable(std::to_string(hConn).c_str(), selectedConn == hConn))
+				{
+					selectedConn = hConn;
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+
+		auto& stats = statsAll.at(selectedConn);
+
+		if (selectedConn != 0)
+		{
+			ImGui::Dummy({ 0, 5 });
+			if (ImGui::TreeNodeEx("Summary", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Dummy({ 0, 3 });
+
+				ImGui::Columns(3);
+				ImGui::SetColumnWidth(0, 75.0f);
+				ImGui::SetColumnWidth(1, 100.0f);
+				ImGui::SetColumnWidth(2, 75.0f);
+
+				ImGui::Text("Ping"); ImGui::NextColumn();
+				ImGui::Text("%i", stats.RealTime.m_nPing); ImGui::NextColumn(); 
+				ImGui::Text("ms"); ImGui::NextColumn();
+
+				ImGui::Text("In"); ImGui::NextColumn();
+				ImGui::Text("%.1f", stats.RealTime.m_flInBytesPerSec); ImGui::NextColumn();
+				ImGui::Text("Bytes/s"); ImGui::NextColumn();
+
+				ImGui::Text("Out"); ImGui::NextColumn();
+				ImGui::Text("%.1f", stats.RealTime.m_flOutBytesPerSec); ImGui::NextColumn();
+				ImGui::Text("Bytes/s"); ImGui::NextColumn();
+				
+				ImGui::Columns(1);
+
+				ImGui::TreePop();
+			}
+
+			ImGui::Dummy({ 0, 15 });
+			if (ImGui::TreeNodeEx("Details", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Dummy({ 0, 3 });
+				ImGui::Text((char*)stats.Detailed.Data);
+				ImGui::TreePop();
+			}
+		}
+
 	}
 
 }

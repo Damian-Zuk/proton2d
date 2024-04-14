@@ -66,6 +66,11 @@ namespace proton {
 		bool m_IsNetworkServiceRunning = false;
 		uint32_t m_NetworkedSceneCount = 0;
 
+		// Network statistics: Only for server
+		bool m_SaveNetworkStatsToLogFile = false; 
+		bool m_SaveStatsForAllClients = false;
+		uint32_t m_SaveStatsForClientID = 0;
+
 		static ComponentBitset s_ComponentSupportedRepBitset;
 		static uint32_t s_NetworkServicesRunning; // across all editor's game instances (server + clients)
 		static bool s_NetworkResourcesFreed; // free resources after all network services finished running
@@ -77,6 +82,7 @@ namespace proton {
 
 		friend class SettingsPanel;
 		friend class InspectorPanel;
+		friend class InfoPanel;
 	};
 
 }

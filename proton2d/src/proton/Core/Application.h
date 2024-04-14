@@ -25,7 +25,8 @@ namespace proton {
 		void PushOverlay(AppLayer* layer);
 		void Exit();
 
-		inline float GetTimeScale() const { return m_TimeScale; };
+		float GetTimeScale() const { return m_TimeScale; };
+		static float GetLastFrameTime() { return s_Instance->m_FrameTime; }
 
 		Window& GetWindow() { return *m_Window; }
 		static Application& Get() { return *s_Instance; }

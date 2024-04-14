@@ -32,6 +32,22 @@ namespace proton {
 		Server(GameInstance* gameInstance);
 		~Server();
 
+		struct NetworkStats
+		{
+			SteamNetConnectionRealTimeStatus_t RealTime;
+			Buffer Detailed;
+		};
+
+		struct ReplicationStats
+		{
+			uint32_t RepEntitiesCount = 0;
+			uint32_t RepPacketCount = 0;
+		};
+
+		bool IsRunning() const { return m_Running; }
+		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
+		const std::map<HSteamNetConnection, NetworkStats>& GetNetworkStats() const { return m_NetworkStats; }
+
 	private:
 		void Start(int port);
 		void Stop();
@@ -52,6 +68,15 @@ namespace proton {
 		void ProcessConnectionStatusQueue();
 		void ProcessMessages();
 		void SendReplicationData();
+
+
+
+		// Network statistics
+		void InitNetworkStatsForClient(ClientID clientID);
+		void ReleaseNetworkStatsForClient(ClientID clientID);
+		void UpdateNetworkStatistics();
+		void SaveStatsLogsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status);
+		void GenerateStatsLogsFilename();
 
 		// Server lower-level functionality
 		void NetworkThreadFunction(); 
@@ -86,10 +111,6 @@ namespace proton {
 			SendBufferToAllClients(Buffer(&data, sizeof(T)), excludeClientID, reliable);
 		}
 
-		// Other
-		bool IsRunning() const { return m_Running; }
-		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
-
 	private:
 		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;
@@ -106,14 +127,21 @@ namespace proton {
 		// Buffer for writting messages using BufferStreamWriter
 		Buffer m_ScratchBuffer;
 
+		// Statistics
+		const float m_StatsUpdateInterval = 0.2f;
+		std::map<HSteamNetConnection, NetworkStats> m_NetworkStats;
+		std::string m_StatsLogsFilename;
+		bool m_StatsLogsHeaderWritten = false;
+		ReplicationStats m_ReplicationStats;
+
 		// Queues
 		struct ClientConnectionStatusChangeInfo
 		{
 			ClientInfo ClientInfo;
 			ConnectionStatus Status;
 		};
-		std::queue<ClientConnectionStatusChangeInfo> m_ClientStatusChangeQueue;
-		std::mutex m_ClientStatusQueueMutex;
+		std::queue<ClientConnectionStatusChangeInfo> m_ClientConnStatusChangeQueue;
+		std::mutex m_ClientConnStatusQueueMutex;
 
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_MessageQueueMutex;
