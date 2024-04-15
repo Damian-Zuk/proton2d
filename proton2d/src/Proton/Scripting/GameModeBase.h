@@ -35,15 +35,9 @@ namespace proton {
 
 		virtual void Client_OnConnected(uint32_t clientID) {}
 		virtual void Client_OnDisconnected() {}
-
-		void Server_OnEntityCreated(Entity entity, uint32_t specificClientID = 0);
-		void Server_OnEntityDestroyed(Entity entity, uint32_t specificClientID = 0);
-
-		void Server_OnEntityCreated(EntityScript* script, uint32_t specificClientID = 0);
-		void Server_OnEntityDestroyed(EntityScript* script, uint32_t specificClientID = 0);
 		
-		void Server_SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
-		void Client_SendPlayerAction(OnSendPlayerActionFunc function);
+		void Server_SetPlayerActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function);
+		void Client_SendPlayerAction(Client_SendPlayerActionCallback function);
 	
 		bool HasAuthority() const;
 		bool IsRunningServer() const;

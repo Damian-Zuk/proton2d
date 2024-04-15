@@ -179,8 +179,6 @@ namespace proton {
 
 		for (AppLayer* layer : m_AppLayers)
 		{
-			if (event.Handled)
-				break;
 			layer->OnEvent(event);
 		}
 	}

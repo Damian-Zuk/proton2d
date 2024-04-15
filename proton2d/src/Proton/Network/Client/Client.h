@@ -34,11 +34,12 @@ namespace proton {
 		void Shutdown();
 		
 		// Game client functionality
-		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
-		void VerifyGameState();
-		void SendPlayerAction(OnSendPlayerActionFunc sendFunction);
+		void SendVerifyGameState();
+		void SendPlayerAction(Client_SendPlayerActionCallback sendFunction);
 
 		void MainThread_ProcessMessages();
+
+		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
 		
 		// Client lower-level functionality
 		void NetworkThreadFunction();

@@ -40,6 +40,6 @@ namespace proton {
 	//
 	//};
 
-	using OnRecvPlayerActionCallback = std::function<void(BufferStreamReader& stream)>;
-	using OnSendPlayerActionFunc = std::function<void(BufferStreamWriter& stream)>;
+	using Server_OnPlayerActionCallback = std::function<void(BufferStreamReader& stream)>;
+	using Client_SendPlayerActionCallback = std::function<void(BufferStreamWriter& stream)>;
 }

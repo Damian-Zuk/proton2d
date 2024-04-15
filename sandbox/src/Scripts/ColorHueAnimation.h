@@ -14,6 +14,20 @@ public:
 		RegisterField(ScriptFieldType::Float, "HueRangeQ", &m_HueRangeQ, false);
 	}
 
+	virtual bool OnCreate() override
+	{
+		if (HasComponent<SpriteComponent>())
+			GetComponent<SpriteComponent>().Color = glm::vec4{ 1.0f };
+
+		if (HasComponent<ResizableSpriteComponent>())
+			GetComponent<ResizableSpriteComponent>().Color = glm::vec4{ 1.0f };
+
+		if (HasComponent<CircleRendererComponent>())
+			GetComponent<CircleRendererComponent>().Color = glm::vec4{ 1.0f };
+		
+		return true;
+	}
+
 	virtual void OnUpdate(float ts) override
 	{
 		if (HasComponent<SpriteComponent>())

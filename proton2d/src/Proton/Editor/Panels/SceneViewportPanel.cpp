@@ -160,12 +160,11 @@ namespace proton {
 		// Dispatch mouse events
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			if (!m_IsMainViewport || !m_IsViewportFocused || m_ActiveScene->IsSimulated())
+			if (!m_IsMainViewport)
 				return false;
 
 			SceneState state = m_ActiveScene->GetSceneState();
 			const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
-
 			// Mouse Button 1 (Right): Move editor camera
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
 				&& (state == SceneState::Stop || m_Camera->m_UseInRuntime))
@@ -173,6 +172,9 @@ namespace proton {
 				m_CameraDragOffset = cursor;
 				m_MoveEditorCamera = true;
 			}
+
+			if (m_ActiveScene->IsSimulated() || !m_IsViewportFocused)
+				return false;
 
 			// Mouse Button 0 (Left): Select Entity
 			else if (e.GetMouseButton() == Mouse::Button0)
@@ -261,75 +263,88 @@ namespace proton {
 		});
 	}
 
+	static constexpr glm::vec4 COLOR_YELLOW = { 0.8f, 0.8f, 0.2f, 1.0f };
+	static constexpr glm::vec4 COLOR_COLLIDER = { 0.9f, 0.6f, 0.3f, 0.5f };
+	static constexpr glm::vec4 COLOR_OUTLINE = { 0.95f, 0.25f, 0.18f, 0.85f };
+
 	void SceneViewportPanel::DrawCollidersAndSelectionOutline()
 	{
-		Renderer::BeginScene(m_ActiveScene->GetPrimaryCamera(), m_ActiveScene->GetPrimaryCameraPosition());
+		Camera& camera = m_ActiveScene->GetPrimaryCamera();
+		Renderer::BeginScene(camera, m_ActiveScene->GetPrimaryCameraPosition());
+		Renderer::SetLineWidth(2.0f);
 
-		// Draw box colliders
-		auto view = m_ActiveScene->m_Registry.view<TransformComponent, BoxColliderComponent>();
-		for (auto entity : view)
+		//------------------ Box Colliders ------------------
+		auto boxesView = m_ActiveScene->m_Registry.view<TransformComponent, BoxColliderComponent>();
+		for (auto entity : boxesView)
 		{
-			auto [transform, bc] = view.get<TransformComponent, BoxColliderComponent>(entity);
+			auto [transform, bc] = boxesView.get<TransformComponent, BoxColliderComponent>(entity);
 
-			// Check if current entity is selected and draw collider rect
-			bool drawSelected = m_ShowSelectionCollider && m_SelectedEntity.m_Handle == entity;
-
-			if (m_ShowAllColliders || drawSelected)
+			if (m_ShowAllColliders || (m_ShowSelectionCollider && m_SelectedEntity.m_Handle == entity))
 			{
-				float zPos = (m_ShowAllColliders && drawSelected) ? 0.205f : 0.2f;
-				glm::vec4 color = (m_ShowAllColliders && drawSelected)
-					? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
-				glm::vec3 position = { transform.WorldPosition.x + bc.Offset.x, transform.WorldPosition.y + bc.Offset.y, zPos };
+				glm::vec3 position = {
+					transform.WorldPosition.x + bc.Offset.x,
+					transform.WorldPosition.y + bc.Offset.y,
+					0.2f
+				};
 				glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
-				glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
 
-				Renderer::DrawQuad(transformMatrix, color);
+				Renderer::DrawQuad(Math::GetTransform(position, scale, transform.Rotation), COLOR_COLLIDER);
+
+				position.z += 0.001f;
+				Renderer::DrawRect(Math::GetTransform(position, scale, transform.Rotation), COLOR_OUTLINE);
 			}
 		}
-
-		// Draw circle colliders
-		auto ccView = m_ActiveScene->m_Registry.view<TransformComponent, CircleColliderComponent>();
-		for (auto entity : ccView)
+		
+		Renderer::Flush();
+		Renderer::SetLineWidth(3.0f);
+		
+		//------------------ Circle Colliders ------------------
+		auto circlesView = m_ActiveScene->m_Registry.view<TransformComponent, CircleColliderComponent>();
+		for (auto entity : circlesView)
 		{
-			auto [transform, cc] = ccView.get<TransformComponent, CircleColliderComponent>(entity);
+			auto [transform, cc] = circlesView.get<TransformComponent, CircleColliderComponent>(entity);
 
-			// Check if current entity is selected and draw collider rect
-			bool drawSelected = m_ShowSelectionCollider && m_SelectedEntity.m_Handle == entity;
-
-			if (m_ShowAllColliders || drawSelected)
+			if (m_ShowAllColliders || (m_ShowSelectionCollider && m_SelectedEntity.m_Handle == entity))
 			{
-				float zPos = (m_ShowAllColliders && drawSelected) ? 0.205f : 0.2f;
-				glm::vec4 color = (m_ShowAllColliders && drawSelected)
-					? glm::vec4{ 0.9f, 0.3f, 0.3f, 0.5f } : glm::vec4{ 0.9f, 0.6f, 0.3f, 0.5f };
-				glm::vec3 position = { transform.WorldPosition.x + cc.Offset.x, transform.WorldPosition.y + cc.Offset.y, zPos };
-				glm::vec3 scale = { cc.Radius * transform.Scale.x, cc.Radius * transform.Scale.y, 1.0f };
-				glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
+				glm::vec3 position = { 
+					transform.WorldPosition.x + cc.Offset.x,
+					transform.WorldPosition.y + cc.Offset.y,
+					0.2f
+				};
+				glm::vec3 scale = { cc.Radius * transform.Scale.x, cc.Radius * transform.Scale.x, 1.0f };
 
-				Renderer::DrawCircle(transformMatrix, color);
+				Renderer::DrawCircle(Math::GetTransform(position, scale, transform.Rotation), COLOR_COLLIDER);
+				
+				position.z += 0.001f;
+				Renderer::DrawCircle(Math::GetTransform(position, scale, transform.Rotation), COLOR_OUTLINE, 0.1f);
+
+				position.z += 0.001f;
+				glm::vec3 p1 = position;
+				p1.x += cc.Radius * transform.Scale.x / 2.0f * std::cos(glm::radians(transform.Rotation));
+				p1.y += cc.Radius * transform.Scale.x / 2.0f * std::sin(glm::radians(transform.Rotation));
+				Renderer::DrawLine(position, p1, COLOR_OUTLINE);
 			}
 		}
-
-		// Draw selected entity outline
+		
+		Renderer::Flush();
+		Renderer::SetLineWidth(2.0f);
+		
+		//------------------ Selection Outline ------------------
 		if (m_SelectedEntity.IsValid() && m_ShowSelectionOutline)
 		{
 			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-			float padding = glm::sqrt(m_ActiveScene->GetPrimaryCamera().GetZoomLevel()) * 0.05f;
 			glm::vec3 position = { transform.WorldPosition.x, transform.WorldPosition.y, 0.21f };
-			glm::vec3 scale = { transform.Scale.x + padding, transform.Scale.y + padding, 1.0f };
+			glm::vec3 scale = { transform.Scale.x + 0.05f, transform.Scale.y + 0.05f, 1.0f };
 			glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
 
-			glm::vec4 color = m_ShowSelectionOutline && m_MoveSelectedEntity
-				? glm::vec4{ 0.8f, 0.8f, 0.2f, 1.0f } : glm::vec4{ 1.0f };
+			glm::vec4 color = m_ShowSelectionOutline && m_MoveSelectedEntity ? COLOR_YELLOW : glm::vec4{ 1.0f };
 
 			if (m_SelectedEntity.HasComponent<SpriteComponent>())
 			{
 				auto& sprite = m_SelectedEntity.GetComponent<SpriteComponent>();
-				const glm::uvec2& pixelSize = sprite.Sprite.GetPixelSize();
-				if (sprite.Sprite)
-					scale.x *= (float)pixelSize.x / (float)pixelSize.y;
+				scale.x *= sprite.Sprite.GetAspectRatio();
 			}
-			Renderer::SetLineWidth(glm::min(50.0f * padding, 1.0f));
-			Renderer::DrawDashedRect(transformMatrix, color, m_Camera->m_Camera.GetZoomLevel());
+			Renderer::DrawDashedRect(transformMatrix, color, 2.0f);
 		}
 
 		Renderer::EndScene();

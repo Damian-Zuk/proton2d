@@ -86,62 +86,6 @@ namespace proton {
 			UpdateNetworkStatistics();
 	}
 
-	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
-	{
-		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
-		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connected });
-	}
-
-	void Server::OnClientDisconnected(const ClientInfo& clientInfo) // Called from Network Thread
-	{
-		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
-		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Disconnected });
-	}
-
-	void Server::OnDataReceived(ISteamNetworkingMessage* incomingMessage) // Called from Network Thread
-	{
-		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
-		m_MessageQueue.push(incomingMessage);
-	}
-
-	void Server::SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function)
-	{
-		m_PlayerActionCallbacks[clientID] = function;
-	}
-
-	void Server::QueueAddCreatedEntity(Entity entity, ClientID specificClient)
-	{
-		m_OnCreatedEntityQueue.push({ entity, specificClient });
-	}
-
-	void Server::OnEntityCreated(Entity entity, ClientID specificClient)
-	{
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::EntitySpawn);
-		SceneSerializer serializer(entity.GetScene());
-		std::string jsonData = serializer.SerializeEntityToString(entity);
-		stream.WriteString(jsonData);
-
-		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
-		if (specificClient)
-			SendBufferToClient(specificClient, buffer);
-		else
-			SendBufferToAllClients(buffer);
-	}
-
-	void Server::OnEntityDestroyed(Entity entity, ClientID specificClient)
-	{
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::EntityDestroy);
-		stream.WriteRaw(entity.GetUUID());
-
-		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
-		if (specificClient)
-			SendBufferToClient(specificClient, buffer);
-		else
-			SendBufferToAllClients(buffer);
-	}
-
 	void Server::ProcessConnectionStatusQueue()
 	{
 		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
@@ -170,7 +114,6 @@ namespace proton {
 				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
 				gameMode->Server_OnClientDisconnected(info.ClientInfo.ID);
 
-				// Client network statistics
 				if constexpr (s_EnableNetworkStatistics)
 					ReleaseNetworkStatsForClient(info.ClientInfo.ID);
 			}
@@ -195,6 +138,7 @@ namespace proton {
 
 			switch (packetType)
 			{
+			////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			case PacketType::VerifyGameState:
 			{
@@ -252,11 +196,13 @@ namespace proton {
 				break;
 			}
 
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+
 			case PacketType::PlayerAction:
 			{
 				if (m_PlayerActionCallbacks.find(message->m_conn) != m_PlayerActionCallbacks.end())
 				{
-					OnRecvPlayerActionCallback& callback = m_PlayerActionCallbacks.at(message->m_conn);
+					Server_OnPlayerActionCallback& callback = m_PlayerActionCallbacks.at(message->m_conn);
 					callback(stream);
 				}
 				else
@@ -265,6 +211,7 @@ namespace proton {
 				break;
 			}
 
+			////////////////////////////////////////////////////////////////////////////////////////////////////
 			default:
 				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
 				// TODO: Kick client
@@ -274,6 +221,35 @@ namespace proton {
 			message->Release();
 			m_MessageQueue.pop();
 		}
+	}
+
+	// TODO: Optimize: send array
+	void Server::SendOnEntityCreated(Entity entity, ClientID specificClient)
+	{
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::EntitySpawn);
+		SceneSerializer serializer(entity.GetScene());
+		std::string jsonData = serializer.SerializeEntityToString(entity);
+		stream.WriteString(jsonData);
+
+		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
+		if (specificClient)
+			SendBufferToClient(specificClient, buffer);
+		else
+			SendBufferToAllClients(buffer);
+	}
+
+	void Server::SendOnEntityDestroyed(Entity entity, ClientID specificClient)
+	{
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::EntityDestroy);
+		stream.WriteRaw(entity.GetUUID());
+
+		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
+		if (specificClient)
+			SendBufferToClient(specificClient, buffer);
+		else
+			SendBufferToAllClients(buffer);
 	}
 
 	void Server::SendReplicationData()
@@ -286,7 +262,7 @@ namespace proton {
 			EntityQueueEntry& entry = m_OnCreatedEntityQueue.front();
 			
 			if (entry.entity.HasComponent<NetworkComponent>())
-				OnEntityCreated(entry.entity, entry.client);
+				SendOnEntityCreated(entry.entity, entry.client);
 			
 			m_OnCreatedEntityQueue.pop();
 		}
@@ -339,6 +315,45 @@ namespace proton {
 			m_ReplicationStats.RepPacketCount++;
 
 		SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+	}
+
+	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
+	{
+		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
+		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connected });
+	}
+
+	void Server::OnClientDisconnected(const ClientInfo& clientInfo) // Called from Network Thread
+	{
+		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
+		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Disconnected });
+	}
+
+	void Server::OnDataReceived(ISteamNetworkingMessage* incomingMessage) // Called from Network Thread
+	{
+		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
+		m_MessageQueue.push(incomingMessage);
+	}
+
+	void Server::PushCreatedEntity(Entity entity, ClientID specificClient)
+	{
+		m_OnCreatedEntityQueue.push({ entity, specificClient });
+	}
+
+	void Server::SetClientActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function)
+	{
+		m_PlayerActionCallbacks[clientID] = function;
+	}
+
+	void Server::SetClientNick(HSteamNetConnection hConn, const char* nick)
+	{
+		// Set the connection name, too, which is useful for debugging
+		m_Interface->SetConnectionName(hConn, nick);
+	}
+
+	void Server::KickClient(ClientID clientID)
+	{
+		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -413,7 +428,7 @@ namespace proton {
 			// Write header to log file
 			logFile << "# scene=" << m_GameInstance->GetActiveScene()->GetFilepath() << "\r\n";
 			logFile << "# tick_rate=" << m_NetworkManager->m_ServerTickRate << "\r\n";
-			logFile << "# client_id; timepoint; in_bps; out_bps; ping; rep_count\r\n";
+			logFile << "# client_id; time_point; in_bps; out_bps; ping_ms; rep_count\r\n";
 			m_StatsLogsHeaderWritten = true;
 			timer.Reset();
 		}
@@ -648,17 +663,6 @@ namespace proton {
 	{
 		PT_CORE_CRITICAL(message);
 		m_Running = false;
-	}
-
-	void Server::SetClientNick(HSteamNetConnection hConn, const char* nick)
-	{
-		// Set the connection name, too, which is useful for debugging
-		m_Interface->SetConnectionName(hConn, nick);
-	}
-
-	void Server::KickClient(ClientID clientID)
-	{
-		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
 	}
 
 	void Server::SendBufferToClient(ClientID clientID, Buffer buffer, bool reliable)

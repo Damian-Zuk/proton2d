@@ -55,21 +55,19 @@ namespace proton {
 		// Game server functionality
 		void MainThread_OnTick();
 
-		void SetPlayerActionCallback(uint32_t clientID, OnRecvPlayerActionCallback function);
-		void QueueAddCreatedEntity(Entity entity, ClientID specificClient = 0);
+		void SetClientActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function);
+		void PushCreatedEntity(Entity entity, ClientID specificClient = 0);
 
 		void OnClientConnected(const ClientInfo& clientInfo);
 		void OnClientDisconnected(const ClientInfo& clientInfo);
 		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
 
-		void OnEntityCreated(Entity entity, ClientID specificClient = 0);
-		void OnEntityDestroyed(Entity entity, ClientID specificClient = 0);
+		void SendOnEntityCreated(Entity entity, ClientID specificClient = 0);
+		void SendOnEntityDestroyed(Entity entity, ClientID specificClient = 0);
 
 		void ProcessConnectionStatusQueue();
 		void ProcessMessages();
 		void SendReplicationData();
-
-
 
 		// Network statistics
 		void InitNetworkStatsForClient(ClientID clientID);
@@ -77,6 +75,9 @@ namespace proton {
 		void UpdateNetworkStatistics();
 		void SaveStatsLogsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status);
 		void GenerateStatsLogsFilename();
+
+		void SetClientNick(HSteamNetConnection hConn, const char* nick);
+		void KickClient(ClientID clientID);
 
 		// Server lower-level functionality
 		void NetworkThreadFunction(); 
@@ -87,10 +88,6 @@ namespace proton {
 		void PollIncomingMessages();
 		void PollConnectionStateChanges();
 		void OnFatalError(const std::string& message);
-
-		// Client functionality
-		void SetClientNick(HSteamNetConnection hConn, const char* nick);
-		void KickClient(ClientID clientID);
 
 		// Sending buffer to clients
 		void SendBufferToClient(ClientID clientID, Buffer buffer, bool reliable = true);
@@ -130,9 +127,9 @@ namespace proton {
 		// Statistics
 		const float m_StatsUpdateInterval = 0.2f;
 		std::map<HSteamNetConnection, NetworkStats> m_NetworkStats;
+		ReplicationStats m_ReplicationStats;
 		std::string m_StatsLogsFilename;
 		bool m_StatsLogsHeaderWritten = false;
-		ReplicationStats m_ReplicationStats;
 
 		// Queues
 		struct ClientConnectionStatusChangeInfo
@@ -154,7 +151,7 @@ namespace proton {
 		std::queue<EntityQueueEntry> m_OnCreatedEntityQueue;
 
 		// Player action callbacks
-		std::unordered_map<uint32_t, OnRecvPlayerActionCallback> m_PlayerActionCallbacks;
+		std::unordered_map<uint32_t, Server_OnPlayerActionCallback> m_PlayerActionCallbacks;
 
 		// Other
 		GameInstance* m_GameInstance;

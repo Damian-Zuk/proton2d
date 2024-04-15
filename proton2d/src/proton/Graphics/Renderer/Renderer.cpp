@@ -359,10 +359,10 @@ namespace proton {
 		data.LineVertexCount += 2;
 	}
 
-	void Renderer::DrawDashedLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, float lineScale)
+	void Renderer::DrawDashedLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, float lineScale, float spaceScale)
 	{
 		float dashLength = 0.06f * lineScale;
-		float spaceLength = 0.04f * lineScale;
+		float spaceLength = 0.04f * lineScale * spaceScale;
 		glm::vec3 direction = glm::normalize(p1 - p0);
 		float totalLength = glm::distance(p0, p1);
 		float currentLength = 0.0f;
@@ -405,16 +405,16 @@ namespace proton {
 		DrawLine(lineVertices[3], lineVertices[0], color);
 	}
 
-	void Renderer::DrawDashedRect(const glm::mat4& transform, const glm::vec4& color, float lineScale)
+	void Renderer::DrawDashedRect(const glm::mat4& transform, const glm::vec4& color, float lineScale, float spaceScale)
 	{
 		glm::vec3 lineVertices[4];
 		for (size_t i = 0; i < 4; i++)
 			lineVertices[i] = transform * QuadVertexPositions[i];
 
-		DrawDashedLine(lineVertices[0], lineVertices[1], color, lineScale);
-		DrawDashedLine(lineVertices[1], lineVertices[2], color, lineScale);
-		DrawDashedLine(lineVertices[2], lineVertices[3], color, lineScale);
-		DrawDashedLine(lineVertices[3], lineVertices[0], color, lineScale);
+		DrawDashedLine(lineVertices[0], lineVertices[1], color, lineScale, spaceScale);
+		DrawDashedLine(lineVertices[1], lineVertices[2], color, lineScale, spaceScale);
+		DrawDashedLine(lineVertices[2], lineVertices[3], color, lineScale, spaceScale);
+		DrawDashedLine(lineVertices[3], lineVertices[0], color, lineScale, spaceScale);
 	}
 
 	void Renderer::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade)

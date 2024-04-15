@@ -16,9 +16,11 @@ namespace proton {
 		virtual ~Camera() = default;
 
 		void SetZoomLevel(float zoomLevel);
+		float GetZoomLevel() const { return m_ZoomLevel; }
+
 		void SetAspectRatio(float aspectRatio);
 		float GetAspectRatio() const { return m_AspectRatio; }
-		float GetZoomLevel() const { return m_ZoomLevel; }
+		
 		float GetOrthographicSize() const { return m_OrthographicSize; }
 
 		const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
@@ -37,6 +39,8 @@ namespace proton {
 		float m_OrthographicSize = 10.0f;
 		float m_OrthographicNear = -1.0f;
 		float m_OrthographicFar = 1.0f;
+
+		friend class InfoPanel;
 	};
 
 }

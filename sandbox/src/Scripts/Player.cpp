@@ -19,6 +19,11 @@ void Player::OnRegisterFields()
 	RegisterField(ScriptFieldType::Int, "ClientID", &m_ClientID, false);
 }
 
+bool Player::IsTouchingGround() const
+{
+	return *m_GroundSensorContactCount > 0;
+}
+
 bool Player::OnCreate()
 {
 	m_IsLocalPlayer = m_ClientID == GameModeCastTo<MyGameMode>()->GetLocalPlayerID();
@@ -67,12 +72,12 @@ void Player::OnUpdate(float ts)
 {
 	if (m_IsLocalPlayer)
 	{
-		PlayerActionState prevState = m_ActionState;
+		PlayerActionState previous = m_ActionState;
 		m_ActionState.MoveRight = Input::IsKeyPressed(Key::D, this);
-		m_ActionState.MoveLeft = Input::IsKeyPressed(Key::A, this);
-		m_ActionState.Jump = Input::IsKeyPressed(Key::W, this);
+		m_ActionState.MoveLeft =  Input::IsKeyPressed(Key::A, this);
+		m_ActionState.Jump =      Input::IsKeyPressed(Key::W, this);
 
-		if (IsRunningClient() && m_ActionState != prevState)
+		if (IsRunningClient() && m_ActionState != previous)
 		{
 			GetGameMode()->Client_SendPlayerAction([&](BufferStreamWriter& stream) {
 				stream.WriteRaw(m_ActionState);

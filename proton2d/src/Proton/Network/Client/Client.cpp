@@ -60,11 +60,11 @@ namespace proton {
 		m_MessageQueue.push(incomingMessage);
 	}
 
-	void Client::VerifyGameState()
+	void Client::SendVerifyGameState()
 	{
 		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
-		Scene* scene = sceneManager->GetActiveScene()
-			;
+		Scene* scene = sceneManager->GetActiveScene();
+
 		BufferStreamWriter writer(m_ScratchBuffer);
 		writer.WriteRaw(PacketType::VerifyGameState);
 
@@ -78,7 +78,7 @@ namespace proton {
 		SendBuffer(Buffer(m_ScratchBuffer, writer.GetStreamPosition()));
 	}
 
-	void Client::SendPlayerAction(OnSendPlayerActionFunc sendFunction)
+	void Client::SendPlayerAction(Client_SendPlayerActionCallback sendFunction)
 	{
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::PlayerAction);
@@ -103,16 +103,19 @@ namespace proton {
 
 			switch (packetType)
 			{
-
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			case PacketType::ConnectionAccepted:
 			{
 				stream.ReadRaw(m_ServerClientID);
 				m_JustConnected = true;
-				VerifyGameState();
+				SendVerifyGameState();
 				PT_CORE_TRACE("ConnectionAccepted: client_id={}", m_ServerClientID);
 				break;
 			}
-
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			case PacketType::GameStateUpdate:
 			{
 				uint32_t created, destroyed;
@@ -126,7 +129,7 @@ namespace proton {
 					json jsonParsed = json::parse(jsonData);
 
 					if (scene->FindByID((UUID)jsonParsed.at("UUID")))
-						continue; // Entity already exists
+						continue;
 
 					SceneSerializer serializer(scene);
 					Entity entity = serializer.DeserializeEntity(jsonParsed);
@@ -139,7 +142,7 @@ namespace proton {
 					Entity entity = scene->FindByID(uuid);
 
 					if (!entity)
-						continue; // Entity does not exists
+						continue;
 					
 					entity.Destroy();
 				}
@@ -152,7 +155,9 @@ namespace proton {
 				}
 				break;
 			}
-
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			case PacketType::EntitySpawn:
 			{
 				std::string jsonData;
@@ -160,13 +165,15 @@ namespace proton {
 				json jsonParsed = json::parse(jsonData);
 
 				if (scene->FindByID((UUID)jsonParsed.at("UUID")))
-					break; // Entity already exists
+					break;
 				
 				SceneSerializer serializer(scene);
 				Entity entity = serializer.DeserializeEntity(jsonParsed);
 				break;
+			
 			}
-
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			case PacketType::EntityDestroy:
 			{
 				UUID uuid;
@@ -174,12 +181,14 @@ namespace proton {
 				Entity entity = scene->FindByID(uuid);
 
 				if (!entity)
-					break; // Entity does not exists
+					break;
 				
 				entity.Destroy();
 				break;
 			}
 
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			
 			case PacketType::UpdateReplicated:
 			{
 				while (stream.GetStreamPosition() < buffer.Size - sizeof(uint64) * 2)
@@ -206,7 +215,7 @@ namespace proton {
 						continue;
 					}
 
-					// Entity is valid, read replicated data
+					// Read replicated data
 					auto& net = entity.GetComponent<NetworkComponent>();
 
 					if (net.IsReplicated(ComponentTypeID::Transform))
@@ -226,15 +235,21 @@ namespace proton {
 				break;
 			}
 
+			////////////////////////////////////////////////////////////////////////////////////////////////////
 			default:
 				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
 				break;
 			}
 
+			// Free message buffer
 			message->Release();
 			m_MessageQueue.pop();
 		}
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////               Network Thread and GameNetworkingSockets Interface Implementation               ////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void Client::NetworkThreadFunction()
 	{
@@ -244,7 +259,7 @@ namespace proton {
 		SteamDatagramErrMsg errMsg;
 		if (!GameNetworkingSockets_Init(nullptr, errMsg))
 		{
-			m_ConnectionDebugMessage = "Could not initialize GameNetworkingSockets";
+			m_ConnectionDebugMessage = "Could not initialize GameNetworkingSockets: {}";
 			m_ConnectionStatus = ConnectionStatus::FailedToConnect;
 			return;
 		}
@@ -264,6 +279,7 @@ namespace proton {
 
 		SteamNetworkingConfigValue_t options;
 		options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)ConnectionStatusChangedCallback);
+		
 		m_Connection = m_Interface->ConnectByIPAddress(address, 1, &options);
 		if (m_Connection == k_HSteamNetConnection_Invalid)
 		{
@@ -387,7 +403,6 @@ namespace proton {
 
 		case k_ESteamNetworkingConnectionState_Connected:
 			m_ConnectionStatus = ConnectionStatus::Connected;
-			//m_ServerConnectedCallback();
 			break;
 
 		default:

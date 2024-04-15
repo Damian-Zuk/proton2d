@@ -31,7 +31,7 @@ public:
 	virtual void OnUpdate(float ts) override;
 
 private:
-	bool IsTouchingGround() const { return *m_GroundSensorContactCount > 0; }
+	bool IsTouchingGround() const;
 
 private:
 	bool m_IsLocalPlayer = true;

@@ -46,7 +46,7 @@ namespace proton {
 		static const ComponentBitset& GetSupportedComponentRepBitset() { return s_ComponentSupportedRepBitset; }
 		
 	private:
-		NetMode m_NetMode = NetMode::ListenServer;
+		NetMode m_NetMode = NetMode::Standalone;
 
 		std::string m_IpAddress = "127.0.0.1";
 		int m_Port = 8192;
