@@ -15,8 +15,8 @@ public:
 		AddComponent<SpriteAnimationComponent>();
 		SpriteAnimation& animation = GetSpriteAnimation();
 
-		animation.AddAnimation(0, 8);
-		animation.PlayAnimation(0);
+		animation.Add(0, 8);
+		animation.Play(0);
 		animation.SetFPS(10);
 
 		auto& bc = GetComponent<BoxColliderComponent>();

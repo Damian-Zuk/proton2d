@@ -11,26 +11,43 @@ namespace proton {
 		m_ScriptFields[name] = { type, field, showInEditor };
 	}
 
-	SceneManager* EntityScript::GetSceneManager()
+	void EntityScript::SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName)
 	{
-		return GetScene()->GetOwningGameInstance()->GetSceneManager();
+		Entity child = FindChildByTag(childEntityTagName);
+
+		if (!child)
+		{
+			PT_CORE_ASSERT(child, "Child entity '{}' not found.", childTagName);
+			return;
+		}
+
+		if (child.HasComponent<BoxColliderComponent>())
+		{
+			auto& component = child.GetComponent<BoxColliderComponent>();
+			m_PhysicsSensorMap[sensorType] = &component.ContactCallback.ContactCount;
+		}
+
+		if (child.HasComponent<CircleColliderComponent>())
+		{
+			auto& component = child.GetComponent<CircleColliderComponent>();
+			m_PhysicsSensorMap[sensorType] = &component.ContactCallback.ContactCount;
+		}
+
+		PT_CORE_ASSERT(false, "Sensor has no collider component! sensor_type={}, entity={}", sensorType, childEntityTagName);
 	}
 
-	bool EntityScript::HasAuthority() const
+	uint32_t EntityScript::GetSensorContactCount(uint32_t sensorType) const
 	{
-		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
-		return netMode != NetMode::Client;
+		bool valid = m_PhysicsSensorMap.find(sensorType) != m_PhysicsSensorMap.end();
+		PT_CORE_ASSERT(valid, "Sensor type {} not set!", sensorType);
+		return *m_PhysicsSensorMap.at(sensorType);
 	}
 
-	bool EntityScript::IsRunningServer() const
+	bool EntityScript::CheckSensor(uint32_t sensorType) const
 	{
-		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
-		return netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer;
-	}
-
-	bool EntityScript::IsRunningClient() const
-	{
-		return !HasAuthority();
+		bool valid = m_PhysicsSensorMap.find(sensorType) != m_PhysicsSensorMap.end();
+		PT_CORE_ASSERT(valid, "Sensor type {} not set!", sensorType);
+		return *m_PhysicsSensorMap.at(sensorType) > 0;
 	}
 
 	void EntityScript::SetFieldValueData(const std::string& fieldName, void* valuePtr)
@@ -70,6 +87,28 @@ namespace proton {
 			PT_ASSERT("Unexpected value type!");
 			break;
 		}
+	}
+
+	SceneManager* EntityScript::GetSceneManager() const
+	{
+		return GetScene()->GetOwningGameInstance()->GetSceneManager();
+	}
+
+	bool EntityScript::IsRunningServer() const
+	{
+		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
+		return netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer;
+	}
+
+	bool EntityScript::IsRunningClient() const
+	{
+		return !HasAuthority();
+	}
+
+	bool EntityScript::HasAuthority() const
+	{
+		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
+		return netMode != NetMode::Client;
 	}
 
 }

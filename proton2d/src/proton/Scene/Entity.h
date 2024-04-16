@@ -112,7 +112,7 @@ namespace proton {
 		}
 
 		template<typename TGameMode>
-		TGameMode* GameModeCastTo()
+		TGameMode* GetGameMode()
 		{
 			return m_Scene->GameModeCastTo<TGameMode>();
 		}
@@ -131,7 +131,7 @@ namespace proton {
 
 		// Component getters
 		Scene* GetScene() const;
-		GameModeBase* GetGameMode() const;
+		GameModeBase* GetGameModeBase() const;
 		UUID GetUUID() const;
 		const std::string& GetTag() const;
 		TransformComponent& GetTransform() const;
@@ -151,8 +151,6 @@ namespace proton {
 		void SetLinearVelocityX(float mps) const;
 		void SetLinearVelocityY(float mps) const;
 		void ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point = {0.0f, 0.0f}) const;
-
-		uint32_t* GetSensorContactCountPtr(const std::string& childTagName);
 
 		// Operator overloads
 		operator uint32_t() const { return (uint32_t)m_Handle; }

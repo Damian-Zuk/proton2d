@@ -4,14 +4,14 @@
 
 namespace proton {
 
-    void SpriteAnimation::AddAnimation(uint16_t index, uint16_t frameCount, AnimationPlayMode playmode)
+    void SpriteAnimation::Add(uint16_t index, uint16_t frameCount, AnimationPlayMode playmode)
     {
         m_Animations[index] = Animation{ frameCount, playmode };
         if (m_CurrentAnimationIndex == -1)
-            PlayAnimation(index);
+            Play(index);
     }
 
-    void SpriteAnimation::PlayAnimation(uint16_t index, uint16_t startFrame)
+    void SpriteAnimation::Play(uint16_t index, uint16_t startFrame)
     {
         PT_CORE_ASSERT(m_Animations.find(index) != m_Animations.end(), "Animation not found");
         if (index != m_CurrentAnimationIndex)

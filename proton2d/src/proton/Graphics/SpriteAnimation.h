@@ -17,9 +17,9 @@ namespace proton {
 		SpriteAnimation() = default;
 
 		// index - spritesheet Y tile pos (from image bottom)
-		void AddAnimation(uint16_t index, uint16_t frameCount, AnimationPlayMode playmode = AnimationPlayMode::REPEAT);
+		void Add(uint16_t index, uint16_t frameCount, AnimationPlayMode playmode = AnimationPlayMode::REPEAT);
 		// index - spritesheet Y tile pos (from image bottom)
-		void PlayAnimation(uint16_t index, uint16_t startFrame = 0);
+		void Play(uint16_t index, uint16_t startFrame = 0);
 		
 		void SetAnimationFrame(uint16_t frame);
 		void SetMirrorFlip(bool mirror_x = false, bool mirror_y = false);

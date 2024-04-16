@@ -32,7 +32,7 @@ public:
 	virtual void OnImGuiRender();
 
 private:
-	bool IsTouchingGround() const;
+	bool IsGrounded() const;
 
 private:
 	bool m_IsLocalPlayer = true;
@@ -48,12 +48,6 @@ private:
 	PlayerState m_State = Idle;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
-
-	uint32_t* m_LeftContactCount;
-	uint32_t* m_RightContactCount;
-	uint32_t* m_GroundLeftContactCount;
-	uint32_t* m_GroundRightContactCount;
-	uint32_t* m_GroundContactCount;
 
 	friend class MyGameMode;
 };

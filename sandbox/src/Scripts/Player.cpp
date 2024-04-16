@@ -10,60 +10,62 @@ static constexpr float s_JumpFrameSwitchTime = 0.3f;
 static constexpr float s_LandAnimationDelay = 0.5f;
 static constexpr float s_LandAnimationCancelTime = 0.2f;
 
-void Player::OnRegisterFields()
+enum SensorType : uint32_t
 {
-	RegisterField(ScriptFieldType::Float, "PlayerMaxSpeed", &m_PlayerMaxSpeed);
-	RegisterField(ScriptFieldType::Float, "PlayerAcceleration", &m_PlayerAcceleration);
-	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
-	RegisterField(ScriptFieldType::Float, "GravityModifier", &m_GravityModifier);
-	RegisterField(ScriptFieldType::Int, "ClientID", &m_ClientID, false);
-}
+	Sensor_Left = 0,
+	Sensor_Right,
+	Sensor_BottomLeft,
+	Sensor_BottomRight,
+	Sensor_Bottom
+};
 
-bool Player::IsTouchingGround() const
+bool Player::IsGrounded() const
 {
-	return *m_GroundContactCount > 0;
+	return CheckSensor(Sensor_Bottom);
 }
 
 bool Player::OnCreate()
 {
-	m_IsLocalPlayer = m_ClientID == GameModeCastTo<MyGameMode>()->GetLocalPlayerID();
+	uint32_t localPlayerID = GetGameMode<MyGameMode>()->GetLocalPlayerID();
+	m_IsLocalPlayer = m_ClientID == localPlayerID;
 
 	GetTransform().WorldPosition.z = 0.1f;
 	GetTransform().LocalPosition.z = 0.1f;
 
 	if (m_IsLocalPlayer)
+	{
 		GetScene()->SetPrimaryCameraEntity(*this);
-
-	if (IsRunningClient())
-	{
-		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
-		return true;
 	}
-
-	if (IsRunningServer() && !m_IsLocalPlayer)
+	else if (IsRunningServer())
 	{
-		GetGameMode()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
+		GetGameModeBase()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
 			stream.ReadRaw(m_ActionState);
 		});
 	}
 
-	// Set up animations
+	if (IsRunningClient())
+	{
+		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
+		// Player script is not simulated on client, we can return here
+		return true;
+	}
+
+	// Set up sprite animations
 	AddComponent<SpriteAnimationComponent>();
 	SpriteAnimation& animation = GetSpriteAnimation();
-
-	animation.AddAnimation(Idle, 10, AnimationPlayMode::REPEAT);
-	animation.AddAnimation(Run,   8, AnimationPlayMode::REPEAT);
-	animation.AddAnimation(Jump,  3, AnimationPlayMode::PAUSED);
-	animation.AddAnimation(Land,  9, AnimationPlayMode::PLAY_ONCE);
 	animation.SetFPS(8);
+	animation.Add(Idle, 10, AnimationPlayMode::REPEAT);
+	animation.Add(Run, 8, AnimationPlayMode::REPEAT);
+	animation.Add(Jump, 3, AnimationPlayMode::PAUSED);
+	animation.Add(Land, 9, AnimationPlayMode::PLAY_ONCE);
 
-	// Ground sensor is used to detect if player is touching the ground
-	m_LeftContactCount = GetSensorContactCountPtr("LeftDetector");
-	m_RightContactCount = GetSensorContactCountPtr("RightDetector");
-	m_GroundLeftContactCount = GetSensorContactCountPtr("GroundLeftDetector");
-	m_GroundRightContactCount = GetSensorContactCountPtr("GroundRightDetector");
-	m_GroundContactCount = GetSensorContactCountPtr("GroundDetector");
-	
+	// Set physics sensors to following child entities
+	SetPhysicsSensor(Sensor_Left, "Sensor_Left");
+	SetPhysicsSensor(Sensor_Right, "Sensor_Right");
+	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
+	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
+	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
+
 	return true;
 }
 
@@ -73,12 +75,13 @@ void Player::OnUpdate(float ts)
 	{
 		PlayerActionState previous = m_ActionState;
 		m_ActionState.MoveRight = Input::IsKeyPressed(Key::D, this);
-		m_ActionState.MoveLeft =  Input::IsKeyPressed(Key::A, this);
-		m_ActionState.Jump =      Input::IsKeyPressed(Key::W, this);
+		m_ActionState.MoveLeft = Input::IsKeyPressed(Key::A, this);
+		m_ActionState.Jump = Input::IsKeyPressed(Key::W, this);
 
 		if (IsRunningClient() && m_ActionState != previous)
 		{
-			GetGameMode()->Client_SendPlayerAction([&](BufferStreamWriter& stream) {
+			// Send requested action to server
+			GetGameModeBase()->Client_SendPlayerAction( [&](BufferStreamWriter& stream) {
 				stream.WriteRaw(m_ActionState);
 			});
 		}
@@ -108,15 +111,16 @@ void Player::OnUpdate(float ts)
 		m_State = Idle;
 
 	// Start landing animation
-	if (m_State == Jump && IsTouchingGround())
+	if (m_State == Jump && IsGrounded())
 	{
 		m_State = m_JumpTimer >= s_LandAnimationDelay ? Land : Idle;
 		m_JumpTimer = 0.0f;
 	}
 
-	// Player pressed a jump key
 	static Timer impulseTimer;
-	if (m_ActionState.Jump && IsTouchingGround() && m_JumpTimer >= s_JumpDelay)
+
+	// Player pressed a jump key
+	if (m_ActionState.Jump && IsGrounded() && m_JumpTimer >= s_JumpDelay)
 	{
 		ApplyLinearImpulse({ 0.0f,  m_JumpForce });
 		m_JumpTimer = 0.0f;
@@ -126,14 +130,14 @@ void Player::OnUpdate(float ts)
 
 	// Player is in the air: Set jump or fall animation frame 
 	float velocity = GetLinearVelocity().y;
-	if (!IsTouchingGround())
+	if (!IsGrounded())
 	{
 		if (velocity >= -1.0f && impulseTimer.Elapsed() > 0.3f)
 		{
-			if (*m_LeftContactCount == 0 && *m_GroundLeftContactCount > 0)
+			if (!CheckSensor(Sensor_Left) && CheckSensor(Sensor_BottomLeft))
 				ApplyLinearImpulse({ 25.0f, -10.0f });
 
-			if (*m_RightContactCount == 0 && *m_GroundRightContactCount > 0)
+			if (!CheckSensor(Sensor_Right) && CheckSensor(Sensor_BottomRight))
 				ApplyLinearImpulse({ -25.0f, -10.0f });
 		}
 
@@ -148,9 +152,18 @@ void Player::OnUpdate(float ts)
 	}
 
 	// Update animation and timer
-	animation.PlayAnimation(m_State);
+	animation.Play(m_State);
 	animation.SetMirrorFlip(m_Direction < 0.0f);
 	m_JumpTimer += ts;
+}
+
+void Player::OnRegisterFields()
+{
+	RegisterField(ScriptFieldType::Float, "PlayerMaxSpeed", &m_PlayerMaxSpeed);
+	RegisterField(ScriptFieldType::Float, "PlayerAcceleration", &m_PlayerAcceleration);
+	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
+	RegisterField(ScriptFieldType::Float, "GravityModifier", &m_GravityModifier);
+	RegisterField(ScriptFieldType::Int, "ClientID", &m_ClientID, false);
 }
 
 void Player::OnImGuiRender()

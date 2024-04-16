@@ -55,11 +55,15 @@ namespace proton {
 		// Supported variable types are listed inside ScriptFieldType enum.
 		void RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor = true);
 
+		void SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName);
+		bool CheckSensor(uint32_t sensorType) const;
+		uint32_t GetSensorContactCount(uint32_t sensorType) const;
+
 		bool HasAuthority() const;
 		bool IsRunningServer() const;
 		bool IsRunningClient() const;
 
-		SceneManager* GetSceneManager();
+		SceneManager* GetSceneManager() const;
 
 	private:
 		void SetFieldValueData(const std::string& fieldName, void* value);
@@ -69,6 +73,7 @@ namespace proton {
 		bool m_Initialized = false;
 
 		std::map<std::string, ScriptField> m_ScriptFields;
+		std::map<uint32_t, uint32_t*> m_PhysicsSensorMap;
 
 		friend class Entity;
 		friend class Scene;

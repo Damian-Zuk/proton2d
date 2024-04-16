@@ -3,8 +3,8 @@
     "Tag": "NewPlayer",
     "Transform": {
         "Position": [
-            -11.59718,
-            -0.69452,
+            20.11331,
+            -0.55054,
             0.1
         ],
         "Rotation": 0.0,
@@ -42,21 +42,6 @@
         "Type": 2,
         "FixedRotation": true
     },
-    "BoxCollider": {
-        "Size": [
-            0.1599999964237213,
-            0.5
-        ],
-        "Offset": [
-            0.0,
-            -0.04800000041723251
-        ],
-        "Friction": 0.0,
-        "Restitution": 0.0,
-        "RestitutionThreshold": 0.5,
-        "Density": 5.0,
-        "IsSensor": false
-    },
     "Camera": {
         "ZoomLevel": 1.5,
         "PositionOffset": [
@@ -74,11 +59,11 @@
                 },
                 {
                     "FieldName": "GravityModifier",
-                    "Value": -10.0
+                    "Value": -1.75
                 },
                 {
                     "FieldName": "JumpForce",
-                    "Value": 20.0
+                    "Value": 2.5
                 },
                 {
                     "FieldName": "PlayerAcceleration",
@@ -118,8 +103,8 @@
     ],
     "Entities": [
         {
-            "UUID": 12877469649611350550,
-            "Tag": "RightDetector",
+            "UUID": 10914255615770031592,
+            "Tag": "Collider_Body",
             "Transform": {
                 "Position": [
                     0.0,
@@ -134,12 +119,71 @@
             },
             "BoxCollider": {
                 "Size": [
-                    0.17000000178813934,
+                    0.4000000059604645,
+                    1.25
+                ],
+                "Offset": [
+                    0.0,
+                    -0.04800000041723251
+                ],
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false
+            }
+        },
+        {
+            "UUID": 2474195330682311529,
+            "Tag": "Collider_Bottom",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "CircleCollider": {
+                "Offset": [
+                    0.0,
+                    -0.6729999780654907
+                ],
+                "Radius": 0.4099999964237213,
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false
+            }
+        },
+        {
+            "UUID": 12877469649611350550,
+            "Tag": "Sensor_Left",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "BoxCollider": {
+                "Size": [
+                    0.10000000149011612,
                     0.10000000149011612
                 ],
                 "Offset": [
-                    -0.20000000298023224,
-                    0.0
+                    -0.23000000417232513,
+                    -0.3400000035762787
                 ],
                 "Friction": 0.5,
                 "Restitution": 0.0,
@@ -150,7 +194,7 @@
         },
         {
             "UUID": 1035080218648386695,
-            "Tag": "LeftDetector",
+            "Tag": "Sensor_Right",
             "Transform": {
                 "Position": [
                     0.0,
@@ -165,12 +209,12 @@
             },
             "BoxCollider": {
                 "Size": [
-                    0.17000000178813934,
+                    0.10000000149011612,
                     0.10000000149011612
                 ],
                 "Offset": [
-                    0.20000000298023224,
-                    0.0
+                    0.23000000417232513,
+                    -0.3400000035762787
                 ],
                 "Friction": 0.5,
                 "Restitution": 0.0,
@@ -181,7 +225,7 @@
         },
         {
             "UUID": 9589386461851818789,
-            "Tag": "GroundLeftDetector",
+            "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
                     0.0,
@@ -212,7 +256,7 @@
         },
         {
             "UUID": 17778856338069188407,
-            "Tag": "GroundRightDetector",
+            "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
                     0.0,
@@ -243,7 +287,7 @@
         },
         {
             "UUID": 5230230760467406288,
-            "Tag": "GroundDetector",
+            "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [
                     0.0,
@@ -270,34 +314,6 @@
                 "RestitutionThreshold": 0.5,
                 "Density": 0.5,
                 "IsSensor": true
-            }
-        },
-        {
-            "UUID": 2474195330682311529,
-            "Tag": "BottomCollider",
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "CircleCollider": {
-                "Offset": [
-                    0.0,
-                    -0.6729999780654907
-                ],
-                "Radius": 0.4099999964237213,
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 0.5,
-                "IsSensor": false
             }
         }
     ]

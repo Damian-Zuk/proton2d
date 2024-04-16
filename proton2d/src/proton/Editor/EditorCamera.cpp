@@ -44,7 +44,7 @@ namespace proton {
 			{
 				float zoomOffset = m_CameraZoomSpeed * -event.GetYOffset();
 				m_ZoomLevelTarget += round(zoomOffset * round(m_ZoomLevelTarget * 10.0f) * 1000.0f) / 10000.0f;
-				m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.2f), 30.0f);
+				m_ZoomLevelTarget = glm::min(glm::max(m_ZoomLevelTarget, 0.1f), 30.0f);
 				return false;
 			});
 		}

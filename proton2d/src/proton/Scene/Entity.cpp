@@ -157,7 +157,7 @@ namespace proton
 		return m_Scene;
 	}
 
-	GameModeBase* Entity::GetGameMode() const
+	GameModeBase* Entity::GetGameModeBase() const
 	{
 		return m_Scene->GetGameMode();
 	}
@@ -228,32 +228,6 @@ namespace proton
 			body->ApplyLinearImpulseToCenter({ impulse.x, impulse.y }, true);
 		else
 			body->ApplyLinearImpulse({impulse.x, impulse.y }, {point.x, point.y}, true);
-	}
-
-	uint32_t* Entity::GetSensorContactCountPtr(const std::string& childTagName)
-	{
-		Entity child = FindChildByTag(childTagName);
-
-		if (!child)
-		{
-			PT_CORE_ASSERT(child, "Child entity '{}' not found.", childTagName);
-			return nullptr;
-		}
-		
-		if (child.HasComponent<BoxColliderComponent>())
-		{
-			auto& component = child.GetComponent<BoxColliderComponent>();
-			return &component.ContactCallback.ContactCount;
-		}
-		
-		if (child.HasComponent<CircleColliderComponent>())
-		{
-			auto& component = child.GetComponent<CircleColliderComponent>();
-			return &component.ContactCallback.ContactCount;
-		}
-		
-		PT_CORE_ASSERT("Sensor has no collider component attached!");
-		return nullptr;
 	}
 
 	void Entity::SetWorldPosition(const glm::vec3& position) const
