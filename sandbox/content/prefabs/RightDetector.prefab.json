@@ -1,0 +1,31 @@
+{
+    "UUID": 1035080218648386695,
+    "Tag": "RightDetector",
+    "Transform": {
+        "Position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
+    "BoxCollider": {
+        "Size": [
+            0.17000000178813934,
+            0.10000000149011612
+        ],
+        "Offset": [
+            0.20000000298023224,
+            0.0
+        ],
+        "Friction": 0.5,
+        "Restitution": 0.0,
+        "RestitutionThreshold": 0.5,
+        "Density": 0.5,
+        "IsSensor": true
+    }
+}

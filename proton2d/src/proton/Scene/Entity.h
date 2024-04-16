@@ -152,6 +152,8 @@ namespace proton {
 		void SetLinearVelocityY(float mps) const;
 		void ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point = {0.0f, 0.0f}) const;
 
+		uint32_t* GetSensorContactCountPtr(const std::string& childTagName);
+
 		// Operator overloads
 		operator uint32_t() const { return (uint32_t)m_Handle; }
 		operator entt::entity() const { return m_Handle; }

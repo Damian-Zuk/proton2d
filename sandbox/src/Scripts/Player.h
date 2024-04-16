@@ -49,10 +49,11 @@ private:
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
 
-	uint32_t* m_GroundSensorContactCount;
+	uint32_t* m_LeftContactCount;
+	uint32_t* m_RightContactCount;
 	uint32_t* m_GroundLeftContactCount;
 	uint32_t* m_GroundRightContactCount;
-	uint32_t* m_BottomColliderContactCount;
+	uint32_t* m_GroundContactCount;
 
 	friend class MyGameMode;
 };

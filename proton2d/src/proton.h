@@ -5,6 +5,7 @@
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/AppLayer.h"
 #include "Proton/Core/Input.h"
+#include "Proton/Core/Timer.h"
 
 #include "Proton/Debug/Assert.h"
 #include "Proton/Debug/Instrumentor.h"
