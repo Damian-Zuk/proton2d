@@ -359,18 +359,24 @@ namespace proton {
 		data.LineVertexCount += 2;
 	}
 
-	void Renderer::DrawDashedLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, float lineScale, float spaceScale)
+	void Renderer::DrawDashedLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, float lineScale, float dashOffset)
 	{
 		float dashLength = 0.06f * lineScale;
-		float spaceLength = 0.04f * lineScale * spaceScale;
+		float spaceLength = 0.04f * lineScale;
 		glm::vec3 direction = glm::normalize(p1 - p0);
 		float totalLength = glm::distance(p0, p1);
-		float currentLength = 0.0f;
+		float dashOffest = fmod(dashOffset, dashLength + spaceLength);
+		float currentLength = dashOffest;
+
+		if (dashOffest > 0.0f)
+		{
+			DrawLine(p0, p0 + direction * glm::max(dashOffest - spaceLength, 0.0f), color);
+		}
 
 		while (currentLength < totalLength) 
 		{
 			float dashEnd = currentLength + dashLength;
-			if (dashEnd > totalLength) dashEnd = totalLength;
+			if (dashEnd > totalLength ) dashEnd = totalLength;
 
 			glm::vec3 dashStartPoint = p0 + direction * currentLength;
 			glm::vec3 dashEndPoint = p0 + direction * dashEnd;
@@ -405,16 +411,16 @@ namespace proton {
 		DrawLine(lineVertices[3], lineVertices[0], color);
 	}
 
-	void Renderer::DrawDashedRect(const glm::mat4& transform, const glm::vec4& color, float lineScale, float spaceScale)
+	void Renderer::DrawDashedRect(const glm::mat4& transform, const glm::vec4& color, float lineScale, float dashOffset)
 	{
 		glm::vec3 lineVertices[4];
 		for (size_t i = 0; i < 4; i++)
 			lineVertices[i] = transform * QuadVertexPositions[i];
 
-		DrawDashedLine(lineVertices[0], lineVertices[1], color, lineScale, spaceScale);
-		DrawDashedLine(lineVertices[1], lineVertices[2], color, lineScale, spaceScale);
-		DrawDashedLine(lineVertices[2], lineVertices[3], color, lineScale, spaceScale);
-		DrawDashedLine(lineVertices[3], lineVertices[0], color, lineScale, spaceScale);
+		DrawDashedLine(lineVertices[0], lineVertices[1], color, lineScale, dashOffset);
+		DrawDashedLine(lineVertices[1], lineVertices[2], color, lineScale, dashOffset);
+		DrawDashedLine(lineVertices[2], lineVertices[3], color, lineScale, dashOffset);
+		DrawDashedLine(lineVertices[3], lineVertices[0], color, lineScale, dashOffset);
 	}
 
 	void Renderer::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade)

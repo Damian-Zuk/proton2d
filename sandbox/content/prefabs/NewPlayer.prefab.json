@@ -1,0 +1,180 @@
+{
+    "UUID": 3310469784583494759,
+    "Tag": "NewPlayer",
+    "Transform": {
+        "Position": [
+            -7.95682,
+            -0.08534,
+            0.1
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            2.5,
+            2.5
+        ]
+    },
+    "Network": {
+        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000001000"
+    },
+    "Sprite": {
+        "Texture": "character.png",
+        "FilterMode": 0,
+        "Flip": [
+            false,
+            false
+        ],
+        "TilePos": [
+            0,
+            0
+        ],
+        "TileSize": [
+            1,
+            1
+        ],
+        "Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    "Rigidbody": {
+        "Type": 2,
+        "FixedRotation": true
+    },
+    "BoxCollider": {
+        "Size": [
+            0.1599999964237213,
+            0.5
+        ],
+        "Offset": [
+            0.0,
+            -0.04800000041723251
+        ],
+        "Friction": 0.0,
+        "Restitution": 0.0,
+        "RestitutionThreshold": 0.5,
+        "Density": 5.0,
+        "IsSensor": false
+    },
+    "Camera": {
+        "ZoomLevel": 1.5,
+        "PositionOffset": [
+            0.0,
+            1.7999999523162842
+        ]
+    },
+    "Scripts": [
+        {
+            "ClassName": "Player",
+            "Fields": [
+                {
+                    "FieldName": "ClientID",
+                    "Value": 0
+                },
+                {
+                    "FieldName": "GravityModifier",
+                    "Value": -10.0
+                },
+                {
+                    "FieldName": "JumpForce",
+                    "Value": 20.0
+                },
+                {
+                    "FieldName": "PlayerAcceleration",
+                    "Value": 40.0
+                },
+                {
+                    "FieldName": "PlayerMaxSpeed",
+                    "Value": 6.0
+                }
+            ]
+        },
+        {
+            "ClassName": "ColorHueAnimation",
+            "Fields": [
+                {
+                    "FieldName": "Back and Forth",
+                    "Value": false
+                },
+                {
+                    "FieldName": "HueRangeP",
+                    "Value": 0.0
+                },
+                {
+                    "FieldName": "HueRangeQ",
+                    "Value": 1.0
+                },
+                {
+                    "FieldName": "Saturation",
+                    "Value": 0.699999988079071
+                },
+                {
+                    "FieldName": "Speed",
+                    "Value": 0.5
+                }
+            ]
+        }
+    ],
+    "Entities": [
+        {
+            "UUID": 11889262952058879944,
+            "Tag": "GroundSensor",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "BoxCollider": {
+                "Size": [
+                    0.05000000074505806,
+                    0.10000000149011612
+                ],
+                "Offset": [
+                    0.0,
+                    -0.8500000238418579
+                ],
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": true
+            }
+        },
+        {
+            "UUID": 1153409262396190103,
+            "Tag": "BottomCollider",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "CircleCollider": {
+                "Offset": [
+                    0.0,
+                    -0.6729999780654907
+                ],
+                "Radius": 0.4000000059604645,
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false
+            }
+        }
+    ]
+}

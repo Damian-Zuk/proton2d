@@ -120,7 +120,7 @@ namespace proton {
 		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
 		m_MousePos = { (int)mx, (int)my };
 
-		DrawCollidersAndSelectionOutline();
+		DrawCollidersAndSelectionOutline(ts);
 		m_Framebuffer->Unbind();
 
 		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
@@ -249,9 +249,6 @@ namespace proton {
 		// Mouse evenets (button released)
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
 		{
-			if (!m_IsMainViewport || !m_IsViewportFocused)
-				return false;
-
 			if (e.GetMouseButton() == Mouse::Button0)
 				m_MoveSelectedEntity = false;
 			if (e.GetMouseButton() == Mouse::Button1)
@@ -264,10 +261,10 @@ namespace proton {
 	}
 
 	static constexpr glm::vec4 COLOR_YELLOW = { 0.8f, 0.8f, 0.2f, 1.0f };
-	static constexpr glm::vec4 COLOR_COLLIDER = { 0.9f, 0.6f, 0.3f, 0.5f };
-	static constexpr glm::vec4 COLOR_OUTLINE = { 0.95f, 0.25f, 0.18f, 0.85f };
+	static constexpr glm::vec4 COLOR_COLLIDER = { 0.9f, 0.6f, 0.3f, 0.2f };
+	static constexpr glm::vec4 COLOR_OUTLINE = { 0.95f, 0.25f, 0.18f, 0.75f};
 
-	void SceneViewportPanel::DrawCollidersAndSelectionOutline()
+	void SceneViewportPanel::DrawCollidersAndSelectionOutline(float ts)
 	{
 		Camera& camera = m_ActiveScene->GetPrimaryCamera();
 		Renderer::BeginScene(camera, m_ActiveScene->GetPrimaryCameraPosition());
@@ -297,7 +294,7 @@ namespace proton {
 		
 		Renderer::Flush();
 		Renderer::SetLineWidth(3.0f);
-		
+
 		//------------------ Circle Colliders ------------------
 		auto circlesView = m_ActiveScene->m_Registry.view<TransformComponent, CircleColliderComponent>();
 		for (auto entity : circlesView)
@@ -316,7 +313,8 @@ namespace proton {
 				Renderer::DrawCircle(Math::GetTransform(position, scale, transform.Rotation), COLOR_COLLIDER);
 				
 				position.z += 0.001f;
-				Renderer::DrawCircle(Math::GetTransform(position, scale, transform.Rotation), COLOR_OUTLINE, 0.1f);
+				Renderer::DrawCircle(Math::GetTransform(position, scale, transform.Rotation), COLOR_OUTLINE,
+					0.1f / glm::sqrt(1.0f / camera.GetZoomLevel()) / glm::pow(cc.Radius * 1.9f, 1.25f));
 
 				position.z += 0.001f;
 				glm::vec3 p1 = position;
@@ -334,7 +332,7 @@ namespace proton {
 		{
 			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
 			glm::vec3 position = { transform.WorldPosition.x, transform.WorldPosition.y, 0.21f };
-			glm::vec3 scale = { transform.Scale.x + 0.05f, transform.Scale.y + 0.05f, 1.0f };
+			glm::vec3 scale = { transform.Scale.x + 0.07f, transform.Scale.y + 0.07f, 1.0f };
 			glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
 
 			glm::vec4 color = m_ShowSelectionOutline && m_MoveSelectedEntity ? COLOR_YELLOW : glm::vec4{ 1.0f };
@@ -344,7 +342,9 @@ namespace proton {
 				auto& sprite = m_SelectedEntity.GetComponent<SpriteComponent>();
 				scale.x *= sprite.Sprite.GetAspectRatio();
 			}
-			Renderer::DrawDashedRect(transformMatrix, color, 2.0f);
+			static float dashOffset = 0.0f;
+			dashOffset += 0.4f * ts;
+			Renderer::DrawDashedRect(transformMatrix, color, 2.0f, dashOffset);
 		}
 
 		Renderer::EndScene();

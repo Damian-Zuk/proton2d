@@ -58,13 +58,23 @@ bool Player::OnCreate()
 	animation.SetFPS(8);
 
 	// Ground sensor is used to detect if player is touching the ground
-	Entity groundSensor = CreateChildEntity("GroundSensor");
-	auto& collider = groundSensor.AddComponent<BoxColliderComponent>();
-	collider.Size = { 0.38f, 0.38f };
-	collider.Offset = { 0.0f, -0.8f };
-	collider.IsSensor = true;
-	m_GroundSensorContactCount = &collider.ContactCallback.ContactCount;
+	Entity groundDetector = FindChildByTag("GroundDetector");
+	Entity groundRightDetector = FindChildByTag("GroundRightDetector");
+	Entity groundLeftDetector = FindChildByTag("GroundLeftDetector");
+	Entity bottomCollider = FindChildByTag("BottomCollider");
 
+	auto& leftCollider = groundLeftDetector.GetComponent<BoxColliderComponent>();
+	m_GroundLeftContactCount = &leftCollider.ContactCallback.ContactCount;
+
+	auto& rightCollider = groundRightDetector.GetComponent<BoxColliderComponent>();
+	m_GroundRightContactCount = &rightCollider.ContactCallback.ContactCount;
+
+	auto& circleCollider = bottomCollider.GetComponent<CircleColliderComponent>();
+	m_BottomColliderContactCount = &circleCollider.ContactCallback.ContactCount;
+
+	auto& detectorCollider = groundDetector.GetComponent<BoxColliderComponent>();
+	m_GroundSensorContactCount = &detectorCollider.ContactCallback.ContactCount;
+	
 	return true;
 }
 
@@ -100,7 +110,7 @@ void Player::OnUpdate(float ts)
 	SetLinearVelocityX(!move ? 0.0f : glm::clamp(
 		GetLinearVelocity().x + m_PlayerAcceleration * m_Direction * ts,
 		-m_PlayerMaxSpeed, m_PlayerMaxSpeed));
-	
+
 	// Set player state to Run when key is pressed and player is not in the air
 	if (move && m_State != Jump && m_JumpTimer >= s_LandAnimationCancelTime)
 		m_State = Run;
@@ -127,9 +137,24 @@ void Player::OnUpdate(float ts)
 	float velocity = GetLinearVelocity().y;
 	if (!IsTouchingGround())
 	{
+		if (velocity >= -1.0f && m_JumpTimer >= s_LandAnimationCancelTime * 2.0f)
+		{
+			if (*m_GroundLeftContactCount > 0)
+			{
+				PT_TRACE("Impulse Left");
+				ApplyLinearImpulse({ 10.0f, -10.0f });
+			}
+
+			if (*m_GroundRightContactCount > 0)
+			{
+				PT_TRACE("Impulse Right");
+				ApplyLinearImpulse({ -10.0f, -10.0f });
+			}
+		}
+
 		// Modify vertical velocity to make jump feel less floaty
 		if (velocity > 0.0f && velocity < 0.05f)
-			ApplyLinearImpulse({ 0.0f,  m_GravityModifier });
+			ApplyLinearImpulse({ 0.0f, m_GravityModifier});
 
 		// Update jump animation frame
 		uint16_t frame = velocity > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
@@ -141,4 +166,15 @@ void Player::OnUpdate(float ts)
 	animation.PlayAnimation(m_State);
 	animation.SetMirrorFlip(m_Direction < 0.0f);
 	m_JumpTimer += ts;
+}
+
+void Player::OnImGuiRender()
+{
+#ifdef PT_EDITOR
+	if (GetScene()->IsSimulated())
+	{
+		auto vel = GetLinearVelocity();
+		ImGui::Text("Velocity: (%.3f, %.3f)", vel.x, vel.y);
+	}
+#endif
 }

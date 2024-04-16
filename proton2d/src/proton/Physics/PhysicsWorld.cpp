@@ -69,7 +69,10 @@ namespace proton {
 		fixtureDef.userData.pointer = (uintptr_t)(m_FixtureUserData.back().get());
 
 		if (!body)
+		{
+			PT_CORE_ASSERT(body.HasComponent<RigidbodyComponent>(), "Entity has no RigidbodyComponent");
 			body = GetRuntimeBody(entity.GetUUID());
+		}
 
 		// BoxColliderComponent
 		if (entity.HasComponent<BoxColliderComponent>())
@@ -117,24 +120,40 @@ namespace proton {
 		// Initialize Box2D world
 		m_World = new b2World({ 0.0f, -m_Gravity });
 		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
+		
 		for (entt::entity entity : m_Scene->m_Registry.view<RigidbodyComponent>())
 			CreateRuntimeBody(Entity{ entity, m_Scene });
 
-		// Attach a fixture to the parent entity for each child which has
-		// a BoxColliderComponent but does not have a RigidbodyComponent.
-		for (entt::entity e : m_Scene->m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>))
+		auto viewBoxes = m_Scene->m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>);
+		for (entt::entity e : viewBoxes)
+		{
+			Entity entity{ e, m_Scene }; 
+			auto& rc = entity.GetComponent<RelationshipComponent>();
+			if (rc.Parent == entt::null)
+				continue;
+
+			Entity parent{ rc.Parent, m_Scene };
+			if (!parent.HasComponent<RigidbodyComponent>())
+				continue;
+
+			b2Body* body = GetRuntimeBody(parent.GetUUID());
+			AddFixtureToRuntimeBody(entity, body);
+		}
+
+		auto viewCircles = m_Scene->m_Registry.view<CircleColliderComponent>(entt::exclude<RigidbodyComponent>);
+		for (entt::entity e : viewCircles)
 		{
 			Entity entity{ e, m_Scene };
 			auto& rc = entity.GetComponent<RelationshipComponent>();
-			if (rc.Parent != entt::null)
-			{
-				Entity parent{ rc.Parent, m_Scene };
-				if (parent.HasComponent<RigidbodyComponent>())
-				{
-					b2Body* body = GetRuntimeBody(parent.GetUUID());
-					AddFixtureToRuntimeBody(entity, body);
-				}
-			}
+			if (rc.Parent == entt::null)
+				continue;
+
+			Entity parent{ rc.Parent, m_Scene };
+			if (!parent.HasComponent<RigidbodyComponent>())
+				continue;
+
+			b2Body* body = GetRuntimeBody(parent.GetUUID());
+			AddFixtureToRuntimeBody(entity, body);
 		}
 	}
 

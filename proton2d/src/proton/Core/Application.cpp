@@ -9,9 +9,11 @@
 #include "Proton/Events/MouseEvents.h"
 
 #include "Proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Assets/AssetManager.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Scripting/GameModeBase.h"
+
 #include "Proton/Network/Common/NetworkManager.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
@@ -181,6 +183,8 @@ namespace proton {
 		{
 			layer->OnEvent(event);
 		}
+
+		m_GameInstance->GetActiveScene()->GetGameMode()->OnEvent(event);
 	}
 
 }

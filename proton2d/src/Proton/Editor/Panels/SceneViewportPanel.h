@@ -18,7 +18,7 @@ namespace proton {
 		virtual void OnEvent(Event& event) override;
 
 	private:
-		void DrawCollidersAndSelectionOutline();
+		void DrawCollidersAndSelectionOutline(float ts);
 		void HandleImGuiDragAndDrop();
 
 	private:

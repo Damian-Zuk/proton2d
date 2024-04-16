@@ -1,0 +1,28 @@
+{
+    "UUID": 1153409262396190103,
+    "Tag": "BottomCollider",
+    "Transform": {
+        "Position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
+    "CircleCollider": {
+        "Offset": [
+            0.0,
+            -0.6740000247955322
+        ],
+        "Radius": 0.4000000059604645,
+        "Friction": 0.5,
+        "Restitution": 0.0,
+        "RestitutionThreshold": 0.5,
+        "Density": 0.5,
+        "IsSensor": false
+    }
+}

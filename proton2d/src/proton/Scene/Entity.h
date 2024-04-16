@@ -60,6 +60,7 @@ namespace proton {
 		template<> ResizableSpriteComponent& AddComponent() const;
 		template<> RigidbodyComponent& AddComponent() const;
 		template<> BoxColliderComponent& AddComponent() const;
+		template<> CircleColliderComponent& AddComponent() const;
 		template<> SpriteAnimationComponent& AddComponent() const;
 		template<> NetworkComponent& AddComponent() const;
 
@@ -126,6 +127,7 @@ namespace proton {
 		void DestroyChildEntities() const;
 		void PopHierarchy() const;
 		bool IsParentOf(Entity entity) const;
+		Entity FindChildByTag(const std::string& name);
 
 		// Component getters
 		Scene* GetScene() const;

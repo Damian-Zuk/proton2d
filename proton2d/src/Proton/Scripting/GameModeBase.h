@@ -14,6 +14,7 @@ namespace proton {
 		virtual bool OnCreate() { return true; }
 		virtual void OnUpdate(float ts) {}
 		virtual void OnDestroy() {}
+		virtual void OnEvent(Event& event) {}
 
 		Entity FindByTag(const std::string& tag);
 		Entity SpawnPrefab(const std::string& prefab);

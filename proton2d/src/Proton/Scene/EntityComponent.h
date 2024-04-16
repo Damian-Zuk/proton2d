@@ -28,6 +28,17 @@ namespace proton {
 		return bc;
 	}
 
+	// AddComponent<BoxColliderComponent>
+	template<>
+	CircleColliderComponent &Entity::AddComponent() const
+	{
+		PT_CORE_ASSERT(!HasComponent<CircleColliderComponent>(), "Entity already has component!");
+		auto& cc = m_Scene->m_Registry.emplace<CircleColliderComponent>(m_Handle);
+		if (m_Scene->m_SceneState == SceneState::Play && m_Scene->m_PhysicsWorld->IsInitialized())
+			m_Scene->m_PhysicsWorld->m_EntitiesToInitialize.push_back(*this);
+		return cc;
+	}
+
 	// AddComponent<ResizableSpriteComponent>
 	template<>
 	ResizableSpriteComponent& Entity::AddComponent() const

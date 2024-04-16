@@ -29,6 +29,7 @@ public:
 	virtual void OnRegisterFields() override;
 	virtual bool OnCreate() override;
 	virtual void OnUpdate(float ts) override;
+	virtual void OnImGuiRender();
 
 private:
 	bool IsTouchingGround() const;
@@ -49,6 +50,9 @@ private:
 	float m_JumpTimer = 0.0f;
 
 	uint32_t* m_GroundSensorContactCount;
+	uint32_t* m_GroundLeftContactCount;
+	uint32_t* m_GroundRightContactCount;
+	uint32_t* m_BottomColliderContactCount;
 
 	friend class MyGameMode;
 };

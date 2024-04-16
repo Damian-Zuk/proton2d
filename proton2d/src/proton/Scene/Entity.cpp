@@ -129,6 +129,23 @@ namespace proton
 		return false;
 	}
 
+	Entity Entity::FindChildByTag(const std::string& name)
+	{
+		auto& rc = GetComponent<RelationshipComponent>();
+		if (!rc.ChildrenCount)
+			return Entity();
+
+		Entity current{ rc.First, m_Scene };
+		while (current)
+		{
+			if (current.GetComponent<TagComponent>().Tag == name)
+				return current;
+
+			current = Entity{ current.GetComponent<RelationshipComponent>().Next, m_Scene };
+		}
+		return Entity();
+	}
+
 	void Entity::Destroy()
 	{
 		m_Scene->DestroyEntity(*this);
