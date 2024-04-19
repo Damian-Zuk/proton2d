@@ -185,7 +185,8 @@ namespace proton {
 
 				for (auto& entity : m_ActiveScene->GetEntitiesOnCursorLocation())
 				{
-					if (!entity.HasAnyComponent<SpriteComponent, ResizableSpriteComponent, CircleRendererComponent>())
+					if (!entity.HasAnyComponent<SpriteComponent, ResizableSpriteComponent,
+						CircleRendererComponent, BoxColliderComponent, CircleColliderComponent>())
 						continue;
 
 					auto& transform = entity.GetComponent<TransformComponent>();
@@ -296,10 +297,10 @@ namespace proton {
 			0.05f / glm::sqrt(1.0f / camera.GetZoomLevel() * 0.3f));
 
 		position.z += 0.001f;
-		glm::vec3 p1 = position;
-		p1.x += cc.Radius * transform.Scale.x / 2.0f * std::cos(glm::radians(transform.Rotation));
-		p1.y += cc.Radius * transform.Scale.x / 2.0f * std::sin(glm::radians(transform.Rotation));
-		Renderer::DrawLine(position, p1, COLOR_OUTLINE);
+		glm::vec3 point = position;
+		point.x += cc.Radius * transform.Scale.x / 2.0f * std::cos(glm::radians(transform.Rotation));
+		point.y += cc.Radius * transform.Scale.x / 2.0f * std::sin(glm::radians(transform.Rotation));
+		Renderer::DrawLine(position, point, COLOR_OUTLINE);
 	}
 
 	static void DrawSelectionOutline(Entity entity, glm::vec4 color, float ts)

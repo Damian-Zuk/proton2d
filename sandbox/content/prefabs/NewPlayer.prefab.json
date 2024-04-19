@@ -1,10 +1,10 @@
 {
-    "UUID": 14946634615911943899,
+    "UUID": 1243703034013938642,
     "Tag": "NewPlayer",
     "Transform": {
         "Position": [
-            20.11331,
-            -0.55054,
+            16.27174,
+            -0.55903,
             0.1
         ],
         "Rotation": 0.0,
@@ -40,7 +40,8 @@
     },
     "Rigidbody": {
         "Type": 2,
-        "FixedRotation": true
+        "FixedRotation": true,
+        "AttachToParent": false
     },
     "Camera": {
         "ZoomLevel": 1.5,
@@ -59,15 +60,15 @@
                 },
                 {
                     "FieldName": "GravityModifier",
-                    "Value": -1.75
+                    "Value": -10.0
                 },
                 {
                     "FieldName": "JumpForce",
-                    "Value": 2.5
+                    "Value": 25.0
                 },
                 {
                     "FieldName": "PlayerAcceleration",
-                    "Value": 40.0
+                    "Value": 500.0
                 },
                 {
                     "FieldName": "PlayerMaxSpeed",
@@ -103,217 +104,165 @@
     ],
     "Entities": [
         {
-            "UUID": 10914255615770031592,
-            "Tag": "Collider_Body",
+            "UUID": 15362374832185750255,
+            "Tag": "Body",
             "Transform": {
                 "Position": [
                     0.0,
-                    0.0,
+                    -0.048,
                     0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    0.4,
+                    1.25
                 ]
             },
             "BoxCollider": {
                 "Size": [
-                    0.4000000059604645,
-                    1.25
+                    1.0,
+                    1.0
                 ],
                 "Offset": [
                     0.0,
-                    -0.04800000041723251
+                    0.0
                 ],
                 "Friction": 0.5,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
                 "Density": 0.5,
-                "IsSensor": false
+                "IsSensor": false,
+                "AttachToParent": true
             }
         },
         {
-            "UUID": 2474195330682311529,
-            "Tag": "Collider_Bottom",
+            "UUID": 1012668221094079959,
+            "Tag": "Wheel",
             "Transform": {
                 "Position": [
                     0.0,
-                    0.0,
+                    -0.673,
                     0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    0.41,
+                    0.41
                 ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": true
             },
             "CircleCollider": {
                 "Offset": [
                     0.0,
-                    -0.6729999780654907
-                ],
-                "Radius": 0.4099999964237213,
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 0.5,
-                "IsSensor": false
-            }
-        },
-        {
-            "UUID": 12877469649611350550,
-            "Tag": "Sensor_Left",
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
                     0.0
                 ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.10000000149011612,
-                    0.10000000149011612
-                ],
-                "Offset": [
-                    -0.23000000417232513,
-                    -0.3400000035762787
-                ],
+                "Radius": 1.0,
                 "Friction": 0.5,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
-                "IsSensor": true
+                "Density": 25.0,
+                "IsSensor": false,
+                "AttachToParent": false
             }
         },
         {
-            "UUID": 1035080218648386695,
-            "Tag": "Sensor_Right",
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "BoxCollider": {
-                "Size": [
-                    0.10000000149011612,
-                    0.10000000149011612
-                ],
-                "Offset": [
-                    0.23000000417232513,
-                    -0.3400000035762787
-                ],
-                "Friction": 0.5,
-                "Restitution": 0.0,
-                "RestitutionThreshold": 0.5,
-                "Density": 0.5,
-                "IsSensor": true
-            }
-        },
-        {
-            "UUID": 9589386461851818789,
+            "UUID": 1484269949508212648,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
-                    0.0,
-                    0.0,
+                    -0.185,
+                    -0.675,
                     0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    0.1,
+                    0.1
                 ]
             },
             "BoxCollider": {
                 "Size": [
-                    0.10000000149011612,
-                    0.10000000149011612
+                    1.0,
+                    1.0
                 ],
                 "Offset": [
-                    -0.1850000023841858,
-                    -0.675000011920929
+                    0.0,
+                    0.0
                 ],
                 "Friction": 0.5,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
                 "Density": 0.5,
-                "IsSensor": true
+                "IsSensor": true,
+                "AttachToParent": true
             }
         },
         {
-            "UUID": 17778856338069188407,
+            "UUID": 14140201084637188242,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
-                    0.0,
-                    0.0,
+                    0.184,
+                    -0.675,
                     0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    0.1,
+                    0.1
                 ]
             },
             "BoxCollider": {
                 "Size": [
-                    0.10000000149011612,
-                    0.10000000149011612
+                    1.0,
+                    1.0
                 ],
                 "Offset": [
-                    0.18400000035762787,
-                    -0.675000011920929
+                    0.0,
+                    0.0
                 ],
                 "Friction": 0.5,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
                 "Density": 0.5,
-                "IsSensor": true
+                "IsSensor": true,
+                "AttachToParent": true
             }
         },
         {
-            "UUID": 5230230760467406288,
+            "UUID": 3709717993736162617,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [
                     0.0,
-                    0.0,
+                    -0.861,
                     0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.0,
-                    1.0
+                    0.1,
+                    0.1
                 ]
             },
             "BoxCollider": {
                 "Size": [
-                    0.10000000149011612,
-                    0.10000000149011612
+                    1.0,
+                    1.0
                 ],
                 "Offset": [
                     0.0,
-                    -0.8610000014305115
+                    0.0
                 ],
                 "Friction": 0.5,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
                 "Density": 0.5,
-                "IsSensor": true
+                "IsSensor": true,
+                "AttachToParent": true
             }
         }
     ]

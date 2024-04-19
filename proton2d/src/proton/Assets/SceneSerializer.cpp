@@ -101,7 +101,7 @@ namespace proton {
 			UUID id{ jsonObj["PrimaryCameraEntity"] };
 			m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
 		}
-		m_Scene->CalculateWorldPositions(false);
+		m_Scene->CalculateWorldPositions();
 		return true;
 	}
 
@@ -214,7 +214,8 @@ namespace proton {
 			auto& rb = entity.GetComponent<RigidbodyComponent>();
 			jsonObj["Rigidbody"] = {
 				{ "Type", rb.Type },
-				{ "FixedRotation", rb.FixedRotation }
+				{ "FixedRotation", rb.FixedRotation },
+				{ "AttachToParent", rb.AttachToParent }
 			};
 		}
 
@@ -229,7 +230,8 @@ namespace proton {
 				{ "Restitution",          collider.Material.Restitution },
 				{ "RestitutionThreshold", collider.Material.RestitutionThreshold },
 				{ "Density",              collider.Material.Density },
-				{ "IsSensor",             collider.IsSensor }
+				{ "IsSensor",             collider.IsSensor },
+				{ "AttachToParent",       collider.AttachToParent }
 			};
 		}
 
@@ -244,7 +246,8 @@ namespace proton {
 				{ "Restitution",          collider.Material.Restitution },
 				{ "RestitutionThreshold", collider.Material.RestitutionThreshold },
 				{ "Density",              collider.Material.Density },
-				{ "IsSensor",             collider.IsSensor }
+				{ "IsSensor",             collider.IsSensor },
+				{ "AttachToParent",       collider.AttachToParent }
 			};
 		}
 
@@ -471,6 +474,9 @@ namespace proton {
 			collider.Material.RestitutionThreshold = boxCollider["RestitutionThreshold"];
 			collider.Material.Density = boxCollider["Density"];
 			collider.IsSensor = boxCollider["IsSensor"];
+
+			if (boxCollider.contains("AttachToParent"))
+				collider.AttachToParent = boxCollider.at("AttachToParent");
 		}
 
 		// Deserialize CircleColliderComponent
@@ -487,14 +493,22 @@ namespace proton {
 			collider.Material.RestitutionThreshold = circleCollider["RestitutionThreshold"];
 			collider.Material.Density = circleCollider["Density"];
 			collider.IsSensor = circleCollider["IsSensor"];
+
+			if (circleCollider.contains("AttachToParent"))
+				collider.AttachToParent = circleCollider.at("AttachToParent");
 		}
 
 		// Deserialize RigidbodyComponent
 		if (jsonObj.contains("Rigidbody"))
 		{
 			auto& rb = entity.AddComponent<RigidbodyComponent>();
-			rb.Type = jsonObj["Rigidbody"]["Type"];
-			rb.FixedRotation = jsonObj["Rigidbody"]["FixedRotation"];
+			json& jsonRb = jsonObj.at("Rigidbody");
+			rb.Type = jsonRb.at("Type");
+			rb.FixedRotation = jsonRb.at("FixedRotation");
+			
+			if (jsonRb.contains("AttachToParent"))
+				rb.AttachToParent = jsonRb.at("AttachToParent");
+
 			if (m_Scene->IsPhysicsWorldInitialized())
 				m_Scene->m_PhysicsWorld->CreateRuntimeBody(entity);
 		}

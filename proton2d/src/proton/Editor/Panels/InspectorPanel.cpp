@@ -431,6 +431,8 @@ namespace proton {
 		{
 			DrawComponentUI<RigidbodyComponent>("Rigidbody", [](auto& component)
 			{
+				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
+
 				std::string bodyType = "Static";
 				if (component.Type == b2_dynamicBody)
 					bodyType = "Dynamic";
@@ -461,6 +463,7 @@ namespace proton {
 		{
 			DrawComponentUI<BoxColliderComponent>("BoxCollider", [](auto& component)
 			{
+				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
 				ImGui::DragFloat2("Size", glm::value_ptr(component.Size), 0.01f);
 				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
 				ImGui::DragFloat("Friction", &component.Material.Friction, 0.01f);
@@ -477,15 +480,16 @@ namespace proton {
 		if (m_SelectedEntity.HasComponent<CircleColliderComponent>())
 		{
 			DrawComponentUI<CircleColliderComponent>("CircleCollider", [](auto& component)
-				{
-					ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
-					ImGui::DragFloat("Radius", &component.Radius, 0.001f);
-					ImGui::DragFloat("Friction", &component.Material.Friction, 0.01f);
-					ImGui::DragFloat("Restitution", &component.Material.Restitution, 0.01f);
-					ImGui::DragFloat("RestitutionThreshold", &component.Material.RestitutionThreshold, 0.01f);
-					ImGui::DragFloat("Density", &component.Material.Density, 0.01f);
-					ImGui::Checkbox("IsSensor", &component.IsSensor);
-				});
+			{
+				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
+				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
+				ImGui::DragFloat("Radius", &component.Radius, 0.001f);
+				ImGui::DragFloat("Friction", &component.Material.Friction, 0.01f);
+				ImGui::DragFloat("Restitution", &component.Material.Restitution, 0.01f);
+				ImGui::DragFloat("RestitutionThreshold", &component.Material.RestitutionThreshold, 0.01f);
+				ImGui::DragFloat("Density", &component.Material.Density, 0.01f);
+				ImGui::Checkbox("IsSensor", &component.IsSensor);
+			});
 		}
 
 		// ******************************************************

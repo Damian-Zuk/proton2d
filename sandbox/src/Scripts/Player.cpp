@@ -16,7 +16,8 @@ enum SensorType : uint32_t
 	Sensor_Right,
 	Sensor_BottomLeft,
 	Sensor_BottomRight,
-	Sensor_Bottom
+	Sensor_Bottom,
+	Sensor_GroundDetector,
 };
 
 bool Player::IsGrounded() const
@@ -29,25 +30,21 @@ bool Player::OnCreate()
 	uint32_t localPlayerID = GetGameMode<MyGameMode>()->GetLocalPlayerID();
 	m_IsLocalPlayer = m_ClientID == localPlayerID;
 
-	GetTransform().WorldPosition.z = 0.1f;
-	GetTransform().LocalPosition.z = 0.1f;
-
 	if (m_IsLocalPlayer)
-	{
 		GetScene()->SetPrimaryCameraEntity(*this);
-	}
-	else if (IsRunningServer())
-	{
-		GetGameModeBase()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
-			stream.ReadRaw(m_ActionState);
-		});
-	}
 
 	if (IsRunningClient())
 	{
 		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
 		// Player script is not simulated on client, we can return here
 		return true;
+	}
+
+	if (IsRunningServer())
+	{
+		GetGameModeBase()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
+			stream.ReadRaw(m_ActionState);
+			});
 	}
 
 	// Set up sprite animations
@@ -60,13 +57,17 @@ bool Player::OnCreate()
 	animation.Add(Land, 9, AnimationPlayMode::PLAY_ONCE);
 
 	// Set physics sensors to following child entities
-	SetPhysicsSensor(Sensor_Left, "Sensor_Left");
-	SetPhysicsSensor(Sensor_Right, "Sensor_Right");
+	SetPhysicsSensor(Sensor_GroundDetector, "Sensor_GroundDetector");
 	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
 	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
 	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
 
 	return true;
+}
+
+bool Player::IsOnHighSlope() const
+{
+	return !CheckSensor(Sensor_Bottom) && (CheckSensor(Sensor_BottomLeft) || CheckSensor(Sensor_BottomRight));
 }
 
 void Player::OnUpdate(float ts)
@@ -99,13 +100,17 @@ void Player::OnUpdate(float ts)
 	bool move = m_ActionState.MoveLeft || m_ActionState.MoveRight;
 
 	// Set horizontal velocity (acceleration)
-	SetLinearVelocityX(!move ? 0.0f : glm::clamp(
-		GetLinearVelocity().x + m_PlayerAcceleration * m_Direction * ts,
-		-m_PlayerMaxSpeed, m_PlayerMaxSpeed));
+	if (!IsOnHighSlope())
+	{
+		SetLinearVelocityX(!move ? 0.0f : glm::clamp(
+			GetLinearVelocity().x + m_PlayerAcceleration * m_Direction * ts,
+			-m_PlayerMaxSpeed, m_PlayerMaxSpeed));
+	}
 
 	// Set player state to Run when key is pressed and player is not in the air
 	if (move && m_State != Jump && m_JumpTimer >= s_LandAnimationCancelTime)
 		m_State = Run;
+
 	// Set player state to Idle when stopped running or landing animation finished playing
 	else if (m_State == Run || (m_State == Land && animation.FinishedPlaying()))
 		m_State = Idle;
@@ -132,15 +137,6 @@ void Player::OnUpdate(float ts)
 	float velocity = GetLinearVelocity().y;
 	if (!IsGrounded())
 	{
-		if (velocity >= -1.0f && impulseTimer.Elapsed() > 0.3f)
-		{
-			if (!CheckSensor(Sensor_Left) && CheckSensor(Sensor_BottomLeft))
-				ApplyLinearImpulse({ 25.0f, -10.0f });
-
-			if (!CheckSensor(Sensor_Right) && CheckSensor(Sensor_BottomRight))
-				ApplyLinearImpulse({ -25.0f, -10.0f });
-		}
-
 		// Modify vertical velocity to make jump feel less floaty
 		if (velocity > 0.0f && velocity < 0.05f)
 			ApplyLinearImpulse({ 0.0f, m_GravityModifier});
@@ -150,6 +146,10 @@ void Player::OnUpdate(float ts)
 		animation.SetAnimationFrame(frame);
 		m_State = Jump;
 	}
+
+	// Set animation direction when sliding on high slope
+	if (IsOnHighSlope() && GetLinearVelocity().y < 0.0f)
+		m_Direction = GetLinearVelocity().x > 0.0f ? 1.0f : -1.0f;
 
 	// Update animation and timer
 	animation.Play(m_State);

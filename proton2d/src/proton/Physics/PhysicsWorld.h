@@ -2,11 +2,18 @@
 #include "Proton/Core/UUID.h"
 #include "Proton/Scene/Entity.h"
 
+#include <queue>
+
 class b2Body;
 
 namespace proton {
 
 	class Scene;
+
+	enum class JointType : uint8_t
+	{
+		Revolute = 0 // Currently only revolute joints supported
+	};
 
 	class PhysicsContactListener : public b2ContactListener
 	{
@@ -39,7 +46,9 @@ namespace proton {
 
 		void Update(float ts);
 
-		void AddFixtureToRuntimeBody(Entity entity, b2Body* body = nullptr);
+		void CreateJoints();
+
+		void AddFixtureToRuntimeBody(Entity entity, b2Body* body = nullptr, bool attachToParent = false);
 	
 	private:
 		b2World* m_World = nullptr;
@@ -48,6 +57,16 @@ namespace proton {
 		std::unordered_map<UUID, b2Body*> m_RuntimeBodies;
 		std::vector<Unique<Entity>> m_FixtureUserData;
 		std::vector<Entity> m_EntitiesToInitialize;
+
+		std::vector<b2Joint*> m_Joints;
+		
+		struct JointInfo
+		{
+			Entity EntityA;
+			Entity EntityB;
+			JointType Type;
+		};
+		std::queue<JointInfo> m_JointsCreateQueue;
 
 		int m_PhysicsVelocityIterations = 5;
 		int m_PhysicsPositionIterations = 5;

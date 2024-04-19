@@ -209,8 +209,11 @@ namespace proton {
 
 		m_GameInstance->OnSceneSimulationStart(this);
 		
-		if (m_EnablePhysics)
+		if (m_EnablePhysics) 
+		{
+			CalculateWorldPositions();
 			m_PhysicsWorld->BuildWorld();
+		}
 
 		if (m_GameMode)
 			m_GameMode->OnCreate();
@@ -347,7 +350,7 @@ namespace proton {
 		});
 	}
 
-	void Scene::SetEntityLocalPosition(Entity entity, const glm::vec3& position)
+	void Scene::SetEntityLocalPosition(Entity entity, const glm::vec3& position, bool recalculateChildren)
 	{
 		auto [transform, rc] = m_Registry.get<TransformComponent, RelationshipComponent>(entity.m_Handle);
 		transform.WorldPosition = position;
@@ -359,9 +362,20 @@ namespace proton {
 			transform.WorldPosition += current.GetTransform().LocalPosition;
 			current = Entity{ crc.Parent, this };
 		}
+
+		if (!recalculateChildren)
+			return;
+
+		Entity child{ rc.First, this };
+		while (child)
+		{
+			auto& r = child.GetComponent<RelationshipComponent>();
+			CalculateEntityWorldPosition(child, true);
+			child = Entity(r.Next, this);
+		}
 	}
 
-	void Scene::SetEntityWorldPosition(Entity entity, const glm::vec3& position)
+	void Scene::SetEntityWorldPosition(Entity entity, const glm::vec3& position, bool recalculateChildren)
 	{
 		auto [transform, rc] = m_Registry.get<TransformComponent, RelationshipComponent>(entity.m_Handle);
 		transform.WorldPosition = position;
@@ -373,46 +387,57 @@ namespace proton {
 			transform.LocalPosition -= current.GetTransform().LocalPosition;
 			current = Entity{ crc.Parent, this };
 		}
+
+		if (!recalculateChildren)
+			return;
+
+		Entity child{ rc.First, this };
+		while (child)
+		{
+			auto& r = child.GetComponent<RelationshipComponent>();
+			CalculateEntityWorldPosition(child, true);
+			child = Entity(r.Next, this);
+		}
 	}
 
-	static void CalculateEntityWorldPositon(Scene* scene, Entity entity, const glm::vec3& parentPos, RelationshipComponent& rc, bool isPhysicsSimulated)
+	void Scene::CalculateEntityWorldPosition(Entity entity, bool recalculateLocal)
 	{
 		auto& transform = entity.GetTransform();
-		if (isPhysicsSimulated && entity.HasComponent<RigidbodyComponent>())
-			scene->SetEntityWorldPosition(entity, transform.WorldPosition);
-		else
-			transform.WorldPosition = parentPos + transform.LocalPosition;
-		if (rc.First != entt::null) 
+		auto& relation = entity.GetComponent<RelationshipComponent>();
+
+		if (!recalculateLocal && IsPhysicsSimulated() && entity.HasComponent<RigidbodyComponent>())
 		{
-			Entity current{ rc.First, scene };
-			while (current) 
+			// Recalculate local position based on world position (physics world)
+			SetEntityWorldPosition(entity, transform.WorldPosition, false);
+		}
+		else
+		{
+			if (relation.Parent != entt::null)
 			{
-				auto& crc = current.GetComponent<RelationshipComponent>();
-				CalculateEntityWorldPositon(scene, current, transform.WorldPosition, crc, isPhysicsSimulated);
-				current = Entity{ crc.Next, scene};
+				auto& parentTransform = Entity(relation.Parent, this).GetTransform();
+				transform.WorldPosition = parentTransform.WorldPosition + transform.LocalPosition;
 			}
+			else
+			{
+				// Entity is at scene root level
+				transform.WorldPosition = transform.LocalPosition;
+			}
+		}
+
+		// Calculate world positions for child entities
+		Entity current{ relation.First, this };
+		while (current)
+		{
+			auto& r = current.GetComponent<RelationshipComponent>();
+			CalculateEntityWorldPosition(current, recalculateLocal);
+			current = Entity{ r.Next, this };
 		}
 	}
 
-	void Scene::CalculateWorldPositions(bool isPhysicsSimulated)
+	void Scene::CalculateWorldPositions()
 	{
 		for (auto& entity : m_Root)
-		{
-			auto& transform = entity.GetTransform();
-			if (isPhysicsSimulated)
-				transform.LocalPosition = transform.WorldPosition;
-			else
-				transform.WorldPosition = transform.LocalPosition;
-
-			auto& rrc = entity.GetComponent<RelationshipComponent>();
-			Entity current{ rrc.First, this };
-			while (current)
-			{
-				auto& rc = current.GetComponent<RelationshipComponent>();
-				CalculateEntityWorldPositon(this, current, transform.WorldPosition, rc, isPhysicsSimulated);
-				current = Entity{ rc.Next, this };
-			}
-		}
+			CalculateEntityWorldPosition(entity);
 	}
 
 	void Scene::SetGameModeByClassName(const std::string& gameModeClassName)
@@ -426,15 +451,18 @@ namespace proton {
 		
 		CachePrimaryCameraPosition();
 		CacheCursorWorldPosition();
+		
+		if (!IsPhysicsSimulated())
+			CalculateWorldPositions();
 
 		if (m_SceneState == SceneState::Play)
 		{
 			// Update physics
-			if (m_EnablePhysics && m_PhysicsWorld->IsInitialized())
+			if (IsPhysicsSimulated())
 			{
 				m_PhysicsWorld->Update(ts);
 				// Calculate world positions (physics simulation)
-				CalculateWorldPositions(true);
+				CalculateWorldPositions();
 			}
 
 			if (m_GameMode)
@@ -450,11 +478,6 @@ namespace proton {
 				auto& animation = view.get<SpriteAnimationComponent>(entity).SpriteAnimation;
 				animation.Update(ts);
 			}
-		}
-		else 
-		{
-			// Calculate world positions (no physics simulation)
-			CalculateWorldPositions(false);
 		}
 
 		// Render scene
@@ -775,5 +798,10 @@ namespace proton {
 	bool Scene::IsPhysicsWorldInitialized() const
 	{
 		return m_PhysicsWorld->IsInitialized();
+	}
+
+	bool Scene::IsPhysicsSimulated() const
+	{
+		return IsPhysicsEnabled() && IsPhysicsWorldInitialized();
 	}
 }

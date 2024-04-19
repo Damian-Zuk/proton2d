@@ -33,6 +33,7 @@ public:
 
 private:
 	bool IsGrounded() const;
+	bool IsOnHighSlope() const;
 
 private:
 	bool m_IsLocalPlayer = true;

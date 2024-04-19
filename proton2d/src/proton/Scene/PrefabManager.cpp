@@ -99,11 +99,6 @@ namespace proton {
 		const json& prefabData = s_Instance->m_PrefabsJsonData.at(prefabPath);
 		Entity entity = serializer.DeserializeEntity(prefabData, false);
 		
-		auto camera = scene->GetPrimaryCameraPosition();
-		auto& transform = entity.GetComponent<TransformComponent>();
-		transform.WorldPosition.x = camera.x;
-		transform.WorldPosition.y = camera.y;
-		
 		return entity;
 	}
 

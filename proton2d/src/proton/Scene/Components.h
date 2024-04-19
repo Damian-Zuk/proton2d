@@ -146,6 +146,7 @@ namespace proton {
 		b2Body* RuntimeBody = nullptr;
 		b2BodyType Type = b2_staticBody;
 		bool FixedRotation = false;
+		bool AttachToParent = false; // Revolution Joint
 	};
 
 	struct BoxColliderComponent
@@ -158,6 +159,7 @@ namespace proton {
 		PhysicsContactCallback ContactCallback;
 		b2Filter Filter;
 		bool IsSensor = false;
+		bool AttachToParent = false;
 	};
 
 	struct CircleColliderComponent
@@ -169,6 +171,7 @@ namespace proton {
 		PhysicsMaterial Material;
 		PhysicsContactCallback ContactCallback;
 		bool IsSensor = false;
+		bool AttachToParent = false;
 	};
 
 	struct NetworkComponent

@@ -7,6 +7,8 @@
 #include <box2d/b2_polygon_shape.h>
 #include "box2d/b2_circle_shape.h"
 #include <box2d/b2_contact.h>
+#include <box2d/b2_revolute_joint.h>
+#include <box2d/b2_wheel_joint.h>
 
 namespace proton {
 
@@ -47,14 +49,22 @@ namespace proton {
 
 		b2Body* body = m_World->CreateBody(&bodyDef);
 		body->SetFixedRotation(rb.FixedRotation);
-		AddFixtureToRuntimeBody(entity, body);
 		m_RuntimeBodies[entity.GetUUID()] = body;
 		rb.RuntimeBody = body;
+
+		AddFixtureToRuntimeBody(entity, body);
+
+		auto& hierarchy = entity.GetComponent<RelationshipComponent>();
+		if (rb.AttachToParent && hierarchy.Parent != entt::null)
+		{
+			Entity parent(hierarchy.Parent, m_Scene);
+			m_JointsCreateQueue.push({ entity, parent, JointType::Revolute });
+		}
 		
 		return body;
 	}
 
-	void PhysicsWorld::AddFixtureToRuntimeBody(Entity entity, b2Body* body)
+	void PhysicsWorld::AddFixtureToRuntimeBody(Entity entity, b2Body* body, bool attachToParent)
 	{
 		if (!entity.HasAnyComponent<BoxColliderComponent, CircleColliderComponent>())
 			return;
@@ -79,9 +89,18 @@ namespace proton {
 		{
 			auto& bc = entity.GetComponent<BoxColliderComponent>();
 
+			b2Vec2 offset = { bc.Offset.x, bc.Offset.y };
+			if (bc.AttachToParent)
+			{
+				offset.x += transform.LocalPosition.x;
+				offset.y += transform.LocalPosition.y;
+			}
+
+			float hx = bc.Size.x * transform.Scale.x / 2.0f;
+			float hy = bc.Size.y * transform.Scale.y / 2.0f;
+			
 			b2PolygonShape shape;
-			shape.SetAsBox(bc.Size.x * transform.Scale.x / 2.0f,
-				bc.Size.y * transform.Scale.y / 2.0f, { bc.Offset.x, bc.Offset.y }, 0);
+			shape.SetAsBox(hx, hy, offset, 0);
 
 			fixtureDef.shape = &shape;
 			fixtureDef.isSensor = bc.IsSensor;
@@ -101,7 +120,11 @@ namespace proton {
 			auto& cc = entity.GetComponent<CircleColliderComponent>();
 
 			b2CircleShape shape;
-			shape.m_p.Set(cc.Offset.x, cc.Offset.y);
+			if (cc.AttachToParent)
+				shape.m_p.Set(cc.Offset.x + transform.LocalPosition.x, cc.Offset.y + transform.LocalPosition.y);
+			else
+				shape.m_p.Set(cc.Offset.x, cc.Offset.y);
+
 			shape.m_radius = transform.Scale.x / 2.0f * cc.Radius;
 			fixtureDef.shape = &shape;
 			fixtureDef.isSensor = cc.IsSensor;
@@ -121,40 +144,61 @@ namespace proton {
 		m_World = new b2World({ 0.0f, -m_Gravity });
 		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 		
+		// Create runtime bodies (b2Body)
 		for (entt::entity entity : m_Scene->m_Registry.view<RigidbodyComponent>())
 			CreateRuntimeBody(Entity{ entity, m_Scene });
 
+		// Add to colliders to parent's body
 		auto viewBoxes = m_Scene->m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>);
 		for (entt::entity e : viewBoxes)
 		{
 			Entity entity{ e, m_Scene }; 
+
+			// Check AttachToParent property
+			auto& collider = entity.GetComponent<BoxColliderComponent>();
+			if (!collider.AttachToParent)
+				continue;
+
+			// Check if entity has parent
 			auto& rc = entity.GetComponent<RelationshipComponent>();
 			if (rc.Parent == entt::null)
 				continue;
 
+			// Check if parent has RigidbodyComponent
 			Entity parent{ rc.Parent, m_Scene };
 			if (!parent.HasComponent<RigidbodyComponent>())
 				continue;
 
 			b2Body* body = GetRuntimeBody(parent.GetUUID());
-			AddFixtureToRuntimeBody(entity, body);
+			AddFixtureToRuntimeBody(entity, body, true);
 		}
 
-		auto viewCircles = m_Scene->m_Registry.view<CircleColliderComponent>(entt::exclude<RigidbodyComponent>);
+		// Add to colliders to parent's body
+		auto viewCircles = m_Scene->m_Registry.view<CircleColliderComponent>(entt::exclude<RigidbodyComponent, BoxColliderComponent>);
 		for (entt::entity e : viewCircles)
 		{
 			Entity entity{ e, m_Scene };
+
+			// Check AttachToParent property
+			auto& collider = entity.GetComponent<CircleColliderComponent>();
+			if (!collider.AttachToParent)
+				continue;
+
+			// Check if entity has parent
 			auto& rc = entity.GetComponent<RelationshipComponent>();
 			if (rc.Parent == entt::null)
 				continue;
 
+			// Check if parent has RigidbodyComponent
 			Entity parent{ rc.Parent, m_Scene };
 			if (!parent.HasComponent<RigidbodyComponent>())
 				continue;
 
 			b2Body* body = GetRuntimeBody(parent.GetUUID());
-			AddFixtureToRuntimeBody(entity, body);
+			AddFixtureToRuntimeBody(entity, body, true);
 		}
+
+		CreateJoints();
 	}
 
 	void PhysicsWorld::DestroyWorld()
@@ -166,6 +210,50 @@ namespace proton {
 		}
 		m_RuntimeBodies.clear();
 		m_FixtureUserData.clear();
+	}
+
+	void PhysicsWorld::CreateJoints()
+	{
+		while (!m_JointsCreateQueue.empty())
+		{
+			const JointInfo& info = m_JointsCreateQueue.front();
+
+			if (!info.EntityA.HasComponent<RigidbodyComponent>())
+			{
+				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityA.GetUUID(), info.EntityA.GetTag());
+				continue;
+			}
+
+			if (!info.EntityB.HasComponent<RigidbodyComponent>())
+			{
+				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityB.GetUUID(), info.EntityB.GetTag());
+				continue;
+			}
+
+			auto& rbA = info.EntityA.GetComponent<RigidbodyComponent>();
+			auto& rbB = info.EntityB.GetComponent<RigidbodyComponent>();
+			auto& transform = info.EntityA.GetTransform();
+
+			switch (info.Type)
+			{
+			case JointType::Revolute:
+			{
+				b2RevoluteJointDef jointDef;
+				b2Vec2 anchorPoint = { transform.WorldPosition.x, transform.WorldPosition.y };
+				jointDef.Initialize(rbA.RuntimeBody, rbB.RuntimeBody, anchorPoint);
+				jointDef.collideConnected = false;
+
+				b2Joint* joint = m_World->CreateJoint(&jointDef);
+				m_Joints.push_back(joint);
+				break;
+			}
+			default:
+				PT_CORE_ASSERT("Invalid JointType: {}", info.Type);
+				break;
+			}
+
+			m_JointsCreateQueue.pop();
+		}
 	}
 
 	void PhysicsWorld::Update(float ts)
@@ -181,9 +269,25 @@ namespace proton {
 			{
 				if (entity.HasComponent<RigidbodyComponent>())
 				{
+					m_Scene->CalculateEntityWorldPosition(entity, false);
 					CreateRuntimeBody(entity);
 					continue;
 				}
+
+				if (entity.HasComponent<BoxColliderComponent>())
+				{
+					auto& collider = entity.GetComponent<BoxColliderComponent>();
+					if (!collider.AttachToParent)
+						continue;
+				}
+
+				if (entity.HasComponent<CircleColliderComponent>())
+				{
+					auto& collider = entity.GetComponent<CircleColliderComponent>();
+					if (!collider.AttachToParent)
+						continue;
+				}
+
 				auto& rc = entity.GetComponent<RelationshipComponent>();
 				if (rc.Parent != entt::null)
 				{
@@ -191,6 +295,7 @@ namespace proton {
 					AddFixtureToRuntimeBody(entity, GetRuntimeBody(parent.GetUUID()));
 				}
 			}
+			CreateJoints();
 			m_EntitiesToInitialize.clear();
 		}
 

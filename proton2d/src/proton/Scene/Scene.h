@@ -49,8 +49,8 @@ namespace proton {
 		void DestroyChildEntities(Entity entity);
 		void DestroyAll();
 
-		void SetEntityLocalPosition(Entity entity, const glm::vec3& position);
-		void SetEntityWorldPosition(Entity entity, const glm::vec3& position);
+		void SetEntityLocalPosition(Entity entity, const glm::vec3& position, bool recalculateChildren = true);
+		void SetEntityWorldPosition(Entity entity, const glm::vec3& position, bool recalculateChildren = true);
 
 		Entity FindByID(UUID id);
 		Entity FindByTag(const std::string& tag);
@@ -69,6 +69,7 @@ namespace proton {
 
 		bool IsPhysicsEnabled() const;
 		bool IsPhysicsWorldInitialized() const;
+		bool IsPhysicsSimulated() const;
 		bool IsSimulated() const { return m_SceneState != SceneState::Stop; };
 		bool IsPaused() const { return m_SceneState == SceneState::Paused; };
 
@@ -114,7 +115,8 @@ namespace proton {
 		void CachePrimaryCameraPosition();
 		void CacheCursorWorldPosition();
 
-		void CalculateWorldPositions(bool isPhysicsSimulated);
+		void CalculateEntityWorldPosition(Entity entity, bool recalculateLocal = false);
+		void CalculateWorldPositions();
 
 	private:
 		SceneState m_SceneState = SceneState::Stop;

@@ -28,7 +28,7 @@ namespace proton {
 		return bc;
 	}
 
-	// AddComponent<BoxColliderComponent>
+	// AddComponent<CircleColliderComponent>
 	template<>
 	CircleColliderComponent &Entity::AddComponent() const
 	{
