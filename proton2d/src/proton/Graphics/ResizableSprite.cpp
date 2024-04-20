@@ -3,6 +3,7 @@
 #include "Proton/Scene/Components.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Scene/Entity.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
 
 namespace proton {
 
@@ -15,21 +16,23 @@ namespace proton {
 	void ResizableSprite::Generate(Entity* owningEntity)
 	{
 		auto& transform = owningEntity->GetTransform();
-		if (transform.Scale.x < 0.0f || transform.Scale.y < 0.0f)
+		m_Scale = transform.Scale;
+
+		if (m_Scale.x < 0.0f || m_Scale.y < 0.0f)
 		{
 			m_Width = 0; m_Height = 0;
-			m_Tilemap.clear();
 			return;
 		}
 
-		m_Width = std::max((uint32_t)ceil(transform.Scale.x / m_TileScale), 2u);
-		m_Height = std::max((uint32_t)ceil(transform.Scale.y / m_TileScale), 2u);
+		m_Width = std::max((uint32_t)ceil(m_Scale.x / m_TileScale), 2u);
+		m_Height = std::max((uint32_t)ceil(m_Scale.y / m_TileScale), 2u);
+		
+		m_PixelSize = {
+			m_Scale.x * m_TileScale * m_Spritesheet->m_TileSize.x,
+			m_Scale.y * m_TileScale * m_Spritesheet->m_TileSize.y
+		};
 
-		m_Tilemap.resize(m_Width);
-		for (auto& column : m_Tilemap)
-			column.resize(m_Height);
-
-		CalculateTileTransforms(owningEntity);
+		CalculateTileTransforms();
 	}
 
 	void ResizableSprite::SetTileScale(float tileScale, Entity* owningEntity)
@@ -41,93 +44,91 @@ namespace proton {
 	// Generate tile index positions
 	void ResizableSprite::DetermineTileIndexPositions(TilemapIndexPositions& tilemap)
 	{
-		tilemap.resize(m_Width);
-		for (auto& column : tilemap)
-			column.resize(m_Height);
+		tilemap.resize(m_Width * m_Height);
 
 		uint16_t sx = m_PositionOffset.x, sy = m_PositionOffset.y;
 
 		// Fill whole tilemap with center slices
-		for (uint32_t y = 0; y < m_Height; y++)
-			for (uint32_t x = 0; x < m_Width; x++)
-				tilemap[x][y] = { sx + 1, sy + 1 };
+		for (auto& tile : tilemap)
+			tile = { sx + 1, sy + 1 };
 
 		// Top left corner
 		if (m_Edges & Edge_TopLeft)
 		{
-			tilemap[0][m_Height - 1] = { sx, sy + 2 };
+			tilemap[(m_Height - 1) * m_Width] = {sx, sy + 2};
 
 			if (!(m_Edges & Edge_Left))
-				tilemap[0][m_Height - 1] = { sx + 1, sy + 2 };
+				tilemap[(m_Height - 1) * m_Width] = { sx + 1, sy + 2 };
 
 			if (!(m_Edges & Edge_Top))
-				tilemap[0][m_Height - 1] = { sx, sy + 2 - 1 };
+				tilemap[(m_Height - 1) * m_Width] = { sx, sy + 2 - 1 };
 		}
 
 		// Top right corner
 		if (m_Edges & Edge_TopRight)
 		{
-			tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 2 };
+			tilemap[m_Height * m_Width - 1] = { sx + 2, sy + 2 };
 
 			if (!(m_Edges & Edge_Right))
-				tilemap[m_Width - 1][m_Height - 1] = { sx + 1, sy + 2 };
+				tilemap[m_Height * m_Width - 1] = { sx + 1, sy + 2 };
 
 			if (!(m_Edges & Edge_Top))
-				tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 1 };
+				tilemap[m_Height * m_Width - 1] = { sx + 2, sy + 1 };
 		}
 
 		// Bottom left corner
 		if (m_Edges & Edge_BottomLeft)
 		{
-			tilemap[0][0] = { sx, sy };
+			tilemap[0] = { sx, sy };
 
 			if (!(m_Edges & Edge_Left))
-				tilemap[0][0] = { sx + 1, sy };
+				tilemap[0] = { sx + 1, sy };
 
 			if (!(m_Edges & Edge_Bottom))
-				tilemap[0][0] = { sx, sy + 1 };
+				tilemap[0] = { sx, sy + 1 };
 		}
 
 		// Bottom right corner
 		if (m_Edges & Edge_BottomRight)
 		{
-			tilemap[m_Width - 1][0] = { sx + 2, sy };
+			tilemap[m_Width - 1] = { sx + 2, sy };
 
 			if (!(m_Edges & Edge_Right))
-				tilemap[m_Width - 1][0] = { sx + 1, sy };
+				tilemap[m_Width - 1] = { sx + 1, sy };
 
 			if (!(m_Edges & Edge_Bottom))
-				tilemap[m_Width - 1][0] = { sx + 2, sy + 1};
+				tilemap[m_Width - 1] = { sx + 2, sy + 1};
 		}
 
 		// Left border
 		if (m_Edges & Edge_Left)
 			for (uint32_t y = 1; y < m_Height - 1; y++)
-				tilemap[0][y] = { sx, sy + 1 };
+				tilemap[y * m_Width] = { sx, sy + 1 };
 
 		// Right border
 		if (m_Edges & Edge_Right)
 			for (uint32_t y = 1; y < m_Height - 1; y++)
-				tilemap[m_Width - 1][y] = { sx + 2, sy + 1 };
+				tilemap[m_Width - 1 + y * m_Width] = { sx + 2, sy + 1 };
 
 		// Top border
 		if (m_Edges & Edge_Top)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
-				tilemap[x][m_Height - 1] = { sx + 1, sy + 2 };
+				tilemap[x + (m_Height - 1) * m_Width] = {sx + 1, sy + 2};
 
 		// Bottom border
 		if (m_Edges & Edge_Bottom)
 			for (uint32_t x = 1; x < m_Width - 1; x++)
-				tilemap[x][0] = { sx + 1, sy };
+				tilemap[x] = { sx + 1, sy };
 	}
 
-	void ResizableSprite::CalculateTileTransforms(Entity* owningEntity)
+	void ResizableSprite::CalculateTileTransforms()
 	{
-		auto& transform = owningEntity->GetTransform();
+		std::vector<ResizableSpriteTile> tilemap;
+		tilemap.resize(m_Width * m_Height);
 
 		// width, height tile count (with fraction)
-		float width = transform.Scale.x / m_TileScale;
-		float height = transform.Scale.y / m_TileScale;
+		float width = m_Scale.x / m_TileScale;
+		float height = m_Scale.y / m_TileScale;
 		glm::uvec2 tileCount = { (uint32_t)ceil(width), (uint32_t)ceil(height) };
 		
 		// Offset means the size of a cut of the penultimate tile
@@ -173,8 +174,8 @@ namespace proton {
 			for (uint32_t x = 0; x < tileCount.x; x++)
 			{
 				// Tile position (in spritesheet)
-				const glm::uvec2& tp = spritesheetTilePositions[x][y];
-				TextureCoords& coords = m_Tilemap[x][y].Coords;
+				const glm::uvec2& tp = spritesheetTilePositions[x + y * m_Width];
+				TextureCoords& coords = tilemap[x + y * m_Width].Coords;
 				coords = m_Spritesheet->GetTextureCoords(tp.x, tp.y);
 
 				glm::vec2 scale = { m_TileScale, m_TileScale };
@@ -256,28 +257,30 @@ namespace proton {
 				}
 
 				// Store glm::mat4 tile transform matrix
-				m_Tilemap[x][y].LocalTransform = Math::GetTransform(
+				tilemap[x + y * m_Width].LocalTransform = Math::GetTransform(
 					{ pos.x, pos.y, 0 }, { scale.x, scale.y }
 				);
 			}
 		}
+
+		RenderToFrameBuffer(tilemap);
 	}
 
-	void ResizableSprite::SetPositionOffset(const glm::uvec2& position, Entity* owningEntity)
+	void ResizableSprite::SetPositionOffset(const glm::uvec2& position)
 	{
 		if (position != m_PositionOffset)
 		{
 			m_PositionOffset = position;
-			CalculateTileTransforms(owningEntity);
+			CalculateTileTransforms();
 		}
 	}
 
-	void ResizableSprite::SetEdges(uint8_t edges, Entity* owningEntity)
+	void ResizableSprite::SetEdges(uint8_t edges)
 	{
 		if (edges != m_Edges)
 		{
 			m_Edges = edges;
-			CalculateTileTransforms(owningEntity);
+			CalculateTileTransforms();
 		}
 	}
 
@@ -289,6 +292,51 @@ namespace proton {
 	uint8_t ResizableSprite::GetEdges() const
 	{
 		return m_Edges;
+	}
+
+	void ResizableSprite::RenderToFrameBuffer(const std::vector<ResizableSpriteTile>& tilemap)
+	{
+		if (!m_Spritesheet)
+			return;
+
+		FramebufferSpecification fbSpec;
+		fbSpec.Attachments = {
+			{ FramebufferTextureFormat::RGBA8, TextureFilterMode::Nearest },
+		};
+		fbSpec.Width = m_PixelSize.x;
+		fbSpec.Height = m_PixelSize.y;
+		m_Framebuffer.reset(new Framebuffer(fbSpec));
+
+		m_Framebuffer->Bind();
+		
+		Camera camera;
+		camera.m_AspectRatio = (float)m_PixelSize.x / (float)m_PixelSize.y;
+		camera.m_OrthographicSize = glm::min(m_Scale.x, m_Scale.y);
+		
+		if (m_Scale.y > m_Scale.x)
+			camera.m_OrthographicSize = m_Scale.y;
+
+		camera.RecalculateProjection();
+		
+		Renderer::BeginScene(camera, glm::vec3{ 0.0f });
+		Renderer::SetClearColor({ 1.0f, 1.0f, 1.0f, 0.0f });
+		Renderer::Clear();
+		for (const auto& tile : tilemap)
+		{
+			Renderer::DrawQuad(tile.LocalTransform, m_Spritesheet->GetTexture(), tile.Coords, glm::vec4{1.0f});
+		}
+		Renderer::EndScene();
+
+		m_Texture.reset(new Texture(fbSpec.Width, fbSpec.Height, m_Framebuffer->GetColorAttachmentRendererID()));
+		m_Framebuffer->Unbind();
+	}
+
+	void ResizableSprite::Render(const glm::mat4& transform, const glm::vec4& color)
+	{
+		if (!m_Texture)
+			return;
+
+		Renderer::DrawQuad(transform, m_Texture, color);
 	}
 
 }

@@ -11,6 +11,12 @@
 
 namespace proton {
 
+	Texture::Texture(uint32_t width, uint32_t height, uint32_t objectID)
+		: m_Width(width), m_Height(height), m_Object_ID(objectID),
+		m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)
+	{
+	}
+
 	Texture::Texture(uint32_t width, uint32_t height, bool fillDataWhitePixels)
 		: m_Width(width), m_Height(height),
 		m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)

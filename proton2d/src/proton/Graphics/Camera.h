@@ -41,6 +41,7 @@ namespace proton {
 		float m_OrthographicFar = 1.0f;
 
 		friend class InfoPanel;
+		friend class ResizableSprite;
 	};
 
 }

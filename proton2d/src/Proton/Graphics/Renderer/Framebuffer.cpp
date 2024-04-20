@@ -151,6 +151,18 @@ namespace proton {
 					Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, (int)i);
 					break;
 				}
+
+				switch (m_ColorAttachmentSpecifications[i].FilterMode)
+				{
+				case TextureFilterMode::Nearest:
+					glTextureParameteri(m_ColorAttachments[i], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTextureParameteri(m_ColorAttachments[i], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					break;
+				case TextureFilterMode::Linear:
+					glTextureParameteri(m_ColorAttachments[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTextureParameteri(m_ColorAttachments[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					break;
+				}
 			}
 		}
 

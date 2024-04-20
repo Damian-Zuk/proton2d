@@ -5,6 +5,7 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
+#include "Proton/Graphics/Renderer/Framebuffer.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Scripting/ScriptFactory.h"
@@ -329,6 +330,11 @@ namespace proton {
 		{
 			DrawComponentUI<ResizableSpriteComponent>("ResizableSprite", [&](auto& component)
 				{
+					const auto& framebuffer = component.ResizableSprite.m_Framebuffer;
+					const auto& fbSpec = framebuffer->GetSpecification();
+					uint64_t textureID = framebuffer->GetColorAttachmentRendererID();
+					ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ (float)fbSpec.Width, (float)fbSpec.Height }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
 					auto& spritesheet = component.ResizableSprite.m_Spritesheet;
 					auto& sprite = component.ResizableSprite;
 					std::string filename = spritesheet 
@@ -385,7 +391,7 @@ namespace proton {
 					ImGui::SameLine(); 
 					ImGui::CheckboxFlags("##tb_bottom_right", &edges, Edge_BottomRight);
 
-					sprite.SetEdges((uint8_t)edges, &m_SelectedEntity);
+					sprite.SetEdges((uint8_t)edges);
 					ImGui::Dummy({ 0, 3.0f });
 
 					// Tint color control

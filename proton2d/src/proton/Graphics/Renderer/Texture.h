@@ -9,6 +9,7 @@
 
 // Forward declaration
 typedef unsigned int GLenum;
+class Framebuffer;
 
 namespace proton {
 
@@ -25,6 +26,7 @@ namespace proton {
 	class Texture
 	{
 	public:
+		Texture(uint32_t width, uint32_t height, uint32_t objectID);
 		Texture(uint32_t width, uint32_t height, bool fillDataWhitePixels = false);
 		Texture(const std::string& path);
 		virtual ~Texture();

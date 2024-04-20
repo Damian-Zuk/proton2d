@@ -579,20 +579,8 @@ namespace proton {
 			PROFILE_SCOPE("entity_render_resizable_sprite");
 			auto [transform, rsc] = renderableResizableSprite.get<TransformComponent, ResizableSpriteComponent>(e);
 			auto& sprite = rsc.ResizableSprite;
-			auto& spritesheet = sprite.m_Spritesheet;
 
-			if (!spritesheet)
-				continue;
-
-			glm::mat4 transformMatrix = Math::GetTransform(transform.WorldPosition, glm::vec2{1.0f}, transform.Rotation);
-			
-			// TODO: optimize
-			for (const auto& column : sprite.m_Tilemap)
-				for (const auto& tile : column)
-				{
-					Renderer::DrawQuad(transformMatrix * tile.LocalTransform,
-						spritesheet->GetTexture(), tile.Coords, rsc.Color);
-				}
+			sprite.Render(Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), rsc.Color);
 		}
 
 		// Render Circles
