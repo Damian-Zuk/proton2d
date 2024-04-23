@@ -36,7 +36,6 @@ bool Player::OnCreate()
 	if (IsRunningClient())
 	{
 		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
-		// Player script is not simulated on client, we can return here
 		return true;
 	}
 
@@ -44,7 +43,7 @@ bool Player::OnCreate()
 	{
 		GetGameModeBase()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
 			stream.ReadRaw(m_ActionState);
-			});
+		});
 	}
 
 	// Set up sprite animations

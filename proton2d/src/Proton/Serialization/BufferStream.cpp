@@ -13,6 +13,8 @@ namespace proton {
 	{
 		bool valid = m_BufferPosition + size <= m_TargetBuffer.Size;
 		PT_CORE_ASSERT(valid);
+		if (!valid)
+			return false;
 
 		memcpy(m_TargetBuffer.As<uint8_t>() + m_BufferPosition, data, size);
 		m_BufferPosition += size;
@@ -28,6 +30,8 @@ namespace proton {
 	{
 		bool valid = m_BufferPosition + size <= m_TargetBuffer.Size;
 		PT_CORE_ASSERT(valid);
+		if (!valid)
+			return false;
 
 		memcpy(destination, m_TargetBuffer.As<uint8_t>() + m_BufferPosition, size);
 		m_BufferPosition += size;

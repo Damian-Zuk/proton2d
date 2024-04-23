@@ -160,15 +160,18 @@ namespace proton {
 			
 			case PacketType::EntitySpawn:
 			{
-				std::string jsonData;
-				stream.ReadString(jsonData);
-				json jsonParsed = json::parse(jsonData);
+				while (stream.GetStreamPosition() < buffer.Size)
+				{
+					std::string jsonData;
+					stream.ReadString(jsonData);
+					json jsonParsed = json::parse(jsonData);
 
-				if (scene->FindByID((UUID)jsonParsed.at("UUID")))
-					break;
-				
-				SceneSerializer serializer(scene);
-				Entity entity = serializer.DeserializeEntity(jsonParsed);
+					if (scene->FindByID((UUID)jsonParsed.at("UUID")))
+						break;
+
+					SceneSerializer serializer(scene);
+					Entity entity = serializer.DeserializeEntity(jsonParsed);
+				}
 				break;
 			
 			}

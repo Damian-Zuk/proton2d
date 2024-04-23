@@ -223,6 +223,54 @@ namespace proton {
 		}
 	}
 
+	void Server::ProcessCreatedEntitiesQueue()
+	{
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::EntitySpawn);
+
+		bool any = false;
+		std::unordered_map<ClientID, std::vector<Entity>> specificClients;
+		
+		while (!m_OnCreatedEntityQueue.empty())
+		{
+			EntityQueueEntry& entry = m_OnCreatedEntityQueue.front();
+
+			if (entry.entity.HasComponent<NetworkComponent>())
+			{
+				if (entry.client != 0)
+				{
+					specificClients[entry.client].push_back(entry.entity);
+					m_OnCreatedEntityQueue.pop();
+					continue;
+				}
+				SceneSerializer serializer(entry.entity.GetScene());
+				stream.WriteString(serializer.SerializeEntityToString(entry.entity));
+				any = true;
+			}
+
+			m_OnCreatedEntityQueue.pop();
+		}
+
+		if (any)
+		{
+			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition())); 
+		}
+
+		for (auto& [clientID, entityVector] : specificClients)
+		{
+			stream.SetStreamPosition(0);
+			stream.WriteRaw(PacketType::EntitySpawn);
+		
+			for (auto entity : entityVector)
+			{
+				SceneSerializer serializer(entity.GetScene());
+				stream.WriteString(serializer.SerializeEntityToString(entity));
+			}
+
+			SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+		}
+	}
+
 	// TODO: Optimize: send array
 	void Server::SendOnEntityCreated(Entity entity, ClientID specificClient)
 	{
@@ -256,16 +304,7 @@ namespace proton {
 	{
 		Scene* scene = m_GameInstance->GetActiveScene();
 
-		// Process created entities queue
-		while (!m_OnCreatedEntityQueue.empty())
-		{
-			EntityQueueEntry& entry = m_OnCreatedEntityQueue.front();
-			
-			if (entry.entity.HasComponent<NetworkComponent>())
-				SendOnEntityCreated(entry.entity, entry.client);
-			
-			m_OnCreatedEntityQueue.pop();
-		}
+		ProcessCreatedEntitiesQueue();
 
 		// Replicate entitites with NetworkComponent
 		auto view = scene->GetAllEntitiesWith<NetworkComponent>();

@@ -67,6 +67,7 @@ namespace proton {
 
 		void ProcessConnectionStatusQueue();
 		void ProcessMessages();
+		void ProcessCreatedEntitiesQueue();
 		void SendReplicationData();
 
 		// Network statistics
