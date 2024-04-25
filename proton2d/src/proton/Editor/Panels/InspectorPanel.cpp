@@ -330,11 +330,6 @@ namespace proton {
 		{
 			DrawComponentUI<ResizableSpriteComponent>("ResizableSprite", [&](auto& component)
 				{
-					const auto& framebuffer = component.ResizableSprite.m_Framebuffer;
-					const auto& fbSpec = framebuffer->GetSpecification();
-					uint64_t textureID = framebuffer->GetColorAttachmentRendererID();
-					ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ (float)fbSpec.Width, (float)fbSpec.Height }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
 					auto& spritesheet = component.ResizableSprite.m_Spritesheet;
 					auto& sprite = component.ResizableSprite;
 					std::string filename = spritesheet 

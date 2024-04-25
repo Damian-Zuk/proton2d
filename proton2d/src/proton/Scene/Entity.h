@@ -34,7 +34,7 @@ namespace proton {
 		template<typename TComponent, typename... TArgs>
 		TComponent& AddOrReplaceComponent(TArgs&&... args)
 		{
-			return m_Scene->m_Registry.emplace_or_replace<TComponent>(m_Handle, std::forward<Args>(args)...);
+			return m_Scene->m_Registry.emplace_or_replace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
 		}
 
 		template <typename TComponent>

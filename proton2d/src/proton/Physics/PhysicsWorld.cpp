@@ -324,17 +324,14 @@ namespace proton {
 	if (!entityA->IsValid() || !entityB->IsValid()) return; \
 	PhysicsContactCallback* callbackA = nullptr; \
 	PhysicsContactCallback* callbackB = nullptr; \
-\
 	if (entityA->HasComponent<BoxColliderComponent>()) \
 		callbackA = &entityA->GetComponent<BoxColliderComponent>().ContactCallback; \
 	if (entityB->HasComponent<BoxColliderComponent>()) \
 		callbackB = &entityB->GetComponent<BoxColliderComponent>().ContactCallback; \
-\
 	if (entityA->HasComponent<CircleColliderComponent>()) \
 		callbackA = &entityA->GetComponent<CircleColliderComponent>().ContactCallback; \
 	if (entityB->HasComponent<CircleColliderComponent>()) \
 		callbackB = &entityB->GetComponent<CircleColliderComponent>().ContactCallback; \
-\
 	if (callbackA && callbackA->callback_func) \
 		callbackA->callback_func(PhysicsContact{ entityB, contact }, __VA_ARGS__); \
 	if (callbackB && callbackB->callback_func) \

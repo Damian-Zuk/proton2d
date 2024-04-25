@@ -84,7 +84,7 @@ namespace proton
 
 			auto& parentRc = parent.GetComponent<RelationshipComponent>();
 			parentRc.ChildrenCount--;
-			if (parentRc.First == *this)
+			if (parentRc.First == m_Handle)
 				parentRc.First = rc.Next;
 
 			if (prev)

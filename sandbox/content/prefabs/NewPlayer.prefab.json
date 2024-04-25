@@ -1,10 +1,10 @@
 {
-    "UUID": 1243703034013938642,
+    "UUID": 9079536699711287695,
     "Tag": "NewPlayer",
     "Transform": {
         "Position": [
-            16.27174,
-            -0.55903,
+            18.63003,
+            -1.42727,
             0.1
         ],
         "Rotation": 0.0,
@@ -104,7 +104,7 @@
     ],
     "Entities": [
         {
-            "UUID": 15362374832185750255,
+            "UUID": 5885916860893169314,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -127,7 +127,7 @@
                     0.0,
                     0.0
                 ],
-                "Friction": 0.5,
+                "Friction": 0.0,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
                 "Density": 0.5,
@@ -136,7 +136,7 @@
             }
         },
         {
-            "UUID": 1012668221094079959,
+            "UUID": 16684387371268177734,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -170,7 +170,7 @@
             }
         },
         {
-            "UUID": 1484269949508212648,
+            "UUID": 9017660101794696474,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -202,7 +202,7 @@
             }
         },
         {
-            "UUID": 14140201084637188242,
+            "UUID": 10940655573628321786,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -234,7 +234,7 @@
             }
         },
         {
-            "UUID": 3709717993736162617,
+            "UUID": 9978597574337047354,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [

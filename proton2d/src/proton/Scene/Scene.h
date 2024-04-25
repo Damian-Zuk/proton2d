@@ -45,6 +45,7 @@ namespace proton {
 		
 		Entity CreateEntity(const std::string& name = "Entity");
 		Entity CreateEntityWithUUID(UUID id, const std::string& name = "Entity", bool addToSceneRoot = true);
+		Entity DuplicateEntity(Entity entity, Entity attachTo);
 		void DestroyEntity(Entity entity, bool popHierachy = true);
 		void DestroyChildEntities(Entity entity);
 		void DestroyAll();

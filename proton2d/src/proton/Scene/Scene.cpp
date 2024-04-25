@@ -270,6 +270,56 @@ namespace proton {
 		return entity;
 	}
 
+	Entity Scene::DuplicateEntity(Entity entity, Entity attachTo)
+	{
+		Entity newEntity = CreateEntity(entity.GetTag());
+
+		auto& srcRelation = entity.GetComponent<RelationshipComponent>();
+		auto& dstRelation = newEntity.GetComponent<RelationshipComponent>();
+
+		if (attachTo)
+		{
+			attachTo.AddChildEntity(newEntity);
+		}
+		else if (srcRelation.Parent != entt::null)
+		{
+			Entity(srcRelation.Parent, this).AddChildEntity(newEntity);
+		}
+		else
+			m_Root.push_back(newEntity);
+
+		// Copy components ...
+		CopyComponentIfExists(ComponentsToCopy{}, newEntity, entity);
+
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			auto& srcScript = entity.GetComponent<ScriptComponent>();
+			auto& dstScript = newEntity.AddComponent<ScriptComponent>();
+
+			for (auto& it : srcScript.Scripts)
+			{
+				EntityScript* script = ScriptFactory::Get().AddScriptToEntity(newEntity, it.first);
+				for (auto& [fieldName, fieldData] : it.second->m_ScriptFields)
+				{
+					script->SetFieldValueData(fieldName, fieldData.InstanceFieldValue);
+				}
+			}
+		}
+
+		if (srcRelation.ChildrenCount > 0)
+		{
+			Entity current = Entity(srcRelation.First, this);
+			while (current)
+			{
+				auto& r = current.GetComponent<RelationshipComponent>();
+				DuplicateEntity(current, newEntity);
+				current = Entity(r.Next, this);
+			}
+		}
+
+		return newEntity;
+	}
+
 	void Scene::DestroyEntity(Entity entity, bool popHierarchy)
 	{
 		if (!entity.IsValid()) return;

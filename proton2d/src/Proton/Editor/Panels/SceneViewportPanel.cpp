@@ -133,10 +133,30 @@ namespace proton {
 		// Move selected entity
 		if (m_MoveSelectedEntity && m_SelectedEntity.IsValid())
 		{
-			glm::vec2 targetPos = cursor + m_SelectionMouseOffset;
 			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-			transform.LocalPosition.y += targetPos.y - transform.WorldPosition.y;
-			transform.LocalPosition.x += targetPos.x - transform.WorldPosition.x;
+			
+			glm::vec2 offset = {
+				cursor.x + m_SelectionMouseOffset.x - transform.WorldPosition.x,
+				cursor.y + m_SelectionMouseOffset.y - transform.WorldPosition.y
+			};
+
+			transform.LocalPosition.x += offset.x;
+			transform.LocalPosition.y += offset.y;
+
+			if (Input::IsKeyPressed(Key::LeftShift))
+			{
+				auto& relation = m_SelectedEntity.GetComponent<RelationshipComponent>();
+				Entity current(relation.First, m_ActiveScene);
+				while (current)
+				{
+					auto& r = current.GetComponent<RelationshipComponent>();
+					auto& t = current.GetTransform();
+					t.LocalPosition.x -= offset.x;
+					t.LocalPosition.y -= offset.y;
+					current = Entity(r.Next, m_ActiveScene);
+				}
+			}
+
 			ImGui::SetMouseCursor(7);
 		}
 
@@ -242,8 +262,16 @@ namespace proton {
 			if (key == Key::Delete && m_SelectedEntity)
 			{
 				m_SelectedEntity.Destroy();
-				// TODO: remove
 				EditorLayer::Get()->SelectEntity({});
+			}
+
+			if (key == Key::D && Input::IsKeyPressed(Key::LeftControl) && m_SelectedEntity)
+			{
+				Entity newEntity = m_ActiveScene->DuplicateEntity(m_SelectedEntity, Entity());
+				auto& transform = newEntity.GetTransform();
+				transform.LocalPosition.x += 0.1f;
+				transform.LocalPosition.y += 0.1f;
+				EditorLayer::Get()->SelectEntity(newEntity);
 			}
 
 			return false;
