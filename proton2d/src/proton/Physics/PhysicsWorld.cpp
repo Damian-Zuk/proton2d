@@ -80,7 +80,7 @@ namespace proton {
 
 		if (!body)
 		{
-			PT_CORE_ASSERT(body.HasComponent<RigidbodyComponent>(), "Entity has no RigidbodyComponent");
+			PT_CORE_ASSERT(entity.HasComponent<RigidbodyComponent>(), "Entity has no RigidbodyComponent");
 			body = GetRuntimeBody(entity.GetUUID());
 		}
 
@@ -248,7 +248,7 @@ namespace proton {
 				break;
 			}
 			default:
-				PT_CORE_ASSERT("Invalid JointType: {}", info.Type);
+				PT_CORE_ASSERT("Invalid JointType");
 				break;
 			}
 

@@ -19,6 +19,7 @@ namespace proton {
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera, const glm::vec3& position);
+		static void BeginScene(float aspectRatio = 16.0f / 9.0f, const glm::vec3& position = glm::vec3(0.0f));
 		static void EndScene();
 		static void Flush();
 

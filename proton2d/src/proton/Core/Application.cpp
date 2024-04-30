@@ -75,10 +75,6 @@ namespace proton {
 		{
 			m_IsRunning = true;
 
-		#ifdef PROTON_DISTRIBUTION
-			m_GameInstance->GetActiveScene()->BeginPlay();
-		#endif
-
 			// The game loop
 			while (m_IsRunning) 
 			{
@@ -184,7 +180,9 @@ namespace proton {
 			layer->OnEvent(event);
 		}
 
-		m_GameInstance->GetActiveScene()->GetGameMode()->OnEvent(event);
+		Scene* scene = m_GameInstance->GetActiveScene();
+		if (scene)
+			scene->GetGameMode()->OnEvent(event);
 	}
 
 }

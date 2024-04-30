@@ -16,6 +16,9 @@ namespace proton {
 		virtual void OnImGuiRender() = 0;
 		virtual void OnUpdate(float ts) {};
 		virtual void OnEvent(Event& event) {};
+
+		virtual void OnSelectEntity(Entity entity) {}
+		virtual void OnSetActiveScene(Scene* scene) {}
 	
 	protected:
 		Scene* m_ActiveScene = nullptr;

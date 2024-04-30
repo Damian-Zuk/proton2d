@@ -1,6 +1,7 @@
 #include "ptpch.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/Scene.h"
 #include "Proton/Network/Common/NetworkManager.h"
 
 namespace proton {
@@ -24,7 +25,10 @@ namespace proton {
 		else if (loadStartScene)
 		{
 			m_SceneManager->Load(m_ProjectSettings.m_StartScene);
-			m_SceneManager->SetActiveScene(m_ProjectSettings.m_StartScene);
+			Scene* scene = m_SceneManager->SetActiveScene(m_ProjectSettings.m_StartScene);
+	#ifdef PROTON_DISTRIBUTION
+			scene->BeginPlay();
+	#endif
 		}
 	}
 

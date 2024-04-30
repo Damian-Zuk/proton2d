@@ -8,6 +8,7 @@
 #include "Proton/Editor/Panels/ContentBrowserPanel.h"
 #include "Proton/Editor/Panels/SettingsPanel.h"
 #include "Proton/Editor/Panels/InfoPanel.h"
+#include "Proton/Editor/Panels/EditorGizmo2D.h"
 
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
@@ -199,8 +200,12 @@ namespace proton {
 	void EditorLayer::SetActiveScene(Scene* scene)
 	{
 		Get()->m_ActiveScene = scene;
+
 		for (auto& panel : Get()->m_EditorPanels)
+		{
 			panel->m_ActiveScene = scene;
+			panel->OnSetActiveScene(scene);
+		}
 		
 		EditorLayer::SelectEntity({});
 	}
@@ -208,8 +213,12 @@ namespace proton {
 	void EditorLayer::SelectEntity(Entity entity)
 	{
 		Get()->m_SelectedEntity = entity;
+
 		for (auto& panel : Get()->m_EditorPanels)
+		{
 			panel->m_SelectedEntity = entity;
+			panel->OnSelectEntity(entity);
+		}
 	}
 
 	GameInstance* EditorLayer::GetFocusedGameInstance()

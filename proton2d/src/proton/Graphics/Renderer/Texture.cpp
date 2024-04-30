@@ -15,6 +15,7 @@ namespace proton {
 		: m_Width(width), m_Height(height), m_Object_ID(objectID),
 		m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)
 	{
+		m_IsFrameBufferTexture = true;
 	}
 
 	Texture::Texture(uint32_t width, uint32_t height, bool fillDataWhitePixels)
@@ -78,7 +79,8 @@ namespace proton {
 
 	Texture::~Texture()
 	{
-		glDeleteTextures(1, &m_Object_ID);
+		if (!m_IsFrameBufferTexture)
+			glDeleteTextures(1, &m_Object_ID);
 	}
 
 	void Texture::SetData(void* data, size_t size)

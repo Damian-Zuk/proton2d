@@ -55,6 +55,7 @@ namespace proton {
 
 	private:
 		bool m_IsLoaded = false;
+		bool m_IsFrameBufferTexture = false;
 		std::string m_Path;
 		uint32_t m_Width = 0, m_Height = 0;
 		uint32_t m_Object_ID = 0;

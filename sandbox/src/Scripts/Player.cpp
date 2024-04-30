@@ -12,12 +12,9 @@ static constexpr float s_LandAnimationCancelTime = 0.2f;
 
 enum SensorType : uint32_t
 {
-	Sensor_Left = 0,
-	Sensor_Right,
 	Sensor_BottomLeft,
 	Sensor_BottomRight,
 	Sensor_Bottom,
-	Sensor_GroundDetector,
 };
 
 bool Player::IsGrounded() const
@@ -56,7 +53,6 @@ bool Player::OnCreate()
 	animation.Add(Land, 9, AnimationPlayMode::PLAY_ONCE);
 
 	// Set physics sensors to following child entities
-	SetPhysicsSensor(Sensor_GroundDetector, "Sensor_GroundDetector");
 	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
 	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
 	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");

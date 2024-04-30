@@ -17,7 +17,7 @@ namespace proton {
 
 		if (!child)
 		{
-			PT_CORE_ASSERT(child, "Child entity '{}' not found.", childTagName);
+			PT_CORE_ASSERT(child, "Child entity not found.");
 			return;
 		}
 
@@ -25,28 +25,30 @@ namespace proton {
 		{
 			auto& component = child.GetComponent<BoxColliderComponent>();
 			m_PhysicsSensorMap[sensorType] = &component.ContactCallback.ContactCount;
+			return;
 		}
 
 		if (child.HasComponent<CircleColliderComponent>())
 		{
 			auto& component = child.GetComponent<CircleColliderComponent>();
 			m_PhysicsSensorMap[sensorType] = &component.ContactCallback.ContactCount;
+			return;
 		}
 
-		PT_CORE_ASSERT(false, "Sensor has no collider component! sensor_type={}, entity={}", sensorType, childEntityTagName);
+		PT_CORE_ASSERT(false, "Sensor has no collider component!");
 	}
 
 	uint32_t EntityScript::GetSensorContactCount(uint32_t sensorType) const
 	{
 		bool valid = m_PhysicsSensorMap.find(sensorType) != m_PhysicsSensorMap.end();
-		PT_CORE_ASSERT(valid, "Sensor type {} not set!", sensorType);
+		PT_CORE_ASSERT(valid, "Sensor type not set!");
 		return *m_PhysicsSensorMap.at(sensorType);
 	}
 
 	bool EntityScript::CheckSensor(uint32_t sensorType) const
 	{
 		bool valid = m_PhysicsSensorMap.find(sensorType) != m_PhysicsSensorMap.end();
-		PT_CORE_ASSERT(valid, "Sensor type {} not set!", sensorType);
+		PT_CORE_ASSERT(valid, "Sensor type not set!");
 		return *m_PhysicsSensorMap.at(sensorType) > 0;
 	}
 

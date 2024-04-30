@@ -182,10 +182,12 @@ namespace proton {
 			const auto& col = component.Color;
 
 			jsonObj["ResizableSprite"] = {
-				{ "Width",     sprite.m_Width },
-				{ "Height",    sprite.m_Width },
-				{ "TileScale", sprite.m_TileScale },
-				{ "Edges",     sprite.GetEdges() },
+				{ "Width",     sprite.m_CellCount.x },
+				{ "Height",    sprite.m_CellCount.y },
+				{ "TileScale", sprite.m_CellScale },
+				{ "Edges",     sprite.GetEdgesBitset() },
+				{ "Offset",    { sprite.m_PatternOffset.x, sprite.m_PatternOffset.y } },
+				{ "PatternSize", { sprite.m_PatternSize.x, sprite.m_PatternSize.y }},
 				{ "Color", { col.r, col.g, col.b, col.a } }
 			};
 
@@ -428,15 +430,22 @@ namespace proton {
 			json& jsonData = jsonObj["ResizableSprite"];
 			auto& component = entity.AddComponent<ResizableSpriteComponent>();
 			auto& sprite = component.ResizableSprite;
-			sprite.m_Edges = jsonData["Edges"];
-			sprite.m_TileScale = jsonData["TileScale"];
-			auto& c = jsonData["Color"];
-			component.Color = { c[0], c[1], c[2], c[3] };
+			sprite.m_EdgesBitset = jsonData["Edges"];
+			sprite.m_CellScale = jsonData["TileScale"];
+
+			if (jsonData.contains("Offset"))
+				sprite.m_PatternOffset ={ jsonData.at("Offset")[0], jsonData.at("Offset")[1] };
+
+			if (jsonData.contains("PatternSize"))
+				sprite.m_PatternSize ={ jsonData.at("PatternSize")[0], jsonData.at("PatternSize")[1] };
 
 			if (jsonData.contains("Spritesheet"))
-				sprite.SetSpritesheet(AssetManager::GetSpritesheet(jsonData["Spritesheet"]), &entity);
-			else
-				sprite.Generate(&entity);
+				sprite.m_Spritesheet = AssetManager::GetSpritesheet(jsonData["Spritesheet"]);
+		
+			sprite.Generate(transform.Scale);
+
+			auto& c = jsonData["Color"];
+			component.Color = { c[0], c[1], c[2], c[3] };
 		}
 
 		// Deserialize CircleRendererComponent

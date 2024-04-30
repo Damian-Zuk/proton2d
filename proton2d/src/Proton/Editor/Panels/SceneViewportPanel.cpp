@@ -1,6 +1,7 @@
 #include "ptpch.h"
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Panels/EditorGizmo2D.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/EditorCamera.h"
 #include "Proton/Core/Application.h"
@@ -31,6 +32,8 @@ namespace proton {
 		fbSpec.Height = 720;
 		m_Framebuffer = MakeShared<Framebuffer>(fbSpec);
 		m_Camera = MakeUnique<EditorCamera>();
+		m_EditorGizmo = MakeUnique<EditorGizmo2D>();
+		m_EditorGizmo->Init(this);
 	}
 
 	void SceneViewportPanel::OnImGuiRender()
@@ -103,6 +106,7 @@ namespace proton {
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
+			m_ViewportAspectRatio = m_ViewportSize.x / m_ViewportSize.y;
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_Camera->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 			Renderer::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
@@ -123,6 +127,7 @@ namespace proton {
 		m_MousePos = { (int)mx, (int)my };
 
 		DrawCollidersAndSelectionOutline(ts);
+		m_EditorGizmo->Render();
 		m_Framebuffer->Unbind();
 
 		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
@@ -291,6 +296,16 @@ namespace proton {
 		});
 	}
 
+	void SceneViewportPanel::OnSelectEntity(Entity entity)
+	{
+		m_EditorGizmo->m_SelectedEntity = entity;
+	}
+
+	void SceneViewportPanel::OnSetActiveScene(Scene* scene)
+	{
+		m_EditorGizmo->m_ActiveScene = scene;
+	}
+
 	static constexpr glm::vec4 COLOR_WHITE = glm::vec4{ 1.0f };
 	static constexpr glm::vec4 COLOR_YELLOW = { 0.8f, 0.8f, 0.2f, 1.0f };
 	static constexpr glm::vec4 COLOR_COLLIDER = { 0.9f, 0.6f, 0.3f, 0.2f };
@@ -303,12 +318,16 @@ namespace proton {
 			transform.WorldPosition.x + bc.Offset.x,
 			transform.WorldPosition.y + bc.Offset.y, 0.2f
 		};
-		glm::vec3 scale = { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f };
-		Renderer::DrawQuad(Math::GetTransform(position, scale, transform.Rotation), COLOR_COLLIDER);
+		glm::mat4 quadTransform = glm::translate(glm::mat4{ 1.0f }, { transform.WorldPosition.x, transform.WorldPosition.y, 0.2f })
+			* glm::rotate(glm::mat4{ 1.0f }, glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
+			* glm::translate(glm::mat4{ 1.0f }, { bc.Offset.x, bc.Offset.y, 0.0f })
+			* glm::scale(glm::mat4{ 1.0f }, { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f });
+
+		Renderer::DrawQuad(quadTransform, COLOR_COLLIDER);
 		
-		position.z += 0.001f;
-		Renderer::DrawRect(Math::GetTransform(position, scale, transform.Rotation),
-			bc.IsSensor ? COLOR_SENSOR_OUTLINE : COLOR_OUTLINE);
+		quadTransform[3].z += 0.001f;
+		glm::vec4 sensorColor = bc.ContactCallback.ContactCount > 0 ? COLOR_YELLOW : COLOR_SENSOR_OUTLINE;
+		Renderer::DrawRect(quadTransform, bc.IsSensor ? sensorColor : COLOR_OUTLINE);
 	}
 
 	static void DrawCircleCollider(TransformComponent& transform, CircleColliderComponent& cc, Camera& camera)
@@ -318,13 +337,14 @@ namespace proton {
 			transform.WorldPosition.y + cc.Offset.y, 0.2f
 		};
 		glm::vec3 scale = { cc.Radius * transform.Scale.x, cc.Radius * transform.Scale.x, 1.0f };
-		Renderer::DrawCircle(Math::GetTransform(position, scale, transform.Rotation), COLOR_COLLIDER);
+		glm::mat4 circleTransform = Math::GetTransform(position, scale, transform.Rotation);
+		Renderer::DrawCircle(circleTransform, COLOR_COLLIDER);
 
-		position.z += 0.001f;
-		Renderer::DrawCircle(Math::GetTransform(position, scale, transform.Rotation), COLOR_OUTLINE,
+		circleTransform[3].z += 0.001f;
+		Renderer::DrawCircle(circleTransform, COLOR_OUTLINE,
 			0.05f / glm::sqrt(1.0f / camera.GetZoomLevel() * 0.3f));
 
-		position.z += 0.001f;
+		position.z += 0.002f;
 		glm::vec3 point = position;
 		point.x += cc.Radius * transform.Scale.x / 2.0f * std::cos(glm::radians(transform.Rotation));
 		point.y += cc.Radius * transform.Scale.x / 2.0f * std::sin(glm::radians(transform.Rotation));

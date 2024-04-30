@@ -6,6 +6,8 @@
 namespace proton {
 
 	class GameInstance;
+	class EditorCamera;
+	class EditorGizmo2D;
 
 	class SceneViewportPanel : public EditorPanel
 	{
@@ -16,6 +18,12 @@ namespace proton {
 		virtual void OnImGuiRender() override;
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
+
+		virtual void OnSelectEntity(Entity entity) override;
+		virtual void OnSetActiveScene(Scene* scene) override;
+
+		EditorCamera* GetCamera() const { return m_Camera.get(); }
+		float GetAspectRatio() const { return m_ViewportAspectRatio; }
 
 	private:
 		void DrawCollidersAndSelectionOutline(float ts);
@@ -29,10 +37,12 @@ namespace proton {
 		GameInstance* m_GameInstance = nullptr;
 
 		Unique<EditorCamera> m_Camera;
+		Unique<EditorGizmo2D> m_EditorGizmo;
 
 		Shared<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_ViewportBounds[2] = { { 0.0f, 0.0f }, {0.0f, 0.0f} };
+		float m_ViewportAspectRatio = 1.0f;
 		
 		glm::vec2 m_MousePos = { 0.0f, 0.0f };
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };

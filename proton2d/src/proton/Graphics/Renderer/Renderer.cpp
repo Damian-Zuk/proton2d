@@ -11,6 +11,8 @@
 #include "Proton/Graphics/Renderer/VertexArray.h"
 #include "Proton/Graphics/Renderer/Texture.h"
 
+#include "Proton/Utils/Utils.h"
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -192,6 +194,18 @@ namespace proton {
 		PROFILE_FUNCTION();
 		glm::mat4 viewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), position));
 		glm::mat4 viewProjection = camera.GetProjection() * viewMatrix;
+		data.CameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
+		data.LastOpenGLDrawCalls = data.OpenGLDrawCalls;
+		data.OpenGLDrawCalls = 0;
+		StartBatch();
+	}
+
+	void Renderer::BeginScene(float aspectRatio, const glm::vec3& position)
+	{
+		glm::mat4 viewProjection = glm::inverse(
+			glm::translate(glm::mat4(1.0f), position)
+			* glm::scale(glm::mat4(1.0f), glm::vec3(aspectRatio, 1.0f, 1.0f ))
+		);
 		data.CameraUniformBuffer->SetData(&viewProjection, sizeof(glm::mat4));
 		data.LastOpenGLDrawCalls = data.OpenGLDrawCalls;
 		data.OpenGLDrawCalls = 0;

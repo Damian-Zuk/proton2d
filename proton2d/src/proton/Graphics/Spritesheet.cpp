@@ -31,7 +31,7 @@ namespace proton {
 	const TextureCoords& Spritesheet::GetTextureCoords(uint32_t x, uint32_t y) const
 	{
 		PT_CORE_ASSERT(x < m_TileCount.x && y < m_TileCount.y, "Tile position out of bounds!");
-		return m_TextureCoords[x % m_TileCount.x][y % m_TileCount.y];
+		return m_TextureCoords.at(x % m_TileCount.x).at(y % m_TileCount.y);
 	}
 
 }

@@ -166,7 +166,7 @@ namespace proton {
 					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
 						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
-						nsc.ResizableSprite.Generate(&m_SelectedEntity);
+						nsc.ResizableSprite.Generate(component.Scale);
 					}
 				}
 				ImGui::SameLine();
@@ -176,7 +176,7 @@ namespace proton {
 					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
 						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
-						nsc.ResizableSprite.Generate(&m_SelectedEntity);
+						nsc.ResizableSprite.Generate(component.Scale);
 					}
 				}
 				ImGui::Columns(1);
@@ -346,7 +346,7 @@ namespace proton {
 							if (ImGui::Selectable(kv.first.c_str(), isSelected))
 							{
 								spritesheet = AssetManager::GetSpritesheet(kv.first);
-								sprite.SetSpritesheet(spritesheet, &m_SelectedEntity);
+								sprite.SetSpritesheet(spritesheet);
 							}
 
 							if (isSelected)
@@ -357,40 +357,46 @@ namespace proton {
 					if (ImGui::IsItemClicked())
 						AssetManager::ReloadAssetsList();
 
-					float tileScale = sprite.m_TileScale;
+					float tileScale = sprite.m_CellScale;
 					if (ImGui::DragFloat("Tile Scale", &tileScale, 0.001f))
 					{
-						sprite.SetTileScale(tileScale, &m_SelectedEntity);
+						sprite.SetCellScale(tileScale);
 					}
-					ImGui::DragInt2("Tile Offset", (int*)glm::value_ptr(sprite.m_PositionOffset));
+					ImGui::InputInt2("Pattern Offset", (int*)glm::value_ptr(sprite.m_PatternOffset));
+					ImGui::InputInt2("Pattern Size", (int*)glm::value_ptr(sprite.m_PatternSize));
 					ImGui::Dummy({ 0.0f, 3.0f });
 
 					// Toggle sprite edges texture
-					unsigned int edges = (unsigned int)sprite.m_Edges;
+					unsigned int bitset = (unsigned int)sprite.m_EdgesBitset;
 					ImGui::Text("Toggle edge and corner texture:");
-					ImGui::CheckboxFlags("##tb_top_left", &edges, Edge_TopLeft);
+					ImGui::CheckboxFlags("##tb_top_left", &bitset, Edge_TopLeft);
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_top", &edges, Edge_Top);
+					ImGui::CheckboxFlags("##tb_top", &bitset, Edge_Top);
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_top_right", &edges, Edge_TopRight);
+					ImGui::CheckboxFlags("##tb_top_right", &bitset, Edge_TopRight);
 							
-					ImGui::CheckboxFlags("##tb_left", &edges, Edge_Left);
+					ImGui::CheckboxFlags("##tb_left", &bitset, Edge_Left);
 					ImGui::SameLine(); 
 					ImGui::Dummy({ 24.0f, 0.0f }); 
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_right", &edges, Edge_Right);
+					ImGui::CheckboxFlags("##tb_right", &bitset, Edge_Right);
 
-					ImGui::CheckboxFlags("##tb_bottom_left", &edges, Edge_BottomLeft);
+					ImGui::CheckboxFlags("##tb_bottom_left", &bitset, Edge_BottomLeft);
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_bottom", &edges, Edge_Bottom);
+					ImGui::CheckboxFlags("##tb_bottom", &bitset, Edge_Bottom);
 					ImGui::SameLine(); 
-					ImGui::CheckboxFlags("##tb_bottom_right", &edges, Edge_BottomRight);
+					ImGui::CheckboxFlags("##tb_bottom_right", &bitset, Edge_BottomRight);
 
-					sprite.SetEdges((uint8_t)edges);
+					sprite.SetEdgesBitset((uint8_t)bitset);
 					ImGui::Dummy({ 0, 3.0f });
 
 					// Tint color control
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
+					
+					if (ImGui::Button("Regenerate"))
+					{
+						sprite.Generate(m_SelectedEntity.GetTransform().Scale);
+					}
 			});
 		}
 

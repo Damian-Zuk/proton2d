@@ -34,6 +34,7 @@ namespace proton {
 		friend class SceneSerializer;
 		friend class SceneViewportPanel;
 		friend class SettingsPanel;
+		friend class EditorGizmo2D;
 	};
 }
 #endif // PT_EDITOR

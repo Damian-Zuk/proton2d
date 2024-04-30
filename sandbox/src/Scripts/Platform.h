@@ -21,5 +21,8 @@ private:
 
 	bool m_EnableCollision = true;
 	bool m_ContactWithPlayer = false;
+	bool m_DecrementedSensor = false;
 	float m_VanishTimer = 0.0f;
+
+	Entity m_PlayerSensor;
 };

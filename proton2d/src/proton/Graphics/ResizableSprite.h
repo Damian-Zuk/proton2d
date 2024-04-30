@@ -3,12 +3,8 @@
 #include "Proton/Graphics/Renderer/Framebuffer.h"
 
 namespace proton {
-	
-	class Entity; // forward declaration
-	class Framebuffer;
-	struct TransformComponent;
 
-	enum Edge : uint16_t
+	enum ResizableSprite_Edge : uint16_t
 	{
 		Edge_Left        = 1 << 0,
 		Edge_Right       = 1 << 1,
@@ -21,63 +17,54 @@ namespace proton {
 		Edge_All         = 0xFF
 	};
 
-	struct ResizableSpriteTile
+	struct ResizableSpriteCell
 	{
-		TextureCoords Coords;
 		glm::mat4 LocalTransform;
+		TextureCoords TextureCoords;
 	};
+
+	class Framebuffer;
 
 	class ResizableSprite
 	{
 	public:
 		ResizableSprite() = default;
 
-		void SetSpritesheet(const Shared<Spritesheet>& spritesheet, Entity* owningEntity);
-		Shared<Spritesheet> GetSpritesheet();
-
-		// Generate sprite tilemap representing for each tile
-		// - texture coords from source image (spritesheet)
-		// - local transformation matrix (glm::mat4) for Renderer
-		void Generate(Entity* owningEntity);
-
-		// Set scale of indivudual tiles
-		void SetTileScale(float tileScale, Entity* owningEntity);
-		float GetTileScale() const { return m_TileScale; }
-
-		// Set sliced sprite position inside spritesheet 
-		// Bottom left corner is (0, 0)
-		void SetPositionOffset(const glm::uvec2& position);
-		const glm::uvec2& GetPositionOffset() const { return m_PositionOffset; };
-
-		// Toggle sprite edges to be rendered as center pieces
-		// Use Edge Enum to toggle specific bits representing edge/corner
-		void SetEdges(uint8_t edges);
-		uint8_t GetEdges() const;
-
-	private:
-		void RenderToFrameBuffer(const std::vector<ResizableSpriteTile>& tilemap);
+		void Generate(const glm::vec2& transformScale);
 		void Render(const glm::mat4& transform, const glm::vec4& color);
 
-		// Calculate tile index positions in source Spritesheet
-		using TilemapIndexPositions = std::vector<glm::uvec2>;
-		void DetermineTileIndexPositions(TilemapIndexPositions& tilemap);
+		void SetSpritesheet(const Shared<Spritesheet>& spritesheet);
+		Shared<Spritesheet> GetSpritesheet() const { return m_Spritesheet; }
 
-		// Calculate local transformation matrix (glm::mat4) for each tile
-		void CalculateTileTransforms();
+		void SetCellScale(float tileScale);
+		float GetSetScale() const { return m_CellScale; }
+
+		// Set pattern offset position in a source spritesheet
+		// Relative to Bottom Left corner: (0, 0) 
+		void SetPositionOffset(const glm::uvec2& position);
+		const glm::uvec2& GetPositionOffset() const { return m_PatternOffset; };
+
+		// Each bit defines if cell at sprite border has a center slice texture
+		void SetEdgesBitset(uint8_t edgesBitset);
+		uint8_t GetEdgesBitset() const { return m_EdgesBitset; }
 
 	private:
-		Shared<Framebuffer> m_Framebuffer = nullptr;
-		Shared<Texture> m_Texture = nullptr;
+		std::vector<glm::uvec2> CalculateSpritesheetCellIndexPositions();
+		std::vector<ResizableSpriteCell> CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes);
+		void RenderToFrameBuffer(const std::vector<ResizableSpriteCell>& tilemap);
+
+	private:
 		Shared<Spritesheet> m_Spritesheet = nullptr;
+		Shared<Framebuffer> m_Framebuffer = nullptr;
+		Shared<Texture> m_FramebufferTexture = nullptr;
 
-		float m_TileScale = 1.0f;
-		glm::vec2 m_Scale = { 1.0f, 1.0f };
+		float m_CellScale = 1.0f;
+		glm::uvec2 m_PatternSize = { 3, 3 };
+		glm::uvec2 m_PatternOffset = { 0, 0 };
+		uint8_t m_EdgesBitset = Edge_All; // bitset
 
-		// Slice scaled sprites
-		glm::uvec2 m_PositionOffset = { 0, 0 };
-		uint8_t m_Edges = Edge_All;
-
-		uint32_t m_Width = 0, m_Height = 0;
+		glm::vec2 m_TransformScale = { 1.0f, 1.0f };
+		glm::uvec2 m_CellCount = { 0, 0 };
 		glm::uvec2 m_PixelSize = { 0, 0 };
 
 		friend class Scene;
