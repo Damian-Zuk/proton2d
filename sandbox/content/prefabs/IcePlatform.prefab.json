@@ -1,0 +1,58 @@
+{
+    "UUID": 12477094058039218028,
+    "Tag": "IcePlatform",
+    "Transform": {
+        "Position": [
+            27.42861,
+            0.48674,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            3.0,
+            1.0
+        ]
+    },
+    "ResizableSprite": {
+        "Width": 3,
+        "Height": 1,
+        "TileScale": 1.0,
+        "Edges": 255,
+        "Offset": [
+            3,
+            0
+        ],
+        "PatternSize": [
+            3,
+            1
+        ],
+        "Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Spritesheet": "level-sheet.png"
+    },
+    "Rigidbody": {
+        "Type": 0,
+        "FixedRotation": false,
+        "AttachToParent": false
+    },
+    "BoxCollider": {
+        "Size": [
+            0.9399999976158142,
+            0.30000001192092896
+        ],
+        "Offset": [
+            0.0,
+            0.0
+        ],
+        "Friction": 0.5,
+        "Restitution": 0.0,
+        "RestitutionThreshold": 0.5,
+        "Density": 0.5,
+        "IsSensor": false,
+        "AttachToParent": false
+    }
+}

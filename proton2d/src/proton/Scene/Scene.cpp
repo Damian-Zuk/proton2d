@@ -217,6 +217,8 @@ namespace proton {
 
 		if (m_GameMode)
 			m_GameMode->OnCreate();
+
+		m_PhysicsTimer.Reset();
 	}
 
 	void Scene::Pause(bool pause)
@@ -502,26 +504,21 @@ namespace proton {
 		CachePrimaryCameraPosition();
 		CacheCursorWorldPosition();
 		
-		if (!IsPhysicsSimulated())
-			CalculateWorldPositions();
-
 		if (m_SceneState == SceneState::Play)
 		{
-			// Update physics
-			if (IsPhysicsSimulated())
+			if (IsPhysicsSimulated() && m_PhysicsTimer.Elapsed() > m_PhysicsTimestep)
 			{
-				m_PhysicsWorld->Update(ts);
-				// Calculate world positions (physics simulation)
-				CalculateWorldPositions();
+				m_PhysicsWorld->Update(m_PhysicsTimestep);
+				m_PhysicsTimer.Reset();
 			}
+
+			CalculateWorldPositions();
 
 			if (m_GameMode)
 				m_GameMode->OnUpdate(ts);
 
-			// Update scripts
 			UpdateScripts(ts);
 
-			// Update animations
 			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
 			{

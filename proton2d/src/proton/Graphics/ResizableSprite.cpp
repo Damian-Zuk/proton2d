@@ -336,9 +336,6 @@ namespace proton {
 		fbSpec.Width = m_PixelSize.x;
 		fbSpec.Height = m_PixelSize.y;
 
-		if (m_Framebuffer)
-			m_Framebuffer->Invalidate();
-
 		m_Framebuffer.reset(new Framebuffer(fbSpec));
 		m_Framebuffer->Bind();
 		

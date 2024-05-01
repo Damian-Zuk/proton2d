@@ -3,13 +3,13 @@ using namespace proton;
 
 #include "Platform.h"
 
-void Platform::OnRegisterFields()
+void RedPlatform::OnRegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "VanishAfter", &m_VanishAfter);
 	RegisterField(ScriptFieldType::Float, "VanishTime", &m_VanishTime);
 }
 
-bool Platform::OnCreate()
+bool RedPlatform::OnCreate()
 {
 	auto& collider = GetComponent<BoxColliderComponent>();
 
@@ -54,11 +54,8 @@ bool Platform::OnCreate()
 	return true;
 }
 
-void Platform::OnUpdate(float ts)
+void RedPlatform::OnUpdate(float ts)
 {
-
-	if (m_EnableCollision)
-
 	if (m_ContactWithPlayer && m_VanishAfter > 0.0f)
 	{
 		// Vanish the platform (disable collision)
@@ -71,7 +68,7 @@ void Platform::OnUpdate(float ts)
 				m_PlayerSensor.GetComponent<BoxColliderComponent>().ContactCallback.ContactCount--;
 				m_DecrementedSensor = true;
 			}
-			GetComponent<SpriteComponent>().Color.a = 0.33f;
+			GetComponent<ResizableSpriteComponent>().Color.a = 0.33f;
 		}
 
 		// Appear the platform (enable collision)
@@ -79,7 +76,7 @@ void Platform::OnUpdate(float ts)
 		{
 			m_EnableCollision = true;
 			m_ContactWithPlayer = false;
-			GetComponent<SpriteComponent>().Color.a = 1.0f;
+			GetComponent<ResizableSpriteComponent>().Color.a = 1.0f;
 		}
 
 		m_VanishTimer += ts;

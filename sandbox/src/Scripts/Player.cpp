@@ -46,7 +46,7 @@ bool Player::OnCreate()
 	// Set up sprite animations
 	AddComponent<SpriteAnimationComponent>();
 	SpriteAnimation& animation = GetSpriteAnimation();
-	animation.SetFPS(8);
+	animation.SetFPS(12);
 	animation.Add(Idle, 10, AnimationPlayMode::REPEAT);
 	animation.Add(Run, 8, AnimationPlayMode::REPEAT);
 	animation.Add(Jump, 3, AnimationPlayMode::PAUSED);

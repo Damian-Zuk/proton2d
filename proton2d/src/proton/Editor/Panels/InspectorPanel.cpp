@@ -513,8 +513,10 @@ namespace proton {
 				ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
 					| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 
-				bool keepScript = true;
-				bool opened = ImGui::CollapsingHeader((scriptClassName + " (Script)").c_str(), &keepScript, treeNodeFlags);
+				bool opened = ImGui::CollapsingHeader((scriptClassName + " (Script)").c_str(), NULL, treeNodeFlags);
+
+				ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
+				bool removeScript = ImGui::Button(("Remove##" + scriptClassName).c_str());
 
 				if (opened)
 				{
@@ -563,7 +565,7 @@ namespace proton {
 					scriptInstance->OnImGuiRender();
 				}
 
-				if (!keepScript)
+				if (removeScript)
 				{
 					m_SelectedEntity.RemoveScript(scriptClassName);
 					break;
@@ -574,7 +576,6 @@ namespace proton {
 
 		ImGui::End();
 	}
-
 
 	void InspectorPanel::DrawSceneProporties()
 	{
@@ -615,6 +616,7 @@ namespace proton {
 		if (m_ActiveScene->m_EnablePhysics) 
 		{
 			ImGui::Dummy({ 0,5 });
+			ImGui::DragFloat("Physics Timestep", &m_ActiveScene->m_PhysicsTimestep, 0.001f, 0.00001f, 0.25f);
 			ImGui::PushItemWidth(100.0f);
 			ImGui::DragFloat("World Gravity", &m_ActiveScene->m_PhysicsWorld->m_Gravity, 0.1f);
 

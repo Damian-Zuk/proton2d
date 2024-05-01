@@ -1,15 +1,9 @@
 #pragma once
 
-enum PlatformState : uint16_t
-{
-	Normal = 0,
-
-};
-
-class Platform : public EntityScript
+class RedPlatform : public EntityScript
 {
 public:
-	ENTITY_SCRIPT_CLASS(Platform)
+	ENTITY_SCRIPT_CLASS(RedPlatform)
 
 	void OnRegisterFields() override;
 	bool OnCreate() override;
