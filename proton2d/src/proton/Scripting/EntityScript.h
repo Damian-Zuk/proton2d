@@ -41,6 +41,7 @@ namespace proton {
 		virtual bool OnCreate() { return true; }
 		virtual void OnDestroy() {}
 		virtual void OnUpdate(float ts) {}
+		virtual void OnPhysicsUpdate(float ts) {}
 
 		// Register your fields (variables) here. Use RegisterField function.
 		// Supported variable types are listed inside ScriptFieldType enum.

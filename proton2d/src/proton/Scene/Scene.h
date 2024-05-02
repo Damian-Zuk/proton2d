@@ -3,7 +3,6 @@
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Events/Event.h"
 #include "Proton/Core/UUID.h"
-#include "Proton/Core/Timer.h"
 
 #include <entt/entt.hpp>
 
@@ -146,8 +145,8 @@ namespace proton {
 		// Physics
 		bool m_EnablePhysics = true;
 		Unique<PhysicsWorld> m_PhysicsWorld;
-		float m_PhysicsTimestep = 0.02f;
-		Timer m_PhysicsTimer;
+		float m_PhysicsTimestep = 0.01f;
+		float m_PhysicsTimer = 0.0f;
 
 		// Cache
 		glm::vec3 m_PrimaryCameraPosition = { 0.0f, 0.0f, 0.0f };

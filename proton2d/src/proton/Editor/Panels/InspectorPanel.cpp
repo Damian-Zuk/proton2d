@@ -616,8 +616,8 @@ namespace proton {
 		if (m_ActiveScene->m_EnablePhysics) 
 		{
 			ImGui::Dummy({ 0,5 });
-			ImGui::DragFloat("Physics Timestep", &m_ActiveScene->m_PhysicsTimestep, 0.001f, 0.00001f, 0.25f);
 			ImGui::PushItemWidth(100.0f);
+			ImGui::DragFloat("Physics Timestep", &m_ActiveScene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
 			ImGui::DragFloat("World Gravity", &m_ActiveScene->m_PhysicsWorld->m_Gravity, 0.1f);
 
 			int* vi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsVelocityIterations;

@@ -156,7 +156,7 @@ namespace proton {
 				cells[topLeftIndex] = { sx + 1, sy + 2 };
 
 			if (!(m_EdgesBitset & Edge_Top))
-				cells[topLeftIndex] = { sx, sy + 2 - 1 };
+				cells[topLeftIndex] = { sx, sy + 1 };
 		}
 
 		// Left border

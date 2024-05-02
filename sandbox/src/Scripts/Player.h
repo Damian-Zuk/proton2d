@@ -29,6 +29,7 @@ public:
 	virtual void OnRegisterFields() override;
 	virtual bool OnCreate() override;
 	virtual void OnUpdate(float ts) override;
+	virtual void OnPhysicsUpdate(float ts) override;
 	virtual void OnImGuiRender();
 
 private:
@@ -46,6 +47,7 @@ private:
 	float m_PlayerAcceleration = 40.0f;
 	float m_GravityModifier = -10.0f;
 
+	b2Body* m_Wheel = nullptr;
 	PlayerState m_State = Idle;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;

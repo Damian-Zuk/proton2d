@@ -16,10 +16,15 @@ namespace proton {
         PT_CORE_ASSERT(m_Animations.find(index) != m_Animations.end(), "Animation not found");
         if (index != m_CurrentAnimationIndex)
         {
+            if (m_CurrentAnimationIndex != -1 && m_AnimationSwtichTimer.Elapsed() < m_AnimationSwitchTimeThreshold)
+                return;
+
             auto& sprite = m_OwningEntity->GetSprite();
+            sprite.SetTile(startFrame, index);
+
             m_CurrentAnimationIndex = index;
             m_CurrentAnimation = &m_Animations[index];
-            sprite.SetTile(startFrame, index);
+            m_AnimationSwtichTimer.Reset();
         }
     }
 

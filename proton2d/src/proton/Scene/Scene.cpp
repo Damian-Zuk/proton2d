@@ -218,7 +218,7 @@ namespace proton {
 		if (m_GameMode)
 			m_GameMode->OnCreate();
 
-		m_PhysicsTimer.Reset();
+		m_PhysicsTimer = 0.0f;
 	}
 
 	void Scene::Pause(bool pause)
@@ -501,18 +501,42 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 		
-		CachePrimaryCameraPosition();
-		CacheCursorWorldPosition();
-		
+		bool physicsTick = IsPhysicsSimulated() && m_PhysicsTimer + ts > m_PhysicsTimestep;
+
+		if (!physicsTick)
+		{
+			CalculateWorldPositions();
+			CachePrimaryCameraPosition();
+			CacheCursorWorldPosition();
+		}
+
 		if (m_SceneState == SceneState::Play)
 		{
-			if (IsPhysicsSimulated() && m_PhysicsTimer.Elapsed() > m_PhysicsTimestep)
-			{
-				m_PhysicsWorld->Update(m_PhysicsTimestep);
-				m_PhysicsTimer.Reset();
-			}
+			if (IsPhysicsSimulated())
+				m_PhysicsTimer += ts;
 
-			CalculateWorldPositions();
+			if (physicsTick)
+			{
+				m_PhysicsWorld->Update(m_PhysicsTimer);
+
+				CalculateWorldPositions();
+				CachePrimaryCameraPosition();
+				CacheCursorWorldPosition();
+
+				PROFILE_SCOPE("scripts_on_physics_update");
+				auto view = m_Registry.view<RigidbodyComponent, ScriptComponent>();
+				for (auto entity : view)
+				{
+					auto& [rb, script] = view.get<RigidbodyComponent, ScriptComponent>(entity);
+					for (auto& [name, instance] : script.Scripts)
+					{
+						if (instance->m_Initialized)
+							instance->OnPhysicsUpdate(m_PhysicsTimer);
+					}
+				}
+				
+				m_PhysicsTimer = 0.0f;
+			}
 
 			if (m_GameMode)
 				m_GameMode->OnUpdate(ts);
@@ -596,7 +620,8 @@ namespace proton {
 	void Scene::RenderScene(const Camera& camera)
 	{
 		PROFILE_FUNCTION();
-		Renderer::BeginScene(camera, GetPrimaryCameraPosition());
+		auto campos = GetPrimaryCameraPosition();
+		Renderer::BeginScene(camera, campos);
 
 		// Render entities with SpriteComponent
 		auto renderableSprite = m_Registry.view<SpriteComponent, TransformComponent>();

@@ -8,14 +8,14 @@ bool MyGameMode::OnCreate()
 {
 	if (HasAuthority())
 	{
-		if (Entity player = FindByTag("NewPlayer"))
+		if (Entity player = FindByTag("Player"))
 		{
 			m_LocalPlayer = player.As<Player>();
 			return true;
 		}
 		// Spawn local player for listen server
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
-		m_LocalPlayer = SpawnPrefab("NewPlayer").As<Player>();
+		m_LocalPlayer = SpawnPrefab("Player").As<Player>();
 		m_LocalPlayer->SetWorldPosition(spawnTransform.WorldPosition);
 	}
 	return true;
@@ -40,7 +40,7 @@ void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 	PT_TRACE("client_id={}", clientID);
 		
 	// Spawn Player object for connected client
-	Player* player = SpawnPrefab("NewPlayer").As<Player>();
+	Player* player = SpawnPrefab("Player").As<Player>();
 
 	// Get spawn point position
 	uint32_t spawnPoint = (m_RemotePlayers.size() + 1) % 4;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Proton/Graphics/Sprite.h"
+#include "Proton/Core/Timer.h"
 
 #include <unordered_map>
 
@@ -49,7 +50,9 @@ namespace proton {
 		std::unordered_map<uint16_t, Animation> m_Animations;
 		uint16_t m_CurrentAnimationIndex = -1;
 		Animation* m_CurrentAnimation = nullptr;
-		//uint16_t m_CurrentAnimationFrameCount = 0;
+
+		float m_AnimationSwitchTimeThreshold = 0.3f;
+		Timer m_AnimationSwtichTimer;
 
 		uint16_t m_FPS = 60;
 		uint16_t m_CurrentFrame = 0;

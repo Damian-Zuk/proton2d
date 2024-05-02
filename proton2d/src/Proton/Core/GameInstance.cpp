@@ -26,6 +26,7 @@ namespace proton {
 		{
 			m_SceneManager->Load(m_ProjectSettings.m_StartScene);
 			Scene* scene = m_SceneManager->SetActiveScene(m_ProjectSettings.m_StartScene);
+
 	#ifdef PROTON_DISTRIBUTION
 			scene->BeginPlay();
 	#endif

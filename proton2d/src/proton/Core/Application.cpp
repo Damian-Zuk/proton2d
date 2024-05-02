@@ -57,23 +57,24 @@ namespace proton {
 			return;
 		}
 
+		PROFILE_BEGIN_SESSION("Proton-Runtime");
+
 		AssetManager::Init();
 		Renderer::Init();
 		NetworkManager::StaticInit();
+		PrefabManager::Init();
 
 	#ifdef PT_EDITOR
 		m_EditorLayer = EditorLayer::Get();
 		PushOverlay(m_EditorLayer);
 	#endif
 
-		PrefabManager::Init();
-		m_GameInstance->Init();
-
-		PROFILE_BEGIN_SESSION("Proton-Runtime");
-
 		if (OnCreate()) 
 		{
 			m_IsRunning = true;
+
+			m_GameInstance->Init();
+			Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 
 			// The game loop
 			while (m_IsRunning) 
@@ -177,6 +178,8 @@ namespace proton {
 
 		for (AppLayer* layer : m_AppLayers)
 		{
+			if (event.Handled)
+				break;
 			layer->OnEvent(event);
 		}
 
