@@ -210,6 +210,20 @@ namespace proton {
 			};
 		}
 
+		// Serialize TextCompontent
+		if (entity.HasComponent<TextComponent>())
+		{
+			auto& component = entity.GetComponent<TextComponent>();
+			const auto& col = component.Color;
+
+			jsonObj["Text"] = {
+				{ "TextString",  component.TextString },
+				{ "Kerning",     component.Kerning },
+				{ "LineSpacing", component.LineSpacing },
+				{ "Color", { col.r, col.g, col.b, col.a } }
+			};
+		}
+
 		// Serialize RigidbodyComponent
 		if (entity.HasComponent<RigidbodyComponent>())
 		{
@@ -506,6 +520,21 @@ namespace proton {
 			if (circleCollider.contains("AttachToParent"))
 				collider.AttachToParent = circleCollider.at("AttachToParent");
 		}
+
+		// Deserialize TextComponent
+		if (jsonObj.contains("Text"))
+		{
+			auto& component = entity.AddComponent<TextComponent>();
+			json& jsonText = jsonObj["Text"];
+			
+			component.TextString = jsonText["TextString"];
+			component.Kerning = jsonText["Kerning"];
+			component.LineSpacing = jsonText["LineSpacing"];
+
+			auto& c = jsonText["Color"];
+			component.Color = { c[0], c[1], c[2], c[3] };
+		}
+
 
 		// Deserialize RigidbodyComponent
 		if (jsonObj.contains("Rigidbody"))

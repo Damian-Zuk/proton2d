@@ -5,6 +5,7 @@
 #include "Proton/Graphics/ResizableSprite.h"
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Graphics/SpriteAnimation.h"
+#include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Physics/PhysicsCommon.h"
 
 #include <entt/entity/entity.hpp>
@@ -29,6 +30,7 @@ namespace proton {
 		ResizableSprite = 33,
 	 	SpriteAnimation = 34,
 		CircleRenderer =  35,
+		Text =            36,
 		Rigidbody =       64,
 		BoxCollider =     65,
 		CircleCollider =  66,
@@ -121,6 +123,18 @@ namespace proton {
 		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		float Thickness = 1.0f;
 		float Fade = 0.005f;
+	};
+
+	struct TextComponent
+	{
+		PT_COMPONENT_TYPE_ID(Text)
+
+		Shared<Font> FontAsset = Font::GetDefault();
+
+		std::string TextString;
+		glm::vec4 Color{ 1.0f };
+		float Kerning = 0.0f;
+		float LineSpacing = 0.0f;
 	};
 
 	struct SpriteAnimationComponent

@@ -659,9 +659,19 @@ namespace proton {
 		auto circlesView = m_Registry.view<TransformComponent, CircleRendererComponent>();
 		for (auto entity : circlesView)
 		{
+			PROFILE_SCOPE("entity_render_circle");
 			auto [transform, circle] = circlesView.get<TransformComponent, CircleRendererComponent>(entity);
 
 			Renderer::DrawCircle(Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), circle.Color, circle.Thickness, circle.Fade);
+		}
+
+		// Render Text
+		auto textView = m_Registry.view<TransformComponent, TextComponent>();
+		for (auto entity : textView)
+		{
+			PROFILE_SCOPE("entity_render_text");
+			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
+			Renderer::DrawString(text.TextString, Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), text);
 		}
 
 		Renderer::EndScene();

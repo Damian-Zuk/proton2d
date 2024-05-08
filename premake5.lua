@@ -9,6 +9,11 @@ workspace "Proton2D"
 		"Distribution"
 	}
 
+	flags
+	{
+		"MultiProcessorCompile"
+	}
+
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
@@ -20,6 +25,8 @@ IncludeDir["stb"] = "vendor/stb"
 IncludeDir["entt"] = "vendor/entt/src"
 IncludeDir["json"] = "vendor/json"
 IncludeDir["box2d"] = "vendor/box2d/include"
+IncludeDir["msdfgen"] = "vendor/msdf-atlas-gen/msdfgen"
+IncludeDir["msdf_atlas_gen"] = "vendor/msdf-atlas-gen/msdf-atlas-gen"
 IncludeDir["GameNetworkingSockets"] = "vendor/GameNetworkingSockets/include"
 
 group "Dependencies"
@@ -27,6 +34,7 @@ group "Dependencies"
 	include "vendor/glad"
 	include "vendor/imgui"
 	include "vendor/box2d"
+	include "vendor/msdf-atlas-gen"
 group ""
 
 project "proton2d"
@@ -60,6 +68,8 @@ project "proton2d"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.stb}",
+		"%{IncludeDir.msdfgen}",
+		"%{IncludeDir.msdf_atlas_gen}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.json}",
 		"%{IncludeDir.box2d}",
@@ -72,6 +82,7 @@ project "proton2d"
 		"GLFW",
 		"ImGui",
 		"opengl32.lib",
+		"msdf-atlas-gen",
 		"box2d"
 	}
 
@@ -96,13 +107,6 @@ project "proton2d"
 		defines "PROTON_DEBUG"
 		symbols "on"
 
-		postbuildcommands 
-		{
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/libprotobufd.dll" "%{cfg.targetdir}"',
-		}
-
 		links
 		{
 			"vendor/GameNetworkingSockets/bin/Windows/Debug/GameNetworkingSockets.lib"
@@ -111,13 +115,6 @@ project "proton2d"
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
 		optimize "on"
-
-		postbuildcommands 
-		{
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/libprotobuf.dll" "%{cfg.targetdir}"',
-		}
 
 		links
 		{
@@ -128,13 +125,6 @@ project "proton2d"
 		defines "PROTON_DISTRIBUTION"
 		runtime "Release"
 		optimize "on"
-
-		postbuildcommands 
-		{
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
-		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/libprotobuf.dll" "%{cfg.targetdir}"',
-		}
 
 		links
 		{
@@ -192,16 +182,37 @@ project "sandbox"
 		runtime "Debug"
 		symbols "on"
 
+		postbuildcommands 
+		{
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Debug/libprotobufd.dll" "%{cfg.targetdir}"',
+		}
+
 	filter "configurations:Release"
 		defines "PROTON_RELEASE"
 		runtime "Release"
 		optimize "on"
+
+		postbuildcommands 
+		{
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/RelWithDebInfo/libprotobuf.dll" "%{cfg.targetdir}"',
+		}
 
 	filter "configurations:Distribution"
 		defines "PROTON_DISTRIBUTION"
 		runtime "Release"
 		optimize "on"
 		kind "WindowedApp"
+
+		postbuildcommands 
+		{
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/GameNetworkingSockets.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/libcrypto-3-x64.dll" "%{cfg.targetdir}"',
+		  '{COPY} "../vendor/GameNetworkingSockets/bin/Windows/Release/libprotobuf.dll" "%{cfg.targetdir}"',
+		}
 	
 	filter {"configurations:Distribution", "system:windows"}
 		entrypoint "WinMainCRTStartup"

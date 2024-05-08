@@ -71,6 +71,7 @@ namespace proton {
 			ADD_COMPONENT_POPUP_MENU_ITEM(SpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(ResizableSpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CircleRendererComponent);
+			ADD_COMPONENT_POPUP_MENU_ITEM(TextComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CameraComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(RigidbodyComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(BoxColliderComponent);
@@ -410,6 +411,26 @@ namespace proton {
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
 					ImGui::SliderFloat("Thickness", &component.Thickness, 0.0f, 1.0f);
 					ImGui::SliderFloat("Fade", &component.Fade, 0.0f, 1.0f);
+				});
+		}
+
+
+		// ******************************************************
+		// Text Component UI
+		// ******************************************************
+		if (m_SelectedEntity.HasComponent<TextComponent>())
+		{
+			DrawComponentUI<TextComponent>("Text", [&](auto& component)
+				{
+					static char textBuffer[2048] = "/0";
+					strcpy_s(textBuffer, component.TextString.c_str());
+
+					if (ImGui::InputTextMultiline("Text String", textBuffer, 2048))
+						component.TextString = textBuffer;
+
+					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
+					ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
 				});
 		}
 

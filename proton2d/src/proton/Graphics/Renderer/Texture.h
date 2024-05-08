@@ -23,9 +23,27 @@ namespace proton {
 		Repeat, ClampToBorder, ClampToEdge
 	};
 
+	enum class ImageFormat
+	{
+		None = 0,
+		R8,
+		RGB8,
+		RGBA8,
+		RGBA32F
+	};
+
+	struct TextureSpecification
+	{
+		uint32_t Width = 1;
+		uint32_t Height = 1;
+		ImageFormat Format = ImageFormat::RGBA8;
+		bool GenerateMips = true;
+	};
+
 	class Texture
 	{
 	public:
+		Texture(const TextureSpecification& specification);
 		Texture(uint32_t width, uint32_t height, uint32_t objectID);
 		Texture(uint32_t width, uint32_t height, bool fillDataWhitePixels = false);
 		Texture(const std::string& path);
@@ -54,13 +72,19 @@ namespace proton {
 		}
 
 	private:
+		uint32_t m_Object_ID = 0;
+
+		TextureSpecification m_Specification;
+
 		bool m_IsLoaded = false;
 		bool m_IsFrameBufferTexture = false;
+		
 		std::string m_Path;
 		uint32_t m_Width = 0, m_Height = 0;
-		uint32_t m_Object_ID = 0;
+		
 		GLenum m_InternalFormat = 0;
 		GLenum m_DataFormat = 0;
+		
 		TextureFilterMode m_FilterMode = TextureFilterMode::Linear;
 		TextureWrapMode m_WrapModeX = TextureWrapMode::Repeat;
 		TextureWrapMode m_WrapModeY = TextureWrapMode::Repeat;

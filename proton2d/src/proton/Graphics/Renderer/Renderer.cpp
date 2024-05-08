@@ -10,6 +10,7 @@
 #include "Proton/Graphics/Renderer/UniformBuffer.h"
 #include "Proton/Graphics/Renderer/VertexArray.h"
 #include "Proton/Graphics/Renderer/Texture.h"
+#include "Proton/Graphics/Renderer/MSDFData.h"
 
 #include "Proton/Utils/Utils.h"
 
@@ -42,6 +43,15 @@ namespace proton {
 		glm::vec4 Color;
 		float Thickness;
 		float Fade;
+	};
+
+	struct TextVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;
+
+		// TODO: bg color for outline/bg
 	};
 
 	static struct RendererData
@@ -79,6 +89,17 @@ namespace proton {
 		uint32_t CircleIndexCount = 0;
 		CircleVertex* CircleVertexBufferBase = nullptr;
 		CircleVertex* CircleVertexBufferPtr = nullptr;
+
+		// Text VertexBuffer data
+		Shared<VertexArray> TextVertexArray;
+		Shared<VertexBuffer> TextVertexBuffer;
+		Shared<Shader> TextShader;
+
+		uint32_t TextIndexCount = 0;
+		TextVertex* TextVertexBufferBase = nullptr;
+		TextVertex* TextVertexBufferPtr = nullptr;
+
+		Shared<Texture> FontAtlasTexture;
 
 		// Textures and camera uniform buffer
 		std::vector<Shared<Texture>> TextureSlots;
@@ -168,6 +189,19 @@ namespace proton {
 		data.CircleVertexArray->SetIndexBuffer(quadIB); // Use quad IB
 		data.CircleVertexBufferBase = new CircleVertex[data.MaxVertices];
 
+		// Text
+		data.TextVertexArray = MakeShared<VertexArray>();
+
+		data.TextVertexBuffer = MakeShared<VertexBuffer>(data.MaxVertices * (uint32_t)sizeof(TextVertex));
+		data.TextVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "Position"     },
+			{ ShaderDataType::Float4, "Color"        },
+			{ ShaderDataType::Float2, "TexCoord"     }
+			});
+		data.TextVertexArray->AddVertexBuffer(data.TextVertexBuffer);
+		data.TextVertexArray->SetIndexBuffer(quadIB);
+		data.TextVertexBufferBase = new TextVertex[data.MaxVertices];
+
 		// Init texture slots vector
 		data.TextureSlots.resize(data.MaxTextureSlots);
 		data.TextureSlots[0] = MakeShared<Texture>(1, 1, true); // white texture
@@ -176,6 +210,7 @@ namespace proton {
 		data.QuadShader = MakeShared<Shader>("content/shaders/Quad2D.glsl");
 		data.LineShader = MakeShared<Shader>("content/shaders/Line2D.glsl");
 		data.CircleShader = MakeShared<Shader>("content/shaders/Circle2D.glsl");
+		data.TextShader = MakeShared<Shader>("content/shaders/Text.glsl");
 
 		// Camera shader uniform buffer
 		data.CameraUniformBuffer = MakeShared<UniformBuffer>((uint32_t)sizeof(glm::mat4), 0);
@@ -228,6 +263,9 @@ namespace proton {
 
 		data.CircleIndexCount = 0;
 		data.CircleVertexBufferPtr = data.CircleVertexBufferBase;
+
+		data.TextIndexCount = 0;
+		data.TextVertexBufferPtr = data.TextVertexBufferBase;
 		
 		data.TextureSlotIndex = 1;
 	}
@@ -268,6 +306,20 @@ namespace proton {
 			data.CircleShader->Bind();
 			data.CircleVertexArray->Bind();
 			glDrawElements(GL_TRIANGLES, data.CircleIndexCount, GL_UNSIGNED_INT, nullptr);
+			data.OpenGLDrawCalls++;
+		}
+
+		if (data.TextIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)data.TextVertexBufferPtr - (uint8_t*)data.TextVertexBufferBase);
+			data.TextVertexBuffer->SetData(data.TextVertexBufferBase, dataSize);
+
+			auto buf = data.TextVertexBufferBase;
+			data.FontAtlasTexture->Bind(0);
+
+			data.TextShader->Bind();
+			data.TextVertexArray->Bind();
+			glDrawElements(GL_TRIANGLES, data.TextIndexCount, GL_UNSIGNED_INT, nullptr);
 			data.OpenGLDrawCalls++;
 		}
 	}
@@ -456,6 +508,119 @@ namespace proton {
 		}
 
 		data.CircleIndexCount += 6;
+	}
+
+	void Renderer::DrawString(const std::string& string, Shared<Font> font, const glm::mat4& transform, const TextParams& textParams)
+	{
+		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
+		const auto& metrics = fontGeometry.getMetrics();
+		Shared<Texture> fontAtlas = font->GetAtlasTexture();
+
+		data.FontAtlasTexture = fontAtlas;
+
+		double x = 0.0;
+		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+		double y = 0.0;
+
+		const float spaceGlyphAdvance = (float)fontGeometry.getGlyph(' ')->getAdvance();
+
+		for (size_t i = 0; i < string.size(); i++)
+		{
+			char character = string[i];
+			if (character == '\r')
+				continue;
+
+			if (character == '\n')
+			{
+				x = 0;
+				y -= fsScale * metrics.lineHeight + textParams.LineSpacing;
+				continue;
+			}
+
+			if (character == ' ')
+			{
+				float advance = spaceGlyphAdvance;
+				if (i < string.size() - 1)
+				{
+					char nextCharacter = string[i + 1];
+					double dAdvance;
+					fontGeometry.getAdvance(dAdvance, character, nextCharacter);
+					advance = (float)dAdvance;
+				}
+
+				x += fsScale * advance + textParams.Kerning;
+				continue;
+			}
+
+			if (character == '\t')
+			{
+				// NOTE(Yan): is this right?
+				x += 4.0f * (fsScale * spaceGlyphAdvance + textParams.Kerning);
+				continue;
+			}
+
+			auto glyph = fontGeometry.getGlyph(character);
+			if (!glyph)
+				glyph = fontGeometry.getGlyph('?');
+			if (!glyph)
+				return;
+
+			double al, ab, ar, at;
+			glyph->getQuadAtlasBounds(al, ab, ar, at);
+			glm::vec2 texCoordMin((float)al, (float)ab);
+			glm::vec2 texCoordMax((float)ar, (float)at);
+
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+			glm::vec2 quadMin((float)pl, (float)pb);
+			glm::vec2 quadMax((float)pr, (float)pt);
+
+			quadMin *= fsScale, quadMax *= fsScale;
+			quadMin += glm::vec2(x, y);
+			quadMax += glm::vec2(x, y);
+
+			float texelWidth = 1.0f / fontAtlas->GetWidth();
+			float texelHeight = 1.0f / fontAtlas->GetHeight();
+			texCoordMin *= glm::vec2(texelWidth, texelHeight);
+			texCoordMax *= glm::vec2(texelWidth, texelHeight);
+
+			// render here
+			data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+			data.TextVertexBufferPtr->Color = textParams.Color;
+			data.TextVertexBufferPtr->TexCoord = texCoordMin;
+			data.TextVertexBufferPtr++;
+
+			data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+			data.TextVertexBufferPtr->Color = textParams.Color;
+			data.TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
+			data.TextVertexBufferPtr++;
+
+			data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+			data.TextVertexBufferPtr->Color = textParams.Color;
+			data.TextVertexBufferPtr->TexCoord = texCoordMax;
+			data.TextVertexBufferPtr++;
+
+			data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+			data.TextVertexBufferPtr->Color = textParams.Color;
+			data.TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
+			data.TextVertexBufferPtr++;
+
+			data.TextIndexCount += 6;
+
+			if (i < string.size() - 1)
+			{
+				double advance = glyph->getAdvance();
+				char nextCharacter = string[i + 1];
+				fontGeometry.getAdvance(advance, character, nextCharacter);
+
+				x += fsScale * advance + textParams.Kerning;
+			}
+		}
+	}
+
+	void Renderer::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component)
+	{
+		DrawString(string, component.FontAsset, transform, { component.Color, component.Kerning, component.LineSpacing });
 	}
 
 	void Renderer::SetLineWidth(float width)

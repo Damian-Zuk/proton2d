@@ -9,6 +9,7 @@
 
 #include "Proton/Graphics/Sprite.h"
 #include "Proton/Graphics/Camera.h"
+#include "Proton/Scene/Components.h"
 
 namespace proton {
 
@@ -35,6 +36,15 @@ namespace proton {
 		static void DrawDashedLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, float lineScale = 1.0f, float dashOffset = 0.0f);
 		
 		static void DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness = 1.0f, float fade = 0.005f);
+
+		struct TextParams
+		{
+			glm::vec4 Color{ 1.0f };
+			float Kerning = 0.0f;
+			float LineSpacing = 0.0f;
+		};
+		static void DrawString(const std::string& string, Shared<Font> font, const glm::mat4& transform, const TextParams& textParams);
+		static void DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component);
 
 		static void SetLineWidth(float width);
 		static void SetClearColor(glm::vec4 color);
