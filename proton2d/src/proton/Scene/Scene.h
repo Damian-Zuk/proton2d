@@ -110,6 +110,8 @@ namespace proton {
 		void OnUpdate(float ts);
 		void UpdateScripts(float ts);
 		void RenderScene(const Camera& camera);
+		void RenderUI();
+
 		void OnViewportResize(uint32_t width, uint32_t height);
 		void ReleaseGameMode();
 

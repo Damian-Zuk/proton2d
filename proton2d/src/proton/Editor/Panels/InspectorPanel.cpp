@@ -16,6 +16,7 @@
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/UI/UIText.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -72,6 +73,7 @@ namespace proton {
 			ADD_COMPONENT_POPUP_MENU_ITEM(ResizableSpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CircleRendererComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(TextComponent);
+			ADD_COMPONENT_POPUP_MENU_ITEM(UITextComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CameraComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(RigidbodyComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(BoxColliderComponent);
@@ -431,6 +433,28 @@ namespace proton {
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
 					ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
+					ImGui::Checkbox("Hidden", &component.Hidden);
+				});
+		}
+
+		// ******************************************************
+		// UI Text Component UI
+		// ******************************************************
+		if (m_SelectedEntity.HasComponent<UITextComponent>())
+		{
+			DrawComponentUI<UITextComponent>("UI Text", [&](auto& component)
+				{
+					UIText& uiText = component.UIText;
+					static char textBuffer[2048] = "/0";
+					strcpy_s(textBuffer, uiText.m_TextString.c_str());
+
+					if (ImGui::InputTextMultiline("Text String", textBuffer, 2048))
+						uiText.m_TextString = textBuffer;
+
+					ImGui::ColorEdit4("Color", glm::value_ptr(uiText.m_Color));
+					ImGui::DragFloat("Kerning", &uiText.m_Kerning, 0.025f);
+					ImGui::DragFloat("Line Spacing", &uiText.m_LineSpacing, 0.025f);
+					ImGui::Checkbox("Hidden", &uiText.m_Hidden);
 				});
 		}
 

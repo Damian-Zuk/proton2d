@@ -11,6 +11,7 @@
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/UI/UIElement.h"
 
 #include "Proton/Network/Common/NetworkManager.h"
 #include "Proton/Network/Server/Server.h"
@@ -551,8 +552,8 @@ namespace proton {
 			}
 		}
 
-		// Render scene
 		RenderScene(GetPrimaryCamera());
+		RenderUI();
 	}
 
 	void Scene::UpdateScripts(float ts)
@@ -671,7 +672,27 @@ namespace proton {
 		{
 			PROFILE_SCOPE("entity_render_text");
 			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
-			Renderer::DrawString(text.TextString, Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), text);
+			if (!text.Hidden)
+				Renderer::DrawString(text.TextString, Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), text);
+		}
+
+		Renderer::EndScene();
+	}
+
+	void Scene::RenderUI()
+	{
+		PROFILE_FUNCTION();
+
+		Renderer::BeginScene(GetPrimaryCamera().GetAspectRatio());
+
+		auto view = m_Registry.view<TransformComponent, UITextComponent>();
+		for (auto entity : view)
+		{
+			auto [transform, ui] = view.get<TransformComponent, UITextComponent>(entity);
+			if (ui.UIText.IsHidden())
+				continue;
+
+			ui.UIText.Draw(&transform);
 		}
 
 		Renderer::EndScene();

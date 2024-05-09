@@ -220,7 +220,8 @@ namespace proton {
 				{ "TextString",  component.TextString },
 				{ "Kerning",     component.Kerning },
 				{ "LineSpacing", component.LineSpacing },
-				{ "Color", { col.r, col.g, col.b, col.a } }
+				{ "Color", { col.r, col.g, col.b, col.a } },
+				{ "Hidden", component.Hidden }
 			};
 		}
 
@@ -530,6 +531,7 @@ namespace proton {
 			component.TextString = jsonText["TextString"];
 			component.Kerning = jsonText["Kerning"];
 			component.LineSpacing = jsonText["LineSpacing"];
+			component.Hidden = jsonText["Hidden"];
 
 			auto& c = jsonText["Color"];
 			component.Color = { c[0], c[1], c[2], c[3] };

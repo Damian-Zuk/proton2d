@@ -8,6 +8,8 @@
 #include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Physics/PhysicsCommon.h"
 
+#include "Proton/UI/UIText.h"
+
 #include <entt/entity/entity.hpp>
 
 #include <glm/glm.hpp>
@@ -31,6 +33,8 @@ namespace proton {
 	 	SpriteAnimation = 34,
 		CircleRenderer =  35,
 		Text =            36,
+		UI =              48,
+		UIText =          49,
 		Rigidbody =       64,
 		BoxCollider =     65,
 		CircleCollider =  66,
@@ -135,6 +139,18 @@ namespace proton {
 		glm::vec4 Color{ 1.0f };
 		float Kerning = 0.0f;
 		float LineSpacing = 0.0f;
+		bool Hidden = false;
+	};
+
+	struct UIComponent
+	{
+
+	};
+
+	struct UITextComponent
+	{
+		PT_COMPONENT_TYPE_ID(UIText)
+		UIText UIText;
 	};
 
 	struct SpriteAnimationComponent
