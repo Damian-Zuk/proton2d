@@ -144,12 +144,15 @@ namespace proton {
 
 	struct UIComponent
 	{
+		PT_COMPONENT_TYPE_ID(UI)
 
+		UIElement* Element;
 	};
 
 	struct UITextComponent
 	{
 		PT_COMPONENT_TYPE_ID(UIText)
+
 		UIText UIText;
 	};
 
@@ -204,12 +207,31 @@ namespace proton {
 		bool AttachToParent = false;
 	};
 
+	// Forward declaration
+	struct ScriptField;
+
 	struct NetworkComponent
 	{
 		PT_COMPONENT_TYPE_ID(Network)
 
 		ComponentBitset ComponentBitset;
-		//std::vector<ReplicatedScriptField> ReplicatedScriptFields;
+		std::unordered_map<ComponentTypeID, uint32_t> ComponentFags;
+		std::unordered_map<ComponentTypeID, uint32_t> ComponentChecksums;
+
+		struct FieldRepInfo
+		{
+			ScriptField* Field = nullptr;
+			void (*NotifyFunction)(Entity*) = nullptr;
+			uint32_t Checksum = 0;
+		};
+
+		struct ScriptRepInfo
+		{
+			EntityScript* Script = nullptr;
+			std::map<std::string, FieldRepInfo> FieldRepInfo;
+		};
+
+		std::map<std::string, ScriptRepInfo> ScriptRepInfo;
 
 		bool IsReplicated(ComponentTypeID typeID) const
 		{

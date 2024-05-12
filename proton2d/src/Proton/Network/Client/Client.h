@@ -93,6 +93,8 @@ namespace proton {
 		bool m_JustConnected = false;
 
 		// Other
+		bool m_GameStateInitialized = false;
+
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 

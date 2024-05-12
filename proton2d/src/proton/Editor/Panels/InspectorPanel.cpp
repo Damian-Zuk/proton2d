@@ -197,6 +197,83 @@ namespace proton {
 		}
 
 		// ******************************************************
+		// Script Component UI
+		// ******************************************************
+		if (m_SelectedEntity.HasComponent<ScriptComponent>())
+		{
+			auto& component = m_SelectedEntity.GetComponent<ScriptComponent>();
+			for (auto& [scriptClassName, scriptInstance] : component.Scripts)
+			{
+				if (!scriptInstance)
+					continue;
+
+				ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
+					| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
+
+				std::string label = scriptClassName + " (Script)";
+				bool opened = ImGui::TreeNodeEx(label.c_str(), treeNodeFlags, label.c_str());
+
+				ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
+				bool removeScript = ImGui::Button(("Remove##" + scriptClassName).c_str());
+
+				if (opened)
+				{
+					ImGui::Dummy({ 0.0f, 3.0f });
+					for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
+					{
+						if (!fieldData.ShowInEditor)
+							continue;
+
+						switch (fieldData.Type)
+						{
+						case ScriptFieldType::Float:
+							ImGui::DragFloat(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+						case ScriptFieldType::Float2:
+							ImGui::DragFloat2(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+						case ScriptFieldType::Float3:
+							ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+						case ScriptFieldType::Float4:
+							if (fieldName.find("Color") != fieldName.npos || fieldName.find("color") != fieldName.npos)
+								ImGui::ColorEdit4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue);
+							else
+								ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+
+						case ScriptFieldType::Int:
+							ImGui::DragInt(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+						case ScriptFieldType::Int2:
+							ImGui::DragInt2(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+						case ScriptFieldType::Int3:
+							ImGui::DragInt3(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+						case ScriptFieldType::Int4:
+							ImGui::DragInt4(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+
+						case ScriptFieldType::Bool:
+							ImGui::Checkbox(fieldName.c_str(), (bool*)fieldData.InstanceFieldValue);
+							break;
+						}
+					}
+					scriptInstance->OnImGuiRender();
+					ImGui::TreePop();
+				}
+
+				if (removeScript)
+				{
+					m_SelectedEntity.RemoveScript(scriptClassName);
+					break;
+				}
+				ImGui::Dummy({ 0.0f, 10.0f });
+			}
+		}
+
+		// ******************************************************
 		// Sprite Component UI
 		// ******************************************************
 		if (m_SelectedEntity.HasComponent<SpriteComponent>())
@@ -542,81 +619,6 @@ namespace proton {
 				ImGui::DragFloat("Density", &component.Material.Density, 0.01f);
 				ImGui::Checkbox("IsSensor", &component.IsSensor);
 			});
-		}
-
-		// ******************************************************
-		// Script Component UI
-		// ******************************************************
-		if (m_SelectedEntity.HasComponent<ScriptComponent>())
-		{
-			auto& component = m_SelectedEntity.GetComponent<ScriptComponent>();
-			for (auto& [scriptClassName, scriptInstance] : component.Scripts)
-			{
-				if (!scriptInstance)
-					continue;
-							
-				ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
-					| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
-
-				bool opened = ImGui::CollapsingHeader((scriptClassName + " (Script)").c_str(), NULL, treeNodeFlags);
-
-				ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
-				bool removeScript = ImGui::Button(("Remove##" + scriptClassName).c_str());
-
-				if (opened)
-				{
-					ImGui::Dummy({ 0.0f, 3.0f });
-					for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
-					{
-						if (!fieldData.ShowInEditor)
-							continue;
-
-						switch (fieldData.Type)
-						{
-						case ScriptFieldType::Float:
-							ImGui::DragFloat(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-						case ScriptFieldType::Float2:
-							ImGui::DragFloat2(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-						case ScriptFieldType::Float3:
-							ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-						case ScriptFieldType::Float4:
-							if (fieldName.find("Color") != fieldName.npos || fieldName.find("color") != fieldName.npos)
-								ImGui::ColorEdit4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue);
-							else
-								ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-
-						case ScriptFieldType::Int:
-							ImGui::DragInt(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-						case ScriptFieldType::Int2:
-							ImGui::DragInt2(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-						case ScriptFieldType::Int3:
-							ImGui::DragInt3(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-						case ScriptFieldType::Int4:
-							ImGui::DragInt4(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-
-						case ScriptFieldType::Bool:
-							ImGui::Checkbox(fieldName.c_str(), (bool*)fieldData.InstanceFieldValue);
-							break;
-						}
-					}
-					scriptInstance->OnImGuiRender();
-				}
-
-				if (removeScript)
-				{
-					m_SelectedEntity.RemoveScript(scriptClassName);
-					break;
-				}
-				ImGui::Dummy({ 0.0f, 10.0f });
-			}
 		}
 
 		ImGui::End();

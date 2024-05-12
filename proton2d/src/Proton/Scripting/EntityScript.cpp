@@ -6,9 +6,38 @@
 
 namespace proton {
 
+	static size_t GetFieldSize(ScriptFieldType type)
+	{
+		switch (type)
+		{
+		case ScriptFieldType::Float:
+			return sizeof(float);
+		case ScriptFieldType::Float2:
+			return sizeof(glm::vec2);
+		case ScriptFieldType::Float3:
+			return sizeof(glm::vec3);
+		case ScriptFieldType::Float4:
+			return sizeof(glm::vec4);
+		case ScriptFieldType::Int:
+			return sizeof(int);
+		case ScriptFieldType::Int2:
+			return sizeof(glm::ivec2);
+		case ScriptFieldType::Int3:
+			return sizeof(glm::ivec3);
+		case ScriptFieldType::Int4:
+			return sizeof(glm::ivec4);
+		case ScriptFieldType::Bool:
+			return sizeof(bool);
+		default:
+			PT_ASSERT("Unexpected value type!");
+			return 0;
+		}
+	}
+
 	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor)
 	{
-		m_ScriptFields[name] = { type, field, showInEditor };
+		size_t size = GetFieldSize(type);
+		m_ScriptFields[name] = { type, field, size, showInEditor };
 	}
 
 	void EntityScript::SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName)
@@ -17,7 +46,7 @@ namespace proton {
 
 		if (!child)
 		{
-			PT_CORE_ASSERT(child, "Child entity not found.");
+			PT_CORE_ASSERT(false, "Child entity not found.");
 			return;
 		}
 
@@ -94,6 +123,15 @@ namespace proton {
 	SceneManager* EntityScript::GetSceneManager() const
 	{
 		return GetScene()->GetOwningGameInstance()->GetSceneManager();
+	}
+
+	void EntityScript::RegisterReplicatedField(const std::string& name, void (*notifyFunction)(Entity*))
+	{
+		auto& net = GetComponent<NetworkComponent>();
+		NetworkComponent::FieldRepInfo replicatedField { &m_ScriptFields.at(name), notifyFunction, 0};
+		auto& scriptRepInfo = net.ScriptRepInfo[GetScriptClassName()];
+		scriptRepInfo.Script = this;
+		scriptRepInfo.FieldRepInfo[name] = replicatedField;
 	}
 
 	bool EntityScript::IsRunningServer() const

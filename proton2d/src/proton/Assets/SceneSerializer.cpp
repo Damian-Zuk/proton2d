@@ -375,7 +375,7 @@ namespace proton {
 
 	Entity SceneSerializer::DeserializeEntity(json jsonObj, bool deserializeUUID)
 	{
-		Entity entity = deserializeUUID ? 
+		Entity entity = deserializeUUID ?
 			m_Scene->CreateEntityWithUUID((uint64_t)jsonObj["UUID"], jsonObj["Tag"]) :
 			m_Scene->CreateEntity(jsonObj["Tag"]);
 
@@ -398,6 +398,12 @@ namespace proton {
 			{
 				std::string bitsetStr = netJson.at("ReplicatedComponentsBitset");
 				netComponent.ComponentBitset = ComponentBitset(bitsetStr);
+
+				for (uint32_t i = 0; i < PT_MAX_COMPONENTS; i++)
+				{
+					if (netComponent.ComponentBitset.test(i))
+						netComponent.ComponentChecksums[(ComponentTypeID)i] = 0;
+				}
 			}
 		}
 
@@ -548,9 +554,6 @@ namespace proton {
 			
 			if (jsonRb.contains("AttachToParent"))
 				rb.AttachToParent = jsonRb.at("AttachToParent");
-
-			if (m_Scene->IsPhysicsWorldInitialized())
-				m_Scene->m_PhysicsWorld->CreateRuntimeBody(entity);
 		}
 
 		// Deserialize scripts

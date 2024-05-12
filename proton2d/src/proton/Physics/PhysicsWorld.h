@@ -44,6 +44,7 @@ namespace proton {
 		void BuildWorld();
 		void DestroyWorld();
 
+		void ProcessCreatedEntities();
 		void Update(float ts);
 
 		void CreateJoints();

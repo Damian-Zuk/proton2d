@@ -56,13 +56,16 @@ project "proton2d"
 		"%{prj.name}/src/**.cpp",
 		"vendor/stb/**.h",
 		"vendor/stb/**.cpp",
-		"vendor/json/**.hpp"
+		"vendor/json/**.hpp",
+		"vendor/Crc32/**.h",
+		"vendor/Crc32/**.cpp"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/src",
 		"vendor/spdlog/include",
+		"vendor/Crc32",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.glad}",
 		"%{IncludeDir.glm}",

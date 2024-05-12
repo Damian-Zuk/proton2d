@@ -27,19 +27,6 @@ namespace proton {
 		Notify = 0,
 	};
 
-	//struct ReplicatedScriptField
-	//{
-	//	EntityScript* Instance = nullptr;
-	//	std::string ScriptName; // TODO: Add UUID to script field and change std::string to UUID
-	//	ReplicationMode Mode = ReplicationMode::Standard;
-	//	std::function<void(EntityScript* script)> NotifyCallback = nullptr;
-	//};
-	//
-	//struct EntityUpdateHeader
-	//{
-	//
-	//};
-
 	using Server_OnPlayerActionCallback = std::function<void(BufferStreamReader& stream)>;
 	using Client_SendPlayerActionCallback = std::function<void(BufferStreamWriter& stream)>;
 }

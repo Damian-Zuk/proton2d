@@ -182,6 +182,11 @@ namespace proton
 		return GetComponent<SpriteComponent>().Sprite;
 	}
 
+	glm::vec4& Entity::GetColor() const
+	{
+		return GetComponent<SpriteComponent>().Color;
+	}
+
 	SpriteAnimation& Entity::GetSpriteAnimation() const
 	{
 		return GetComponent<SpriteAnimationComponent>().SpriteAnimation;

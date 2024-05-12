@@ -207,14 +207,12 @@ namespace proton {
 	#endif
 
 		m_SceneState = SceneState::Play;
-
 		m_GameInstance->OnSceneSimulationStart(this);
 		
-		if (m_EnablePhysics) 
-		{
-			CalculateWorldPositions();
+		CalculateWorldPositions();
+
+		if (m_EnablePhysics)
 			m_PhysicsWorld->BuildWorld();
-		}
 
 		if (m_GameMode)
 			m_GameMode->OnCreate();
@@ -433,6 +431,7 @@ namespace proton {
 		auto [transform, rc] = m_Registry.get<TransformComponent, RelationshipComponent>(entity.m_Handle);
 		transform.WorldPosition = position;
 		transform.LocalPosition = position;
+		
 		Entity current{ rc.Parent, this };
 		while (current)
 		{
@@ -514,7 +513,10 @@ namespace proton {
 		if (m_SceneState == SceneState::Play)
 		{
 			if (IsPhysicsSimulated())
+			{
+				m_PhysicsWorld->ProcessCreatedEntities();
 				m_PhysicsTimer += ts;
+			}
 
 			if (physicsTick)
 			{

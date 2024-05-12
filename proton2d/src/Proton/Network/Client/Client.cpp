@@ -9,6 +9,7 @@
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/EntityScript.h"
 
 namespace proton {
 
@@ -153,7 +154,11 @@ namespace proton {
 					m_NetworkManager->m_ClientGameStateInitialized = true;
 					m_JustConnected = false;
 				}
-				break;
+
+				m_GameStateInitialized = true;
+				message->Release();
+				m_MessageQueue.pop();
+				return;
 			}
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,7 +177,9 @@ namespace proton {
 					SceneSerializer serializer(scene);
 					Entity entity = serializer.DeserializeEntity(jsonParsed);
 				}
-				break;
+				message->Release();
+				m_MessageQueue.pop();
+				return;
 			
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,6 +201,13 @@ namespace proton {
 			
 			case PacketType::UpdateReplicated:
 			{
+				if (!m_GameStateInitialized)
+				{
+					m_MessageQueue.pop();
+					m_MessageQueue.push(message);
+					return;
+				}
+
 				while (stream.GetStreamPosition() < buffer.Size - sizeof(uint64) * 2)
 				{
 					uint64_t entityStreamStart = stream.GetStreamPosition();
@@ -218,21 +232,59 @@ namespace proton {
 						continue;
 					}
 
-					// Read replicated data
 					auto& net = entity.GetComponent<NetworkComponent>();
 
+					// TransformComponent
 					if (net.IsReplicated(ComponentTypeID::Transform))
 					{
 						auto& transform = entity.GetTransform();
 						stream.ReadRaw(transform);
 					}
 
+					// SpriteComponent
 					if (net.IsReplicated(ComponentTypeID::Sprite))
 					{
 						auto& sprite = entity.GetSprite();
 						stream.ReadRaw(sprite.m_TilePos);
 						stream.ReadRaw(sprite.m_MirrorFlip);
 						sprite.CalculateTextureCoords();
+					}
+
+					// ScriptComponent
+					if (net.IsReplicated(ComponentTypeID::Script))
+					{
+						auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+						uint32_t scriptCount;
+						stream.ReadRaw(scriptCount);
+
+						// For each script
+						for (uint32_t i = 0; i < scriptCount; i++)
+						{
+							uint32_t fieldCount;
+							std::string scriptClassName;
+
+							stream.ReadRaw(fieldCount);
+							stream.ReadString(scriptClassName);
+
+ 							auto& scriptRepInfo = net.ScriptRepInfo.at(scriptClassName);
+							EntityScript* script = scriptRepInfo.Script;
+
+							// For each script field
+							for (uint32_t j = 0; j < fieldCount; j++)
+							{
+								std::string fieldName;
+								stream.ReadString(fieldName);
+
+								ScriptField* field = &script->m_ScriptFields.at(fieldName);
+								stream.ReadData((char*)field->InstanceFieldValue, field->Size);
+
+								auto& fieldRepInfo = scriptRepInfo.FieldRepInfo.at(fieldName);
+
+								// Call notify function
+								if (fieldRepInfo.NotifyFunction)
+									fieldRepInfo.NotifyFunction(&entity);
+							}
+						}
 					}
 				}
 				break;

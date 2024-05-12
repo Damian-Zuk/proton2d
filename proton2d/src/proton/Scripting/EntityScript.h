@@ -7,11 +7,12 @@
 // It helps engine know all the scripts you created and attach
 // those scripts to entities by providing script class name as string.
 #define ENTITY_SCRIPT_CLASS(script_class) \
-static inline const char __ScriptClassName[] = #script_class; \
+static inline const std::string __ScriptClassName = #script_class; \
 static inline const bool __RegisteredInFactory = \
 	proton::ScriptFactory::Get().RegisterScript([&](proton::Entity entity) { \
 		return entity.AddScript<script_class>(); \
-	}, #script_class);
+	}, #script_class); \
+virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
 
 namespace proton {
 
@@ -22,6 +23,7 @@ namespace proton {
 	{
 		ScriptFieldType Type = ScriptFieldType::Float;
 		void* InstanceFieldValue = nullptr;
+		size_t Size = 0;
 		bool ShowInEditor = true;
 	};
 
@@ -60,11 +62,16 @@ namespace proton {
 		bool CheckSensor(uint32_t sensorType) const;
 		uint32_t GetSensorContactCount(uint32_t sensorType) const;
 
+		SceneManager* GetSceneManager() const;
+
+		virtual const std::string& GetScriptClassName() = 0;
+		
+		// Networking
+		void RegisterReplicatedField(const std::string& name, void (*notifyFunction)(Entity*) = nullptr);
+
 		bool HasAuthority() const;
 		bool IsRunningServer() const;
 		bool IsRunningClient() const;
-
-		SceneManager* GetSceneManager() const;
 
 	private:
 		void SetFieldValueData(const std::string& fieldName, void* value);
@@ -79,6 +86,7 @@ namespace proton {
 		friend class Entity;
 		friend class Scene;
 		friend class SceneSerializer;
+		friend class Client;
 
 		friend class InspectorPanel;
 	};

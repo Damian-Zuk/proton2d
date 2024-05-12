@@ -90,7 +90,7 @@ namespace proton {
 				AddComponent<ScriptComponent>();
 
 			auto& component = GetComponent<ScriptComponent>();
-			std::string className = TScriptClass::__ScriptClassName;
+			const std::string& className = TScriptClass::__ScriptClassName;
 			PT_CORE_ASSERT(component.Scripts.find(className) == component.Scripts.end(), "The script is already attached to an Entity!");
 
 			EntityScript*& scriptInstance = component.Scripts[className];
@@ -98,6 +98,15 @@ namespace proton {
 			scriptInstance->m_Handle = m_Handle;
 			scriptInstance->m_Scene = m_Scene;
 			scriptInstance->OnRegisterFields();
+
+			// TODO: Remove
+			if (HasComponent<NetworkComponent>())
+			{
+				auto& net = GetComponent<NetworkComponent>();
+				if (className == "Player")
+					net.ComponentBitset.set((size_t)ComponentTypeID::Script);
+			}
+
 			return scriptInstance;
 		}
 
@@ -136,6 +145,7 @@ namespace proton {
 		const std::string& GetTag() const;
 		TransformComponent& GetTransform() const;
 		Sprite& GetSprite() const;
+		glm::vec4& GetColor() const;
 		SpriteAnimation& GetSpriteAnimation() const;
 		b2Body* GetRuntimeBody() const;
 

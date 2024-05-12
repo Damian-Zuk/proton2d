@@ -1,8 +1,11 @@
 #pragma once
 
-enum PlayerState : uint16_t
+enum PlayerState : uint16_t // animation index
 {
-	Idle, Run, Jump, Land
+	PlayerState_Idle = 0,
+	PlayerState_Run  = 1,
+	PlayerState_Jump = 2,
+	PlayerState_Land = 3
 };
 
 struct PlayerActionState
@@ -11,12 +14,15 @@ struct PlayerActionState
 	bool MoveRight = false;
 	bool Jump = false;
 
-	bool operator==(const PlayerActionState& other) const {
+	bool operator==(const PlayerActionState& other) const 
+	{
 		return other.MoveLeft == MoveLeft
 			&& other.MoveRight == MoveRight
 			&& other.Jump == Jump;
 	}
-	bool operator!=(const PlayerActionState& other) const {
+
+	bool operator!=(const PlayerActionState& other) const 
+	{
 		return !(other == *this);
 	}
 };
@@ -40,15 +46,15 @@ private:
 	bool m_IsLocalPlayer = true;
 	uint32_t m_ClientID = 0;
 
-	PlayerActionState m_ActionState;
+	b2Body* m_Wheel = nullptr;
 
+	PlayerActionState m_ActionState;
 	float m_PlayerMaxSpeed = 6.0f;
 	float m_JumpForce = 20.0f;
 	float m_PlayerAcceleration = 40.0f;
 	float m_GravityModifier = -10.0f;
 
-	b2Body* m_Wheel = nullptr;
-	PlayerState m_State = Idle;
+	PlayerState m_State = PlayerState_Idle;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
 

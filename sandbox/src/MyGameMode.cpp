@@ -4,6 +4,22 @@ using namespace proton;
 #include "MyGameMode.h"
 #include "Scripts/Player.h"
 
+#define COLOR_RED    glm::vec4{ 1.0f, 0.356f, 0.065f, 1.0f }
+#define COLOR_GREEN  glm::vec4{ 0.526f, 1.0f, 0.065f, 1.0f }
+#define COLOR_BLUE   glm::vec4{ 0.209f, 0.431f, 0.987f, 1.0f }
+#define COLOR_YELLOW glm::vec4{ 0.987f, 1.0f, 0.065f, 1.0f }
+#define COLOR_ORANGE glm::vec4{ 1.0f, 0.679f, 0.294f, 1.0f }
+#define COLOR_CYAN   glm::vec4{ 0.065f, 0.793f, 1.0f, 1.0f }
+#define COLOR_PURPLE glm::vec4{ 0.478f, 0.065f, 1.0f, 1.0f }
+#define COLOR_PINK   glm::vec4{ 1.00f, 0.472f, 0.952f, 1.0f }
+#define COLOR_BLACK  glm::vec4{ 0.167f, 0.176f, 0.2f, 1.0f }
+#define COLOR_WHITE  glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }
+
+static const glm::vec4 s_PlayerColors[10] = {
+	COLOR_RED, COLOR_YELLOW, COLOR_GREEN, COLOR_ORANGE, COLOR_CYAN,
+	COLOR_BLUE, COLOR_PURPLE, COLOR_PINK, COLOR_BLACK, COLOR_WHITE
+};
+
 bool MyGameMode::OnCreate()
 {
 	if (HasAuthority())
@@ -13,10 +29,12 @@ bool MyGameMode::OnCreate()
 			m_LocalPlayer = player.As<Player>();
 			return true;
 		}
-		// Spawn local player for listen server
+
+		// Spawn local player
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
 		m_LocalPlayer = SpawnPrefab("Player").As<Player>();
 		m_LocalPlayer->SetWorldPosition(spawnTransform.WorldPosition);
+		m_LocalPlayer->GetColor() = COLOR_RED;
 	}
 	return true;
 }
@@ -50,6 +68,8 @@ void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 	player->SetWorldPosition(spawnTransform.WorldPosition);
 	player->m_IsLocalPlayer = false;
 	player->m_ClientID = clientID;
+	player->GetColor() = s_PlayerColors[(m_NewColorIndex % 10)];
+	m_NewColorIndex++;
 	
 	m_RemotePlayers[clientID] = player;
 }

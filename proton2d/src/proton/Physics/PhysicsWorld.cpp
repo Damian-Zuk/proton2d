@@ -37,7 +37,11 @@ namespace proton {
 	b2Body* PhysicsWorld::CreateRuntimeBody(Entity entity)
 	{
 		auto& uuid = entity.GetComponent<IDComponent>().ID;
-		PT_CORE_ASSERT(m_RuntimeBodies.find(uuid) == m_RuntimeBodies.end(), "Physics runtime body already exists!");
+		if (m_RuntimeBodies.find(uuid) != m_RuntimeBodies.end())
+		{
+			PT_CORE_ASSERT(false, "Physics runtime body already exists!");
+			return nullptr;
+		}
 
 		auto& transform = entity.GetComponent<TransformComponent>();
 		auto& rb = entity.GetComponent<RigidbodyComponent>();
@@ -256,9 +260,10 @@ namespace proton {
 		}
 	}
 
-	void PhysicsWorld::Update(float ts)
+	void PhysicsWorld::ProcessCreatedEntities()
 	{
 		PROFILE_FUNCTION();
+
 		// Initialize entities created during game runtime
 		if (m_EntitiesToInitialize.size())
 		{
@@ -298,6 +303,11 @@ namespace proton {
 			CreateJoints();
 			m_EntitiesToInitialize.clear();
 		}
+	}
+
+	void PhysicsWorld::Update(float ts)
+	{
+		PROFILE_FUNCTION();
 
 		// Update physics world
 		m_World->Step(ts, m_PhysicsVelocityIterations, m_PhysicsPositionIterations);
