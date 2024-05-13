@@ -143,7 +143,7 @@ namespace proton {
 		auto& net = GetComponent<NetworkComponent>();
 		auto& repScripts = net.ReplicatedScripts;
 
-		net.ReplicatedComponentsBitset.set(ComponentType_Script);
+		net.ReplicatedComponents.set(ComponentType_Script);
 
 		auto scriptRepInfoIt = std::find_if(repScripts.begin(), repScripts.end(),
 			[this](const auto& repInfo) { return repInfo.Script == this; });

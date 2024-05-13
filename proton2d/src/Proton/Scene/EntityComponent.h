@@ -67,7 +67,7 @@ namespace proton {
 	{
 		PT_CORE_ASSERT(!HasComponent<NetworkComponent>(), "Entity already has component!");
 		auto& component = m_Scene->m_Registry.emplace<NetworkComponent>(m_Handle);
-		component.ReplicatedComponentsBitset.set(ComponentType_Transform);
+		component.ReplicatedComponents.set(ComponentType_Transform);
 		return component;
 	}
 

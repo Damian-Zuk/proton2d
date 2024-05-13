@@ -16,12 +16,8 @@
 
 #define PT_BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
 
-constexpr uint32_t PT_MAX_COMPONENTS = 128u;
-
 namespace proton 
 {
-	typedef std::bitset<PT_MAX_COMPONENTS> ComponentBitset;
-
 	template <typename T>
 	using Shared = std::shared_ptr<T>;
 

@@ -9,15 +9,14 @@
 #include "Proton/Physics/PhysicsCommon.h"
 
 #include "Proton/UI/UIText.h"
-
 #include <entt/entity/entity.hpp>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <box2d/b2_body.h>
 
 namespace proton {
+
+	constexpr uint32_t MAX_COMPONENTS = 128;
 
 	enum EComponentType : size_t
 	{
@@ -214,7 +213,7 @@ namespace proton {
 	{
 		PT_COMPONENT_TYPE_ID(ComponentType_Network)
 		
-		ComponentBitset ReplicatedComponentsBitset;
+		std::bitset<MAX_COMPONENTS> ReplicatedComponents;
 		std::unordered_map<EComponentType, uint32_t> ComponentChecksums;
 
 		struct ScriptRepInfo

@@ -730,9 +730,9 @@ namespace proton {
 		if (opened)
 		{
 			ImGui::Dummy({ 0.0f, 3.0f });
-			if (networkComponent && NetworkManager::GetSupportedComponentRepBitset().test(T::TypeID()))
+			if (networkComponent && NetworkManager::s_ComponentSupportedRepBitset.test(T::TypeID()))
 			{
-				auto& bitset = networkComponent->ReplicatedComponentsBitset;
+				auto& bitset = networkComponent->ReplicatedComponents;
 				bool replicated = bitset.test(T::TypeID());
 				if (ImGui::Checkbox("Network Replication", &replicated))
 					bitset.flip(T::TypeID());

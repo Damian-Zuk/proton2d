@@ -17,7 +17,7 @@ namespace proton {
 
 	uint32_t NetworkManager::s_NetworkServicesRunning = 0;
 	bool NetworkManager::s_NetworkResourcesFreed = false;
-	ComponentBitset NetworkManager::s_ComponentSupportedRepBitset;
+	std::bitset<MAX_COMPONENTS> NetworkManager::s_ComponentSupportedRepBitset;
 
 	void NetworkManager::StaticInit()
 	{

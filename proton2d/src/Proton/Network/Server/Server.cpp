@@ -340,7 +340,7 @@ namespace proton {
 
 			Entity entity(e, scene);
 			auto& net = view.get<NetworkComponent>(e);
-			ComponentBitset componentBitset = net.ReplicatedComponentsBitset;
+			std::bitset<MAX_COMPONENTS> componentBitset = net.ReplicatedComponents;
 
 			// Entity buffer header
 			uint64_t entityHeaderPos = stream.GetStreamPosition();
@@ -354,7 +354,7 @@ namespace proton {
 
 
 			// *************** BEGIN: TransformComponent Replication *************** //
-			if (net.ReplicatedComponentsBitset.test(ComponentType_Transform))
+			if (net.ReplicatedComponents.test(ComponentType_Transform))
 			{
 				uint64_t streamStart = stream.GetStreamPosition();
 
@@ -379,7 +379,7 @@ namespace proton {
 
 
 			// *************** BEGIN: ScriptComponent Replication *************** //
-			if (net.ReplicatedComponentsBitset.test(ComponentType_Script))
+			if (net.ReplicatedComponents.test(ComponentType_Script))
 			{
 				// Component header
 				uint64_t componentHeaderPos = stream.GetStreamPosition();

@@ -40,10 +40,7 @@ namespace proton {
 
 	private:
 		void CheckNetworkResourcesRelease();
-
 		static void StaticInit();
-
-		static const ComponentBitset& GetSupportedComponentRepBitset() { return s_ComponentSupportedRepBitset; }
 		
 	private:
 		NetMode m_NetMode = NetMode::ListenServer;
@@ -71,7 +68,7 @@ namespace proton {
 		bool m_SaveStatsForAllClients = false;
 		uint32_t m_SaveStatsForClientID = 0;
 
-		static ComponentBitset s_ComponentSupportedRepBitset;
+		static std::bitset<MAX_COMPONENTS> s_ComponentSupportedRepBitset;
 		static uint32_t s_NetworkServicesRunning; // across all editor's game instances (server + clients)
 		static bool s_NetworkResourcesFreed; // free resources after all network services finished running
 

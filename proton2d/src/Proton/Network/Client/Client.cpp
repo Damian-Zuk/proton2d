@@ -227,7 +227,7 @@ namespace proton {
 					uint64_t entityStreamStart = stream.GetStreamPosition();
 					
 					uint64_t entityBufferSize;
-					ComponentBitset componentBitset;
+					std::bitset<MAX_COMPONENTS> componentBitset;
 					UUID entityUUID;
 
 					stream.ReadRaw(entityBufferSize);

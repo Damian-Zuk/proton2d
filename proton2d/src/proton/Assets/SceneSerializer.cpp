@@ -145,9 +145,9 @@ namespace proton {
 		if (entity.HasComponent<NetworkComponent>())
 		{
 			auto& netComponent = entity.GetComponent<NetworkComponent>();
-			// TODO: Optimize, serialize to binary (e.g. two 64 bit numbers)
+			// TODO: Serialize to hex
 			jsonObj["Network"] = {
-				{ "ReplicatedComponentsBitset", netComponent.ReplicatedComponentsBitset.to_string() }
+				{ "ReplicatedComponentsBitset", netComponent.ReplicatedComponents.to_string() }
 			};
 		}
 
@@ -401,11 +401,11 @@ namespace proton {
 			if (netJson.contains("ReplicatedComponentsBitset"))
 			{
 				std::string bitsetStr = netJson.at("ReplicatedComponentsBitset");
-				netComponent.ReplicatedComponentsBitset = ComponentBitset(bitsetStr);
+				netComponent.ReplicatedComponents = std::bitset<MAX_COMPONENTS>(bitsetStr);
 
-				for (size_t i = 0; i < PT_MAX_COMPONENTS; i++)
+				for (size_t i = 0; i < MAX_COMPONENTS; i++)
 				{
-					if (netComponent.ReplicatedComponentsBitset.test(i))
+					if (netComponent.ReplicatedComponents.test(i))
 						netComponent.ComponentChecksums[(EComponentType)i] = 0;
 				}
 			}
