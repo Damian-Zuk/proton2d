@@ -3,23 +3,15 @@ using namespace proton;
 
 #include "Platform.h"
 
-static void OnRep_EnableCollision(Entity* entity)
-{
-	RedPlatform* platform = entity->As<RedPlatform>();
-	_PT_TRACE("OnRep_EnableCollision: {}", platform->m_EnableCollision);
-
-	if (platform->m_EnableCollision)
-		platform->GetComponent<ResizableSpriteComponent>().Color.a = 1.0f;
-	else
-		platform->GetComponent<ResizableSpriteComponent>().Color.a = 0.33f;
-}
 
 void RedPlatform::OnRegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "VanishAfter", &m_VanishAfter);
 	RegisterField(ScriptFieldType::Float, "VanishTime", &m_VanishTime);
 
-	PT_REPLICATE_DATA(m_EnableCollision, &OnRep_EnableCollision);
+	REPLICATE_DATA(m_EnableCollision, [this](Entity*) {
+		GetColor().a = m_EnableCollision ? 1.0f : 0.33f;
+	});
 }
 
 bool RedPlatform::OnCreate()

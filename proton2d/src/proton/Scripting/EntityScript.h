@@ -56,8 +56,8 @@ namespace proton {
 		virtual const std::string& GetScriptClassName() = 0;
 		
 		// Networking
-		void ReplicateField(const std::string& name, void (*notifyFunction)(Entity*) = nullptr);
-		void ReplicateData(void* data, size_t size, void (*notifyFunction)(Entity*) = nullptr);
+		void ReplicateField(const std::string& name, const std::function<void(Entity*)>& notifyFunction = nullptr);
+		void ReplicateData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction = nullptr);
 
 		bool HasAuthority() const;
 		bool IsRunningServer() const;
@@ -95,11 +95,14 @@ namespace proton {
 		}, #script_class); \
 	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
 
-#define PT_REGISTER_FIELD(field, type, ...) \
+#define REGISTER_FIELD(type, field, ...) \
 	RegisterField(ScriptFieldType::type, #field, &field, __VA_ARGS__);
 
-#define PT_REPLICATE_FIELD(field, ...) \
+#define REGISTER_FIELD_NET(type, field, ...) \
+	RegisterField(ScriptFieldType::type, #field, &field, true, true);
+
+#define REPLICATE_FIELD(field, ...) \
 	ReplicateField(#field, __VA_ARGS__)
 
-#define PT_REPLICATE_DATA(data, ...) \
+#define REPLICATE_DATA(data, ...) \
 	ReplicateData(&data, sizeof(data), __VA_ARGS__);

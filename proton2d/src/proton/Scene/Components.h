@@ -214,29 +214,24 @@ namespace proton {
 	{
 		PT_COMPONENT_TYPE_ID(ComponentType_Network)
 		
-		// ------ Component Replication Info ------
-
 		ComponentBitset ReplicatedComponentsBitset;
-		std::unordered_map<EComponentType, uint32_t> ComponentFlags;
 		std::unordered_map<EComponentType, uint32_t> ComponentChecksums;
-
-		// ------- Script Replication Info -------
-
-		struct FieldRepInfo
-		{
-			void* Data = nullptr;
-			uint64_t Size = 0;
-			uint32_t Checksum = 0;
-			void (*NotifyFunction)(Entity*) = nullptr;
-		};
 
 		struct ScriptRepInfo
 		{
+			struct ReplicatedField
+			{
+				void* Data = nullptr;
+				uint64_t Size = 0;
+				uint32_t Checksum = 0;
+				std::function<void(Entity*)> NotifyFunction;
+			};
+
 			EntityScript* Script = nullptr;
-			std::vector<FieldRepInfo> FieldRepInfo;
+			std::vector<ReplicatedField> ReplicatedFields;
 		};
 
-		std::unordered_map<std::string, ScriptRepInfo> ScriptRepInfo;
+		std::vector<ScriptRepInfo> ReplicatedScripts;
 	};
 
 }

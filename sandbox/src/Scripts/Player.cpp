@@ -25,15 +25,14 @@ bool Player::IsGrounded() const
 
 void Player::OnRegisterFields()
 {
-	PT_REGISTER_FIELD(m_PlayerMaxSpeed, Float);
-	PT_REGISTER_FIELD(m_PlayerAcceleration, Float);
-	PT_REGISTER_FIELD(m_JumpForce, Float);
-	PT_REGISTER_FIELD(m_GravityModifier, Float);
+	REGISTER_FIELD(Float, m_PlayerMaxSpeed);
+	REGISTER_FIELD(Float, m_PlayerAcceleration);
+	REGISTER_FIELD(Float, m_JumpForce);
+	REGISTER_FIELD(Float, m_GravityModifier);
 
-	PT_REGISTER_FIELD(m_ClientID, Int, /*ShowInEditor*/ false, /*NetworkSerialize*/ true);
-
-	PT_REPLICATE_DATA(m_State);
-	PT_REPLICATE_DATA(m_Velocity);
+	REGISTER_FIELD_NET(Int, m_ClientID);
+	REPLICATE_DATA(m_State);
+	REPLICATE_DATA(m_Velocity);
 }
 
 bool Player::OnCreate()

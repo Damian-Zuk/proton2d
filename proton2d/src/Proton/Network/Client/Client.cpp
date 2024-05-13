@@ -225,10 +225,13 @@ namespace proton {
 				while (stream.GetStreamPosition() < buffer.Size - sizeof(uint64) * 2)
 				{
 					uint64_t entityStreamStart = stream.GetStreamPosition();
+					
 					uint64_t entityBufferSize;
+					ComponentBitset componentBitset;
 					UUID entityUUID;
 
 					stream.ReadRaw(entityBufferSize);
+					stream.ReadRaw(componentBitset);
 					stream.ReadRaw(entityUUID);
 
 					Entity entity = scene->FindByID(entityUUID);
@@ -244,9 +247,6 @@ namespace proton {
 						stream.SetStreamPosition(entityStreamStart + entityBufferSize);
 						continue;
 					}
-
-					ComponentBitset componentBitset;
-					stream.ReadRaw(componentBitset);
 
 					auto& net = entity.GetComponent<NetworkComponent>();
 
@@ -268,12 +268,12 @@ namespace proton {
 						for (uint32_t i = 0; i < scriptCount; i++)
 						{
 							uint32_t fieldCount;
-							std::string scriptClassName;
+							uint32_t scriptIndex;
 
 							stream.ReadRaw(fieldCount);
-							stream.ReadString(scriptClassName);
+							stream.ReadRaw(scriptIndex);
 
- 							auto& scriptRepInfo = net.ScriptRepInfo.at(scriptClassName);
+ 							auto& script = net.ReplicatedScripts.at(scriptIndex);
 
 							// For each script field
 							for (uint32_t j = 0; j < fieldCount; j++)
@@ -281,12 +281,12 @@ namespace proton {
 								uint32_t fieldIndex;
 								stream.ReadRaw(fieldIndex);
 
-								auto& fieldRepInfo = scriptRepInfo.FieldRepInfo.at(fieldIndex);
-								stream.ReadData((char*)fieldRepInfo.Data, fieldRepInfo.Size);
+								auto& field = script.ReplicatedFields.at(fieldIndex);
+								stream.ReadData((char*)field.Data, field.Size);
 
 								// Call notify function
-								if (fieldRepInfo.NotifyFunction)
-									fieldRepInfo.NotifyFunction(&entity);
+								if (field.NotifyFunction)
+									field.NotifyFunction(&entity);
 							}
 						}
 					}

@@ -168,7 +168,7 @@ namespace proton {
 		for (entt::entity entity : netView)
 		{
 			auto& net = netView.get<NetworkComponent>(entity);
-			net.ScriptRepInfo.clear();
+			net.ReplicatedScripts.clear();
 		}
 
 		// Create EntityScript instances

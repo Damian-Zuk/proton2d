@@ -184,7 +184,14 @@ namespace proton
 
 	glm::vec4& Entity::GetColor() const
 	{
-		return GetComponent<SpriteComponent>().Color;
+		if (HasComponent<SpriteComponent>())
+			return GetComponent<SpriteComponent>().Color;
+		
+		if (HasComponent<ResizableSpriteComponent>())
+			return GetComponent<ResizableSpriteComponent>().Color;
+
+		static glm::vec4 noColor { 0.0f };
+		return noColor;
 	}
 
 	SpriteAnimation& Entity::GetSpriteAnimation() const

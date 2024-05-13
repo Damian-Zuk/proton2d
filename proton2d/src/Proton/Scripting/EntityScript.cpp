@@ -124,30 +124,42 @@ namespace proton {
 		return GetScene()->GetOwningGameInstance()->GetSceneManager();
 	}
 
-	void EntityScript::ReplicateField(const std::string& name, void (*notifyFunction)(Entity*))
+	void EntityScript::ReplicateField(const std::string& name, const std::function<void(Entity*)>& notifyFunction)
 	{
-		bool valid = m_ScriptFields.find(name) != m_ScriptFields.end();
-		PT_CORE_ASSERT(valid, "Script field not found");
+		PT_CORE_ASSERT(m_ScriptFields.find(name) != m_ScriptFields.end(), "Script field not found");
+
 		ScriptField* scriptField = &m_ScriptFields.at(name);
 		ReplicateData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
 	}
 
-	void EntityScript::ReplicateData(void* data, size_t size, void (*notifyFunction)(Entity*))
+	static bool CompareByTag(const NetworkComponent::ScriptRepInfo& a, const  NetworkComponent::ScriptRepInfo& b) {
+		return a.Script->GetTag() < b.Script->GetTag();
+	}
+
+	void EntityScript::ReplicateData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction)
 	{
-		if (!HasComponent<NetworkComponent>())
+		PT_CORE_ASSERT(HasComponent<NetworkComponent>(), "Missing NetworkComponent");
+
+		auto& net = GetComponent<NetworkComponent>();
+		auto& repScripts = net.ReplicatedScripts;
+
+		net.ReplicatedComponentsBitset.set(ComponentType_Script);
+
+		auto scriptRepInfoIt = std::find_if(repScripts.begin(), repScripts.end(),
+			[this](const auto& repInfo) { return repInfo.Script == this; });
+
+		if (scriptRepInfoIt == repScripts.end())
 		{
-			PT_CORE_WARN("({}, {}) has no network replication enabled", GetTag(), GetUUID());
+			NetworkComponent::ScriptRepInfo newEntry;
+			newEntry.Script = this;
+			newEntry.ReplicatedFields.push_back({ data, size, 0, notifyFunction });
+			
+			auto insertPosition = std::lower_bound(repScripts.begin(), repScripts.end(), newEntry, CompareByTag);
+			repScripts.insert(insertPosition, newEntry);
 			return;
 		}
 
-		auto& net = GetComponent<NetworkComponent>();
-		net.ReplicatedComponentsBitset.set(ComponentType_Script);
-
-		auto& scriptRepInfo = net.ScriptRepInfo[GetScriptClassName()];
-		scriptRepInfo.Script = this;
-		scriptRepInfo.FieldRepInfo.push_back(NetworkComponent::FieldRepInfo{
-			data, size, 0, notifyFunction
-		});
+		scriptRepInfoIt->ReplicatedFields.push_back({ data, size, 0, notifyFunction });
 	}
 
 	bool EntityScript::IsRunningServer() const

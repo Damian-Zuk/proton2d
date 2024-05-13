@@ -342,16 +342,18 @@ namespace proton {
 			auto& net = view.get<NetworkComponent>(e);
 			ComponentBitset componentBitset = net.ReplicatedComponentsBitset;
 
-			uint64_t entityStreamStart = stream.GetStreamPosition();
+			// Entity buffer header
+			uint64_t entityHeaderPos = stream.GetStreamPosition();
 			uint64_t entityBufferSize = 0;
 
 			stream.WriteZero(sizeof(entityBufferSize));
-			stream.WriteZero(sizeof(proton::UUID));
 			stream.WriteZero(sizeof(componentBitset));
+			stream.WriteRaw(entity.GetUUID());
 
-			uint64_t componentsStreamStart = stream.GetStreamPosition();
+			uint64_t headerEndPos = stream.GetStreamPosition();
 
-			// ------ BEGIN: TransformComponent Replication ------ //
+
+			// *************** BEGIN: TransformComponent Replication *************** //
 			if (net.ReplicatedComponentsBitset.test(ComponentType_Transform))
 			{
 				uint64_t streamStart = stream.GetStreamPosition();
@@ -373,86 +375,92 @@ namespace proton {
 					currentChecksum = checksum;
 			#endif
 			}
-			// ------ END: TransformComponent Replication ------ //
+			// *************** END: TransformComponent Replication *************** //
 
-			// ------ BEGIN: ScriptComponent Replication ------ //
+
+			// *************** BEGIN: ScriptComponent Replication *************** //
 			if (net.ReplicatedComponentsBitset.test(ComponentType_Script))
 			{
+				// Component header
+				uint64_t componentHeaderPos = stream.GetStreamPosition();
 				uint32_t scriptRepCount = 0;
-				uint64_t streamStart = stream.GetStreamPosition();
 
 				stream.WriteZero(sizeof(scriptRepCount));
 
-				for (auto& [script, scriptRepInfo] : net.ScriptRepInfo)
+				for (size_t scriptIndex = 0; scriptIndex < net.ReplicatedScripts.size(); scriptIndex++)
 				{
-					if (scriptRepInfo.FieldRepInfo.size() == 0)
-						continue;
+					auto& script = net.ReplicatedScripts[scriptIndex];
+					if (script.ReplicatedFields.size() == 0)
+						continue; // invalid entry, no fields to replicate
 
+					// Script header
+					uint64_t scriptHeaderPos = stream.GetStreamPosition();
 					uint32_t fieldRepCount = 0;
-					uint64_t scriptStreamStart = stream.GetStreamPosition();
 
 					stream.WriteZero(sizeof(fieldRepCount));
-					stream.WriteString(scriptRepInfo.Script->GetScriptClassName());
+					stream.WriteRaw((uint32_t)scriptIndex);
 
-					for (size_t i = 0; i < scriptRepInfo.FieldRepInfo.size(); i++)
+					// For each script field
+					for (size_t fieldIndex = 0; fieldIndex < script.ReplicatedFields.size(); fieldIndex++)
 					{
-						auto& fieldRepInfo = scriptRepInfo.FieldRepInfo[i];
+						auto& field = script.ReplicatedFields[fieldIndex];
 
 					#if ENABLE_REPLICATION_CHECKSUM
-						uint32_t checksum = crc32_bitwise(fieldRepInfo.Data, fieldRepInfo.Size);
-						if (checksum == fieldRepInfo.Checksum)
-							continue; // Field value not changed, do not replicate
-						fieldRepInfo.Checksum = checksum;
+						uint32_t checksum = crc32_bitwise(field.Data, field.Size);
+						if (checksum == field.Checksum)
+							continue; // value not changed, skip replication
+						field.Checksum = checksum;
 					#endif
 
-						stream.WriteRaw((uint32_t)i);
-						stream.WriteData((char*)fieldRepInfo.Data, fieldRepInfo.Size);
+						// Write field data
+						stream.WriteRaw((uint32_t)fieldIndex);
+						stream.WriteData((char*)field.Data, field.Size);
 						fieldRepCount++;
 					}
 
 					if (fieldRepCount)
 					{
-						uint64_t streamPos = stream.GetStreamPosition();
-						stream.SetStreamPosition(scriptStreamStart);
+						// Write `fieldRepCount` to script header
+						uint64_t current = stream.GetStreamPosition();
+						stream.SetStreamPosition(scriptHeaderPos);
 						stream.WriteRaw(fieldRepCount);
-						stream.SetStreamPosition(streamPos);
+						stream.SetStreamPosition(current);
 						scriptRepCount++;
 					}
 					else
-					{
-						// No fields to replicate
-						stream.SetStreamPosition(scriptStreamStart);
-					}
+						stream.SetStreamPosition(scriptHeaderPos); // no fields to replicate
 				}
 
 				if (scriptRepCount)
 				{
+					// Write `scriptRepCount` to component header
 					uint64_t streamPos = stream.GetStreamPosition();
-					stream.SetStreamPosition(streamStart);
+					stream.SetStreamPosition(componentHeaderPos);
 					stream.WriteRaw(scriptRepCount);
 					stream.SetStreamPosition(streamPos);
 				}
 				else
 				{
 					// Skip component replication
-					stream.SetStreamPosition(streamStart);
+					stream.SetStreamPosition(componentHeaderPos);
 					componentBitset.set(ComponentType_Script, false);
 				}
 			}
-			// ------ END: ScriptComponent Replication ------ //
+			// *************** END: ScriptComponent Replication *************** //
 
-			if (stream.GetStreamPosition() == componentsStreamStart)
+
+			if (stream.GetStreamPosition() == headerEndPos)
 			{
-				stream.SetStreamPosition(entityStreamStart);
-				continue; // Nothing changed, skip entity replication
+				stream.SetStreamPosition(entityHeaderPos);
+				continue; // no components changed, skip entity replication
 			}
 
 			uint64_t entityStreamEnd = stream.GetStreamPosition();
-			entityBufferSize = entityStreamEnd - entityStreamStart;
-				
-			stream.SetStreamPosition(entityStreamStart);
+			entityBufferSize = entityStreamEnd - entityHeaderPos;
+			
+			// Write entity header
+			stream.SetStreamPosition(entityHeaderPos);
 			stream.WriteRaw(entityBufferSize);
-			stream.WriteRaw(entity.GetUUID());
 			stream.WriteRaw(componentBitset);
 			stream.SetStreamPosition(entityStreamEnd);
 
