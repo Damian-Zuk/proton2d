@@ -14,19 +14,6 @@
 #define PT_EXPAND_MACRO(x) x
 #define PT_STRINGIFY_MACRO(x) #x
 
-#ifdef PROTON_DEBUG
-	#if defined(PROTON_PLATFORM_WINDOWS)
-		#define PT_DEBUGBREAK() __debugbreak()
-	#elif defined(PROTON_PLATFORM_LINUX)
-		#include <signal.h>
-		#define PT_DEBUGBREAK() raise(SIGTRAP)
-	#endif
-	#define PT_ENABLE_ASSERTS
-#else
-	#define PT_DEBUGBREAK()
-	#define NDEBUG
-#endif
-
 #define PT_BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
 
 constexpr uint32_t PT_MAX_COMPONENTS = 128u;

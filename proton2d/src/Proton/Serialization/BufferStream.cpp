@@ -12,7 +12,7 @@ namespace proton {
 	bool BufferStreamWriter::WriteData(const char* data, size_t size)
 	{
 		bool valid = m_BufferPosition + size <= m_TargetBuffer.Size;
-		PT_CORE_ASSERT(valid);
+		PT_CORE_VERIFY(valid);
 		if (!valid)
 			return false;
 
@@ -29,7 +29,7 @@ namespace proton {
 	bool BufferStreamReader::ReadData(char* destination, size_t size)
 	{
 		bool valid = m_BufferPosition + size <= m_TargetBuffer.Size;
-		PT_CORE_ASSERT(valid);
+		PT_CORE_VERIFY(valid);
 		if (!valid)
 			return false;
 
