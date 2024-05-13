@@ -29,7 +29,7 @@ bool MyGameMode::OnCreate()
 			m_LocalPlayer = player.As<Player>();
 			return true;
 		}
-
+		
 		// Spawn local player
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
 		m_LocalPlayer = SpawnPrefab("Player").As<Player>();

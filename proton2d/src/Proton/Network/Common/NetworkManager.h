@@ -75,6 +75,7 @@ namespace proton {
 		static uint32_t s_NetworkServicesRunning; // across all editor's game instances (server + clients)
 		static bool s_NetworkResourcesFreed; // free resources after all network services finished running
 
+
 		friend class Application;
 		friend class Scene;
 		friend class Client;

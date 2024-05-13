@@ -1,10 +1,10 @@
 {
-    "UUID": 13767270655848491515,
+    "UUID": 14607175038589815423,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            -0.26087,
-            0.71014,
+            1.91304,
+            1.69565,
             0.1
         ],
         "Rotation": 0.0,
@@ -55,35 +55,31 @@
             "ClassName": "Player",
             "Fields": [
                 {
-                    "FieldName": "ClientID",
+                    "FieldName": "m_ClientID",
                     "Value": 0
                 },
                 {
-                    "FieldName": "GravityModifier",
+                    "FieldName": "m_GravityModifier",
                     "Value": -10.0
                 },
                 {
-                    "FieldName": "JumpForce",
+                    "FieldName": "m_JumpForce",
                     "Value": 25.0
                 },
                 {
-                    "FieldName": "PlayerAcceleration",
+                    "FieldName": "m_PlayerAcceleration",
                     "Value": 300.0
                 },
                 {
-                    "FieldName": "PlayerMaxSpeed",
+                    "FieldName": "m_PlayerMaxSpeed",
                     "Value": 8.0
-                },
-                {
-                    "FieldName": "PlayerState",
-                    "Value": 0
                 }
             ]
         }
     ],
     "Entities": [
         {
-            "UUID": 7798404311788052476,
+            "UUID": 10617958248777148543,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -115,7 +111,7 @@
             }
         },
         {
-            "UUID": 1466167497235381531,
+            "UUID": 7794308886850002294,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -149,7 +145,7 @@
             }
         },
         {
-            "UUID": 11216130728803535643,
+            "UUID": 4753824877077404011,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -181,7 +177,7 @@
             }
         },
         {
-            "UUID": 11159921227229110921,
+            "UUID": 10798575398817342635,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -213,7 +209,7 @@
             }
         },
         {
-            "UUID": 15490489124181656772,
+            "UUID": 13225112859052145906,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [

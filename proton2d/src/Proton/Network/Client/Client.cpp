@@ -89,6 +89,8 @@ namespace proton {
 
 	void Client::MainThread_ProcessMessages()
 	{
+		PROFILE_FUNCTION();
+
 		std::lock_guard<std::mutex> lock(m_QueueMutex);
 		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
 		Scene* scene = sceneManager->GetActiveScene();
@@ -119,6 +121,8 @@ namespace proton {
 			
 			case PacketType::GameStateUpdate:
 			{
+				PROFILE_SCOPE("PacketType::GameStateUpdate");
+
 				uint32_t created, destroyed;
 				stream.ReadRaw(created);
 				stream.ReadRaw(destroyed);
@@ -165,6 +169,8 @@ namespace proton {
 			
 			case PacketType::EntitySpawn:
 			{
+				PROFILE_SCOPE("PacketType::EntitySpawn");
+
 				while (stream.GetStreamPosition() < buffer.Size)
 				{
 					std::string jsonData;
@@ -186,14 +192,19 @@ namespace proton {
 			
 			case PacketType::EntityDestroy:
 			{
-				UUID uuid;
-				stream.ReadRaw(uuid);
-				Entity entity = scene->FindByID(uuid);
+				PROFILE_SCOPE("PacketType::EntityDestroy");
 
-				if (!entity)
-					break;
-				
-				entity.Destroy();
+				while (stream.GetStreamPosition() < buffer.Size)
+				{
+					UUID uuid;
+					stream.ReadRaw(uuid);
+					Entity entity = scene->FindByID(uuid);
+
+					if (!entity)
+						continue;
+
+					entity.Destroy();
+				}
 				break;
 			}
 
@@ -201,8 +212,11 @@ namespace proton {
 			
 			case PacketType::UpdateReplicated:
 			{
+				PROFILE_SCOPE("PacketType::UpdateReplicated");
+
 				if (!m_GameStateInitialized)
 				{
+					// Wait with replication until game state synchronized
 					m_MessageQueue.pop();
 					m_MessageQueue.push(message);
 					return;
@@ -227,31 +241,24 @@ namespace proton {
 
 					if (!entity.HasComponent<NetworkComponent>())
 					{
-						PT_CORE_ERROR("UpdateReplicated: Entity {} missing NetworkComponent!", entityUUID);
 						stream.SetStreamPosition(entityStreamStart + entityBufferSize);
 						continue;
 					}
 
+					ComponentBitset componentBitset;
+					stream.ReadRaw(componentBitset);
+
 					auto& net = entity.GetComponent<NetworkComponent>();
 
 					// TransformComponent
-					if (net.IsReplicated(ComponentTypeID::Transform))
+					if (componentBitset.test(ComponentType_Transform))
 					{
 						auto& transform = entity.GetTransform();
 						stream.ReadRaw(transform);
 					}
 
-					// SpriteComponent
-					if (net.IsReplicated(ComponentTypeID::Sprite))
-					{
-						auto& sprite = entity.GetSprite();
-						stream.ReadRaw(sprite.m_TilePos);
-						stream.ReadRaw(sprite.m_MirrorFlip);
-						sprite.CalculateTextureCoords();
-					}
-
 					// ScriptComponent
-					if (net.IsReplicated(ComponentTypeID::Script))
+					if (componentBitset.test(ComponentType_Script))
 					{
 						auto& scriptComponent = entity.GetComponent<ScriptComponent>();
 						uint32_t scriptCount;
@@ -267,18 +274,15 @@ namespace proton {
 							stream.ReadString(scriptClassName);
 
  							auto& scriptRepInfo = net.ScriptRepInfo.at(scriptClassName);
-							EntityScript* script = scriptRepInfo.Script;
 
 							// For each script field
 							for (uint32_t j = 0; j < fieldCount; j++)
 							{
-								std::string fieldName;
-								stream.ReadString(fieldName);
+								uint32_t fieldIndex;
+								stream.ReadRaw(fieldIndex);
 
-								ScriptField* field = &script->m_ScriptFields.at(fieldName);
-								stream.ReadData((char*)field->InstanceFieldValue, field->Size);
-
-								auto& fieldRepInfo = scriptRepInfo.FieldRepInfo.at(fieldName);
+								auto& fieldRepInfo = scriptRepInfo.FieldRepInfo.at(fieldIndex);
+								stream.ReadData((char*)fieldRepInfo.Data, fieldRepInfo.Size);
 
 								// Call notify function
 								if (fieldRepInfo.NotifyFunction)

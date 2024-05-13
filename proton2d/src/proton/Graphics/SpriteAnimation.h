@@ -51,7 +51,7 @@ namespace proton {
 		uint16_t m_CurrentAnimationIndex = -1;
 		Animation* m_CurrentAnimation = nullptr;
 
-		float m_AnimationSwitchTimeThreshold = 0.3f;
+		float m_AnimationSwitchTimeThreshold = 0.2f;
 		Timer m_AnimationSwtichTimer;
 
 		uint16_t m_FPS = 60;

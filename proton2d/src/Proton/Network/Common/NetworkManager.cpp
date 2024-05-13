@@ -21,9 +21,8 @@ namespace proton {
 
 	void NetworkManager::StaticInit()
 	{
-		s_ComponentSupportedRepBitset
-			.set((size_t)ComponentTypeID::Transform)
-			.set((size_t)ComponentTypeID::Sprite);
+		// Currently supports only Transform and Script fields replication
+		s_ComponentSupportedRepBitset.set(ComponentType_Transform);
 	}
 
 	NetworkManager::NetworkManager(GameInstance* instance, SceneManager* manager)

@@ -56,18 +56,17 @@ namespace proton {
 		void MainThread_OnTick();
 
 		void SetClientActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function);
-		void PushCreatedEntity(Entity entity, ClientID specificClient = 0);
+		void PushCreatedEntity(UUID entityUUID, Scene* scene, ClientID specificClient = 0);
+		void PushDestroyedEntity(UUID entityUUID, Scene* scene, ClientID specificClient = 0);
 
 		void OnClientConnected(const ClientInfo& clientInfo);
 		void OnClientDisconnected(const ClientInfo& clientInfo);
 		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
 
-		void SendOnEntityCreated(Entity entity, ClientID specificClient = 0);
-		void SendOnEntityDestroyed(Entity entity, ClientID specificClient = 0);
-
 		void ProcessConnectionStatusQueue();
 		void ProcessMessages();
-		void ProcessCreatedEntitiesQueue();
+		void ProcessCreatedEntityQueue();
+		void ProcessDestroyedEntityQueue();
 		void SendReplicationData();
 
 		// Network statistics
@@ -144,12 +143,14 @@ namespace proton {
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_MessageQueueMutex;
 
-		struct EntityQueueEntry
+		struct EntityLifetimeQueueEntry
 		{
-			Entity entity;
-			ClientID client; // 0 - send to all clients
+			UUID EntityUUID;
+			Scene* Scene;
+			ClientID Client; // 0 - send to all clients
 		};
-		std::queue<EntityQueueEntry> m_OnCreatedEntityQueue;
+		std::queue<EntityLifetimeQueueEntry> m_CreatedEntityQueue;
+		std::queue<EntityLifetimeQueueEntry> m_DestroyedEntityQueue;
 
 		// Player action callbacks
 		std::unordered_map<uint32_t, Server_OnPlayerActionCallback> m_PlayerActionCallbacks;

@@ -99,14 +99,6 @@ namespace proton {
 			scriptInstance->m_Scene = m_Scene;
 			scriptInstance->OnRegisterFields();
 
-			// TODO: Remove
-			if (HasComponent<NetworkComponent>())
-			{
-				auto& net = GetComponent<NetworkComponent>();
-				if (className == "Player")
-					net.ComponentBitset.set((size_t)ComponentTypeID::Script);
-			}
-
 			return scriptInstance;
 		}
 

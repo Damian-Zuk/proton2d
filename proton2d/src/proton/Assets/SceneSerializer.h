@@ -11,7 +11,7 @@ namespace proton {
 	class SceneSerializer
 	{
 	public:
-		SceneSerializer(Scene* scene);
+		SceneSerializer(Scene* scene, bool isNetworkSerializer = false);
 		~SceneSerializer() = default;
 
 		bool Serialize(const std::string& filepath);
@@ -25,6 +25,7 @@ namespace proton {
 	
 	private:
 		Scene* m_Scene;
+		bool m_IsNetworkSerializer = false;
 	};
 
 }

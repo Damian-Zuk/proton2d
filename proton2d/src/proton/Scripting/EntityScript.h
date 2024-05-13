@@ -2,18 +2,6 @@
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scripting/ScriptFactory.h"
 
-// Script class must inherit from EntityScript class.
-// This macro registers script class inside engine ScriptFactory.
-// It helps engine know all the scripts you created and attach
-// those scripts to entities by providing script class name as string.
-#define ENTITY_SCRIPT_CLASS(script_class) \
-static inline const std::string __ScriptClassName = #script_class; \
-static inline const bool __RegisteredInFactory = \
-	proton::ScriptFactory::Get().RegisterScript([&](proton::Entity entity) { \
-		return entity.AddScript<script_class>(); \
-	}, #script_class); \
-virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
-
 namespace proton {
 
 	// Supported script variable types for Serialization / Editor view.
@@ -23,7 +11,7 @@ namespace proton {
 	{
 		ScriptFieldType Type = ScriptFieldType::Float;
 		void* InstanceFieldValue = nullptr;
-		size_t Size = 0;
+		bool NetworkSerialize = false;
 		bool ShowInEditor = true;
 	};
 
@@ -45,8 +33,9 @@ namespace proton {
 		virtual void OnUpdate(float ts) {}
 		virtual void OnPhysicsUpdate(float ts) {}
 
-		// Register your fields (variables) here. Use RegisterField function.
-		// Supported variable types are listed inside ScriptFieldType enum.
+		// Register your fields (variables) here. Use PT_REGISTER_FIELD macro or RegisterField function.
+		// Supported variable types are listed in ScriptFieldType enum.
+		// Use PT_REPLICATE_FIELD or PT_REPLICATE_DATA here.
 		virtual void OnRegisterFields() {}
 
 		// Draw your custom ImGui Editor interface here.
@@ -56,7 +45,7 @@ namespace proton {
 
 		// Use glm::value_ptr for FloatX and IntX field types.
 		// Supported variable types are listed inside ScriptFieldType enum.
-		void RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor = true);
+		void RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor = true, bool networkSerialize = false);
 
 		void SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName);
 		bool CheckSensor(uint32_t sensorType) const;
@@ -67,11 +56,15 @@ namespace proton {
 		virtual const std::string& GetScriptClassName() = 0;
 		
 		// Networking
-		void RegisterReplicatedField(const std::string& name, void (*notifyFunction)(Entity*) = nullptr);
+		void ReplicateField(const std::string& name, void (*notifyFunction)(Entity*) = nullptr);
+		void ReplicateData(void* data, size_t size, void (*notifyFunction)(Entity*) = nullptr);
 
 		bool HasAuthority() const;
 		bool IsRunningServer() const;
 		bool IsRunningClient() const;
+
+		// Other
+		static const size_t GetFieldSize(ScriptFieldType type);
 
 	private:
 		void SetFieldValueData(const std::string& fieldName, void* value);
@@ -80,8 +73,8 @@ namespace proton {
 		bool m_Stopped = false;
 		bool m_Initialized = false;
 
-		std::map<std::string, ScriptField> m_ScriptFields;
-		std::map<uint32_t, uint32_t*> m_PhysicsSensorMap;
+		std::unordered_map<std::string, ScriptField> m_ScriptFields;
+		std::unordered_map<uint32_t, uint32_t*> m_PhysicsSensorMap;
 
 		friend class Entity;
 		friend class Scene;
@@ -91,3 +84,22 @@ namespace proton {
 		friend class InspectorPanel;
 	};
 }
+
+// This macro registers script class inside engine ScriptFactory.
+// Script class must inherit from EntityScript class.
+#define ENTITY_SCRIPT_CLASS(script_class) \
+	static inline const std::string __ScriptClassName = #script_class; \
+	static inline const bool __RegisteredInFactory = \
+		proton::ScriptFactory::Get().RegisterScript([&](proton::Entity entity) { \
+			return entity.AddScript<script_class>(); \
+		}, #script_class); \
+	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
+
+#define PT_REGISTER_FIELD(field, type, ...) \
+	RegisterField(ScriptFieldType::type, #field, &field, __VA_ARGS__);
+
+#define PT_REPLICATE_FIELD(field, ...) \
+	ReplicateField(#field, __VA_ARGS__)
+
+#define PT_REPLICATE_DATA(data, ...) \
+	ReplicateData(&data, sizeof(data), __VA_ARGS__);

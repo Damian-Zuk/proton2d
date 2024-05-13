@@ -25,14 +25,15 @@ bool Player::IsGrounded() const
 
 void Player::OnRegisterFields()
 {
-	RegisterField(ScriptFieldType::Float, "PlayerMaxSpeed", &m_PlayerMaxSpeed);
-	RegisterField(ScriptFieldType::Float, "PlayerAcceleration", &m_PlayerAcceleration);
-	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
-	RegisterField(ScriptFieldType::Float, "GravityModifier", &m_GravityModifier);
-	RegisterField(ScriptFieldType::Int, "ClientID", &m_ClientID, false);
-	RegisterField(ScriptFieldType::Int, "PlayerState", &m_State, false);
+	PT_REGISTER_FIELD(m_PlayerMaxSpeed, Float);
+	PT_REGISTER_FIELD(m_PlayerAcceleration, Float);
+	PT_REGISTER_FIELD(m_JumpForce, Float);
+	PT_REGISTER_FIELD(m_GravityModifier, Float);
 
-	RegisterReplicatedField("PlayerState");
+	PT_REGISTER_FIELD(m_ClientID, Int, /*ShowInEditor*/ false, /*NetworkSerialize*/ true);
+
+	PT_REPLICATE_DATA(m_State);
+	PT_REPLICATE_DATA(m_Velocity);
 }
 
 bool Player::OnCreate()
@@ -99,88 +100,92 @@ void Player::OnUpdate(float ts)
 			});
 		}
 	}
+	
+	if (IsRunningClient())
+		m_Direction = m_Velocity.x > 0.0f ? 1.0f : m_Velocity.x < 0.0f ? -1.0f : m_Direction;
 
-	m_Direction = m_ActionState.MoveRight ? 1.0f : (m_ActionState.MoveLeft ? -1.0f : m_Direction);
+	SpriteAnimation& animation = GetSpriteAnimation();
+
+	if (m_State == PlayerState_Jump)
+	{
+		// Update jump animation frame
+		uint16_t frame = m_Velocity.y > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
+		animation.SetAnimationFrame(frame);
+	}
+
+	animation.Play(m_State);
+	animation.SetMirrorFlip(m_Direction < 0.0f);
 }
 
 void Player::OnPhysicsUpdate(float ts)
 {
-	// Get SpriteAnimation object reference and linear velocity
-	SpriteAnimation& animation = GetSpriteAnimation();
+	if (IsRunningClient())
+		return;
 
-	if (HasAuthority())
+	m_Velocity = GetLinearVelocity();
+
+	// Set player direction (right: 1.0, left: -1.0f)
+	m_Direction = m_ActionState.MoveRight ? 1.0f : (m_ActionState.MoveLeft ? -1.0f : m_Direction);
+	bool move = m_ActionState.MoveLeft || m_ActionState.MoveRight;
+
+	// Set horizontal velocity (acceleration)
+	if (!IsOnHighSlope())
 	{
-		glm::vec2 velocity = GetLinearVelocity();
+		float maxSpeed = m_PlayerMaxSpeed * (m_State == PlayerState_Run ? 1.0f : 0.8f);
+		float newVelocity = m_Velocity.x + m_PlayerAcceleration * m_Direction * ts;
 
-		// Set player direction (right: 1.0, left: -1.0f)
-		bool move = m_ActionState.MoveLeft || m_ActionState.MoveRight;
+		SetLinearVelocityX(!move ? 0.0f : glm::clamp(newVelocity, -maxSpeed, maxSpeed));
 
-		// Set horizontal velocity (acceleration)
-		if (!IsOnHighSlope())
+		if (!move)
 		{
-			float maxSpeed = m_PlayerMaxSpeed * (m_State == PlayerState_Run ? 1.0f : 0.8f);
-			float newVelocity = velocity.x + m_PlayerAcceleration * m_Direction * ts;
-
-			SetLinearVelocityX(!move ? 0.0f : glm::clamp(newVelocity, -maxSpeed, maxSpeed));
-
-			if (!move)
-			{
-				m_Wheel->SetFixedRotation(true);
-				m_Wheel->SetLinearVelocity({ 0.0f, m_Wheel->GetLinearVelocity().y });
-			}
-			else
-				m_Wheel->SetFixedRotation(false);
+			m_Wheel->SetFixedRotation(true);
+			m_Wheel->SetLinearVelocity({ 0.0f, m_Wheel->GetLinearVelocity().y });
 		}
-
-		// Set player state to Run when key is pressed and player is not in the air
-		if (move && m_State != PlayerState_Jump)
-			m_State = PlayerState_Run;
-
-		// Set player state to Idle when stopped running or landing animation finished playing
-		else if (m_State == PlayerState_Run || (m_State == PlayerState_Land && animation.FinishedPlaying()))
-			m_State = PlayerState_Idle;
-
-		// Start landing animation
-		if (m_State == PlayerState_Jump && IsGrounded())
-		{
-			m_State = m_JumpTimer >= s_LandAnimationDelay ? PlayerState_Land : PlayerState_Idle;
-			if (glm::abs(velocity.x) > 5.0f)
-				m_State = PlayerState_Run;
-			m_JumpTimer = 0.0f;
-		}
-
-		// Player pressed a jump key
-		if (m_ActionState.Jump && IsGrounded() && m_JumpTimer >= s_JumpDelay)
-		{
-			SetLinearVelocity(0.0f, 0.0f);
-			ApplyLinearImpulse({ 0.0f,  m_JumpForce });
-			m_JumpTimer = 0.0f;
-			m_State = PlayerState_Jump;
-		}
-
-		// Player is in the air: Set jump or fall animation frame 
-		if (!IsGrounded())
-		{
-			// Modify vertical velocity to make jump feel less floaty
-			if (velocity.y < 0.5f && velocity.y > -10.0f)
-				ApplyLinearImpulse({ 0.0f, m_GravityModifier * 0.1f });
-
-			// Update jump animation frame
-			uint16_t frame = velocity.y > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
-			animation.SetAnimationFrame(frame);
-			m_State = PlayerState_Jump;
-		}
-
-		// Set animation direction when sliding on high slope
-		if (IsOnHighSlope() && velocity.y < 0.0f)
-			m_Direction = velocity.x > 0.0f ? 1.0f : -1.0f;
-	
-		m_JumpTimer += ts;
+		else
+			m_Wheel->SetFixedRotation(false);
 	}
 
-	// Update animation and timer
-	animation.Play(m_State);
-	animation.SetMirrorFlip(m_Direction < 0.0f);
+	// Set player state to Run when key is pressed and player is not in the air
+	if (move && m_State != PlayerState_Jump)
+		m_State = PlayerState_Run;
+
+	// Set player state to Idle when stopped running or landing animation finished playing
+	else if (m_State == PlayerState_Run || (m_State == PlayerState_Land && GetSpriteAnimation().FinishedPlaying()))
+		m_State = PlayerState_Idle;
+
+	// Start landing animation
+	if (m_State == PlayerState_Jump && IsGrounded())
+	{
+		m_State = m_JumpTimer >= s_LandAnimationDelay ? PlayerState_Land : PlayerState_Idle;
+		if (glm::abs(m_Velocity.x) > 5.0f)
+			m_State = PlayerState_Run;
+		m_JumpTimer = 0.0f;
+	}
+
+	// Player pressed a jump key
+	if (m_ActionState.Jump && IsGrounded() && m_JumpTimer >= s_JumpDelay)
+	{
+		SetLinearVelocity(0.0f, 0.0f);
+		ApplyLinearImpulse({ 0.0f,  m_JumpForce });
+		m_JumpTimer = 0.0f;
+		m_State = PlayerState_Jump;
+	}
+
+	// Player is in the air: Set jump or fall animation frame 
+	if (!IsGrounded())
+	{
+		// Modify vertical velocity to make jump feel less floaty
+		if (m_Velocity.y < 0.5f && m_Velocity.y > -10.0f)
+			ApplyLinearImpulse({ 0.0f, m_GravityModifier * 0.1f });
+
+		m_State = PlayerState_Jump;
+	}
+
+	// Set animation direction when sliding on high slope
+	if (IsOnHighSlope() && m_Velocity.y < 0.0f)
+		m_Direction = m_Velocity.x > 0.0f ? 1.0f : -1.0f;
+	
+	m_JumpTimer += ts;
 }
 
 void Player::OnImGuiRender()

@@ -6,7 +6,7 @@
 
 namespace proton {
 
-	static size_t GetFieldSize(ScriptFieldType type)
+	const size_t EntityScript::GetFieldSize(ScriptFieldType type)
 	{
 		switch (type)
 		{
@@ -34,10 +34,48 @@ namespace proton {
 		}
 	}
 
-	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor)
+	void EntityScript::SetFieldValueData(const std::string& fieldName, void* valuePtr)
 	{
-		size_t size = GetFieldSize(type);
-		m_ScriptFields[name] = { type, field, size, showInEditor };
+		ScriptField& field = m_ScriptFields[fieldName];
+
+		switch (field.Type)
+		{
+		case ScriptFieldType::Float:
+			*(float*)field.InstanceFieldValue = *(float*)valuePtr;
+			break;
+		case ScriptFieldType::Float2:
+			*(glm::vec2*)field.InstanceFieldValue = *(glm::vec2*)valuePtr;
+			break;
+		case ScriptFieldType::Float3:
+			*(glm::vec3*)field.InstanceFieldValue = *(glm::vec3*)valuePtr;
+			break;
+		case ScriptFieldType::Float4:
+			*(glm::vec4*)field.InstanceFieldValue = *(glm::vec4*)valuePtr;
+			break;
+		case ScriptFieldType::Int:
+			*(int*)field.InstanceFieldValue = *(int*)valuePtr;
+			break;
+		case ScriptFieldType::Int2:
+			*(glm::ivec2*)field.InstanceFieldValue = *(glm::ivec2*)valuePtr;
+			break;
+		case ScriptFieldType::Int3:
+			*(glm::ivec3*)field.InstanceFieldValue = *(glm::ivec3*)valuePtr;
+			break;
+		case ScriptFieldType::Int4:
+			*(glm::ivec4*)field.InstanceFieldValue = *(glm::ivec4*)valuePtr;
+			break;
+		case ScriptFieldType::Bool:
+			*(bool*)field.InstanceFieldValue = *(bool*)valuePtr;
+			break;
+		default:
+			PT_ASSERT("Unexpected value type!");
+			break;
+		}
+	}
+
+	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor, bool networkSerialize)
+	{
+		m_ScriptFields[name] = { type, field, networkSerialize, showInEditor };
 	}
 
 	void EntityScript::SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName)
@@ -81,57 +119,35 @@ namespace proton {
 		return *m_PhysicsSensorMap.at(sensorType) > 0;
 	}
 
-	void EntityScript::SetFieldValueData(const std::string& fieldName, void* valuePtr)
-	{
-		ScriptField& field = m_ScriptFields[fieldName];
-
-		switch (field.Type)
-		{
-		case ScriptFieldType::Float:
-			*(float*)field.InstanceFieldValue = *(float*)valuePtr;
-			break;
-		case ScriptFieldType::Float2:
-			*(glm::vec2*)field.InstanceFieldValue = *(glm::vec2*)valuePtr;
-			break;
-		case ScriptFieldType::Float3:
-			*(glm::vec3*)field.InstanceFieldValue = *(glm::vec3*)valuePtr;
-			break;
-		case ScriptFieldType::Float4:
-			*(glm::vec4*)field.InstanceFieldValue = *(glm::vec4*)valuePtr;
-			break;
-		case ScriptFieldType::Int:
-			*(int*)field.InstanceFieldValue = *(int*)valuePtr;
-			break;
-		case ScriptFieldType::Int2:
-			*(glm::ivec2*)field.InstanceFieldValue = *(glm::ivec2*)valuePtr;
-			break;
-		case ScriptFieldType::Int3:
-			*(glm::ivec3*)field.InstanceFieldValue = *(glm::ivec3*)valuePtr;
-			break;
-		case ScriptFieldType::Int4:
-			*(glm::ivec4*)field.InstanceFieldValue = *(glm::ivec4*)valuePtr;
-			break;
-		case ScriptFieldType::Bool:
-			*(bool*)field.InstanceFieldValue = *(bool*)valuePtr;
-			break;
-		default:
-			PT_ASSERT("Unexpected value type!");
-			break;
-		}
-	}
-
 	SceneManager* EntityScript::GetSceneManager() const
 	{
 		return GetScene()->GetOwningGameInstance()->GetSceneManager();
 	}
 
-	void EntityScript::RegisterReplicatedField(const std::string& name, void (*notifyFunction)(Entity*))
+	void EntityScript::ReplicateField(const std::string& name, void (*notifyFunction)(Entity*))
 	{
+		bool valid = m_ScriptFields.find(name) != m_ScriptFields.end();
+		PT_CORE_ASSERT(valid, "Script field not found");
+		ScriptField* scriptField = &m_ScriptFields.at(name);
+		ReplicateData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
+	}
+
+	void EntityScript::ReplicateData(void* data, size_t size, void (*notifyFunction)(Entity*))
+	{
+		if (!HasComponent<NetworkComponent>())
+		{
+			PT_CORE_WARN("({}, {}) has no network replication enabled", GetTag(), GetUUID());
+			return;
+		}
+
 		auto& net = GetComponent<NetworkComponent>();
-		NetworkComponent::FieldRepInfo replicatedField { &m_ScriptFields.at(name), notifyFunction, 0};
+		net.ReplicatedComponentsBitset.set(ComponentType_Script);
+
 		auto& scriptRepInfo = net.ScriptRepInfo[GetScriptClassName()];
 		scriptRepInfo.Script = this;
-		scriptRepInfo.FieldRepInfo[name] = replicatedField;
+		scriptRepInfo.FieldRepInfo.push_back(NetworkComponent::FieldRepInfo{
+			data, size, 0, notifyFunction
+		});
 	}
 
 	bool EntityScript::IsRunningServer() const

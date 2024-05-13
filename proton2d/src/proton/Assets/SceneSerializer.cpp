@@ -26,8 +26,8 @@ namespace proton {
 		return std::round((double)f * 100000) / 100000;
 	}
 
-	SceneSerializer::SceneSerializer(Scene* scene)
-		: m_Scene(scene)
+	SceneSerializer::SceneSerializer(Scene* scene, bool isNetworkSerializer)
+		: m_Scene(scene), m_IsNetworkSerializer(isNetworkSerializer)
 	{
 	}
 
@@ -145,8 +145,9 @@ namespace proton {
 		if (entity.HasComponent<NetworkComponent>())
 		{
 			auto& netComponent = entity.GetComponent<NetworkComponent>();
+			// TODO: Optimize, serialize to binary (e.g. two 64 bit numbers)
 			jsonObj["Network"] = {
-				{ "ReplicatedComponentsBitset", netComponent.ComponentBitset.to_string() }
+				{ "ReplicatedComponentsBitset", netComponent.ReplicatedComponentsBitset.to_string() }
 			};
 		}
 
@@ -288,6 +289,9 @@ namespace proton {
 				scriptObj["ClassName"] = scriptClassName;
 				for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
 				{
+					if (m_IsNetworkSerializer && !fieldData.NetworkSerialize)
+						continue;
+
 					json fieldObj;
 					fieldObj["FieldName"] = fieldName;
 
@@ -397,12 +401,12 @@ namespace proton {
 			if (netJson.contains("ReplicatedComponentsBitset"))
 			{
 				std::string bitsetStr = netJson.at("ReplicatedComponentsBitset");
-				netComponent.ComponentBitset = ComponentBitset(bitsetStr);
+				netComponent.ReplicatedComponentsBitset = ComponentBitset(bitsetStr);
 
-				for (uint32_t i = 0; i < PT_MAX_COMPONENTS; i++)
+				for (size_t i = 0; i < PT_MAX_COMPONENTS; i++)
 				{
-					if (netComponent.ComponentBitset.test(i))
-						netComponent.ComponentChecksums[(ComponentTypeID)i] = 0;
+					if (netComponent.ReplicatedComponentsBitset.test(i))
+						netComponent.ComponentChecksums[(EComponentType)i] = 0;
 				}
 			}
 		}

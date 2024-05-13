@@ -3,14 +3,30 @@ using namespace proton;
 
 #include "Platform.h"
 
+static void OnRep_EnableCollision(Entity* entity)
+{
+	RedPlatform* platform = entity->As<RedPlatform>();
+	_PT_TRACE("OnRep_EnableCollision: {}", platform->m_EnableCollision);
+
+	if (platform->m_EnableCollision)
+		platform->GetComponent<ResizableSpriteComponent>().Color.a = 1.0f;
+	else
+		platform->GetComponent<ResizableSpriteComponent>().Color.a = 0.33f;
+}
+
 void RedPlatform::OnRegisterFields()
 {
 	RegisterField(ScriptFieldType::Float, "VanishAfter", &m_VanishAfter);
 	RegisterField(ScriptFieldType::Float, "VanishTime", &m_VanishTime);
+
+	PT_REPLICATE_DATA(m_EnableCollision, &OnRep_EnableCollision);
 }
 
 bool RedPlatform::OnCreate()
 {
+	if (IsRunningClient())
+		return true;
+
 	auto& collider = GetComponent<BoxColliderComponent>();
 
 	// OnBegin Contact Callback
@@ -56,6 +72,9 @@ bool RedPlatform::OnCreate()
 
 void RedPlatform::OnUpdate(float ts)
 {
+	if (IsRunningClient())
+		return;
+
 	if (m_ContactWithPlayer && m_VanishAfter > 0.0f)
 	{
 		// Vanish the platform (disable collision)

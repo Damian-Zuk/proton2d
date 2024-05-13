@@ -19,4 +19,6 @@ private:
 	float m_VanishTimer = 0.0f;
 
 	Entity m_PlayerSensor;
+
+	friend static void OnRep_EnableCollision(Entity*);
 };

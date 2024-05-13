@@ -22,12 +22,7 @@
 #include <spdlog/spdlog.h>
 #include <Crc32.h>
 
-#ifdef PROTON_DISTRIBUTION
-static constexpr bool s_EnableNetworkStatistics = false;
-#else
-static constexpr bool s_EnableNetworkStatistics = true;
-#endif
-
+#define ENABLE_REPLICATION_CHECKSUM 1
 
 namespace proton {
 
@@ -42,9 +37,7 @@ namespace proton {
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
 		m_ScratchBuffer.Allocate(s_ScratchBufferSize);
-
-		if constexpr (s_EnableNetworkStatistics)
-			GenerateStatsLogsFilename();
+		GenerateStatsLogsFilename();
 	}
 
 	Server::~Server()
@@ -83,10 +76,10 @@ namespace proton {
 	{
 		ProcessConnectionStatusQueue();
 		ProcessMessages();
+		ProcessCreatedEntityQueue();
+		ProcessDestroyedEntityQueue();
 		SendReplicationData();
-
-		if constexpr(s_EnableNetworkStatistics)
-			UpdateNetworkStatistics();
+		UpdateNetworkStatistics();
 	}
 
 	void Server::ProcessConnectionStatusQueue()
@@ -107,8 +100,7 @@ namespace proton {
 				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
 				gameMode->Server_OnClientConnected(info.ClientInfo.ID);
 
-				if constexpr (s_EnableNetworkStatistics)
-					InitNetworkStatsForClient(info.ClientInfo.ID);
+				InitNetworkStatsForClient(info.ClientInfo.ID);
 			}
 
 			// Client has been disconnected
@@ -117,8 +109,7 @@ namespace proton {
 				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
 				gameMode->Server_OnClientDisconnected(info.ClientInfo.ID);
 
-				if constexpr (s_EnableNetworkStatistics)
-					ReleaseNetworkStatsForClient(info.ClientInfo.ID);
+				ReleaseNetworkStatsForClient(info.ClientInfo.ID);
 			}
 
 			m_ClientConnStatusChangeQueue.pop();
@@ -127,6 +118,8 @@ namespace proton {
 
 	void Server::ProcessMessages()
 	{
+		PROFILE_FUNCTION();
+
 		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
 		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
 		Scene* scene = sceneManager->GetActiveScene();
@@ -145,6 +138,8 @@ namespace proton {
 
 			case PacketType::VerifyGameState:
 			{
+				PROFILE_SCOPE("PacketType::VerifyGameState");
+
 				std::vector<UUID> clientState;
 				std::vector<UUID> serverState;
 
@@ -174,7 +169,7 @@ namespace proton {
 						continue;
 
 					Entity entity = scene->FindByID(uuid);
-					SceneSerializer serializer(entity.GetScene());
+					SceneSerializer serializer(entity.GetScene(), true);
 					std::string jsonData = serializer.SerializeEntityToString(entity);
 					writer.WriteString(jsonData);
 					created++;
@@ -203,6 +198,8 @@ namespace proton {
 
 			case PacketType::PlayerAction:
 			{
+				PROFILE_SCOPE("PacketType::PlayerAction");
+
 				if (m_PlayerActionCallbacks.find(message->m_conn) != m_PlayerActionCallbacks.end())
 				{
 					Server_OnPlayerActionCallback& callback = m_PlayerActionCallbacks.at(message->m_conn);
@@ -217,7 +214,7 @@ namespace proton {
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			default:
 				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
-				// TODO: Kick client
+				KickClient(message->GetConnection());
 				break;
 			}
 
@@ -226,55 +223,52 @@ namespace proton {
 		}
 	}
 
-	void Server::ProcessCreatedEntitiesQueue()
+	void Server::ProcessCreatedEntityQueue()
 	{
+		PROFILE_FUNCTION();
+
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::EntitySpawn);
 
-		bool any = false;
 		std::unordered_map<ClientID, std::vector<Entity>> specificClients;
-		
-		while (!m_OnCreatedEntityQueue.empty())
+		bool anyCreated = false;
+
+		while (!m_CreatedEntityQueue.empty())
 		{
-			EntityQueueEntry& entry = m_OnCreatedEntityQueue.front();
+			EntityLifetimeQueueEntry& entry = m_CreatedEntityQueue.front();
 
-			if (entry.entity.HasComponent<NetworkComponent>())
+			Entity entity = entry.Scene->FindByID(entry.EntityUUID);
+			if (!entity.HasComponent<NetworkComponent>())
 			{
-				if (entry.client != 0)
-				{
-					specificClients[entry.client].push_back(entry.entity);
-					m_OnCreatedEntityQueue.pop();
-					continue;
-				}
-
-				auto& net = entry.entity.GetComponent<NetworkComponent>();
-				for (uint32_t i = 0; i < PT_MAX_COMPONENTS; i++)
-				{
-					if (net.ComponentBitset.test(i))
-						net.ComponentChecksums[(ComponentTypeID)i] = 0;
-				}
-
-				SceneSerializer serializer(entry.entity.GetScene());
-				stream.WriteString(serializer.SerializeEntityToString(entry.entity));
-				any = true;
+				m_CreatedEntityQueue.pop();
+				continue;
 			}
 
-			m_OnCreatedEntityQueue.pop();
+			if (entry.Client != 0)
+			{
+				specificClients[entry.Client].push_back(entity);
+				m_CreatedEntityQueue.pop();
+				continue;
+			}
+
+			SceneSerializer serializer(entry.Scene, true);
+			stream.WriteString(serializer.SerializeEntityToString(entity));
+			anyCreated = true;
+			
+			m_CreatedEntityQueue.pop();
 		}
 
-		if (any)
-		{
+		if (anyCreated)
 			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition())); 
-		}
 
 		for (auto& [clientID, entityVector] : specificClients)
 		{
 			stream.SetStreamPosition(0);
 			stream.WriteRaw(PacketType::EntitySpawn);
-		
+
 			for (auto entity : entityVector)
 			{
-				SceneSerializer serializer(entity.GetScene());
+				SceneSerializer serializer(entity.GetScene(), true);
 				stream.WriteString(serializer.SerializeEntityToString(entity));
 			}
 
@@ -282,41 +276,53 @@ namespace proton {
 		}
 	}
 
-	// TODO: Optimize: send array
-	void Server::SendOnEntityCreated(Entity entity, ClientID specificClient)
+	void Server::ProcessDestroyedEntityQueue()
 	{
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::EntitySpawn);
+		PROFILE_FUNCTION();
 
-		SceneSerializer serializer(entity.GetScene());
-		std::string jsonData = serializer.SerializeEntityToString(entity);
-		stream.WriteString(jsonData);
-
-		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
-		if (specificClient)
-			SendBufferToClient(specificClient, buffer);
-		else
-			SendBufferToAllClients(buffer);
-	}
-
-	void Server::SendOnEntityDestroyed(Entity entity, ClientID specificClient)
-	{
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::EntityDestroy);
-		stream.WriteRaw(entity.GetUUID());
 
-		Buffer buffer = Buffer(m_ScratchBuffer, stream.GetStreamPosition());
-		if (specificClient)
-			SendBufferToClient(specificClient, buffer);
-		else
-			SendBufferToAllClients(buffer);
+		std::unordered_map<ClientID, std::vector<UUID>> specificClients;
+		bool anyDestroyed = false;
+
+		while (!m_DestroyedEntityQueue.empty())
+		{
+			EntityLifetimeQueueEntry& entry = m_DestroyedEntityQueue.front();
+
+			if (entry.Client != 0)
+			{
+				specificClients[entry.Client].push_back(entry.EntityUUID);
+				m_DestroyedEntityQueue.pop();
+				continue;
+			}
+
+			stream.WriteRaw(entry.EntityUUID);
+			anyDestroyed = true;
+
+			m_DestroyedEntityQueue.pop();
+		}
+
+		if (anyDestroyed)
+			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+
+		for (auto& [clientID, uuidVector] : specificClients)
+		{
+			stream.SetStreamPosition(0);
+			stream.WriteRaw(PacketType::EntityDestroy);
+
+			for (auto uuid : uuidVector)
+				stream.WriteRaw(uuid);
+
+			SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+		}
 	}
 
 	void Server::SendReplicationData()
 	{
-		Scene* scene = m_GameInstance->GetActiveScene();
+		PROFILE_FUNCTION();
 
-		ProcessCreatedEntitiesQueue();
+		Scene* scene = m_GameInstance->GetActiveScene();
 
 		// Replicate entitites with NetworkComponent
 		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
@@ -326,110 +332,119 @@ namespace proton {
 		
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::UpdateReplicated);
-
-		bool anyEntity = false;
+		uint64_t packetStreamStart = stream.GetStreamPosition();
 
 		for (entt::entity e : view)
 		{
+			PROFILE_SCOPE("replicate_entity");
+
 			Entity entity(e, scene);
 			auto& net = view.get<NetworkComponent>(e);
+			ComponentBitset componentBitset = net.ReplicatedComponentsBitset;
 
 			uint64_t entityStreamStart = stream.GetStreamPosition();
 			uint64_t entityBufferSize = 0;
 
 			stream.WriteZero(sizeof(entityBufferSize));
-			stream.WriteRaw(entity.GetUUID());
+			stream.WriteZero(sizeof(proton::UUID));
+			stream.WriteZero(sizeof(componentBitset));
 
-			bool anyComponent = false;
+			uint64_t componentsStreamStart = stream.GetStreamPosition();
 
-			// TransformComponent
-			if (net.IsReplicated(ComponentTypeID::Transform))
+			// ------ BEGIN: TransformComponent Replication ------ //
+			if (net.ReplicatedComponentsBitset.test(ComponentType_Transform))
 			{
 				uint64_t streamStart = stream.GetStreamPosition();
 
 				auto& transform = entity.GetTransform();
 				stream.WriteRaw(transform);
 
-				uint32_t checksum = crc32_bitwise((char*)m_ScratchBuffer.Data + streamStart, stream.GetStreamPosition());
-				uint32_t& currentChecksum = net.ComponentChecksums[ComponentTypeID::Transform];
+			#if ENABLE_REPLICATION_CHECKSUM
+				uint32_t checksum = crc32_bitwise((char*)m_ScratchBuffer.Data + streamStart, stream.GetStreamPosition() - streamStart);
+				uint32_t& currentChecksum = net.ComponentChecksums[ComponentType_Transform];
 
-				//if (checksum == currentChecksum)
-				//	stream.SetStreamPosition(streamStart);
-				//else
+				if (checksum == currentChecksum)
 				{
-					currentChecksum = checksum;
-					anyComponent = true;
-				}
-			}
-
-			// SpriteComponent
-			if (net.IsReplicated(ComponentTypeID::Sprite))
-			{
-				uint64_t streamStart = stream.GetStreamPosition();
-
-				auto& sprite = entity.GetSprite();
-				stream.WriteRaw(sprite.GetTilePos());
-				stream.WriteRaw(sprite.GetMirrorFlip());
-
-				uint32_t checksum = crc32_bitwise((char*)m_ScratchBuffer.Data + streamStart, stream.GetStreamPosition());
-				uint32_t& currentChecksum = net.ComponentChecksums[ComponentTypeID::Sprite];
-
-				//if (checksum == currentChecksum)
-				//	stream.SetStreamPosition(streamStart);
-				//else
-				{
-					currentChecksum = checksum;
-					anyComponent = true;
-				}
-			}
-
-			if (entity.HasComponent<ScriptComponent>())
-			{
-				bool any = false;
-				uint64_t streamStart = stream.GetStreamPosition();
-				uint32_t scriptCount = 0;
-
-				stream.WriteZero(sizeof(int));
-
-				for (auto& [script, repInfo] : net.ScriptRepInfo)
-				{
-					uint64_t streamFieldStart = stream.GetStreamPosition();
-					uint32_t fieldCount = 0;
-
-					stream.WriteZero(sizeof(int));
-					stream.WriteString(repInfo.Script->GetScriptClassName());
-
-					for (auto& [name, fieldInfo] : repInfo.FieldRepInfo)
-					{
-						stream.WriteString(name);
-						stream.WriteData((char*)fieldInfo.Field->InstanceFieldValue, fieldInfo.Field->Size);
-						any = true;
-						fieldCount++;
-					}
-
-					uint64_t streamPos = stream.GetStreamPosition();
-					stream.SetStreamPosition(streamFieldStart);
-					stream.WriteRaw(fieldCount);
-					stream.SetStreamPosition(streamPos);
-					scriptCount++;
-				}
-
-				if (any)			
-				{
-					uint64_t streamPos = stream.GetStreamPosition();
+					// Skip component replication
 					stream.SetStreamPosition(streamStart);
-					stream.WriteRaw(scriptCount);
-					stream.SetStreamPosition(streamPos);
-					anyComponent = true;
+					componentBitset.set(ComponentType_Transform, false);
 				}
 				else
-					stream.SetStreamPosition(streamStart);
+					currentChecksum = checksum;
+			#endif
 			}
+			// ------ END: TransformComponent Replication ------ //
 
-			if (!anyComponent)
+			// ------ BEGIN: ScriptComponent Replication ------ //
+			if (net.ReplicatedComponentsBitset.test(ComponentType_Script))
+			{
+				uint32_t scriptRepCount = 0;
+				uint64_t streamStart = stream.GetStreamPosition();
+
+				stream.WriteZero(sizeof(scriptRepCount));
+
+				for (auto& [script, scriptRepInfo] : net.ScriptRepInfo)
+				{
+					if (scriptRepInfo.FieldRepInfo.size() == 0)
+						continue;
+
+					uint32_t fieldRepCount = 0;
+					uint64_t scriptStreamStart = stream.GetStreamPosition();
+
+					stream.WriteZero(sizeof(fieldRepCount));
+					stream.WriteString(scriptRepInfo.Script->GetScriptClassName());
+
+					for (size_t i = 0; i < scriptRepInfo.FieldRepInfo.size(); i++)
+					{
+						auto& fieldRepInfo = scriptRepInfo.FieldRepInfo[i];
+
+					#if ENABLE_REPLICATION_CHECKSUM
+						uint32_t checksum = crc32_bitwise(fieldRepInfo.Data, fieldRepInfo.Size);
+						if (checksum == fieldRepInfo.Checksum)
+							continue; // Field value not changed, do not replicate
+						fieldRepInfo.Checksum = checksum;
+					#endif
+
+						stream.WriteRaw((uint32_t)i);
+						stream.WriteData((char*)fieldRepInfo.Data, fieldRepInfo.Size);
+						fieldRepCount++;
+					}
+
+					if (fieldRepCount)
+					{
+						uint64_t streamPos = stream.GetStreamPosition();
+						stream.SetStreamPosition(scriptStreamStart);
+						stream.WriteRaw(fieldRepCount);
+						stream.SetStreamPosition(streamPos);
+						scriptRepCount++;
+					}
+					else
+					{
+						// No fields to replicate
+						stream.SetStreamPosition(scriptStreamStart);
+					}
+				}
+
+				if (scriptRepCount)
+				{
+					uint64_t streamPos = stream.GetStreamPosition();
+					stream.SetStreamPosition(streamStart);
+					stream.WriteRaw(scriptRepCount);
+					stream.SetStreamPosition(streamPos);
+				}
+				else
+				{
+					// Skip component replication
+					stream.SetStreamPosition(streamStart);
+					componentBitset.set(ComponentType_Script, false);
+				}
+			}
+			// ------ END: ScriptComponent Replication ------ //
+
+			if (stream.GetStreamPosition() == componentsStreamStart)
 			{
 				stream.SetStreamPosition(entityStreamStart);
-				continue;
+				continue; // Nothing changed, skip entity replication
 			}
 
 			uint64_t entityStreamEnd = stream.GetStreamPosition();
@@ -437,19 +452,18 @@ namespace proton {
 				
 			stream.SetStreamPosition(entityStreamStart);
 			stream.WriteRaw(entityBufferSize);
+			stream.WriteRaw(entity.GetUUID());
+			stream.WriteRaw(componentBitset);
 			stream.SetStreamPosition(entityStreamEnd);
 
-			anyEntity = true;
-
-			if constexpr (s_EnableNetworkStatistics)
-				m_ReplicationStats.RepEntitiesCount++;
+			m_ReplicationStats.RepEntitiesCount++;
 		}
 
-		if constexpr (s_EnableNetworkStatistics)
-			m_ReplicationStats.RepPacketCount++;
-
-		if (anyEntity)
+		// If any entity changed, send replication packet to all clients
+		if (stream.GetStreamPosition() > packetStreamStart)
 			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+
+		m_ReplicationStats.RepPacketCount++;
 	}
 
 	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
@@ -470,9 +484,14 @@ namespace proton {
 		m_MessageQueue.push(incomingMessage);
 	}
 
-	void Server::PushCreatedEntity(Entity entity, ClientID specificClient)
+	void Server::PushCreatedEntity(UUID entityUUID, Scene* scene, ClientID specificClient)
 	{
-		m_OnCreatedEntityQueue.push({ entity, specificClient });
+		m_CreatedEntityQueue.push({ entityUUID, scene, specificClient });
+	}
+
+	void Server::PushDestroyedEntity(UUID entityUUID, Scene* scene, ClientID specificClient)
+	{
+		m_DestroyedEntityQueue.push({ entityUUID, scene, specificClient });
 	}
 
 	void Server::SetClientActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function)
@@ -527,8 +546,9 @@ namespace proton {
 			for (auto& [hConn, stats] : m_NetworkStats)
 			{
 				m_Interface->GetConnectionRealTimeStatus(hConn, &stats.RealTime, 0, NULL);
+			#ifdef PT_EDITOR
 				m_Interface->GetDetailedConnectionStatus(hConn, (char*)stats.Detailed.Data, s_DetailedStatusBufferSize);
-
+			#endif
 				NetworkManager* m = m_NetworkManager;
 				if (m->m_SaveNetworkStatsToLogFile && (hConn == m->m_SaveStatsForClientID || m->m_SaveStatsForAllClients))
 				{

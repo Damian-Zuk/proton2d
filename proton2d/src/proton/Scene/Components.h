@@ -19,48 +19,48 @@
 
 namespace proton {
 
-	enum class ComponentTypeID : size_t
+	enum EComponentType : size_t
 	{
-		ID =              1,
-		Tag =             2,
-		Transform =       3,
-		Relationship =    4,
-		Metadata =        5,
-		Script =          6,
-		Camera =          7,
-		Sprite =          32,
-		ResizableSprite = 33,
-	 	SpriteAnimation = 34,
-		CircleRenderer =  35,
-		Text =            36,
-		UI =              48,
-		UIText =          49,
-		Rigidbody =       64,
-		BoxCollider =     65,
-		CircleCollider =  66,
-		Network =         128
+		ComponentType_ID =              1,
+		ComponentType_Tag =             2,
+		ComponentType_Transform =       3,
+		ComponentType_Relationship =    4,
+		ComponentType_Metadata =        5,
+		ComponentType_Script =          6,
+		ComponentType_Camera =          7,
+		ComponentType_Sprite =          32,
+		ComponentType_ResizableSprite = 33,
+	 	ComponentType_SpriteAnimation = 34,
+		ComponentType_CircleRenderer =  35,
+		ComponentType_Text =            36,
+		ComponentType_UI =              48,
+		ComponentType_UIText =          49,
+		ComponentType_Rigidbody =       64,
+		ComponentType_BoxCollider =     65,
+		ComponentType_CircleCollider =  66,
+		ComponentType_Network =         128
 	};
 
 #define PT_COMPONENT_TYPE_ID(component_type) \
-	static constexpr size_t TypeID() { return (size_t)ComponentTypeID::component_type; }
+	static constexpr size_t TypeID() { return component_type; }
 
 	struct IDComponent
 	{
-		PT_COMPONENT_TYPE_ID(ID)
+		PT_COMPONENT_TYPE_ID(ComponentType_ID)
 
 		UUID ID;
 	};
 
 	struct TagComponent
 	{
-		PT_COMPONENT_TYPE_ID(Tag)
+		PT_COMPONENT_TYPE_ID(ComponentType_Tag)
 
 		std::string Tag;
 	};
 
 	struct MetadataComponent
 	{
-		PT_COMPONENT_TYPE_ID(Metadata)
+		PT_COMPONENT_TYPE_ID(ComponentType_Metadata)
 
 		// TODO: Implement
 	};
@@ -68,7 +68,7 @@ namespace proton {
 	// Use Entity::SetWorldPosition to modify world position manually
 	struct TransformComponent
 	{
-		PT_COMPONENT_TYPE_ID(Transform)
+		PT_COMPONENT_TYPE_ID(ComponentType_Transform)
 
 		glm::vec3 WorldPosition { 0.0f, 0.0f, 0.0f };
 		glm::vec3 LocalPosition { 0.0f, 0.0f, 0.0f };
@@ -78,7 +78,7 @@ namespace proton {
 
 	struct RelationshipComponent
 	{
-		PT_COMPONENT_TYPE_ID(Relationship)
+		PT_COMPONENT_TYPE_ID(ComponentType_Relationship)
 
 		uint32_t ChildrenCount = 0;
 		entt::entity First  { entt::null };
@@ -89,7 +89,7 @@ namespace proton {
 
 	struct CameraComponent
 	{
-		PT_COMPONENT_TYPE_ID(Camera)
+		PT_COMPONENT_TYPE_ID(ComponentType_Camera)
 
 		Camera Camera;
 		glm::vec2 PositionOffset{ 0.0f, 0.0f };
@@ -97,7 +97,7 @@ namespace proton {
 
 	struct SpriteComponent
 	{
-		PT_COMPONENT_TYPE_ID(Sprite)
+		PT_COMPONENT_TYPE_ID(ComponentType_Sprite)
 
 		SpriteComponent(const std::string& filepath = std::string())
 		{
@@ -113,7 +113,7 @@ namespace proton {
 
 	struct ResizableSpriteComponent
 	{
-		PT_COMPONENT_TYPE_ID(ResizableSprite)
+		PT_COMPONENT_TYPE_ID(ComponentType_ResizableSprite)
 
 		ResizableSprite ResizableSprite;
 		// RGBA, range: 0.0f - 1.0f
@@ -122,7 +122,7 @@ namespace proton {
 
 	struct CircleRendererComponent
 	{
-		PT_COMPONENT_TYPE_ID(CircleRenderer)
+		PT_COMPONENT_TYPE_ID(ComponentType_CircleRenderer)
 
 		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		float Thickness = 1.0f;
@@ -131,7 +131,7 @@ namespace proton {
 
 	struct TextComponent
 	{
-		PT_COMPONENT_TYPE_ID(Text)
+		PT_COMPONENT_TYPE_ID(ComponentType_Text)
 
 		Shared<Font> FontAsset = Font::GetDefault();
 
@@ -144,21 +144,21 @@ namespace proton {
 
 	struct UIComponent
 	{
-		PT_COMPONENT_TYPE_ID(UI)
+		PT_COMPONENT_TYPE_ID(ComponentType_UI)
 
 		UIElement* Element;
 	};
 
 	struct UITextComponent
 	{
-		PT_COMPONENT_TYPE_ID(UIText)
+		PT_COMPONENT_TYPE_ID(ComponentType_UIText)
 
 		UIText UIText;
 	};
 
 	struct SpriteAnimationComponent
 	{
-		PT_COMPONENT_TYPE_ID(SpriteAnimation)
+		PT_COMPONENT_TYPE_ID(ComponentType_SpriteAnimation)
 
 		SpriteAnimation SpriteAnimation;
 	};
@@ -167,14 +167,14 @@ namespace proton {
 
 	struct ScriptComponent
 	{
-		PT_COMPONENT_TYPE_ID(Script)
+		PT_COMPONENT_TYPE_ID(ComponentType_Script)
 
 		std::unordered_map<std::string, EntityScript*> Scripts;
 	};
 
 	struct RigidbodyComponent
 	{
-		PT_COMPONENT_TYPE_ID(Rigidbody)
+		PT_COMPONENT_TYPE_ID(ComponentType_Rigidbody)
 
 		b2Body* RuntimeBody = nullptr;
 		b2BodyType Type = b2_staticBody;
@@ -184,7 +184,7 @@ namespace proton {
 
 	struct BoxColliderComponent
 	{
-		PT_COMPONENT_TYPE_ID(BoxCollider)
+		PT_COMPONENT_TYPE_ID(ComponentType_BoxCollider)
 
 		glm::vec2 Size { 1.0f, 1.0f };
 		glm::vec2 Offset { 0.0f, 0.0f };
@@ -197,7 +197,7 @@ namespace proton {
 
 	struct CircleColliderComponent
 	{
-		PT_COMPONENT_TYPE_ID(CircleCollider)
+		PT_COMPONENT_TYPE_ID(ComponentType_CircleCollider)
 
 		glm::vec2 Offset = { 0.0f, 0.0f };
 		float Radius = 1.0f;
@@ -212,31 +212,31 @@ namespace proton {
 
 	struct NetworkComponent
 	{
-		PT_COMPONENT_TYPE_ID(Network)
+		PT_COMPONENT_TYPE_ID(ComponentType_Network)
+		
+		// ------ Component Replication Info ------
 
-		ComponentBitset ComponentBitset;
-		std::unordered_map<ComponentTypeID, uint32_t> ComponentFags;
-		std::unordered_map<ComponentTypeID, uint32_t> ComponentChecksums;
+		ComponentBitset ReplicatedComponentsBitset;
+		std::unordered_map<EComponentType, uint32_t> ComponentFlags;
+		std::unordered_map<EComponentType, uint32_t> ComponentChecksums;
+
+		// ------- Script Replication Info -------
 
 		struct FieldRepInfo
 		{
-			ScriptField* Field = nullptr;
-			void (*NotifyFunction)(Entity*) = nullptr;
+			void* Data = nullptr;
+			uint64_t Size = 0;
 			uint32_t Checksum = 0;
+			void (*NotifyFunction)(Entity*) = nullptr;
 		};
 
 		struct ScriptRepInfo
 		{
 			EntityScript* Script = nullptr;
-			std::map<std::string, FieldRepInfo> FieldRepInfo;
+			std::vector<FieldRepInfo> FieldRepInfo;
 		};
 
-		std::map<std::string, ScriptRepInfo> ScriptRepInfo;
-
-		bool IsReplicated(ComponentTypeID typeID) const
-		{
-			return ComponentBitset.test((size_t)typeID);
-		}
+		std::unordered_map<std::string, ScriptRepInfo> ScriptRepInfo;
 	};
 
 }

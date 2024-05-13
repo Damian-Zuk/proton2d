@@ -163,6 +163,14 @@ namespace proton {
 		// IDComponent, TagComponent, RelationshipComponent, ScriptComponent, SpriteAnimationComponent
 		CopyComponent(ComponentsToCopy{}, dstSceneRegistry, m_Registry, enttMap);
 
+		// Clear Script Replication Info in NetworkComponent
+		auto& netView = dstSceneRegistry.view<NetworkComponent>();
+		for (entt::entity entity : netView)
+		{
+			auto& net = netView.get<NetworkComponent>(entity);
+			net.ScriptRepInfo.clear();
+		}
+
 		// Create EntityScript instances
 		for (entt::entity srcEntity : m_Registry.view<ScriptComponent>())
 		{
@@ -264,9 +272,13 @@ namespace proton {
 		if (addToSceneRoot)
 			m_Root.push_back(entity);
 
+		// If server is running and entity has NetworkComponent,
+		// inform clients that entity has been created
 		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
 		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer())
-			networkManager->GetServer()->PushCreatedEntity(entity);
+		{
+			networkManager->GetServer()->PushCreatedEntity(id, this);
+		}
 
 		return entity;
 	}
@@ -325,10 +337,14 @@ namespace proton {
 	{
 		if (!entity.IsValid()) return;
 
+		// If server is running and entity has NetworkComponent
+		// inform clients that entity has been destroyed.
 		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
 		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer()
 			&& entity.HasComponent<NetworkComponent>())
-			networkManager->GetServer()->SendOnEntityDestroyed(entity);
+		{
+			networkManager->GetServer()->PushDestroyedEntity(entity.GetUUID(), this);
+		}
 
 		if (entity.HasComponent<ScriptComponent>())
 			entity.DestroyAllScripts();
@@ -570,11 +586,14 @@ namespace proton {
 			auto& component = view.get<ScriptComponent>(entity);
 			for (auto& [scriptClassName, scriptInstance] : component.Scripts)
 			{
+				if (!m_Registry.valid(entity))
+					break;
+
 				if (!scriptInstance->m_Initialized)
 				{
 					if (isNetModeClient && m_Registry.any_of<NetworkComponent>(entity)
 						&& !networkManager->m_ClientGameStateInitialized)
-						continue; // Do not update scripts before game state verified after client connected
+						continue; // Do not update scripts before game state verified (after client connected)
 
 					scriptInstance->m_Initialized = true;
 					if (!scriptInstance->OnCreate())
