@@ -373,7 +373,7 @@ namespace proton {
 			
 			BEGIN_COMPONENT_REPLICATION(ComponentType_Transform)
 				auto& transform = entity.GetComponent<TransformComponent>();
-				stream.WriteRaw(glm::vec2(transform.LocalPosition.x, transform.LocalPosition.y));
+				stream.WriteRaw(transform.LocalPosition);
 				stream.WriteRaw(transform.Rotation);
 			END_COMPONENT_REPLICATION()
 

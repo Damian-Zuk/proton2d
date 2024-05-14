@@ -703,6 +703,7 @@ namespace proton {
 			ImGui::EndCombo();
 		}
 		ImGui::PopItemWidth();
+		ImGui::Checkbox("Net Interpolation", &m_ActiveScene->m_EnableNetInterpolation);
 	}
 
 

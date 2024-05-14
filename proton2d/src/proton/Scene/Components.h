@@ -237,10 +237,13 @@ namespace proton {
 		std::vector<ScriptRepInfo> ReplicatedScripts;
 
 		struct {
-			glm::vec2 NextPosition;
+			glm::vec3 NextPosition;
 			glm::vec2 NextLinearVelocity;
 			float NextRotation;
 			float NextAngularVelocity;
+
+			Timer UpdateTimer;
+			float Delay;
 		} InterpolationData;
 	};
 

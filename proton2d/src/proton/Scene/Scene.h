@@ -155,7 +155,7 @@ namespace proton {
 
 		// Network
 		bool m_InheritNetMode = true;
-		bool m_EnableNetInterpolation = false;
+		bool m_EnableNetInterpolation = true;
 
 		friend class Application;
 		friend class Entity;

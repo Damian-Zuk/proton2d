@@ -50,12 +50,13 @@ namespace proton {
 		json jsonObj = {
 			{ "SceneName",          m_Scene->m_SceneName },
 			{ "GameModeClass",      m_Scene->m_GameModeClassName },
-			{ "InheritNetMode",     m_Scene->m_InheritNetMode },
 			{ "EnablePhysics",      m_Scene->m_EnablePhysics },
 			{ "GravityForce",       m_Scene->m_PhysicsWorld->m_Gravity },
 			{ "VelocityIterations", m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations },
 			{ "PositionIterations", m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations },
-			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } }
+			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } },
+			{ "InheritNetMode",     m_Scene->m_InheritNetMode },
+			{ "EnableNetInterpolation", m_Scene->m_EnableNetInterpolation }
 		};
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
@@ -80,8 +81,12 @@ namespace proton {
 		json jsonObj = json::parse(jsonData);
 		m_Scene->m_SceneName = jsonObj["SceneName"];
 		m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
+		
 		if (jsonObj.contains("InheritNetMode"))
 			m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
+
+		if (jsonObj.contains("EnableNetInterpolation"))
+			m_Scene->m_EnableNetInterpolation = jsonObj.at("EnableNetInterpolation");
 
 		if (jsonObj.contains("GameModeClass"))
 			m_Scene->SetGameModeByClassName(jsonObj.at("GameModeClass"));

@@ -4,6 +4,8 @@ using namespace proton;
 #include "Player.h"
 #include "MyGameMode.h"
 
+#include "Proton/Graphics/Renderer/Renderer.h"
+
 #include <time.h>
 
 // Internal script parameters
@@ -104,6 +106,13 @@ void Player::OnUpdate(float ts)
 	// Play current animation
 	animation.Play(m_State);
 	animation.SetMirrorFlip(m_Direction < 0.0f);
+	
+	// dev
+	Renderer::BeginScene(GetScene()->GetPrimaryCamera().GetAspectRatio());
+	auto& transform = GetTransform();
+	std::string str = fmt::format("{}, {}", transform.LocalPosition.x, transform.LocalPosition.y);
+	Renderer::DrawString(str, Font::GetDefault(), Math::GetTransform({ 0, 0, 0.5f }, { 0.2f, 0.2f }, 0.0f), Renderer::TextParams{});
+	Renderer::EndScene();
 }
 
 void Player::OnPhysicsUpdate(float ts)

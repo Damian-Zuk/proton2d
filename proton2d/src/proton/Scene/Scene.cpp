@@ -114,6 +114,7 @@ namespace proton {
 		Shared<Scene> newScene = MakeShared<Scene>(m_SceneName, m_SceneFilepath, m_GameModeClassName);
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
+		newScene->m_EnableNetInterpolation = m_EnableNetInterpolation;
 		if (gameInstance)
 			newScene->m_GameInstance = gameInstance;
 		else	

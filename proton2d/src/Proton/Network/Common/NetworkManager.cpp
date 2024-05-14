@@ -12,7 +12,7 @@
 #include <steam/steam_api.h>
 #endif
 
-#define _
+#define ENABLE_NET_INTERPOLATION
 
 namespace proton {
 
@@ -61,8 +61,8 @@ namespace proton {
 		{
 			m_Client->MainThread_ProcessMessages();
 			
-			//if (m_GameInstance->GetActiveScene()->m_EnableNetInterpolation)
-			m_Client->m_NetInterpolationSystem->OnUpdate(m_GameInstance->GetActiveScene(), ts);
+			if (m_GameInstance->GetActiveScene()->m_EnableNetInterpolation)
+				m_Client->m_NetInterpolationSystem->OnUpdate(m_GameInstance->GetActiveScene(), ts);
 		}
 	}
 

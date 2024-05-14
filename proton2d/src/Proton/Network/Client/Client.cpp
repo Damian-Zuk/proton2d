@@ -251,11 +251,12 @@ namespace proton {
 					}
 
 					auto& net = entity.GetComponent<NetworkComponent>();
+					bool updateTimer = false;
 
 					// TransformComponent
 					if (componentBitset.test(ComponentType_Transform))
 					{
-						glm::vec2 position;
+						glm::vec3 position;
 						float rotation;
 						
 						stream.ReadRaw(position);
@@ -273,6 +274,7 @@ namespace proton {
 							transform.LocalPosition.y = position.y;
 							transform.Rotation = rotation;
 						}
+						updateTimer = true;
 					}
 
 					// VelocityComponent
@@ -295,6 +297,7 @@ namespace proton {
 							velocity.LinearVelocity = linearVelocity;
 							velocity.AngularVelocity = angularVelocity;
 						}
+						updateTimer = true;
 					}
 
 					// ScriptComponent
@@ -329,6 +332,12 @@ namespace proton {
 									field.NotifyFunction(&entity);
 							}
 						}
+					}
+
+					if (updateTimer)
+					{
+						net.InterpolationData.Delay = net.InterpolationData.UpdateTimer.Elapsed();
+						net.InterpolationData.UpdateTimer.Reset();
 					}
 				}
 				break;

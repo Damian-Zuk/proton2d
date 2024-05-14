@@ -14,13 +14,20 @@ namespace proton {
 
 	void NetInterpolationSystem::OnUpdate(Scene* scene, float ts)
 	{
-		return;
-
 		auto view = scene->m_Registry.view<NetworkComponent, TransformComponent, VelocityComponent>();
 		for (auto e : view)
 		{
 			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(e);
 			auto& data = net.InterpolationData;
+
+			if (velocity.LinearVelocity == glm::vec2{ 0.0f } &&
+				data.NextLinearVelocity == glm::vec2{ 0.0f })
+				continue;
+
+			float alpha = data.Delay;
+
+			transform.LocalPosition = glm::mix(transform.LocalPosition, data.NextPosition, alpha);
+			velocity.LinearVelocity = glm::mix(velocity.LinearVelocity, data.NextLinearVelocity, alpha);
 		}
 	}
 }
