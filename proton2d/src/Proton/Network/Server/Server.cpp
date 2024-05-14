@@ -318,6 +318,25 @@ namespace proton {
 		}
 	}
 
+#if ENABLE_REPLICATION_CHECKSUM
+	#define BEGIN_COMPONENT_REPLICATION(_component_type) \
+		if (net.ReplicatedComponents.test(_component_type)) { \
+			EComponentType component_type = _component_type; \
+			uint64_t streamStart = stream.GetStreamPosition();
+
+	#define END_COMPONENT_REPLICATION() \
+		uint32_t checksum = crc32_bitwise((char*)m_ScratchBuffer.Data + streamStart, stream.GetStreamPosition() - streamStart); \
+		uint32_t& currentChecksum = net.ComponentChecksums[component_type]; \
+		if (checksum == currentChecksum) { \
+			stream.SetStreamPosition(streamStart); \
+			componentBitset.set(component_type, false); \
+		} else currentChecksum = checksum; \
+	}
+#else
+	#define BEGIN_COMPONENT_REPLICATION(component_type) if (net.ReplicatedComponents.test(component_type)) {
+	#define END_COMPONENT_REPLICATION() }
+#endif
+
 	void Server::SendReplicationData()
 	{
 		PROFILE_FUNCTION();
@@ -350,35 +369,20 @@ namespace proton {
 			stream.WriteZero(sizeof(componentBitset));
 			stream.WriteRaw(entity.GetUUID());
 
-			uint64_t headerEndPos = stream.GetStreamPosition();
+			uint64_t componentsStartPos = stream.GetStreamPosition();
+			
+			BEGIN_COMPONENT_REPLICATION(ComponentType_Transform)
+				auto& transform = entity.GetComponent<TransformComponent>();
+				stream.WriteRaw(glm::vec2(transform.LocalPosition.x, transform.LocalPosition.y));
+				stream.WriteRaw(transform.Rotation);
+			END_COMPONENT_REPLICATION()
 
+			BEGIN_COMPONENT_REPLICATION(ComponentType_Velocity)
+				auto& velocity = entity.GetComponent<VelocityComponent>();
+				stream.WriteRaw(velocity.LinearVelocity);
+				stream.WriteRaw(velocity.AngularVelocity);
+			END_COMPONENT_REPLICATION()
 
-			// *************** BEGIN: TransformComponent Replication *************** //
-			if (net.ReplicatedComponents.test(ComponentType_Transform))
-			{
-				uint64_t streamStart = stream.GetStreamPosition();
-
-				auto& transform = entity.GetTransform();
-				stream.WriteRaw(transform);
-
-			#if ENABLE_REPLICATION_CHECKSUM
-				uint32_t checksum = crc32_bitwise((char*)m_ScratchBuffer.Data + streamStart, stream.GetStreamPosition() - streamStart);
-				uint32_t& currentChecksum = net.ComponentChecksums[ComponentType_Transform];
-
-				if (checksum == currentChecksum)
-				{
-					// Skip component replication
-					stream.SetStreamPosition(streamStart);
-					componentBitset.set(ComponentType_Transform, false);
-				}
-				else
-					currentChecksum = checksum;
-			#endif
-			}
-			// *************** END: TransformComponent Replication *************** //
-
-
-			// *************** BEGIN: ScriptComponent Replication *************** //
 			if (net.ReplicatedComponents.test(ComponentType_Script))
 			{
 				// Component header
@@ -405,12 +409,12 @@ namespace proton {
 					{
 						auto& field = script.ReplicatedFields[fieldIndex];
 
-					#if ENABLE_REPLICATION_CHECKSUM
+						#if ENABLE_REPLICATION_CHECKSUM
 						uint32_t checksum = crc32_bitwise(field.Data, field.Size);
 						if (checksum == field.Checksum)
 							continue; // value not changed, skip replication
 						field.Checksum = checksum;
-					#endif
+						#endif
 
 						// Write field data
 						stream.WriteRaw((uint32_t)fieldIndex);
@@ -446,10 +450,9 @@ namespace proton {
 					componentBitset.set(ComponentType_Script, false);
 				}
 			}
-			// *************** END: ScriptComponent Replication *************** //
+			// **************************************************************** //
 
-
-			if (stream.GetStreamPosition() == headerEndPos)
+			if (stream.GetStreamPosition() == componentsStartPos)
 			{
 				stream.SetStreamPosition(entityHeaderPos);
 				continue; // no components changed, skip entity replication

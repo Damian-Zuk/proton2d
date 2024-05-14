@@ -2,6 +2,7 @@
 #include "Proton/Network/Common/NetworkManager.h"
 #include "Proton/Network/Client/Client.h"
 #include "Proton/Network/Server/Server.h"
+#include "Proton/Network/Client/NetInterpolationSystem.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"
 
@@ -57,7 +58,12 @@ namespace proton {
 				m_ServerTickElapsed -= ts;
 		}
 		else
+		{
 			m_Client->MainThread_ProcessMessages();
+			
+			//if (m_GameInstance->GetActiveScene()->m_EnableNetInterpolation)
+			m_Client->m_NetInterpolationSystem->OnUpdate(m_GameInstance->GetActiveScene(), ts);
+		}
 	}
 
 	void NetworkManager::OnSceneSimulationStart(Scene* scene)

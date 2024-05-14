@@ -123,7 +123,6 @@ namespace proton {
 
 	private:
 		SceneState m_SceneState = SceneState::Stop;
-		bool m_InheritNetMode = true;
 		GameInstance* m_GameInstance = nullptr;
 		
 		GameModeBase* m_GameMode = nullptr;
@@ -154,6 +153,10 @@ namespace proton {
 		glm::vec3 m_PrimaryCameraPosition = { 0.0f, 0.0f, 0.0f };
 		glm::vec2 m_CursorWorldPosition = { 0.0f, 0.0f };
 
+		// Network
+		bool m_InheritNetMode = true;
+		bool m_EnableNetInterpolation = false;
+
 		friend class Application;
 		friend class Entity;
 		friend class SceneSerializer;
@@ -162,6 +165,9 @@ namespace proton {
 		friend class GameInstance;
 		friend class GameModeBase;
 		friend class NetworkManager;
+		friend class NetInterpolationSystem;
+		friend class Server;
+		friend class Client;
 		
 		friend class EditorLayer;
 		friend class EditorCamera;

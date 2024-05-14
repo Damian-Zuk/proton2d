@@ -9,7 +9,7 @@ void RedPlatform::OnRegisterFields()
 	RegisterField(ScriptFieldType::Float, "VanishAfter", &m_VanishAfter);
 	RegisterField(ScriptFieldType::Float, "VanishTime", &m_VanishTime);
 
-	REPLICATE_DATA(m_EnableCollision, [this](Entity* entity) {
+	REPLICATED_DATA(m_EnableCollision, [this](Entity* entity) {
 		GetColor().a = m_EnableCollision ? 1.0f : 0.33f;
 	});
 }

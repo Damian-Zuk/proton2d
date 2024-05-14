@@ -2,6 +2,7 @@
 #include "Proton/Network/Client/Client.h"
 #include "Proton/Network/Common/PacketType.h"
 #include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/Client/NetInterpolationSystem.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Assets/SceneSerializer.h"
@@ -17,7 +18,8 @@ namespace proton {
 	static std::mutex s_InstanceMapMutex;
 
 	Client::Client(GameInstance* gameInstance)
-		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
+		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
+		m_NetInterpolationSystem(MakeUnique<NetInterpolationSystem>())
 	{
 		// 1 MB scratch buffer
 		m_ScratchBuffer.Allocate(1048576);
@@ -253,8 +255,46 @@ namespace proton {
 					// TransformComponent
 					if (componentBitset.test(ComponentType_Transform))
 					{
-						auto& transform = entity.GetTransform();
-						stream.ReadRaw(transform);
+						glm::vec2 position;
+						float rotation;
+						
+						stream.ReadRaw(position);
+						stream.ReadRaw(rotation);
+						
+						if (scene->m_EnableNetInterpolation)
+						{
+							net.InterpolationData.NextPosition = position;
+							net.InterpolationData.NextRotation = rotation;
+						}
+						else
+						{
+							auto& transform = entity.GetTransform();
+							transform.LocalPosition.x = position.x;
+							transform.LocalPosition.y = position.y;
+							transform.Rotation = rotation;
+						}
+					}
+
+					// VelocityComponent
+					if (componentBitset.test(ComponentType_Velocity))
+					{
+						glm::vec2 linearVelocity;
+						float angularVelocity;
+
+						stream.ReadRaw(linearVelocity);
+						stream.ReadRaw(angularVelocity);
+
+						if (scene->m_EnableNetInterpolation)
+						{
+							net.InterpolationData.NextLinearVelocity = linearVelocity;
+							net.InterpolationData.NextAngularVelocity = angularVelocity;
+						}
+						else
+						{
+							auto& velocity = entity.GetComponent<VelocityComponent>();
+							velocity.LinearVelocity = linearVelocity;
+							velocity.AngularVelocity = angularVelocity;
+						}
 					}
 
 					// ScriptComponent

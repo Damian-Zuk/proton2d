@@ -27,6 +27,7 @@ namespace proton {
 		ComponentType_Metadata =        5,
 		ComponentType_Script =          6,
 		ComponentType_Camera =          7,
+		ComponentType_Velocity =        8,
 		ComponentType_Sprite =          32,
 		ComponentType_ResizableSprite = 33,
 	 	ComponentType_SpriteAnimation = 34,
@@ -40,34 +41,32 @@ namespace proton {
 		ComponentType_Network =         128
 	};
 
-#define PT_COMPONENT_TYPE_ID(component_type) \
+#define PROTON_COMPONENT_TYPE_ID(component_type) \
 	static constexpr size_t TypeID() { return component_type; }
 
 	struct IDComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_ID)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_ID)
 
 		UUID ID;
 	};
 
 	struct TagComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Tag)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Tag)
 
 		std::string Tag;
 	};
 
 	struct MetadataComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Metadata)
-
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Metadata)
 		// TODO: Implement
 	};
 
-	// Use Entity::SetWorldPosition to modify world position manually
 	struct TransformComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Transform)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Transform)
 
 		glm::vec3 WorldPosition { 0.0f, 0.0f, 0.0f };
 		glm::vec3 LocalPosition { 0.0f, 0.0f, 0.0f };
@@ -75,9 +74,17 @@ namespace proton {
 		glm::vec2 Scale { 1.0f, 1.0f };
 	};
 
+	struct VelocityComponent
+	{
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Velocity)
+
+		glm::vec2 LinearVelocity { 0.0f };
+		float AngularVelocity = 0.0f;
+	};
+
 	struct RelationshipComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Relationship)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Relationship)
 
 		uint32_t ChildrenCount = 0;
 		entt::entity First  { entt::null };
@@ -88,7 +95,7 @@ namespace proton {
 
 	struct CameraComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Camera)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Camera)
 
 		Camera Camera;
 		glm::vec2 PositionOffset{ 0.0f, 0.0f };
@@ -96,9 +103,10 @@ namespace proton {
 
 	struct SpriteComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Sprite)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Sprite)
 
-		SpriteComponent(const std::string& filepath = std::string())
+		SpriteComponent() = default;
+		SpriteComponent(const std::string& filepath)
 		{
 			if (filepath.size())
 				Sprite.SetTextureFromPath(filepath);
@@ -112,7 +120,7 @@ namespace proton {
 
 	struct ResizableSpriteComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_ResizableSprite)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_ResizableSprite)
 
 		ResizableSprite ResizableSprite;
 		// RGBA, range: 0.0f - 1.0f
@@ -121,7 +129,7 @@ namespace proton {
 
 	struct CircleRendererComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_CircleRenderer)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_CircleRenderer)
 
 		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		float Thickness = 1.0f;
@@ -130,7 +138,7 @@ namespace proton {
 
 	struct TextComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Text)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Text)
 
 		Shared<Font> FontAsset = Font::GetDefault();
 
@@ -143,21 +151,21 @@ namespace proton {
 
 	struct UIComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_UI)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_UI)
 
 		UIElement* Element;
 	};
 
 	struct UITextComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_UIText)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_UIText)
 
 		UIText UIText;
 	};
 
 	struct SpriteAnimationComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_SpriteAnimation)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_SpriteAnimation)
 
 		SpriteAnimation SpriteAnimation;
 	};
@@ -166,14 +174,14 @@ namespace proton {
 
 	struct ScriptComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Script)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Script)
 
 		std::unordered_map<std::string, EntityScript*> Scripts;
 	};
 
 	struct RigidbodyComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Rigidbody)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Rigidbody)
 
 		b2Body* RuntimeBody = nullptr;
 		b2BodyType Type = b2_staticBody;
@@ -183,7 +191,7 @@ namespace proton {
 
 	struct BoxColliderComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_BoxCollider)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_BoxCollider)
 
 		glm::vec2 Size { 1.0f, 1.0f };
 		glm::vec2 Offset { 0.0f, 0.0f };
@@ -196,7 +204,7 @@ namespace proton {
 
 	struct CircleColliderComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_CircleCollider)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_CircleCollider)
 
 		glm::vec2 Offset = { 0.0f, 0.0f };
 		float Radius = 1.0f;
@@ -206,12 +214,9 @@ namespace proton {
 		bool AttachToParent = false;
 	};
 
-	// Forward declaration
-	struct ScriptField;
-
 	struct NetworkComponent
 	{
-		PT_COMPONENT_TYPE_ID(ComponentType_Network)
+		PROTON_COMPONENT_TYPE_ID(ComponentType_Network)
 		
 		std::bitset<MAX_COMPONENTS> ReplicatedComponents;
 		std::unordered_map<EComponentType, uint32_t> ComponentChecksums;
@@ -229,8 +234,14 @@ namespace proton {
 			EntityScript* Script = nullptr;
 			std::vector<ReplicatedField> ReplicatedFields;
 		};
-
 		std::vector<ScriptRepInfo> ReplicatedScripts;
+
+		struct {
+			glm::vec2 NextPosition;
+			glm::vec2 NextLinearVelocity;
+			float NextRotation;
+			float NextAngularVelocity;
+		} InterpolationData;
 	};
 
 }

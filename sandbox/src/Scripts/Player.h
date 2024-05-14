@@ -55,11 +55,8 @@ private:
 	float m_GravityModifier = -10.0f;
 
 	PlayerState m_State = PlayerState_Idle;
-	glm::vec2 m_Velocity;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
-
-	friend static void OnRep_PlayerState(Entity*);
 
 	friend class MyGameMode;
 };

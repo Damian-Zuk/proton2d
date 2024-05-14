@@ -66,7 +66,7 @@ namespace proton {
 	};
 
 	using ComponentsToCopy =
-		ComponentGroup<TransformComponent, CameraComponent,
+		ComponentGroup<TransformComponent, CameraComponent, VelocityComponent,
 		SpriteComponent, CircleRendererComponent, ResizableSpriteComponent,
 		RigidbodyComponent, BoxColliderComponent, CircleColliderComponent,
 		NetworkComponent>;

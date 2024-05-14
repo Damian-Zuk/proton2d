@@ -311,15 +311,20 @@ namespace proton {
 
 		// Update physics world
 		m_World->Step(ts, m_PhysicsVelocityIterations, m_PhysicsPositionIterations);
-		auto view = m_Scene->m_Registry.view<IDComponent, TransformComponent, RigidbodyComponent>();
+		auto view = m_Scene->m_Registry.view<IDComponent, TransformComponent, VelocityComponent, RigidbodyComponent>();
 		for (auto entity : view)
 		{
-			auto [id, transform] = view.get<IDComponent, TransformComponent>(entity);
+			auto [id, transform, velocity] = view.get<IDComponent, TransformComponent, VelocityComponent>(entity);
 			b2Body* body = m_RuntimeBodies.at(id.ID);
+			
 			// Retrive positions of entities
 			transform.WorldPosition.x = body->GetPosition().x;
 			transform.WorldPosition.y = body->GetPosition().y;
 			transform.Rotation = glm::degrees(body->GetAngle());
+
+			const b2Vec2& linearVelocity = body->GetLinearVelocity();
+			velocity.LinearVelocity = { linearVelocity.x, linearVelocity.y };
+			velocity.AngularVelocity = body->GetAngularVelocity();
 		}
 	}
 

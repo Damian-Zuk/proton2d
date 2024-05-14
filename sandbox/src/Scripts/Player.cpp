@@ -18,21 +18,16 @@ enum SensorType : uint32_t
 	Sensor_Bottom,
 };
 
-bool Player::IsGrounded() const
-{
-	return CheckSensor(Sensor_Bottom);
-}
-
 void Player::OnRegisterFields()
 {
 	REGISTER_FIELD(Float, m_PlayerMaxSpeed);
 	REGISTER_FIELD(Float, m_PlayerAcceleration);
 	REGISTER_FIELD(Float, m_JumpForce);
 	REGISTER_FIELD(Float, m_GravityModifier);
+	REGISTER_FIELD_NET_SERIALIZE(Int, m_ClientID);
 
-	REGISTER_FIELD_NET(Int, m_ClientID);
-	REPLICATE_DATA(m_State);
-	REPLICATE_DATA(m_Velocity);
+	REPLICATED_DATA(m_Direction);
+	REPLICATED_DATA(m_State);
 }
 
 bool Player::OnCreate()
@@ -78,15 +73,11 @@ bool Player::OnCreate()
 	return true;
 }
 
-bool Player::IsOnHighSlope() const
-{
-	return !CheckSensor(Sensor_Bottom) && (CheckSensor(Sensor_BottomLeft) || CheckSensor(Sensor_BottomRight));
-}
-
 void Player::OnUpdate(float ts)
 {
 	if (m_IsLocalPlayer)
 	{
+		// Input polling for local player
 		PlayerActionState previous = m_ActionState;
 		m_ActionState.MoveRight = Input::IsKeyPressed(Key::D, this);
 		m_ActionState.MoveLeft = Input::IsKeyPressed(Key::A, this);
@@ -100,18 +91,17 @@ void Player::OnUpdate(float ts)
 		}
 	}
 	
-	if (IsRunningClient())
-		m_Direction = m_Velocity.x > 0.0f ? 1.0f : m_Velocity.x < 0.0f ? -1.0f : m_Direction;
-
+	const auto& velocity = GetComponent<VelocityComponent>().LinearVelocity;
 	SpriteAnimation& animation = GetSpriteAnimation();
 
 	if (m_State == PlayerState_Jump)
 	{
 		// Update jump animation frame
-		uint16_t frame = m_Velocity.y > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
+		uint16_t frame = velocity.y > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
 		animation.SetAnimationFrame(frame);
 	}
 
+	// Play current animation
 	animation.Play(m_State);
 	animation.SetMirrorFlip(m_Direction < 0.0f);
 }
@@ -121,7 +111,7 @@ void Player::OnPhysicsUpdate(float ts)
 	if (IsRunningClient())
 		return;
 
-	m_Velocity = GetLinearVelocity();
+	const auto& velocity = GetComponent<VelocityComponent>().LinearVelocity;
 
 	// Set player direction (right: 1.0, left: -1.0f)
 	m_Direction = m_ActionState.MoveRight ? 1.0f : (m_ActionState.MoveLeft ? -1.0f : m_Direction);
@@ -131,7 +121,7 @@ void Player::OnPhysicsUpdate(float ts)
 	if (!IsOnHighSlope())
 	{
 		float maxSpeed = m_PlayerMaxSpeed * (m_State == PlayerState_Run ? 1.0f : 0.8f);
-		float newVelocity = m_Velocity.x + m_PlayerAcceleration * m_Direction * ts;
+		float newVelocity = velocity.x + m_PlayerAcceleration * m_Direction * ts;
 
 		SetLinearVelocityX(!move ? 0.0f : glm::clamp(newVelocity, -maxSpeed, maxSpeed));
 
@@ -156,7 +146,7 @@ void Player::OnPhysicsUpdate(float ts)
 	if (m_State == PlayerState_Jump && IsGrounded())
 	{
 		m_State = m_JumpTimer >= s_LandAnimationDelay ? PlayerState_Land : PlayerState_Idle;
-		if (glm::abs(m_Velocity.x) > 5.0f)
+		if (glm::abs(velocity.x) > 5.0f)
 			m_State = PlayerState_Run;
 		m_JumpTimer = 0.0f;
 	}
@@ -174,17 +164,27 @@ void Player::OnPhysicsUpdate(float ts)
 	if (!IsGrounded())
 	{
 		// Modify vertical velocity to make jump feel less floaty
-		if (m_Velocity.y < 0.5f && m_Velocity.y > -10.0f)
+		if (velocity.y < 0.5f && velocity.y > -10.0f)
 			ApplyLinearImpulse({ 0.0f, m_GravityModifier * 0.1f });
 
 		m_State = PlayerState_Jump;
 	}
 
 	// Set animation direction when sliding on high slope
-	if (IsOnHighSlope() && m_Velocity.y < 0.0f)
-		m_Direction = m_Velocity.x > 0.0f ? 1.0f : -1.0f;
+	if (IsOnHighSlope() && velocity.y < 0.0f)
+		m_Direction = velocity.x > 0.0f ? 1.0f : -1.0f;
 	
 	m_JumpTimer += ts;
+}
+
+bool Player::IsGrounded() const
+{
+	return CheckSensor(Sensor_Bottom);
+}
+
+bool Player::IsOnHighSlope() const
+{
+	return !CheckSensor(Sensor_Bottom) && (CheckSensor(Sensor_BottomLeft) || CheckSensor(Sensor_BottomRight));
 }
 
 void Player::OnImGuiRender()
@@ -192,7 +192,7 @@ void Player::OnImGuiRender()
 #ifdef PT_EDITOR
 	char buffer[128];
 	strcpy_s(buffer, glm::to_string(GetComponent<SpriteComponent>().Color).c_str());
-	ImGui::InputText("color", &buffer[0], sizeof(buffer));
+	ImGui::InputText("Debug Color", &buffer[5], strlen(buffer) - 5);
 	if (GetScene()->IsSimulated())
 	{
 		auto vel = GetLinearVelocity();

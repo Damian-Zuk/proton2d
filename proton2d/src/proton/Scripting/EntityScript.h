@@ -56,8 +56,8 @@ namespace proton {
 		virtual const std::string& GetScriptClassName() = 0;
 		
 		// Networking
-		void ReplicateField(const std::string& name, const std::function<void(Entity*)>& notifyFunction = nullptr);
-		void ReplicateData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction = nullptr);
+		void SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction = nullptr);
+		void SetReplicatedData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction = nullptr);
 
 		bool HasAuthority() const;
 		bool IsRunningServer() const;
@@ -85,7 +85,7 @@ namespace proton {
 	};
 }
 
-// This macro registers script class inside engine ScriptFactory.
+// This macro registers script class inside ScriptFactory.
 // Script class must inherit from EntityScript class.
 #define ENTITY_SCRIPT_CLASS(script_class) \
 	static inline const std::string __ScriptClassName = #script_class; \
@@ -98,11 +98,11 @@ namespace proton {
 #define REGISTER_FIELD(type, field, ...) \
 	RegisterField(ScriptFieldType::type, #field, &field, __VA_ARGS__);
 
-#define REGISTER_FIELD_NET(type, field, ...) \
+#define REGISTER_FIELD_NET_SERIALIZE(type, field, ...) \
 	RegisterField(ScriptFieldType::type, #field, &field, true, true);
 
-#define REPLICATE_FIELD(field, ...) \
-	ReplicateField(#field, __VA_ARGS__)
+#define REPLICATED_FIELD(field, ...) \
+	SetReplicatedField(#field, __VA_ARGS__)
 
-#define REPLICATE_DATA(data, ...) \
-	ReplicateData(&data, sizeof(data), __VA_ARGS__);
+#define REPLICATED_DATA(data, ...) \
+	SetReplicatedData(&data, sizeof(data), __VA_ARGS__);

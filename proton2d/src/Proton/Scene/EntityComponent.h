@@ -14,6 +14,15 @@ namespace proton {
 		auto& rb = m_Scene->m_Registry.emplace<RigidbodyComponent>(m_Handle);
 		if (m_Scene->m_SceneState == SceneState::Play && m_Scene->m_PhysicsWorld->IsInitialized())
 			m_Scene->m_PhysicsWorld->m_EntitiesToInitialize.push_back(*this);
+		
+		if (!HasComponent<VelocityComponent>())
+			AddComponent<VelocityComponent>();
+
+		if (HasComponent<NetworkComponent>())
+		{
+			auto& net = GetComponent<NetworkComponent>();
+			net.ReplicatedComponents.set(ComponentType_Velocity);
+		}
 		return rb;
 	}
 
@@ -68,6 +77,8 @@ namespace proton {
 		PT_CORE_ASSERT(!HasComponent<NetworkComponent>(), "Entity already has component!");
 		auto& component = m_Scene->m_Registry.emplace<NetworkComponent>(m_Handle);
 		component.ReplicatedComponents.set(ComponentType_Transform);
+		if (HasComponent<VelocityComponent>())
+			component.ReplicatedComponents.set(ComponentType_Velocity);
 		return component;
 	}
 

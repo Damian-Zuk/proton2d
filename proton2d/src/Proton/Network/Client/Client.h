@@ -16,6 +16,7 @@ namespace proton {
 	// Forward declarations
 	class GameInstance;
 	class NetworkManager;
+	class NetInterpolationSystem;
 
 	class Client
 	{
@@ -94,6 +95,7 @@ namespace proton {
 
 		// Other
 		bool m_GameStateInitialized = false;
+		Unique<NetInterpolationSystem> m_NetInterpolationSystem;
 
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
