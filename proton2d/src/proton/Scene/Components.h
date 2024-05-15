@@ -218,10 +218,10 @@ namespace proton {
 	{
 		PROTON_COMPONENT_TYPE_ID(ComponentType_Network)
 		
-		std::bitset<MAX_COMPONENTS> ReplicatedComponents;
-		std::unordered_map<EComponentType, uint32_t> ComponentChecksums;
+		std::bitset<MAX_COMPONENTS> ComponentsToReplicate;
+		std::unordered_map<EComponentType, uint32_t> ComponentChecksum;
 
-		struct ScriptRepInfo
+		struct ReplicatedScript
 		{
 			struct ReplicatedField
 			{
@@ -230,20 +230,21 @@ namespace proton {
 				uint32_t Checksum = 0;
 				std::function<void(Entity*)> NotifyFunction;
 			};
-
 			EntityScript* Script = nullptr;
 			std::vector<ReplicatedField> ReplicatedFields;
 		};
-		std::vector<ScriptRepInfo> ReplicatedScripts;
+		std::vector<ReplicatedScript> ReplicatedScripts;
 
 		struct {
 			glm::vec3 NextPosition;
 			glm::vec2 NextLinearVelocity;
+
 			float NextRotation;
 			float NextAngularVelocity;
 
+			float PacketDelay;
 			Timer UpdateTimer;
-			float Delay;
+
 		} InterpolationData;
 	};
 

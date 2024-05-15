@@ -78,6 +78,7 @@ namespace proton {
 		SceneState GetSceneState() const { return m_SceneState; }
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
+		uint32_t GetNetworkedEntitiesCount() const;
 
 		void SetScreenClearColor(const glm::vec4& color);
 

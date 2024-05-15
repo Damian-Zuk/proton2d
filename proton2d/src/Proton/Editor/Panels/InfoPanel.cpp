@@ -54,11 +54,12 @@ namespace proton {
 			ImGui::Dummy({ 0, 5 });
 			uint32_t entitiesCount = m_ActiveScene ? m_ActiveScene->GetEntitiesCount() : 0;
 			uint32_t scriptedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
-			ImGui::Text("Entities: %i (%i scripted)", entitiesCount, scriptedEntitiesCount);
-			ImGui::Text("OpenGL Draw Calls: %i", m_ActiveScene ? Renderer::GetDrawCallsCount() : 0);
+			uint32_t networkedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
+			ImGui::Text("Entities: %i (%i scripted, %i networked)", entitiesCount, scriptedEntitiesCount, networkedEntitiesCount);
+			//ImGui::Text("OpenGL Draw Calls: %i", m_ActiveScene ? Renderer::GetDrawCallsCount() : 0);
 
-			ImGui::Dummy({ 0, 10 });
-			ImGui::Text("Frame time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
+			ImGui::Dummy({ 0, 5 });
+			ImGui::Text("Frame Time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
 
 			float max = 0.0f;
 			for (uint32_t i = 0; i < s_FrameTimePlotValuesCount; i++)

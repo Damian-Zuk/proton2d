@@ -890,12 +890,17 @@ namespace proton {
 
 	uint32_t Scene::GetEntitiesCount() const
 	{
-		return (int32_t)m_Registry.view<IDComponent>().size();
+		return (uint32_t)m_Registry.view<IDComponent>().size();
 	}
 
 	uint32_t Scene::GetScriptedEntitiesCount() const
 	{
-		return (int32_t)m_Registry.view<ScriptComponent>().size();
+		return (uint32_t)m_Registry.view<ScriptComponent>().size();
+	}
+
+	uint32_t Scene::GetNetworkedEntitiesCount() const
+	{
+		return (uint32_t)m_Registry.view<NetworkComponent>().size();
 	}
 
 	const std::string& Scene::GetFilepath() const

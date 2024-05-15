@@ -65,25 +65,32 @@ namespace proton {
 		SetReplicatedData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
 	}
 
-	static bool CompareByTag(const NetworkComponent::ScriptRepInfo& a, const  NetworkComponent::ScriptRepInfo& b) {
+	static bool CompareByTag(const NetworkComponent::ReplicatedScript& a, const  NetworkComponent::ReplicatedScript& b) {
 		return a.Script->GetTag() < b.Script->GetTag();
 	}
 
 	void EntityScript::SetReplicatedData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction)
 	{
-		PT_CORE_ASSERT(HasComponent<NetworkComponent>(), "Missing NetworkComponent");
+		bool hasNetComponent = HasComponent<NetworkComponent>();
+		PT_CORE_ASSERT(hasNetComponent, "NetworkComponent");
+		
+		if (!hasNetComponent)
+		{
+			PT_CORE_ERROR("Entity: ({}, {}) missing NetworkComponent)");
+			return;
+		}
 
 		auto& net = GetComponent<NetworkComponent>();
 		auto& repScripts = net.ReplicatedScripts;
 
-		net.ReplicatedComponents.set(ComponentType_Script);
+		net.ComponentsToReplicate.set(ComponentType_Script);
 
 		auto scriptRepInfo = std::find_if(repScripts.begin(), repScripts.end(),
 			[this](const auto& repInfo) { return repInfo.Script == this; });
 
 		if (scriptRepInfo == repScripts.end())
 		{
-			NetworkComponent::ScriptRepInfo newEntry;
+			NetworkComponent::ReplicatedScript newEntry;
 			newEntry.Script = this;
 			newEntry.ReplicatedFields.push_back({ data, size, 0, notifyFunction });
 			
@@ -135,7 +142,7 @@ namespace proton {
 		case ScriptFieldType::Bool:
 			return sizeof(bool);
 		default:
-			PT_ASSERT("Unexpected value type!");
+			PT_CORE_ASSERT("Unexpected value type!");
 			return 0;
 		}
 	}
@@ -174,7 +181,7 @@ namespace proton {
 			*(bool*)field.InstanceFieldValue = *(bool*)valuePtr;
 			break;
 		default:
-			PT_ASSERT("Unexpected value type!");
+			PT_CORE_ASSERT("Unexpected value type!");
 			break;
 		}
 	}

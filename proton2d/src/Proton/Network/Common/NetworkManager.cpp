@@ -59,10 +59,7 @@ namespace proton {
 		}
 		else
 		{
-			m_Client->MainThread_ProcessMessages();
-			
-			if (m_GameInstance->GetActiveScene()->m_EnableNetInterpolation)
-				m_Client->m_NetInterpolationSystem->OnUpdate(m_GameInstance->GetActiveScene(), ts);
+			m_Client->MainThread_OnUpdate(ts);
 		}
 	}
 

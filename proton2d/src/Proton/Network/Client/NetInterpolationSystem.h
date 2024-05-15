@@ -6,11 +6,7 @@ namespace proton {
 	class NetInterpolationSystem
 	{
 	public:
-		void Interpolate(Scene* scene, float ts);
-		void Extrapolate(Scene* scene, float ts);
-		void OnUpdate(Scene* scene, float ts);
-
-	private:
+		static void InterpolateAll(Scene* scene, float ts);
 	};
 
 }

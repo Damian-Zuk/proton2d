@@ -35,6 +35,7 @@ namespace proton {
 			{
 				project.m_StartScene = buffer;
 			}
+			ImGui::PopItemWidth();
 		
 			ImGui::SameLine();
 			if (ImGui::Button("Set"))
@@ -73,6 +74,7 @@ namespace proton {
 			{
 				int numClients = EditorLayer::Get()->m_NetNumClients;
 				int count = numClients;
+				ImGui::PushItemWidth(120.0f);
 				if (ImGui::InputInt("Number of Clients", &count, 1, 1))
 				{
 					if (count > numClients)
@@ -83,10 +85,11 @@ namespace proton {
 
 				NetworkManager* networkManager = m_ActiveScene->m_GameInstance->GetNetworkManager();
 				int tickRate = networkManager->m_ServerTickRate;
-				if (ImGui::SliderInt("Server Tick Rate", &tickRate, 1, 128))
+				if (ImGui::InputInt("Server Tick Rate", &tickRate, 1))
 				{
-					networkManager->SetServerTickRate(tickRate);
+					networkManager->SetServerTickRate(glm::max(tickRate, 1));
 				}
+				ImGui::PopItemWidth();
 			}
 
 			ImGui::TreePop();

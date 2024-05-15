@@ -631,7 +631,7 @@ namespace proton {
 		ImGui::Dummy({ 0.0f, 3.0f });
 
 		// Select game mode
-		ImGui::Text("Game Mode");
+		ImGui::Text("Game Mode Class");
 		const std::string& selectedGameMode = m_ActiveScene->m_GameModeClassName;
 		if (ImGui::BeginCombo("##gameMode", selectedGameMode.c_str()))
 		{
@@ -651,7 +651,7 @@ namespace proton {
 		ImGui::Text("Background Color");
 		if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(m_ActiveScene->m_ClearColor)))
 			Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
-		ImGui::Dummy({ 0.0f, 5.0f });
+		ImGui::Dummy({ 0.0f, 10.0f });
 
 		// Physics configuration
 		ImGui::Text("Physics Settings");
@@ -676,10 +676,10 @@ namespace proton {
 
 			ImGui::PopItemWidth();
 		}
-		ImGui::Dummy({ 0.0f, 5.0f });
+		ImGui::Dummy({ 0.0f, 10.0f });
 
 		// Network
-		ImGui::Text("Network");
+		ImGui::Text("Network Settings");
 		ImGui::Dummy({ 0.0f, 3.0f });
 		ImGui::Separator();
 
@@ -733,7 +733,7 @@ namespace proton {
 			ImGui::Dummy({ 0.0f, 3.0f });
 			if (networkComponent && NetworkManager::s_ComponentSupportedRepBitset.test(T::TypeID()))
 			{
-				auto& bitset = networkComponent->ReplicatedComponents;
+				auto& bitset = networkComponent->ComponentsToReplicate;
 				bool replicated = bitset.test(T::TypeID());
 				if (ImGui::Checkbox("Network Replication", &replicated))
 					bitset.flip(T::TypeID());

@@ -152,7 +152,7 @@ namespace proton {
 			auto& netComponent = entity.GetComponent<NetworkComponent>();
 			// TODO: Serialize to hex
 			jsonObj["Network"] = {
-				{ "ReplicatedComponentsBitset", netComponent.ReplicatedComponents.to_string() }
+				{ "ReplicatedComponentsBitset", netComponent.ComponentsToReplicate.to_string() }
 			};
 		}
 
@@ -406,12 +406,12 @@ namespace proton {
 			if (netJson.contains("ReplicatedComponentsBitset"))
 			{
 				std::string bitsetStr = netJson.at("ReplicatedComponentsBitset");
-				netComponent.ReplicatedComponents = std::bitset<MAX_COMPONENTS>(bitsetStr);
+				netComponent.ComponentsToReplicate = std::bitset<MAX_COMPONENTS>(bitsetStr);
 
 				for (size_t i = 0; i < MAX_COMPONENTS; i++)
 				{
-					if (netComponent.ReplicatedComponents.test(i))
-						netComponent.ComponentChecksums[(EComponentType)i] = 0;
+					if (netComponent.ComponentsToReplicate.test(i))
+						netComponent.ComponentChecksum[(EComponentType)i] = 0;
 				}
 			}
 		}

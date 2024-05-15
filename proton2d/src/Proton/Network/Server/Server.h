@@ -67,7 +67,7 @@ namespace proton {
 		void ProcessMessages();
 		void ProcessCreatedEntityQueue();
 		void ProcessDestroyedEntityQueue();
-		void SendReplicationData();
+		void SendReplicationData(Scene* scene);
 
 		// Network statistics
 		void InitNetworkStatsForClient(ClientID clientID);

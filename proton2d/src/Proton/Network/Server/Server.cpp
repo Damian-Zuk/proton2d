@@ -22,7 +22,7 @@
 #include <spdlog/spdlog.h>
 #include <Crc32.h>
 
-#define ENABLE_REPLICATION_CHECKSUM 1
+#define VERIFY_COMPONENT_CHECKSUM 1
 
 namespace proton {
 
@@ -78,7 +78,7 @@ namespace proton {
 		ProcessMessages();
 		ProcessCreatedEntityQueue();
 		ProcessDestroyedEntityQueue();
-		SendReplicationData();
+		SendReplicationData(m_GameInstance->GetActiveScene());
 		UpdateNetworkStatistics();
 	}
 
@@ -318,74 +318,85 @@ namespace proton {
 		}
 	}
 
-#if ENABLE_REPLICATION_CHECKSUM
-	#define BEGIN_COMPONENT_REPLICATION(_component_type) \
-		if (net.ReplicatedComponents.test(_component_type)) { \
-			EComponentType component_type = _component_type; \
-			uint64_t streamStart = stream.GetStreamPosition();
+#if VERIFY_COMPONENT_CHECKSUM
 
-	#define END_COMPONENT_REPLICATION() \
-		uint32_t checksum = crc32_bitwise((char*)m_ScratchBuffer.Data + streamStart, stream.GetStreamPosition() - streamStart); \
-		uint32_t& currentChecksum = net.ComponentChecksums[component_type]; \
-		if (checksum == currentChecksum) { \
-			stream.SetStreamPosition(streamStart); \
-			componentBitset.set(component_type, false); \
-		} else currentChecksum = checksum; \
-	}
+	#define BEGIN_COMPONENT_WRITE(__component_type)                        \
+		if (net.ComponentsToReplicate.test(__component_type)) {            \
+			EComponentType _component_type = __component_type;             \
+			uint64_t _streamStart = stream.GetStreamPosition();
+
+	#define END_COMPONENT_WRITE()                                          \
+			uint64_t _streamEnd = stream.GetStreamPosition();              \
+			uint32_t& _current = net.ComponentChecksum[_component_type];   \
+			uint32_t _checksum = crc32_bitwise(                            \
+				(char*)m_ScratchBuffer.Data + _streamStart,                \
+				_streamEnd - _streamStart);                                \
+			if (_checksum == _current) {                                   \
+				stream.SetStreamPosition(_streamStart);                    \
+				replicatedComponentBitset.set(_component_type, false);     \
+			}                                                              \
+			else _current = _checksum;                                     \
+		}
 #else
-	#define BEGIN_COMPONENT_REPLICATION(component_type) if (net.ReplicatedComponents.test(component_type)) {
-	#define END_COMPONENT_REPLICATION() }
+	#define BEGIN_REPLICATION(component_type)
+		if (net.ReplicatedComponents.test(component_type)) {
+	#define END_REPLICATION() }
 #endif
 
-	void Server::SendReplicationData()
+	void Server::SendReplicationData(Scene* scene)
 	{
 		PROFILE_FUNCTION();
-
-		Scene* scene = m_GameInstance->GetActiveScene();
-
 		// Replicate entitites with NetworkComponent
 		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
-		
 		if (view.empty())
 			return;
 		
+		// Create buffer stream writer
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::UpdateReplicated);
 		uint64_t packetStreamStart = stream.GetStreamPosition();
 
-		for (entt::entity e : view)
+		// Iterate over entities with NetworkComponent
+		for (entt::entity _entity : view)
 		{
 			PROFILE_SCOPE("replicate_entity");
-
-			Entity entity(e, scene);
-			auto& net = view.get<NetworkComponent>(e);
-			std::bitset<MAX_COMPONENTS> componentBitset = net.ReplicatedComponents;
+			Entity entity(_entity, scene);
+			auto& net = view.get<NetworkComponent>(_entity);
 
 			// Entity buffer header
 			uint64_t entityHeaderPos = stream.GetStreamPosition();
 			uint64_t entityBufferSize = 0;
+			std::bitset<MAX_COMPONENTS> replicatedComponentBitset = net.ComponentsToReplicate;
 
 			stream.WriteZero(sizeof(entityBufferSize));
-			stream.WriteZero(sizeof(componentBitset));
+			stream.WriteZero(sizeof(replicatedComponentBitset));
 			stream.WriteRaw(entity.GetUUID());
 
-			uint64_t componentsStartPos = stream.GetStreamPosition();
-			
-			BEGIN_COMPONENT_REPLICATION(ComponentType_Transform)
+			// ------------ Component binary serialization ------------
+			uint64_t beginComponents = stream.GetStreamPosition();
+
+			// TransformComponent
+			BEGIN_COMPONENT_WRITE(ComponentType_Transform);
+			{
 				auto& transform = entity.GetComponent<TransformComponent>();
 				stream.WriteRaw(transform.LocalPosition);
 				stream.WriteRaw(transform.Rotation);
-			END_COMPONENT_REPLICATION()
+			}
+			END_COMPONENT_WRITE();
 
-			BEGIN_COMPONENT_REPLICATION(ComponentType_Velocity)
+			// VelocityComponent
+			BEGIN_COMPONENT_WRITE(ComponentType_Velocity);
+			{
 				auto& velocity = entity.GetComponent<VelocityComponent>();
 				stream.WriteRaw(velocity.LinearVelocity);
 				stream.WriteRaw(velocity.AngularVelocity);
-			END_COMPONENT_REPLICATION()
+			}
+			END_COMPONENT_WRITE();
 
-			if (net.ReplicatedComponents.test(ComponentType_Script))
+			// ScriptComponent
+			if (net.ComponentsToReplicate.test(ComponentType_Script))
 			{
-				// Component header
+				// Component buffer header
 				uint64_t componentHeaderPos = stream.GetStreamPosition();
 				uint32_t scriptRepCount = 0;
 
@@ -397,7 +408,7 @@ namespace proton {
 					if (script.ReplicatedFields.size() == 0)
 						continue; // invalid entry, no fields to replicate
 
-					// Script header
+					// Script buffer header
 					uint64_t scriptHeaderPos = stream.GetStreamPosition();
 					uint32_t fieldRepCount = 0;
 
@@ -409,12 +420,12 @@ namespace proton {
 					{
 						auto& field = script.ReplicatedFields[fieldIndex];
 
-						#if ENABLE_REPLICATION_CHECKSUM
+					#if VERIFY_COMPONENT_CHECKSUM
 						uint32_t checksum = crc32_bitwise(field.Data, field.Size);
 						if (checksum == field.Checksum)
-							continue; // value not changed, skip replication
+							continue; // field value not changed, skip replication
 						field.Checksum = checksum;
-						#endif
+					#endif
 
 						// Write field data
 						stream.WriteRaw((uint32_t)fieldIndex);
@@ -424,7 +435,7 @@ namespace proton {
 
 					if (fieldRepCount)
 					{
-						// Write `fieldRepCount` to script header
+						// Write field count to script header
 						uint64_t current = stream.GetStreamPosition();
 						stream.SetStreamPosition(scriptHeaderPos);
 						stream.WriteRaw(fieldRepCount);
@@ -437,7 +448,7 @@ namespace proton {
 
 				if (scriptRepCount)
 				{
-					// Write `scriptRepCount` to component header
+					// Write script count to component header
 					uint64_t streamPos = stream.GetStreamPosition();
 					stream.SetStreamPosition(componentHeaderPos);
 					stream.WriteRaw(scriptRepCount);
@@ -445,32 +456,33 @@ namespace proton {
 				}
 				else
 				{
-					// Skip component replication
+					// Skip ScriptComponent replication
 					stream.SetStreamPosition(componentHeaderPos);
-					componentBitset.set(ComponentType_Script, false);
+					replicatedComponentBitset.set(ComponentType_Script, false);
 				}
 			}
-			// **************************************************************** //
 
-			if (stream.GetStreamPosition() == componentsStartPos)
+			// Check if any components were written to stream buffer
+			if (stream.GetStreamPosition() == beginComponents)
 			{
 				stream.SetStreamPosition(entityHeaderPos);
-				continue; // no components changed, skip entity replication
+				continue;
 			}
 
+			// Calculate buffer size
 			uint64_t entityStreamEnd = stream.GetStreamPosition();
 			entityBufferSize = entityStreamEnd - entityHeaderPos;
 			
 			// Write entity header
 			stream.SetStreamPosition(entityHeaderPos);
 			stream.WriteRaw(entityBufferSize);
-			stream.WriteRaw(componentBitset);
+			stream.WriteRaw(replicatedComponentBitset);
 			stream.SetStreamPosition(entityStreamEnd);
 
 			m_ReplicationStats.RepEntitiesCount++;
 		}
 
-		// If any entity changed, send replication packet to all clients
+		// If anything for replication was written to buffer, send to clients
 		if (stream.GetStreamPosition() > packetStreamStart)
 			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 

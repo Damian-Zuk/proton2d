@@ -18,8 +18,7 @@ namespace proton {
 	static std::mutex s_InstanceMapMutex;
 
 	Client::Client(GameInstance* gameInstance)
-		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
-		m_NetInterpolationSystem(MakeUnique<NetInterpolationSystem>())
+		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
 	{
 		// 1 MB scratch buffer
 		m_ScratchBuffer.Allocate(1048576);
@@ -57,6 +56,15 @@ namespace proton {
 		m_Running = false;
 	}
 
+	void Client::MainThread_OnUpdate(float ts)
+	{
+		ProcessMessages();
+
+		Scene* scene = m_GameInstance->GetActiveScene();
+		if (scene->m_EnableNetInterpolation)
+			NetInterpolationSystem::InterpolateAll(scene, ts);
+	}
+
 	void Client::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
 	{
 		std::lock_guard<std::mutex> lock(m_QueueMutex);
@@ -89,7 +97,7 @@ namespace proton {
 		SendBuffer(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
 
-	void Client::MainThread_ProcessMessages()
+	void Client::ProcessMessages()
 	{
 		PROFILE_FUNCTION();
 
@@ -251,7 +259,7 @@ namespace proton {
 					}
 
 					auto& net = entity.GetComponent<NetworkComponent>();
-					bool updateTimer = false;
+					bool updateInterpolationTimer = false;
 
 					// TransformComponent
 					if (componentBitset.test(ComponentType_Transform))
@@ -266,6 +274,7 @@ namespace proton {
 						{
 							net.InterpolationData.NextPosition = position;
 							net.InterpolationData.NextRotation = rotation;
+							updateInterpolationTimer = true;
 						}
 						else
 						{
@@ -274,7 +283,6 @@ namespace proton {
 							transform.LocalPosition.y = position.y;
 							transform.Rotation = rotation;
 						}
-						updateTimer = true;
 					}
 
 					// VelocityComponent
@@ -290,6 +298,7 @@ namespace proton {
 						{
 							net.InterpolationData.NextLinearVelocity = linearVelocity;
 							net.InterpolationData.NextAngularVelocity = angularVelocity;
+							updateInterpolationTimer = true;
 						}
 						else
 						{
@@ -297,7 +306,6 @@ namespace proton {
 							velocity.LinearVelocity = linearVelocity;
 							velocity.AngularVelocity = angularVelocity;
 						}
-						updateTimer = true;
 					}
 
 					// ScriptComponent
@@ -334,9 +342,9 @@ namespace proton {
 						}
 					}
 
-					if (updateTimer)
+					if (updateInterpolationTimer)
 					{
-						net.InterpolationData.Delay = net.InterpolationData.UpdateTimer.Elapsed();
+						net.InterpolationData.PacketDelay = net.InterpolationData.UpdateTimer.Elapsed();
 						net.InterpolationData.UpdateTimer.Reset();
 					}
 				}

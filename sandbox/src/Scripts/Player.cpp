@@ -199,13 +199,20 @@ bool Player::IsOnHighSlope() const
 void Player::OnImGuiRender()
 {
 #ifdef PT_EDITOR
+	ImGui::Dummy({ 0, 5 });
 	char buffer[128];
-	strcpy_s(buffer, glm::to_string(GetComponent<SpriteComponent>().Color).c_str());
-	ImGui::InputText("Debug Color", &buffer[5], strlen(buffer) - 5);
+	
+	const auto& color = GetComponent<SpriteComponent>().Color;
+	std::string colorStr = fmt::format("{:.3f}, {:.3f}, {:.3f}, {:.3f}", color.r, color.g, color.b, color.a);
+	strcpy_s(buffer, colorStr.c_str());
+	ImGui::InputText("Color", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
+	
 	if (GetScene()->IsSimulated())
 	{
 		auto vel = GetLinearVelocity();
-		ImGui::Text("Velocity: (%.3f, %.3f)", vel.x, vel.y);
+		std::string velocity = fmt::format("{:.3f}, {:.3f}", vel.x, vel.y);
+		strcpy_s(buffer, velocity.c_str());
+		ImGui::InputText("Velocity", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
 	}
 #endif
 }

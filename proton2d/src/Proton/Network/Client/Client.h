@@ -33,12 +33,14 @@ namespace proton {
 		void ConnectToServer(const std::string& serverAddress);
 		void Disconnect();
 		void Shutdown();
+
+		void MainThread_OnUpdate(float ts);
 		
 		// Game client functionality
 		void SendVerifyGameState();
 		void SendPlayerAction(Client_SendPlayerActionCallback sendFunction);
 
-		void MainThread_ProcessMessages();
+		void ProcessMessages();
 
 		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
 		
@@ -95,7 +97,6 @@ namespace proton {
 
 		// Other
 		bool m_GameStateInitialized = false;
-		Unique<NetInterpolationSystem> m_NetInterpolationSystem;
 
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;

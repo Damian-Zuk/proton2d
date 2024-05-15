@@ -1,10 +1,10 @@
 {
-    "UUID": 14607175038589815423,
+    "UUID": 15140784237525174968,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            1.91304,
-            1.69565,
+            2.65217,
+            2.81159,
             0.1
         ],
         "Rotation": 0.0,
@@ -14,7 +14,7 @@
         ]
     },
     "Network": {
-        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000001001000"
+        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000101001000"
     },
     "Sprite": {
         "Texture": "character.png",
@@ -47,7 +47,7 @@
         "ZoomLevel": 1.5,
         "PositionOffset": [
             0.0,
-            1.7999999523162842
+            4.0
         ]
     },
     "Scripts": [
@@ -55,12 +55,8 @@
             "ClassName": "Player",
             "Fields": [
                 {
-                    "FieldName": "m_ClientID",
-                    "Value": 0
-                },
-                {
-                    "FieldName": "m_GravityModifier",
-                    "Value": -10.0
+                    "FieldName": "m_PlayerMaxSpeed",
+                    "Value": 8.0
                 },
                 {
                     "FieldName": "m_JumpForce",
@@ -71,15 +67,19 @@
                     "Value": 300.0
                 },
                 {
-                    "FieldName": "m_PlayerMaxSpeed",
-                    "Value": 8.0
+                    "FieldName": "m_GravityModifier",
+                    "Value": -10.0
+                },
+                {
+                    "FieldName": "m_ClientID",
+                    "Value": 0
                 }
             ]
         }
     ],
     "Entities": [
         {
-            "UUID": 10617958248777148543,
+            "UUID": 541754857076114316,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -111,7 +111,7 @@
             }
         },
         {
-            "UUID": 7794308886850002294,
+            "UUID": 15948920504616662888,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -145,7 +145,7 @@
             }
         },
         {
-            "UUID": 4753824877077404011,
+            "UUID": 8753585113467967090,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -177,7 +177,7 @@
             }
         },
         {
-            "UUID": 10798575398817342635,
+            "UUID": 15481270859431317242,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -209,7 +209,7 @@
             }
         },
         {
-            "UUID": 13225112859052145906,
+            "UUID": 7593851491380223013,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [
