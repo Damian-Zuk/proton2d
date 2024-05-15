@@ -64,17 +64,17 @@ namespace proton {
 		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
 
 		void ProcessConnectionStatusQueue();
-		void ProcessMessages();
+		void ProcessClientMessagesQueue();
 		void ProcessCreatedEntityQueue();
 		void ProcessDestroyedEntityQueue();
-		void SendReplicationData(Scene* scene);
+		void SendReplicationUpdate(Scene* scene, ClientID clientID = 0, bool verifyComponentChecksum = true);
 
 		// Network statistics
-		void InitNetworkStatsForClient(ClientID clientID);
-		void ReleaseNetworkStatsForClient(ClientID clientID);
+		void AllocateNetworkStatsBuffer(ClientID clientID);
+		void ReleaseNetworkStatsBuffer(ClientID clientID);
 		void UpdateNetworkStatistics();
-		void SaveStatsLogsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status);
-		void GenerateStatsLogsFilename();
+		void LogStatsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status);
+		void GenerateStatsLogFilename();
 
 		void SetClientNick(HSteamNetConnection hConn, const char* nick);
 		void KickClient(ClientID clientID);

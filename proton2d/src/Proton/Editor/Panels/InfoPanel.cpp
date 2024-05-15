@@ -54,7 +54,7 @@ namespace proton {
 			ImGui::Dummy({ 0, 5 });
 			uint32_t entitiesCount = m_ActiveScene ? m_ActiveScene->GetEntitiesCount() : 0;
 			uint32_t scriptedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
-			uint32_t networkedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
+			uint32_t networkedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetNetworkedEntitiesCount() : 0;
 			ImGui::Text("Entities: %i (%i scripted, %i networked)", entitiesCount, scriptedEntitiesCount, networkedEntitiesCount);
 			//ImGui::Text("OpenGL Draw Calls: %i", m_ActiveScene ? Renderer::GetDrawCallsCount() : 0);
 

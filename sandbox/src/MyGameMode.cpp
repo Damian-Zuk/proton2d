@@ -107,4 +107,5 @@ void MyGameMode::SpawnRandomBox(const glm::vec2& position)
 
 	entity.AddComponent<RigidbodyComponent>().Type = b2_dynamicBody;
 	entity.AddComponent<BoxColliderComponent>();
+	entity.AddComponent<NetworkComponent>();
 }

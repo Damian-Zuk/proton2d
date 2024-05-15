@@ -7,6 +7,9 @@ namespace proton {
 	{
 	public:
 		static void InterpolateAll(Scene* scene, float ts);
+
+	private:
+		static float s_ExtrapolationTimeThreshold;
 	};
 
 }
