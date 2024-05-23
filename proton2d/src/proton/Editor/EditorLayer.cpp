@@ -81,11 +81,13 @@ namespace proton {
 
 		GameInstance* instance = Application::GetGameInstance();
 		m_GameInstance = instance;
+		m_FocusedGameInstance = instance;
 		s_Panels.SceneViewport.m_GameInstance = instance;
 		instance->m_EditorViewport = &s_Panels.SceneViewport;
 
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
+
 	}
 
 	void EditorLayer::OnDestroy()
@@ -175,7 +177,7 @@ namespace proton {
 		ImGuiIO& io = ImGui::GetIO();
 
 		// Block events if viewport is not hovered by mouse
-		if (m_BlockEvents && !s_Panels.SceneViewport.m_MoveEditorCamera)
+		if (m_BlockEvents)
 		{
 			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
 			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
@@ -190,6 +192,9 @@ namespace proton {
 
 		for (auto& panel : m_EditorPanels)
 			panel->OnEvent(event);
+
+		for (const auto& instance : m_ClientInstances)
+			instance.Viewport->OnEvent(event);
 	}
 
 	SceneViewportPanel* EditorLayer::GetSceneViewportPanel()

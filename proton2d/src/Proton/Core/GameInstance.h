@@ -48,6 +48,7 @@ namespace proton {
 
 		friend class Application;
 		friend class SceneManager;
+		friend class Scene;
 		friend class Client;
 		friend class Server;
 

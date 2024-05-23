@@ -741,7 +741,7 @@ namespace proton {
 	void Scene::CachePrimaryCameraPosition()
 	{
 	#ifdef PT_EDITOR
-		if (m_SceneState == SceneState::Stop || EditorLayer::GetCamera()->m_UseInRuntime)
+		if (m_GameInstance->m_IsMainInstance && (m_SceneState == SceneState::Stop || EditorLayer::GetCamera()->m_UseInRuntime))
 		{
 			m_PrimaryCameraPosition = EditorLayer::GetCamera()->GetPosition();
 			return;
@@ -780,7 +780,7 @@ namespace proton {
 	Camera& Scene::GetPrimaryCamera()
 	{
 	#ifdef PT_EDITOR
-		if (m_SceneState == SceneState::Stop || EditorLayer::GetCamera()->m_UseInRuntime)
+		if (m_GameInstance->m_IsMainInstance && (m_SceneState == SceneState::Stop || EditorLayer::GetCamera()->m_UseInRuntime))
 			return EditorLayer::GetCamera()->GetBaseCamera();
 	#endif
 		return m_PrimaryCamera ? *m_PrimaryCamera : m_DefaultCamera;

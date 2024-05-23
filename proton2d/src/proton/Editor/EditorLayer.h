@@ -77,7 +77,7 @@ namespace proton {
 		EditorMenuBar m_MenuBar;
 
 		std::vector<EditorPanel*> m_EditorPanels;
-		bool m_BlockEvents = true;
+		bool m_BlockEvents = false;
 		GameInstance* m_FocusedGameInstance = nullptr;
 
 		uint32_t m_NetNumClients = 1;

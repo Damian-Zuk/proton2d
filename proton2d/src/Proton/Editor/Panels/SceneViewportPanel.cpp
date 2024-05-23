@@ -64,7 +64,7 @@ namespace proton {
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
 
-		EditorLayer::Get()->m_BlockEvents = !m_ViewportHovered;
+		//EditorLayer::Get()->m_BlockEvents = !m_ViewportHovered;
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -177,7 +177,7 @@ namespace proton {
 
 	void SceneViewportPanel::OnEvent(Event& event)
 	{
-		if (!m_ActiveScene)
+		if (!m_ActiveScene || !m_ViewportHovered)
 			return;
 
 		m_Camera->OnEvent(event);
@@ -192,9 +192,10 @@ namespace proton {
 
 			SceneState state = m_ActiveScene->GetSceneState();
 			const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
+
 			// Mouse Button 1 (Right): Move editor camera
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
-				&& (state == SceneState::Stop || m_Camera->m_UseInRuntime))
+				&& (state == SceneState::Stop || m_Camera->m_UseInRuntime ))
 			{
 				m_CameraDragOffset = cursor;
 				m_MoveEditorCamera = true;
