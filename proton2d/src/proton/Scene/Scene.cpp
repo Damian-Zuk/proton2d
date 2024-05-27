@@ -115,6 +115,8 @@ namespace proton {
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
 		newScene->m_EnableNetInterpolation = m_EnableNetInterpolation;
+		newScene->m_NetTranformSyncMethod = m_NetTranformSyncMethod;
+
 		if (gameInstance)
 			newScene->m_GameInstance = gameInstance;
 		else	
@@ -209,11 +211,10 @@ namespace proton {
 		EditorLayer::Get()->OnBeginSceneSimulation(this);
 	#endif
 
-	#ifdef PROTON_DISTRIBUTION
-		NetMode mode = m_GameInstance->GetNetMode();
-		if (mode == NetMode::Client && m_InheritNetMode)
-			m_EnablePhysics = false; // dumb client
-	#endif
+		NetMode netMode = m_GameInstance->GetNetMode();
+		if (m_NetTranformSyncMethod != NetTranformSyncMethod::NetworkRigidbody 
+			&& netMode == NetMode::Client && m_InheritNetMode)
+			m_EnablePhysics = false;
 
 		m_SceneState = SceneState::Play;
 		m_GameInstance->OnSceneSimulationStart(this);
@@ -273,8 +274,6 @@ namespace proton {
 		if (addToSceneRoot)
 			m_Root.push_back(entity);
 
-		// If server is running and entity has NetworkComponent,
-		// inform clients that entity has been created
 		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
 		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer())
 		{
@@ -518,50 +517,32 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 		
-		bool physicsTick = IsPhysicsSimulated() && m_PhysicsTimer + ts > m_PhysicsTimestep;
-
-		if (!physicsTick)
-		{
-			CalculateWorldPositions();
-			CachePrimaryCameraPosition();
-			CacheCursorWorldPosition();
-		}
-
 		if (m_SceneState == SceneState::Play)
 		{
+			bool isPhysicsTick = false;
 			if (IsPhysicsSimulated())
 			{
 				m_PhysicsWorld->ProcessCreatedEntities();
 				m_PhysicsTimer += ts;
+				isPhysicsTick = m_PhysicsTimer > m_PhysicsTimestep;
 			}
 
-			if (physicsTick)
+			if (isPhysicsTick)
 			{
 				m_PhysicsWorld->Update(m_PhysicsTimer);
-
-				CalculateWorldPositions();
-				CachePrimaryCameraPosition();
-				CacheCursorWorldPosition();
-
-				PROFILE_SCOPE("scripts_on_physics_update");
-				auto view = m_Registry.view<RigidbodyComponent, ScriptComponent>();
-				for (auto entity : view)
-				{
-					auto& [rb, script] = view.get<RigidbodyComponent, ScriptComponent>(entity);
-					for (auto& [name, instance] : script.Scripts)
-					{
-						if (instance->m_Initialized)
-							instance->OnPhysicsUpdate(m_PhysicsTimer);
-					}
-				}
-				
-				m_PhysicsTimer = 0.0f;
 			}
+
+			CalculateWorldPositions();
+			CachePrimaryCameraPosition();
+			CacheCursorWorldPosition();
 
 			if (m_GameMode)
 				m_GameMode->OnUpdate(ts);
 
-			UpdateScripts(ts);
+			UpdateScripts(ts, isPhysicsTick);
+
+			if (isPhysicsTick)
+				m_PhysicsTimer = 0.0f;
 
 			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
@@ -575,7 +556,7 @@ namespace proton {
 		RenderUI();
 	}
 
-	void Scene::UpdateScripts(float ts)
+	void Scene::UpdateScripts(float ts, bool isPhysicsTick)
 	{
 		PROFILE_FUNCTION();
 		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
@@ -604,7 +585,12 @@ namespace proton {
 					}
 				}
 				if (!scriptInstance->m_Stopped)
+				{
 					scriptInstance->OnUpdate(ts);
+
+					if (isPhysicsTick && m_Registry.any_of<RigidbodyComponent>(entity))
+						scriptInstance->OnPhysicsUpdate(m_PhysicsTimer);
+				}
 			}
 		}
 	}

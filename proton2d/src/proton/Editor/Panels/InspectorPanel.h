@@ -19,6 +19,7 @@ namespace proton {
 		void DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction);
 
 		friend class EditorLayer;
+		friend class SceneViewportPanel;
 	};
 
 }

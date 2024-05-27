@@ -20,6 +20,10 @@
 	#include "Proton/Platform/Windows/WindowsWindow.h"
 #endif
 
+#ifdef PT_EDITOR
+	#include "Proton/Editor/EditorLayer.h"
+#endif
+
 namespace proton {
 
 	Application* Application::s_Instance = nullptr;
@@ -61,12 +65,10 @@ namespace proton {
 
 		AssetManager::Init();
 		Renderer::Init();
-		NetworkManager::StaticInit();
 		PrefabManager::Init();
 
 	#ifdef PT_EDITOR
-		m_EditorLayer = EditorLayer::Get();
-		PushOverlay(m_EditorLayer);
+		PushOverlay(EditorLayer::Get());
 	#endif
 
 		if (OnCreate()) 
@@ -99,12 +101,12 @@ namespace proton {
 					{
 						PROFILE_SCOPE("imgui_render");
 					
-						m_EditorLayer->BeginImGuiRender();
+						EditorLayer::Get()->BeginImGuiRender();
 
 						for (AppLayer* layer : m_AppLayers)
 							layer->OnImGuiRender();
 
-						m_EditorLayer->EndImGuiRender();
+						EditorLayer::Get()->EndImGuiRender();
 					}
 				#else
 					m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);

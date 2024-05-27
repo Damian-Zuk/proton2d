@@ -14,6 +14,8 @@ namespace proton {
 
 	private:
 		Entity m_TreeNodeHovered;
+
+		friend class SceneViewportPanel;
 	};
 
 }

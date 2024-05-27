@@ -61,8 +61,7 @@ namespace proton {
 		ProcessMessages();
 
 		Scene* scene = m_GameInstance->GetActiveScene();
-		if (scene->m_EnableNetInterpolation)
-			NetInterpolationSystem::InterpolateAll(scene, ts);
+		NetInterpolationSystem::InterpolateAll(scene, ts);
 	}
 
 	void Client::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
@@ -259,53 +258,47 @@ namespace proton {
 					}
 
 					auto& net = entity.GetComponent<NetworkComponent>();
-					bool updateInterpolationTimer = false;
+					auto syncMethod = net.SyncMethod == NetTranformSyncMethod::Inherit ? scene->m_NetTranformSyncMethod : net.SyncMethod;
+					bool updateTransformImmediately = syncMethod == NetTranformSyncMethod::None || syncMethod == NetTranformSyncMethod::Extrapolate;
+					bool updateTransformStateTimer = false;
 
 					// TransformComponent
 					if (componentBitset.test(ComponentType_Transform))
 					{
-						glm::vec3 position;
-						float rotation;
+						auto& position = net.NetTransform.Position;
+						auto& rotation = net.NetTransform.Rotation;
 						
 						stream.ReadRaw(position);
 						stream.ReadRaw(rotation);
 						
-						if (scene->m_EnableNetInterpolation)
-						{
-							net.InterpolationData.NextPosition = position;
-							net.InterpolationData.NextRotation = rotation;
-							updateInterpolationTimer = true;
-						}
-						else
+						if (updateTransformImmediately)
 						{
 							auto& transform = entity.GetTransform();
 							transform.LocalPosition.x = position.x;
 							transform.LocalPosition.y = position.y;
 							transform.Rotation = rotation;
 						}
+
+						updateTransformStateTimer = true;
 					}
 
 					// VelocityComponent
 					if (componentBitset.test(ComponentType_Velocity))
 					{
-						glm::vec2 linearVelocity;
-						float angularVelocity;
+						auto& linearVelocity = net.NetTransform.LinearVelocity;
+						auto& angularVelocity = net.NetTransform.AngularVelocity;
 
 						stream.ReadRaw(linearVelocity);
 						stream.ReadRaw(angularVelocity);
 
-						if (scene->m_EnableNetInterpolation)
-						{
-							net.InterpolationData.NextLinearVelocity = linearVelocity;
-							net.InterpolationData.NextAngularVelocity = angularVelocity;
-							updateInterpolationTimer = true;
-						}
-						else
+						if (updateTransformImmediately)
 						{
 							auto& velocity = entity.GetComponent<VelocityComponent>();
 							velocity.LinearVelocity = linearVelocity;
 							velocity.AngularVelocity = angularVelocity;
 						}
+
+						updateTransformStateTimer = true;
 					}
 
 					// ScriptComponent
@@ -342,10 +335,10 @@ namespace proton {
 						}
 					}
 
-					if (updateInterpolationTimer)
+					if (updateTransformStateTimer)
 					{
-						net.InterpolationData.PacketDelay = net.InterpolationData.UpdateTimer.Elapsed();
-						net.InterpolationData.UpdateTimer.Reset();
+						net.NetTransform.PacketDelay = net.NetTransform.UpdateTimer.Elapsed();
+						net.NetTransform.UpdateTimer.Reset();
 					}
 				}
 				break;

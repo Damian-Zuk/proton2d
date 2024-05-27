@@ -202,6 +202,16 @@ namespace proton {
 		return &s_Panels.SceneViewport;
 	}
 
+	SceneHierarchyPanel* EditorLayer::GetSceneHierarchyPanel()
+	{
+		return &s_Panels.SceneHiearchy;
+	}
+
+	InspectorPanel* EditorLayer::GetInspectorPanel()
+	{
+		return &s_Panels.Inspector;
+	}
+
 	void EditorLayer::SetActiveScene(Scene* scene)
 	{
 		Get()->m_ActiveScene = scene;
@@ -217,12 +227,33 @@ namespace proton {
 
 	void EditorLayer::SelectEntity(Entity entity)
 	{
+		// Used to check if selected entity on main game instance or client game instance
+		GameInstance* gameInstance = nullptr;
+
+		// Make entity unselect in client game instance possible
+		if (Get()->m_SelectedEntity && !entity)
+			gameInstance = Get()->m_SelectedEntity.GetScene()->m_GameInstance;
+		else if (entity && entity.GetScene())
+			gameInstance = entity.GetScene()->m_GameInstance;
+
 		Get()->m_SelectedEntity = entity;
 
-		for (auto& panel : Get()->m_EditorPanels)
+		if (!gameInstance || gameInstance->IsMainInstance())
 		{
-			panel->m_SelectedEntity = entity;
-			panel->OnSelectEntity(entity);
+			// Main game instance
+			for (auto& panel : Get()->m_EditorPanels)
+			{
+				panel->m_SelectedEntity = entity;
+				panel->OnSelectEntity(entity);
+			}
+		}
+		else
+		{
+			// Client game instance
+			Scene* scene = entity.GetScene();
+			s_Panels.Inspector.m_SelectedEntity = entity;
+			s_Panels.SceneHiearchy.m_SelectedEntity = entity;
+			gameInstance->m_EditorViewport->m_SelectedEntity = entity;
 		}
 	}
 
@@ -315,6 +346,7 @@ namespace proton {
 		if (m_GameInstance->HasSimulationStarted())
 		{
 			m_ClientInstancesToClose.push_back(m_ClientInstances.back().ID);
+			SetActiveScene(m_ActiveScene);
 		}
 	}
 
@@ -350,7 +382,6 @@ namespace proton {
 
 		sceneManager->m_Scenes[m_ActiveScene->m_SceneFilepath] = scene;
 		sceneManager->SetActiveScene(m_ActiveScene->m_SceneFilepath);
-		scene->EnablePhysics(false);
 		scene->BeginPlay();
 	}
 

@@ -7,6 +7,7 @@
 #include "Proton/Graphics/SpriteAnimation.h"
 #include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Physics/PhysicsCommon.h"
+#include "Proton/Network/Common/Common.h"
 
 #include "Proton/UI/UIText.h"
 #include <entt/entity/entity.hpp>
@@ -217,9 +218,25 @@ namespace proton {
 	struct NetworkComponent
 	{
 		PROTON_COMPONENT_TYPE_ID(ComponentType_Network)
-		
+
+		float UpdateRate = 1.0f; 
 		std::bitset<MAX_COMPONENTS> ComponentsToReplicate;
 		std::unordered_map<EComponentType, uint32_t> ComponentChecksum;
+
+		NetTranformSyncMethod SyncMethod;
+
+		struct NetworkTransform
+		{
+			glm::vec3 Position;
+			glm::vec2 LinearVelocity;
+
+			float Rotation;
+			float AngularVelocity;
+
+			float PacketDelay;
+			Timer UpdateTimer;
+
+		} NetTransform;
 
 		struct ReplicatedScript
 		{
@@ -234,18 +251,6 @@ namespace proton {
 			std::vector<ReplicatedField> ReplicatedFields;
 		};
 		std::vector<ReplicatedScript> ReplicatedScripts;
-
-		struct {
-			glm::vec3 NextPosition;
-			glm::vec2 NextLinearVelocity;
-
-			float NextRotation;
-			float NextAngularVelocity;
-
-			float PacketDelay;
-			Timer UpdateTimer;
-
-		} InterpolationData;
 	};
 
 }

@@ -5,10 +5,6 @@
 #include "Proton/Core/Window.h"
 #include "Proton/Core/Config.h"
 
-#ifdef PT_EDITOR
-#include "Proton/Editor/EditorLayer.h"
-#endif
-
 namespace proton {
 
 	// Forward declaration
@@ -52,10 +48,6 @@ namespace proton {
 		float m_FrameTime = 0.0f;
 		float m_TimeScale = 1.0f;
 
-	#ifdef PT_EDITOR
-		EditorLayer* m_EditorLayer = nullptr;
-	#endif
-
 		friend class SettingsPanel;
 		friend class InfoPanel;
 	};
@@ -77,6 +69,7 @@ namespace proton {
 	#endif
 
 #else
+
 	#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass)\
 	int main(int argc, char** argv)\
 	{\
@@ -84,4 +77,5 @@ namespace proton {
 		ApplcationClass app;\
 		app.Run();\
 	}
+
 #endif

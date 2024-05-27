@@ -3,6 +3,7 @@
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Events/Event.h"
 #include "Proton/Core/UUID.h"
+#include "Proton/Network/Common/Common.h"
 
 #include <entt/entt.hpp>
 
@@ -67,7 +68,6 @@ namespace proton {
 		std::vector<Entity> GetEntitiesOnCursorLocation();
 
 		void EnablePhysics(bool enabled);
-
 		bool IsPhysicsEnabled() const;
 		bool IsPhysicsWorldInitialized() const;
 		bool IsPhysicsSimulated() const;
@@ -109,7 +109,7 @@ namespace proton {
 
 	private:
 		void OnUpdate(float ts);
-		void UpdateScripts(float ts);
+		void UpdateScripts(float ts, bool isPhysicsTick);
 		void RenderScene(const Camera& camera);
 		void RenderUI();
 
@@ -155,11 +155,13 @@ namespace proton {
 		glm::vec2 m_CursorWorldPosition = { 0.0f, 0.0f };
 
 		// Network
+		NetTranformSyncMethod m_NetTranformSyncMethod = NetTranformSyncMethod::None;
 		bool m_InheritNetMode = true;
 		bool m_EnableNetInterpolation = true;
 
 		friend class Application;
 		friend class Entity;
+		friend class EntityScript;
 		friend class SceneSerializer;
 		friend class SceneManager;
 		friend class PhysicsWorld;

@@ -25,6 +25,8 @@ namespace proton {
 		EditorCamera* GetCamera() const { return m_Camera.get(); }
 		float GetAspectRatio() const { return m_ViewportAspectRatio; }
 
+		const std::string& GetWindowName() const { return m_ImGuiWindowName;}
+
 	private:
 		void DrawCollidersAndSelectionOutline(float ts);
 		void HandleImGuiDragAndDrop();

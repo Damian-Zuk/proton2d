@@ -1,6 +1,8 @@
 #include "ptpch.h"
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Panels/SceneHierarchyPanel.h"
+#include "Proton/Editor/Panels/InspectorPanel.h"
 #include "Proton/Editor/Panels/EditorGizmo2D.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/EditorCamera.h"
@@ -52,6 +54,10 @@ namespace proton {
 			if (!open)
 			{
 				EditorLayer::Get()->CloseClientGameInstance(m_GameInstance->m_InstanceID);
+				Scene* scene = Application::Get().GetGameInstance()->GetActiveScene();
+				EditorLayer::GetSceneHierarchyPanel()->m_ActiveScene = scene;
+				EditorLayer::GetInspectorPanel()->m_ActiveScene = scene;
+				EditorLayer::SelectEntity({});
 			}
 		}
 
@@ -87,6 +93,11 @@ namespace proton {
 			if (isFocused)
 			{
 				EditorLayer::Get()->m_FocusedGameInstance = m_GameInstance;
+
+				Scene* scene = m_GameInstance->GetActiveScene();
+				EditorLayer::GetSceneHierarchyPanel()->m_ActiveScene = scene;
+				EditorLayer::GetInspectorPanel()->m_ActiveScene = scene;
+				EditorLayer::SelectEntity({});
 			}
 			m_IsViewportFocused = isFocused;
 		}

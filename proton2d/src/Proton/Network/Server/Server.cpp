@@ -380,7 +380,10 @@ namespace proton {
 			BEGIN_COMPONENT_BUFFER_WRITE(ComponentType_Transform);
 			{
 				auto& transform = entity.GetComponent<TransformComponent>();
-				stream.WriteRaw(transform.LocalPosition);
+				if (entity.HasComponent<RigidbodyComponent>() && scene->m_NetTranformSyncMethod == NetTranformSyncMethod::NetworkRigidbody)
+					stream.WriteRaw(transform.WorldPosition);
+				else
+					stream.WriteRaw(transform.LocalPosition);
 				stream.WriteRaw(transform.Rotation);
 			}
 			END_COMPONENT_BUFFER_WRITE();
@@ -421,12 +424,13 @@ namespace proton {
 					{
 						auto& field = script.ReplicatedFields[fieldIndex];
 
-					#if VERIFY_COMPONENT_CHECKSUM
-						uint32_t checksum = crc32_bitwise(field.Data, field.Size);
-						if (checksum == field.Checksum)
-							continue; // field value not changed, skip replication
-						field.Checksum = checksum;
-					#endif
+						if (verifyComponentChecksum)
+						{
+							uint32_t checksum = crc32_bitwise(field.Data, field.Size);
+							if (checksum == field.Checksum)
+								continue; // field value not changed, skip replication
+							field.Checksum = checksum;
+						}
 
 						// Write field data
 						stream.WriteRaw((uint32_t)fieldIndex);

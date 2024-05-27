@@ -53,6 +53,7 @@ namespace proton {
 		friend class Server;
 
 		friend class EditorLayer;
+		friend class InspectorPanel;
 		friend class SceneViewportPanel;
 		friend class SettingsPanel;
 	};

@@ -18,13 +18,6 @@ namespace proton {
 
 	uint32_t NetworkManager::s_NetworkServicesRunning = 0;
 	bool NetworkManager::s_NetworkResourcesFreed = false;
-	std::bitset<MAX_COMPONENTS> NetworkManager::s_ComponentSupportedRepBitset;
-
-	void NetworkManager::StaticInit()
-	{
-		// Currently supports only Transform and Script fields replication
-		s_ComponentSupportedRepBitset.set(ComponentType_Transform);
-	}
 
 	NetworkManager::NetworkManager(GameInstance* instance, SceneManager* manager)
 		: m_GameInstance(instance), m_SceneManager(manager)

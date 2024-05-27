@@ -86,6 +86,8 @@ namespace proton {
 
     bool SpriteAnimation::FinishedPlaying()
     {
+        if (!m_CurrentAnimation)
+            return false;
         return m_CurrentFrame == m_CurrentAnimation->FrameCount;
     }
 

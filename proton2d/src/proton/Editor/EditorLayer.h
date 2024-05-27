@@ -13,6 +13,8 @@ namespace proton {
 
 	class EditorPanel;
 	class SceneViewportPanel;
+	class SceneHierarchyPanel;
+	class InspectorPanel;
 
 	class EditorLayer : AppLayer
 	{
@@ -28,10 +30,13 @@ namespace proton {
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& event) override;
 
-		static EditorCamera* GetCamera();
-		static SceneViewportPanel* GetSceneViewportPanel();
 		static ImFont* GetFontAwesome();
 		static ImFont* GetSmallFont();
+		static EditorCamera* GetCamera();
+
+		static SceneViewportPanel* GetSceneViewportPanel();
+		static SceneHierarchyPanel* GetSceneHierarchyPanel();
+		static InspectorPanel* GetInspectorPanel();
 
 		static void SetActiveScene(Scene* scene);
 		static void SelectEntity(Entity entity);

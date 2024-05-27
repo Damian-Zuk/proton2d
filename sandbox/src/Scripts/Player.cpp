@@ -28,22 +28,15 @@ void Player::OnRegisterFields()
 	REGISTER_FIELD(Float, m_GravityModifier);
 	REGISTER_FIELD_NET_SERIALIZE(Int, m_ClientID);
 
-	REPLICATED_DATA(m_Direction);
-	REPLICATED_DATA(m_State);
+	if (!IsNetworkPhysicsSyncEnabled())
+	{
+		REPLICATED_DATA(m_Direction);
+		REPLICATED_DATA(m_State);
+	}
 }
 
 bool Player::OnCreate()
 {
-	// Set up sprite animations
-	AddComponent<SpriteAnimationComponent>();
-	SpriteAnimation& animation = GetSpriteAnimation();
-
-	animation.Add(PlayerState_Idle, 10, AnimationPlayMode::REPEAT);
-	animation.Add(PlayerState_Run,   8, AnimationPlayMode::REPEAT);
-	animation.Add(PlayerState_Jump,  3, AnimationPlayMode::PAUSED);
-	animation.Add(PlayerState_Land,  9, AnimationPlayMode::PLAY_ONCE);
-	animation.SetFPS(12);
-
 	uint32_t localPlayerID = GetGameMode<MyGameMode>()->GetLocalPlayerID();
 	m_IsLocalPlayer = m_ClientID == localPlayerID;
 
@@ -52,7 +45,18 @@ bool Player::OnCreate()
 		GetScene()->SetPrimaryCameraEntity(*this);
 	}
 
-	if (IsRunningClient())
+	// Set up sprite animations
+	AddComponent<SpriteAnimationComponent>();
+	SpriteAnimation& animation = GetSpriteAnimation();
+
+	animation.Add(PlayerState_Idle, 10, AnimationPlayMode::REPEAT);
+	animation.Add(PlayerState_Run, 8, AnimationPlayMode::REPEAT);
+	animation.Add(PlayerState_Jump, 3, AnimationPlayMode::PAUSED);
+	animation.Add(PlayerState_Land, 9, AnimationPlayMode::PLAY_ONCE);
+	animation.SetFPS(12);
+
+	auto& net = GetComponent<NetworkComponent>();
+	if (IsRunningClient() && !IsNetworkPhysicsSyncEnabled())
 	{
 		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
 		return true;
@@ -106,18 +110,11 @@ void Player::OnUpdate(float ts)
 	// Play current animation
 	animation.Play(m_State);
 	animation.SetMirrorFlip(m_Direction < 0.0f);
-	
-	// dev
-	Renderer::BeginScene(GetScene()->GetPrimaryCamera().GetAspectRatio());
-	auto& transform = GetTransform();
-	std::string str = fmt::format("{}, {}", transform.LocalPosition.x, transform.LocalPosition.y);
-	Renderer::DrawString(str, Font::GetDefault(), Math::GetTransform({ 0, 0, 0.5f }, { 0.2f, 0.2f }, 0.0f), Renderer::TextParams{});
-	Renderer::EndScene();
 }
 
 void Player::OnPhysicsUpdate(float ts)
 {
-	if (IsRunningClient())
+	if (IsRunningClient() && !IsNetworkPhysicsSyncEnabled())
 		return;
 
 	const auto& velocity = GetComponent<VelocityComponent>().LinearVelocity;
@@ -207,7 +204,7 @@ void Player::OnImGuiRender()
 	strcpy_s(buffer, colorStr.c_str());
 	ImGui::InputText("Color", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
 	
-	if (GetScene()->IsSimulated())
+	if (GetScene()->IsPhysicsSimulated())
 	{
 		auto vel = GetLinearVelocity();
 		std::string velocity = fmt::format("{:.3f}, {:.3f}", vel.x, vel.y);

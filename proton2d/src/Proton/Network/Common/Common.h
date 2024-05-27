@@ -1,9 +1,5 @@
 #pragma once
-#include "Proton/Core/UUID.h"
 #include "Proton/Serialization/BufferStream.h"
-#include "Proton/Scene/Components.h"
-
-//class EntityScript;
 
 namespace proton {
 
@@ -23,9 +19,20 @@ namespace proton {
 
 	enum class ReplicationMode : uint8_t
 	{
-		Standard = 0,
+		Normal = 0,
 		Notify = 0,
 	};
+
+	enum class NetTranformSyncMethod : uint8_t
+	{
+		Inherit = 0,
+		None = 1,
+		Interpolate = 2,
+		Extrapolate = 3,
+		NetworkRigidbody = 4
+	};
+
+	std::string NetSyncMethodToString(NetTranformSyncMethod method);
 
 	using Server_OnPlayerActionCallback = std::function<void(BufferStreamReader& stream)>;
 	using Client_SendPlayerActionCallback = std::function<void(BufferStreamWriter& stream)>;

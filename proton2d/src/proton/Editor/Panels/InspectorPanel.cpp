@@ -1,6 +1,7 @@
 #include "ptpch.h"
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/InspectorPanel.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
@@ -12,6 +13,7 @@
 #include "Proton/Scripting/GameModeFactory.h"
 #include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Scene/EntityComponent.h"
+#include "Proton/Scene/SceneManager.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Physics/PhysicsWorld.h"
@@ -45,6 +47,12 @@ namespace proton {
 			DrawSceneProporties();
 			ImGui::End();
 			return;
+		}
+
+		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
+		{
+			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName());
+			ImGui::Dummy({ 0, 5 });
 		}
 
 		char buffer[256];
@@ -125,16 +133,6 @@ namespace proton {
 		}
 		ImGui::Columns(1);
 
-		ImGui::Dummy({ 0, 5 });
-
-		bool bNetworkComponent = m_SelectedEntity.HasComponent<NetworkComponent>();
-		if (ImGui::Checkbox("Replicated", &bNetworkComponent))
-		{
-			if (bNetworkComponent)
-				m_SelectedEntity.AddComponent<NetworkComponent>();
-			else
-				m_SelectedEntity.RemoveComponent<NetworkComponent>();
-		}
 		ImGui::Dummy({ 0, 5 });
 
 		// ******************************************************
@@ -269,7 +267,7 @@ namespace proton {
 					m_SelectedEntity.RemoveScript(scriptClassName);
 					break;
 				}
-				ImGui::Dummy({ 0.0f, 10.0f });
+				ImGui::Dummy({ 0.0f, 5.0f });
 			}
 		}
 
@@ -621,11 +619,61 @@ namespace proton {
 			});
 		}
 
+
+		// ******************************************************
+		// NetworkComponent UI
+		// ******************************************************
+		if (m_SelectedEntity.HasComponent<NetworkComponent>())
+		{
+			DrawComponentUI<NetworkComponent>("Network", [](auto& component)
+			{
+				auto RepComponent = [&](const char* label, EComponentType componentType) {
+					bool replicated = component.ComponentsToReplicate.test(componentType);
+					if (ImGui::Checkbox(label, &replicated))
+						component.ComponentsToReplicate.flip(componentType);
+				};
+
+				if (ImGui::TreeNode("Replicated components"))
+				{
+					ImGui::Dummy({ 0, 5 });
+					RepComponent("Transform", ComponentType_Transform);
+					RepComponent("Velocity", ComponentType_Velocity);
+					ImGui::TreePop();
+				}
+				ImGui::Dummy({ 0, 5 });
+
+				ImGui::PushItemWidth(150.0f);
+				if (ImGui::InputFloat("Update Rate", &component.UpdateRate))
+					component.UpdateRate = glm::clamp(component.UpdateRate, 0.0f, 1.0f);
+
+				if (ImGui::BeginCombo("Transform Sync Method", NetSyncMethodToString(component.SyncMethod).c_str()))
+				{
+					for (uint8_t i = 0; i < 5; i++)
+					{
+						auto current = (NetTranformSyncMethod)i;
+						if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), component.SyncMethod == current))
+							component.SyncMethod = current;
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::PopItemWidth();
+			});
+		}
+
 		ImGui::End();
 	}
 
 	void InspectorPanel::DrawSceneProporties()
 	{
+		if (!m_ActiveScene->m_GameInstance)
+			m_ActiveScene = Application::Get().GetGameInstance()->GetSceneManager()->GetActiveScene();
+
+		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
+		{
+			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName());
+			ImGui::Dummy({ 0, 5 });
+		}
+
 		ImGui::Text("Scene Proporties");
 		ImGui::Separator();
 		ImGui::Dummy({ 0.0f, 3.0f });
@@ -687,10 +735,8 @@ namespace proton {
 		const NetMode netMode = Application::GetGameInstance()->GetNetMode();
 		bool inheritNetMode = m_ActiveScene->m_InheritNetMode;
 
-		ImGui::Text("Net mode");
-		ImGui::SameLine();
 		ImGui::PushItemWidth(150.0f);
-		if (ImGui::BeginCombo("##net_mode", netmodeItems[!inheritNetMode]))
+		if (ImGui::BeginCombo("Net Mode", netmodeItems[!inheritNetMode]))
 		{
 			for (uint8_t i = 0; i < 2; i++)
 			{
@@ -703,7 +749,23 @@ namespace proton {
 			ImGui::EndCombo();
 		}
 		ImGui::PopItemWidth();
-		ImGui::Checkbox("Net Interpolation", &m_ActiveScene->m_EnableNetInterpolation);
+		
+		static NetTranformSyncMethod netSyncMethod;
+
+		ImGui::PushItemWidth(150.0f);
+		if (ImGui::BeginCombo("Transform Sync Method", NetSyncMethodToString(m_ActiveScene->m_NetTranformSyncMethod).c_str()))
+		{
+			for (uint8_t i = 1; i < 5; i++)
+			{
+				auto current = (NetTranformSyncMethod)i;
+				if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), m_ActiveScene->m_NetTranformSyncMethod == current))
+					m_ActiveScene->m_NetTranformSyncMethod = current;
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+
+		ImGui::SameLine();
 	}
 
 
@@ -731,13 +793,6 @@ namespace proton {
 		if (opened)
 		{
 			ImGui::Dummy({ 0.0f, 3.0f });
-			if (networkComponent && NetworkManager::s_ComponentSupportedRepBitset.test(T::TypeID()))
-			{
-				auto& bitset = networkComponent->ComponentsToReplicate;
-				bool replicated = bitset.test(T::TypeID());
-				if (ImGui::Checkbox("Network Replication", &replicated))
-					bitset.flip(T::TypeID());
-			}
 			drawContentFunction(component);
 			ImGui::TreePop();
 		}

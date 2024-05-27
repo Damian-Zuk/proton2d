@@ -40,7 +40,6 @@ namespace proton {
 
 	private:
 		void CheckNetworkResourcesRelease();
-		static void StaticInit();
 		
 	private:
 		NetMode m_NetMode = NetMode::ListenServer;
@@ -48,7 +47,7 @@ namespace proton {
 		std::string m_IpAddress = "127.0.0.1";
 		int m_Port = 8192;
 
-		uint16_t m_ServerTickRate = 32;
+		uint16_t m_ServerTickRate = 16;
 		float m_ServerTickTime = 1.0f / m_ServerTickRate;
 		float m_ServerTickElapsed = 0.0f;
 
@@ -68,10 +67,8 @@ namespace proton {
 		bool m_SaveStatsForAllClients = false;
 		uint32_t m_SaveStatsForClientID = 0;
 
-		static std::bitset<MAX_COMPONENTS> s_ComponentSupportedRepBitset;
 		static uint32_t s_NetworkServicesRunning; // across all editor's game instances (server + clients)
 		static bool s_NetworkResourcesFreed; // free resources after all network services finished running
-
 
 		friend class Application;
 		friend class Scene;

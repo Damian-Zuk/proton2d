@@ -8,31 +8,62 @@ namespace proton {
 	void NetInterpolationSystem::InterpolateAll(Scene* scene, float ts)
 	{
 		auto view = scene->m_Registry.view<NetworkComponent, TransformComponent, VelocityComponent>();
-		for (auto entity : view)
+		for (auto e : view)
 		{
-			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(entity);
-			auto& data = net.InterpolationData;
+			Entity entity(e, scene);
+			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(e);
+			auto& netTransform = net.NetTransform;
+			auto syncMethod = net.SyncMethod == NetTranformSyncMethod::Inherit ? scene->m_NetTranformSyncMethod : net.SyncMethod;
 
-			if (velocity.LinearVelocity == glm::vec2{ 0.0f } && data.NextLinearVelocity == glm::vec2{ 0.0f })
+			if (syncMethod == NetTranformSyncMethod::None)
 				continue;
 
-			float lastUpdateTime = data.UpdateTimer.Elapsed();
+			if (velocity.LinearVelocity == glm::vec2{ 0.0f } && netTransform.LinearVelocity == glm::vec2{ 0.0f })
+				continue;
 
-			if (lastUpdateTime < data.PacketDelay)
+			float lastUpdateTime = netTransform.UpdateTimer.Elapsed();
+
+			switch (syncMethod)
 			{
-				// Interpolate
-				float alpha = glm::clamp(ts / data.PacketDelay, 0.0f, 1.0f);
+			case NetTranformSyncMethod::Interpolate:
+			{
+				if (lastUpdateTime < netTransform.PacketDelay)
+				{
+					// Interpolate
+					float alpha = glm::clamp(ts / netTransform.PacketDelay, 0.0f, 1.0f);
 
-				transform.LocalPosition = glm::mix(transform.LocalPosition, data.NextPosition, alpha);
-				velocity.LinearVelocity = glm::mix(velocity.LinearVelocity, data.NextLinearVelocity, alpha);
-				transform.Rotation = glm::mix(transform.Rotation, data.NextRotation, alpha);
+					transform.LocalPosition = glm::mix(transform.LocalPosition, netTransform.Position, alpha);
+					velocity.LinearVelocity = glm::mix(velocity.LinearVelocity, netTransform.LinearVelocity, alpha);
+					transform.Rotation = glm::mix(transform.Rotation, netTransform.Rotation, alpha);
+				}
+				// Extrapolate for some time if packet did not arrive at time
+				else if (lastUpdateTime < s_ExtrapolationTimeThreshold)
+				{
+					transform.LocalPosition.x += velocity.LinearVelocity.x * ts;
+					transform.LocalPosition.y += velocity.LinearVelocity.y * ts;
+					transform.Rotation += velocity.AngularVelocity * ts;
+				}
+				break;
 			}
-			else if (lastUpdateTime < s_ExtrapolationTimeThreshold)
+			case NetTranformSyncMethod::Extrapolate:
 			{
-				// Extrapolate
-				transform.LocalPosition.x += velocity.LinearVelocity.x * ts;
-				transform.LocalPosition.y += velocity.LinearVelocity.y * ts;
-				transform.Rotation += velocity.AngularVelocity * ts;
+				if (lastUpdateTime < s_ExtrapolationTimeThreshold)
+				{
+					transform.LocalPosition.x += velocity.LinearVelocity.x * ts;
+					transform.LocalPosition.y += velocity.LinearVelocity.y * ts;
+					transform.Rotation += velocity.AngularVelocity * ts;
+				}
+				break;
+			}
+			case NetTranformSyncMethod::NetworkRigidbody:
+			{
+				//if (entity.HasComponent<RigidbodyComponent>())
+				//{
+				//	auto& rb = entity.GetComponent<RigidbodyComponent>();
+				//	rb.RuntimeBody->SetTransform({netTransform.Position.x, netTransform.Position.y}, netTransform.Rotation);
+				//}
+				break;
+			}
 			}
 		}
 	}
