@@ -189,12 +189,17 @@ namespace proton {
 					destroyed++;
 				}
 
-				uint64_t streamEnd = writer.GetStreamPosition();
+				uint64_t streamPos = writer.GetStreamPosition();
 				writer.SetStreamPosition(sizeof(PacketType));
 				writer.WriteRaw(created);
 				writer.WriteRaw(destroyed);
+				writer.SetStreamPosition(streamPos);
+
+				WriteReplicationDataToBuffer(writer, scene, false);
+				uint64_t streamEnd = writer.GetStreamPosition();
+				PT_CORE_TRACE("SendRepSync: end={}, size={}", streamPos, streamEnd);
+				
 				SendBufferToClient(message->GetConnection(), Buffer(m_ScratchBuffer, streamEnd));
-				SendReplicationUpdate(m_GameInstance->GetActiveScene(), message->GetConnection(), false);
 
 				PT_CORE_TRACE("VerifyGameState: client_id={}, created={}, destroyed={}", message->GetConnection(), created, destroyed);
 				break;
@@ -324,6 +329,29 @@ namespace proton {
 		}
 	}
 
+	void Server::SendReplicationUpdate(Scene* scene, ClientID clientID, bool verifyComponentChecksum)
+	{
+		PROFILE_FUNCTION();
+		
+		// Create buffer stream writer
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(PacketType::UpdateReplicated);
+
+		uint64_t packetStreamStart = stream.GetStreamPosition();
+		WriteReplicationDataToBuffer(stream, scene, verifyComponentChecksum);
+
+		// If anything for replication was written to buffer, send to clients
+		if (stream.GetStreamPosition() > packetStreamStart)
+		{
+			if (clientID == 0)
+				SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+			else
+				SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+		}
+
+		m_ReplicationStats.RepPacketCount++;
+	}
+
 #define BEGIN_COMPONENT_BUFFER_WRITE(__component_type)                                  \
 	if (net.ComponentsToReplicate.test(__component_type)) {                             \
 		EComponentType _component_type = __component_type;                              \
@@ -344,18 +372,12 @@ namespace proton {
 		}                                                                               \
 	}
 
-	void Server::SendReplicationUpdate(Scene* scene, ClientID clientID, bool verifyComponentChecksum)
+	void Server::WriteReplicationDataToBuffer(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum)
 	{
-		PROFILE_FUNCTION();
 		// Replicate entitites with NetworkComponent
 		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
 		if (view.empty())
 			return;
-		
-		// Create buffer stream writer
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::UpdateReplicated);
-		uint64_t packetStreamStart = stream.GetStreamPosition();
 
 		// Iterate over entities with NetworkComponent
 		for (entt::entity _entity : view)
@@ -477,7 +499,7 @@ namespace proton {
 			// Calculate buffer size
 			uint64_t entityStreamEnd = stream.GetStreamPosition();
 			entityBufferSize = entityStreamEnd - entityHeaderPos;
-			
+
 			// Write entity header
 			stream.SetStreamPosition(entityHeaderPos);
 			stream.WriteRaw(entityBufferSize);
@@ -486,17 +508,6 @@ namespace proton {
 
 			m_ReplicationStats.RepEntitiesCount++;
 		}
-
-		// If anything for replication was written to buffer, send to clients
-		if (stream.GetStreamPosition() > packetStreamStart)
-		{
-			if (clientID == 0)
-				SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-			else
-				SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-		}
-
-		m_ReplicationStats.RepPacketCount++;
 	}
 
 	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread

@@ -55,10 +55,13 @@ bool Player::OnCreate()
 	animation.Add(PlayerState_Land, 9, AnimationPlayMode::PLAY_ONCE);
 	animation.SetFPS(12);
 
-	auto& net = GetComponent<NetworkComponent>();
-	if (IsRunningClient() && !IsNetworkPhysicsSyncEnabled())
+	if (IsRunningClient())
 	{
 		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
+	}
+
+	if (IsRunningClient() && !IsNetworkPhysicsSyncEnabled())
+	{
 		return true;
 	}
 

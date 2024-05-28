@@ -120,7 +120,9 @@ namespace proton {
 		void CacheCursorWorldPosition();
 
 		void CalculateEntityWorldPosition(Entity entity, bool recalculateLocal = false);
-		void CalculateWorldPositions();
+		void CalculateWorldPositions(bool recalculateLocal = false);
+
+		void BuildPhysicsWorld();
 
 	private:
 		SceneState m_SceneState = SceneState::Stop;

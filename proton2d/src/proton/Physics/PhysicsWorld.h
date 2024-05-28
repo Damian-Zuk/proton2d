@@ -63,8 +63,8 @@ namespace proton {
 		
 		struct JointInfo
 		{
-			Entity EntityA;
-			Entity EntityB;
+			UUID EntityA_UUID;
+			UUID EntityB_UUID;
 			JointType Type;
 		};
 		std::queue<JointInfo> m_JointsCreateQueue;

@@ -78,6 +78,17 @@ namespace proton {
 			DrawNetworkStats();
 			ImGui::TreePop();
 		}
+		
+		ImGui::Dummy({ 0, 15 });
+		if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (m_ActiveScene)
+			{
+				auto& position = m_ActiveScene->GetPrimaryCameraPosition();
+				ImGui::Text("Camera Position: (%.2f, %.2f)", position.x, position.y);
+			}
+			ImGui::TreePop();
+		}
 
 		ImGui::End();
 		m_FrameCount++;

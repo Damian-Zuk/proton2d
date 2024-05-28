@@ -68,6 +68,7 @@ namespace proton {
 		void ProcessCreatedEntityQueue();
 		void ProcessDestroyedEntityQueue();
 		void SendReplicationUpdate(Scene* scene, ClientID clientID = 0, bool verifyComponentChecksum = true);
+		void WriteReplicationDataToBuffer(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum = true);
 
 		// Network statistics
 		void AllocateNetworkStatsBuffer(ClientID clientID);

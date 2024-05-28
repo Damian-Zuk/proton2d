@@ -238,6 +238,12 @@ namespace proton {
 
 		Get()->m_SelectedEntity = entity;
 
+		for (auto& panel : Get()->m_EditorPanels)
+		{
+			panel->m_SelectedEntity = entity;
+			panel->OnSelectEntity(entity);
+		}
+
 		if (!gameInstance || gameInstance->IsMainInstance())
 		{
 			// Main game instance

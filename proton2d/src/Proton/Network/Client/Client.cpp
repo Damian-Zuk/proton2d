@@ -61,6 +61,7 @@ namespace proton {
 		ProcessMessages();
 
 		Scene* scene = m_GameInstance->GetActiveScene();
+		scene->CalculateWorldPositions(true);
 		NetInterpolationSystem::InterpolateAll(scene, ts);
 	}
 
@@ -136,6 +137,7 @@ namespace proton {
 				stream.ReadRaw(created);
 				stream.ReadRaw(destroyed);
 
+				// Create missing entities
 				for (uint32_t i = 0; i < created; i++)
 				{
 					std::string jsonData;
@@ -149,6 +151,7 @@ namespace proton {
 					Entity entity = serializer.DeserializeEntity(jsonParsed);
 				}
 
+				// Destroy no longer existing entites
 				for (uint32_t i = 0; i < destroyed; i++)
 				{
 					UUID uuid;
@@ -160,6 +163,8 @@ namespace proton {
 					
 					entity.Destroy();
 				}
+				
+				UpdateReplicatedEntities(scene, stream, buffer.Size, true);
 
 				if (m_JustConnected)
 				{
@@ -168,10 +173,9 @@ namespace proton {
 					m_JustConnected = false;
 				}
 
+				PT_CORE_INFO("GameStateUpdate: created={}, destroyed={}", created, destroyed);
 				m_GameStateInitialized = true;
-				message->Release();
-				m_MessageQueue.pop();
-				return;
+				break;
 			}
 			
 			////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,6 +183,9 @@ namespace proton {
 			case PacketType::EntitySpawn:
 			{
 				PROFILE_SCOPE("PacketType::EntitySpawn");
+
+				if (!m_GameStateInitialized)
+					break;
 
 				while (stream.GetStreamPosition() < buffer.Size)
 				{
@@ -191,10 +198,9 @@ namespace proton {
 
 					SceneSerializer serializer(scene);
 					Entity entity = serializer.DeserializeEntity(jsonParsed);
+					PT_CORE_INFO("EntitySpawn: {} ({})", entity.GetTag(), entity.GetUUID());
 				}
-				message->Release();
-				m_MessageQueue.pop();
-				return;
+				break;
 			
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +208,9 @@ namespace proton {
 			case PacketType::EntityDestroy:
 			{
 				PROFILE_SCOPE("PacketType::EntityDestroy");
+
+				if (!m_GameStateInitialized)
+					break;
 
 				while (stream.GetStreamPosition() < buffer.Size)
 				{
@@ -224,123 +233,10 @@ namespace proton {
 				PROFILE_SCOPE("PacketType::UpdateReplicated");
 
 				if (!m_GameStateInitialized)
-				{
-					// Wait with replication until game state synchronized
-					m_MessageQueue.pop();
-					m_MessageQueue.push(message);
-					return;
-				}
+					break;
 
-				while (stream.GetStreamPosition() < buffer.Size - sizeof(uint64) * 2)
-				{
-					uint64_t entityStreamStart = stream.GetStreamPosition();
-					
-					uint64_t entityBufferSize;
-					std::bitset<MAX_COMPONENTS> componentBitset;
-					UUID entityUUID;
-
-					stream.ReadRaw(entityBufferSize);
-					stream.ReadRaw(componentBitset);
-					stream.ReadRaw(entityUUID);
-
-					Entity entity = scene->FindByID(entityUUID);
-
-					if (!entity.IsValid())
-					{
-						stream.SetStreamPosition(entityStreamStart + entityBufferSize);
-						continue;
-					}
-
-					if (!entity.HasComponent<NetworkComponent>())
-					{
-						stream.SetStreamPosition(entityStreamStart + entityBufferSize);
-						continue;
-					}
-
-					auto& net = entity.GetComponent<NetworkComponent>();
-					auto syncMethod = net.SyncMethod == NetTranformSyncMethod::Inherit ? scene->m_NetTranformSyncMethod : net.SyncMethod;
-					bool updateTransformImmediately = syncMethod == NetTranformSyncMethod::None || syncMethod == NetTranformSyncMethod::Extrapolate;
-					bool updateTransformStateTimer = false;
-
-					// TransformComponent
-					if (componentBitset.test(ComponentType_Transform))
-					{
-						auto& position = net.NetTransform.Position;
-						auto& rotation = net.NetTransform.Rotation;
-						
-						stream.ReadRaw(position);
-						stream.ReadRaw(rotation);
-						
-						if (updateTransformImmediately)
-						{
-							auto& transform = entity.GetTransform();
-							transform.LocalPosition.x = position.x;
-							transform.LocalPosition.y = position.y;
-							transform.Rotation = rotation;
-						}
-
-						updateTransformStateTimer = true;
-					}
-
-					// VelocityComponent
-					if (componentBitset.test(ComponentType_Velocity))
-					{
-						auto& linearVelocity = net.NetTransform.LinearVelocity;
-						auto& angularVelocity = net.NetTransform.AngularVelocity;
-
-						stream.ReadRaw(linearVelocity);
-						stream.ReadRaw(angularVelocity);
-
-						if (updateTransformImmediately)
-						{
-							auto& velocity = entity.GetComponent<VelocityComponent>();
-							velocity.LinearVelocity = linearVelocity;
-							velocity.AngularVelocity = angularVelocity;
-						}
-
-						updateTransformStateTimer = true;
-					}
-
-					// ScriptComponent
-					if (componentBitset.test(ComponentType_Script))
-					{
-						auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-						uint32_t scriptCount;
-						stream.ReadRaw(scriptCount);
-
-						// For each script
-						for (uint32_t i = 0; i < scriptCount; i++)
-						{
-							uint32_t fieldCount;
-							uint32_t scriptIndex;
-
-							stream.ReadRaw(fieldCount);
-							stream.ReadRaw(scriptIndex);
-
- 							auto& script = net.ReplicatedScripts.at(scriptIndex);
-
-							// For each script field
-							for (uint32_t j = 0; j < fieldCount; j++)
-							{
-								uint32_t fieldIndex;
-								stream.ReadRaw(fieldIndex);
-
-								auto& field = script.ReplicatedFields.at(fieldIndex);
-								stream.ReadData((char*)field.Data, field.Size);
-
-								// Call notify function
-								if (field.NotifyFunction)
-									field.NotifyFunction(&entity);
-							}
-						}
-					}
-
-					if (updateTransformStateTimer)
-					{
-						net.NetTransform.PacketDelay = net.NetTransform.UpdateTimer.Elapsed();
-						net.NetTransform.UpdateTimer.Reset();
-					}
-				}
+				UpdateReplicatedEntities(scene, stream, buffer.Size);
+				
 				break;
 			}
 
@@ -353,6 +249,122 @@ namespace proton {
 			// Free message buffer
 			message->Release();
 			m_MessageQueue.pop();
+		}
+	}
+
+	void Client::UpdateReplicatedEntities(Scene* scene, BufferStreamReader& stream, uint64_t bufferSize, bool updateTransformNow)
+	{
+		while (stream.GetStreamPosition() < bufferSize - sizeof(uint64) * 2)
+		{
+			uint64_t entityStreamStart = stream.GetStreamPosition();
+
+			uint64_t entityBufferSize;
+			std::bitset<MAX_COMPONENTS> componentBitset;
+			UUID entityUUID;
+
+			stream.ReadRaw(entityBufferSize);
+			stream.ReadRaw(componentBitset);
+			stream.ReadRaw(entityUUID);
+
+			// Find entity
+			Entity entity = scene->FindByID(entityUUID);
+
+			if (!entity.IsValid())
+			{
+				stream.SetStreamPosition(entityStreamStart + entityBufferSize);
+				continue;
+			}
+
+			if (!entity.HasComponent<NetworkComponent>())
+			{
+				stream.SetStreamPosition(entityStreamStart + entityBufferSize);
+				continue;
+			}
+
+			auto& net = entity.GetComponent<NetworkComponent>();
+			auto syncMethod = net.SyncMethod == NetTranformSyncMethod::Inherit ? scene->m_NetTranformSyncMethod : net.SyncMethod;
+			bool updateTransformImmediately = updateTransformNow || 
+				syncMethod == NetTranformSyncMethod::None || syncMethod == NetTranformSyncMethod::Extrapolate;
+			bool updateTransformStateTimer = false;
+
+			// TransformComponent
+			if (componentBitset.test(ComponentType_Transform))
+			{
+				auto& position = net.NetTransform.Position;
+				auto& rotation = net.NetTransform.Rotation;
+
+				stream.ReadRaw(position);
+				stream.ReadRaw(rotation);
+
+				if (updateTransformImmediately)
+				{
+					auto& transform = entity.GetTransform();
+					transform.LocalPosition.x = position.x;
+					transform.LocalPosition.y = position.y;
+					transform.Rotation = rotation;
+				}
+
+				updateTransformStateTimer = true;
+			}
+
+			// VelocityComponent
+			if (componentBitset.test(ComponentType_Velocity))
+			{
+				auto& linearVelocity = net.NetTransform.LinearVelocity;
+				auto& angularVelocity = net.NetTransform.AngularVelocity;
+
+				stream.ReadRaw(linearVelocity);
+				stream.ReadRaw(angularVelocity);
+
+				if (updateTransformImmediately)
+				{
+					auto& velocity = entity.GetComponent<VelocityComponent>();
+					velocity.LinearVelocity = linearVelocity;
+					velocity.AngularVelocity = angularVelocity;
+				}
+
+				updateTransformStateTimer = true;
+			}
+
+			// ScriptComponent
+			if (componentBitset.test(ComponentType_Script))
+			{
+				auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+				uint32_t scriptCount;
+				stream.ReadRaw(scriptCount);
+
+				// For each script
+				for (uint32_t i = 0; i < scriptCount; i++)
+				{
+					uint32_t fieldCount;
+					uint32_t scriptIndex;
+
+					stream.ReadRaw(fieldCount);
+					stream.ReadRaw(scriptIndex);
+
+					auto& script = net.ReplicatedScripts.at(scriptIndex);
+
+					// For each script field
+					for (uint32_t j = 0; j < fieldCount; j++)
+					{
+						uint32_t fieldIndex;
+						stream.ReadRaw(fieldIndex);
+
+						auto& field = script.ReplicatedFields.at(fieldIndex);
+						stream.ReadData((char*)field.Data, field.Size);
+
+						// Call notify function
+						if (field.NotifyFunction)
+							field.NotifyFunction(&entity);
+					}
+				}
+			}
+
+			if (updateTransformStateTimer)
+			{
+				net.NetTransform.PacketDelay = net.NetTransform.UpdateTimer.Elapsed();
+				net.NetTransform.UpdateTimer.Reset();
+			}
 		}
 	}
 

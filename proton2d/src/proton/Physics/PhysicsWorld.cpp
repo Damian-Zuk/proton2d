@@ -36,7 +36,7 @@ namespace proton {
 
 	b2Body* PhysicsWorld::CreateRuntimeBody(Entity entity)
 	{
-		auto& uuid = entity.GetComponent<IDComponent>().ID;
+		auto uuid = entity.GetUUID();
 		if (m_RuntimeBodies.find(uuid) != m_RuntimeBodies.end())
 		{
 			PT_CORE_ASSERT(false, "Physics runtime body already exists!");
@@ -53,7 +53,7 @@ namespace proton {
 
 		b2Body* body = m_World->CreateBody(&bodyDef);
 		body->SetFixedRotation(rb.FixedRotation);
-		m_RuntimeBodies[entity.GetUUID()] = body;
+		m_RuntimeBodies[uuid] = body;
 		rb.RuntimeBody = body;
 
 		AddFixtureToRuntimeBody(entity, body);
@@ -62,7 +62,7 @@ namespace proton {
 		if (rb.AttachToParent && hierarchy.Parent != entt::null)
 		{
 			Entity parent(hierarchy.Parent, m_Scene);
-			m_JointsCreateQueue.push({ entity, parent, JointType::Revolute });
+			m_JointsCreateQueue.push({ uuid, parent.GetUUID(), JointType::Revolute});
 		}
 		
 		return body;
@@ -152,7 +152,7 @@ namespace proton {
 		for (entt::entity entity : m_Scene->m_Registry.view<RigidbodyComponent>())
 			CreateRuntimeBody(Entity{ entity, m_Scene });
 
-		// Add to colliders to parent's body
+		// Add colliders to parent's body
 		auto viewBoxes = m_Scene->m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>);
 		for (entt::entity e : viewBoxes)
 		{
@@ -177,7 +177,7 @@ namespace proton {
 			AddFixtureToRuntimeBody(entity, body, true);
 		}
 
-		// Add to colliders to parent's body
+		// Add colliders to parent's body
 		auto viewCircles = m_Scene->m_Registry.view<CircleColliderComponent>(entt::exclude<RigidbodyComponent, BoxColliderComponent>);
 		for (entt::entity e : viewCircles)
 		{
@@ -222,21 +222,36 @@ namespace proton {
 		{
 			const JointInfo& info = m_JointsCreateQueue.front();
 
-			if (!info.EntityA.HasComponent<RigidbodyComponent>())
+			Entity entityA = m_Scene->FindByID(info.EntityA_UUID);
+			Entity entityB = m_Scene->FindByID(info.EntityB_UUID);
+
+			if (!entityA)
 			{
-				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityA.GetUUID(), info.EntityA.GetTag());
+				PT_CORE_ERROR("Failed to create joint: Entity: {} not found!", info.EntityA_UUID);
 				continue;
 			}
 
-			if (!info.EntityB.HasComponent<RigidbodyComponent>())
+			if (!entityB)
 			{
-				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityB.GetUUID(), info.EntityB.GetTag());
+				PT_CORE_ERROR("Failed to create joint: Entity: {} not found!", info.EntityB_UUID);
 				continue;
 			}
 
-			auto& rbA = info.EntityA.GetComponent<RigidbodyComponent>();
-			auto& rbB = info.EntityB.GetComponent<RigidbodyComponent>();
-			auto& transform = info.EntityA.GetTransform();
+			if (!entityA.HasComponent<RigidbodyComponent>())
+			{
+				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityA_UUID, entityA.GetTag());
+				continue;
+			}
+
+			if (!entityB.HasComponent<RigidbodyComponent>())
+			{
+				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityB_UUID, entityB.GetTag());
+				continue;
+			}
+
+			auto& rbA = entityA.GetComponent<RigidbodyComponent>();
+			auto& rbB = entityB.GetComponent<RigidbodyComponent>();
+			auto& transform = entityA.GetTransform();
 
 			switch (info.Type)
 			{

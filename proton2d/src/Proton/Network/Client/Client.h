@@ -15,6 +15,7 @@ namespace proton {
 
 	// Forward declarations
 	class GameInstance;
+	class Scene;
 	class NetworkManager;
 	class NetInterpolationSystem;
 
@@ -41,6 +42,7 @@ namespace proton {
 		void SendPlayerAction(Client_SendPlayerActionCallback sendFunction);
 
 		void ProcessMessages();
+		void UpdateReplicatedEntities(Scene* scene, BufferStreamReader& stream, uint64_t bufferSize, bool updateTransformNow = false);
 
 		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
 		

@@ -222,12 +222,19 @@ namespace proton {
 		CalculateWorldPositions();
 
 		if (m_EnablePhysics)
-			m_PhysicsWorld->BuildWorld();
+			BuildPhysicsWorld();
 
 		if (m_GameMode)
 			m_GameMode->OnCreate();
 
 		m_PhysicsTimer = 0.0f;
+	}
+
+
+	void Scene::BuildPhysicsWorld()
+	{
+		if (!m_PhysicsWorld->IsInitialized())
+			m_PhysicsWorld->BuildWorld();
 	}
 
 	void Scene::Pause(bool pause)
@@ -247,7 +254,7 @@ namespace proton {
 			m_PhysicsWorld->DestroyWorld();
 
 		m_GameMode->OnDestroy();
-		m_GameMode = GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);;
+		m_GameMode = GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
 
 		m_SceneState = SceneState::Stop;
 		m_GameInstance->OnSceneSimulationStop(this);
@@ -502,10 +509,10 @@ namespace proton {
 		}
 	}
 
-	void Scene::CalculateWorldPositions()
+	void Scene::CalculateWorldPositions(bool recalculateLocal)
 	{
 		for (auto& entity : m_Root)
-			CalculateEntityWorldPosition(entity);
+			CalculateEntityWorldPosition(entity, recalculateLocal);
 	}
 
 	void Scene::SetGameModeByClassName(const std::string& gameModeClassName)
@@ -550,6 +557,12 @@ namespace proton {
 				auto& animation = view.get<SpriteAnimationComponent>(entity).SpriteAnimation;
 				animation.Update(ts);
 			}
+		}
+		else
+		{
+			CalculateWorldPositions();
+			CachePrimaryCameraPosition();
+			CacheCursorWorldPosition();
 		}
 
 		RenderScene(GetPrimaryCamera());
