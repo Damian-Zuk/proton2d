@@ -3,14 +3,14 @@ using namespace proton;
 
 #include "Platform.h"
 
-
 void RedPlatform::OnRegisterFields()
 {
-	RegisterField(ScriptFieldType::Float, "VanishAfter", &m_VanishAfter);
-	RegisterField(ScriptFieldType::Float, "VanishTime", &m_VanishTime);
+	REGISTER_FIELD(Float, m_VanishAfter);
+	REGISTER_FIELD(Float, m_VanishTime);
 
 	REPLICATED_DATA(m_EnableCollision, [this](Entity* entity) {
-		GetColor().a = m_EnableCollision ? 1.0f : 0.33f;
+		auto& color = GetColor();
+		color.a = m_EnableCollision ? 1.0f : 0.33f;
 	});
 }
 

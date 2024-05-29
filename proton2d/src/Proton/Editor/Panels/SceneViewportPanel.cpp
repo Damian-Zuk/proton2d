@@ -90,7 +90,7 @@ namespace proton {
 		bool isFocused = ImGui::IsWindowFocused();
 		if (isFocused != m_IsViewportFocused)
 		{
-			if (isFocused)
+			if (isFocused && EditorLayer::Get()->m_FocusedGameInstance != m_GameInstance)
 			{
 				EditorLayer::Get()->m_FocusedGameInstance = m_GameInstance;
 

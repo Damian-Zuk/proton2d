@@ -735,7 +735,7 @@ namespace proton {
 		const NetMode netMode = Application::GetGameInstance()->GetNetMode();
 		bool inheritNetMode = m_ActiveScene->m_InheritNetMode;
 
-		ImGui::PushItemWidth(150.0f);
+		ImGui::PushItemWidth(160.0f);
 		if (ImGui::BeginCombo("Net Mode", netmodeItems[!inheritNetMode]))
 		{
 			for (uint8_t i = 0; i < 2; i++)
@@ -748,12 +748,10 @@ namespace proton {
 			}
 			ImGui::EndCombo();
 		}
-		ImGui::PopItemWidth();
 		
 		static NetTranformSyncMethod netSyncMethod;
 
-		ImGui::PushItemWidth(150.0f);
-		if (ImGui::BeginCombo("Transform Sync Method", NetSyncMethodToString(m_ActiveScene->m_NetTranformSyncMethod).c_str()))
+		if (ImGui::BeginCombo("Client Sync Method", NetSyncMethodToString(m_ActiveScene->m_NetTranformSyncMethod).c_str()))
 		{
 			for (uint8_t i = 1; i < 5; i++)
 			{
@@ -763,6 +761,12 @@ namespace proton {
 			}
 			ImGui::EndCombo();
 		}
+
+		ImGui::Dummy({ 0, 5 });
+		ImGui::InputFloat("Extrapolation Time Threshold", &m_ActiveScene->m_NetExtrapolationTimeThreshold, 0.01f);
+		ImGui::InputFloat("Reconciliation Threshold", &m_ActiveScene->m_NetReconciliationThreshold, 0.001f);
+		ImGui::InputFloat("Reconciliation Time", &m_ActiveScene->m_NetReconciliationTime, 0.001f);
+
 		ImGui::PopItemWidth();
 
 		ImGui::SameLine();

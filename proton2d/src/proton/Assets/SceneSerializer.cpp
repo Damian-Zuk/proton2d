@@ -56,7 +56,9 @@ namespace proton {
 			{ "PositionIterations", m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations },
 			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } },
 			{ "InheritNetMode",     m_Scene->m_InheritNetMode },
-			{ "EnableNetInterpolation", m_Scene->m_EnableNetInterpolation }
+			{ "ExtrapolationTimeThreshold", m_Scene->m_NetExtrapolationTimeThreshold },
+			{ "ReconciliationThreshold", m_Scene->m_NetReconciliationThreshold },
+			{ "ReconciliationTime", m_Scene->m_NetReconciliationTime }
 		};
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
@@ -85,8 +87,14 @@ namespace proton {
 		if (jsonObj.contains("InheritNetMode"))
 			m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
 
-		if (jsonObj.contains("EnableNetInterpolation"))
-			m_Scene->m_EnableNetInterpolation = jsonObj.at("EnableNetInterpolation");
+		if (jsonObj.contains("ExtrapolationTimeThreshold"))
+			m_Scene->m_NetExtrapolationTimeThreshold = jsonObj.at("ExtrapolationTimeThreshold");
+
+		if (jsonObj.contains("ReconciliationThreshold"))
+			m_Scene->m_NetReconciliationThreshold = jsonObj.at("ReconciliationThreshold");
+
+		if (jsonObj.contains("ReconciliationTime"))
+			m_Scene->m_NetReconciliationTime = jsonObj.at("ReconciliationTime");
 
 		if (jsonObj.contains("GameModeClass"))
 			m_Scene->SetGameModeByClassName(jsonObj.at("GameModeClass"));

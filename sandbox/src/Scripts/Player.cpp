@@ -26,7 +26,7 @@ void Player::OnRegisterFields()
 	REGISTER_FIELD(Float, m_PlayerAcceleration);
 	REGISTER_FIELD(Float, m_JumpForce);
 	REGISTER_FIELD(Float, m_GravityModifier);
-	REGISTER_FIELD_NET_SERIALIZE(Int, m_ClientID);
+	REGISTER_FIELD(Int, m_ClientID);
 
 	if (!IsNetworkPhysicsSyncEnabled())
 	{
@@ -55,16 +55,6 @@ bool Player::OnCreate()
 	animation.Add(PlayerState_Land, 9, AnimationPlayMode::PLAY_ONCE);
 	animation.SetFPS(12);
 
-	if (IsRunningClient())
-	{
-		PT_TRACE("ClientID={}, IsLocalPlayer={}", m_ClientID, m_IsLocalPlayer);
-	}
-
-	if (IsRunningClient() && !IsNetworkPhysicsSyncEnabled())
-	{
-		return true;
-	}
-
 	if (IsRunningServer())
 	{
 		GetGameModeBase()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
@@ -72,12 +62,15 @@ bool Player::OnCreate()
 		});
 	}
 
-	// Set physics sensors to following child entities
-	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
-	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
-	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
+	if (GetScene()->IsPhysicsSimulated())
+	{
+		// Set physics sensors to following child entities
+		SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
+		SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
+		SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
 
-	m_Wheel = FindChildByTag("Wheel").GetRuntimeBody();
+		m_Wheel = FindChildByTag("Wheel").GetRuntimeBody();
+	}
 
 	return true;
 }
@@ -117,9 +110,6 @@ void Player::OnUpdate(float ts)
 
 void Player::OnPhysicsUpdate(float ts)
 {
-	if (IsRunningClient() && !IsNetworkPhysicsSyncEnabled())
-		return;
-
 	const auto& velocity = GetComponent<VelocityComponent>().LinearVelocity;
 
 	// Set player direction (right: 1.0, left: -1.0f)

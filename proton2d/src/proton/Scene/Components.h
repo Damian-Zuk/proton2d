@@ -236,6 +236,9 @@ namespace proton {
 			float PacketDelay;
 			Timer UpdateTimer;
 
+			bool ReconciliationStarted = false;
+			Timer ReconciliationTimer;
+
 		} NetTransform;
 
 		struct ReplicatedScript

@@ -17,12 +17,6 @@ namespace proton {
 		Disconnected = 1
 	};
 
-	enum class ReplicationMode : uint8_t
-	{
-		Normal = 0,
-		Notify = 0,
-	};
-
 	enum class NetTranformSyncMethod : uint8_t
 	{
 		Inherit = 0,

@@ -3,10 +3,11 @@
 
 namespace proton {
 
-	class NetInterpolationSystem
+	class NetClientTransformSyncSystem
 	{
 	public:
-		static void InterpolateAll(Scene* scene, float ts);
+		static void Update(Scene* scene, float ts);
+		static void UpdatePhysics(Scene* scene, float ts);
 
 	private:
 		static float s_ExtrapolationTimeThreshold;

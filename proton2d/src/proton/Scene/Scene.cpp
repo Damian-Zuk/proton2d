@@ -14,6 +14,7 @@
 #include "Proton/UI/UIElement.h"
 
 #include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/Client/NetClientTransformSyncSystem.h"
 #include "Proton/Network/Server/Server.h"
 
 #ifdef PT_EDITOR
@@ -114,8 +115,12 @@ namespace proton {
 		Shared<Scene> newScene = MakeShared<Scene>(m_SceneName, m_SceneFilepath, m_GameModeClassName);
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
-		newScene->m_EnableNetInterpolation = m_EnableNetInterpolation;
+		newScene->m_PhysicsTimestep = m_PhysicsTimestep;
+
 		newScene->m_NetTranformSyncMethod = m_NetTranformSyncMethod;
+		newScene->m_NetExtrapolationTimeThreshold = m_NetExtrapolationTimeThreshold;
+		newScene->m_NetReconciliationThreshold = m_NetReconciliationThreshold;
+		newScene->m_NetReconciliationTime = m_NetReconciliationTime;
 
 		if (gameInstance)
 			newScene->m_GameInstance = gameInstance;
@@ -536,6 +541,8 @@ namespace proton {
 
 			if (isPhysicsTick)
 			{
+				if (m_GameInstance->GetNetworkManager()->IsNetModeClient())
+					NetClientTransformSyncSystem::UpdatePhysics(this, m_PhysicsTimer);
 				m_PhysicsWorld->Update(m_PhysicsTimer);
 			}
 

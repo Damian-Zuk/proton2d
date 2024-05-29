@@ -98,10 +98,10 @@ namespace proton {
 	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
 
 #define REGISTER_FIELD(type, field, ...) \
-	RegisterField(ScriptFieldType::type, #field, &field, __VA_ARGS__);
-
-#define REGISTER_FIELD_NET_SERIALIZE(type, field, ...) \
 	RegisterField(ScriptFieldType::type, #field, &field, true, true);
+
+#define REGISTER_FIELD_NO_NET_SERIALIZE(type, field, ...) \
+	RegisterField(ScriptFieldType::type, #field, &field, __VA_ARGS__);
 
 #define REPLICATED_FIELD(field, ...) \
 	SetReplicatedField(#field, __VA_ARGS__)

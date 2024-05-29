@@ -2,7 +2,7 @@
 #include "Proton/Network/Client/Client.h"
 #include "Proton/Network/Common/PacketType.h"
 #include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Client/NetInterpolationSystem.h"
+#include "Proton/Network/Client/NetClientTransformSyncSystem.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Assets/SceneSerializer.h"
@@ -62,7 +62,7 @@ namespace proton {
 
 		Scene* scene = m_GameInstance->GetActiveScene();
 		scene->CalculateWorldPositions(true);
-		NetInterpolationSystem::InterpolateAll(scene, ts);
+		NetClientTransformSyncSystem::Update(scene, ts);
 	}
 
 	void Client::OnDataReceived(ISteamNetworkingMessage* incomingMessage)

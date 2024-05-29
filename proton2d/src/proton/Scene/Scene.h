@@ -157,9 +157,11 @@ namespace proton {
 		glm::vec2 m_CursorWorldPosition = { 0.0f, 0.0f };
 
 		// Network
-		NetTranformSyncMethod m_NetTranformSyncMethod = NetTranformSyncMethod::None;
 		bool m_InheritNetMode = true;
-		bool m_EnableNetInterpolation = true;
+		NetTranformSyncMethod m_NetTranformSyncMethod = NetTranformSyncMethod::NetworkRigidbody;
+		float m_NetExtrapolationTimeThreshold = 0.5f;
+		float m_NetReconciliationThreshold = 0.1f;
+		float m_NetReconciliationTime = 0.1f;
 
 		friend class Application;
 		friend class Entity;
@@ -170,7 +172,7 @@ namespace proton {
 		friend class GameInstance;
 		friend class GameModeBase;
 		friend class NetworkManager;
-		friend class NetInterpolationSystem;
+		friend class NetClientTransformSyncSystem;
 		friend class Server;
 		friend class Client;
 		

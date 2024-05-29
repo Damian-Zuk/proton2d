@@ -78,6 +78,7 @@ namespace proton {
 		friend class Scene;
 		friend class SceneSerializer;
 		friend class Entity;
+		friend class NetClientTransformSyncSystem;
 
 		friend class EditorLayer;
 		friend class ToolbarPanel;

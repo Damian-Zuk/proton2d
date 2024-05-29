@@ -28,17 +28,15 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Project", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			ImGui::Text("Start Scene");
-			ImGui::SameLine();
 			ImGui::PushItemWidth(120.0f);
-			if (ImGui::InputText("##start_scene", buffer, 256))
+			if (ImGui::InputText("Start Scene", buffer, 256))
 			{
 				project.m_StartScene = buffer;
 			}
 			ImGui::PopItemWidth();
 		
 			ImGui::SameLine();
-			if (ImGui::Button("Set"))
+			if (ImGui::Button("Apply"))
 			{
 				project.WriteProjectSettings();
 			}
@@ -53,10 +51,8 @@ namespace proton {
 			constexpr char* netModesNames[] = { "Standalone", "Listen Server" };
 			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
 
-			ImGui::Text("Net Mode");
-			ImGui::SameLine();
 			ImGui::PushItemWidth(150.0f);
-			if (ImGui::BeginCombo("##net_mode", netModesNames[(uint8_t)netMode]))
+			if (ImGui::BeginCombo("Net Mode", netModesNames[(uint8_t)netMode]))
 			{
 				for (uint8_t i = 0; i < 2; i++)
 				{
@@ -74,7 +70,7 @@ namespace proton {
 			{
 				int numClients = EditorLayer::Get()->m_NetNumClients;
 				int count = numClients;
-				ImGui::PushItemWidth(120.0f);
+				ImGui::PushItemWidth(150.0f);
 				if (ImGui::InputInt("Number of Clients", &count, 1, 1))
 				{
 					if (count > numClients)
