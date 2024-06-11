@@ -20,6 +20,7 @@ namespace proton {
 
 		friend class EditorLayer;
 		friend class SceneViewportPanel;
+		friend class SettingsPanel;
 	};
 
 }

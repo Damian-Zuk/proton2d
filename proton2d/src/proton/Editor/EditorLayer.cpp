@@ -227,35 +227,39 @@ namespace proton {
 
 	void EditorLayer::SelectEntity(Entity entity)
 	{
-		// Used to check if selected entity on main game instance or client game instance
+		// Main game instance or client game instance
 		GameInstance* gameInstance = nullptr;
 
-		// Make entity unselect in client game instance possible
-		if (Get()->m_SelectedEntity && !entity)
-			gameInstance = Get()->m_SelectedEntity.GetScene()->m_GameInstance;
-		else if (entity && entity.GetScene())
-			gameInstance = entity.GetScene()->m_GameInstance;
-
-		Get()->m_SelectedEntity = entity;
-
-		for (auto& panel : Get()->m_EditorPanels)
+		if (entity)
 		{
-			panel->m_SelectedEntity = entity;
-			panel->OnSelectEntity(entity);
+			// On select entity 
+			Scene* scene = entity.GetScene();
+			gameInstance = scene->m_GameInstance;
+		}
+		else
+		{
+			// On deselect entity
+			Entity selectedEntity = s_Panels.Inspector.m_SelectedEntity;
+			if (!selectedEntity)
+				return;
+
+			gameInstance = selectedEntity.GetScene()->m_GameInstance;
 		}
 
+		// Main game instance
 		if (!gameInstance || gameInstance->IsMainInstance())
 		{
-			// Main game instance
+			Get()->m_SelectedEntity = entity;
+
 			for (auto& panel : Get()->m_EditorPanels)
 			{
 				panel->m_SelectedEntity = entity;
 				panel->OnSelectEntity(entity);
 			}
 		}
+		// Client game instance
 		else
 		{
-			// Client game instance
 			Scene* scene = entity.GetScene();
 			s_Panels.Inspector.m_SelectedEntity = entity;
 			s_Panels.SceneHiearchy.m_SelectedEntity = entity;

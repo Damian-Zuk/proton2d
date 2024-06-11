@@ -160,8 +160,8 @@ namespace proton {
 		bool m_InheritNetMode = true;
 		NetTranformSyncMethod m_NetTranformSyncMethod = NetTranformSyncMethod::NetworkRigidbody;
 		float m_NetExtrapolationTimeThreshold = 0.5f;
-		float m_NetReconciliationThreshold = 0.1f;
-		float m_NetReconciliationTime = 0.1f;
+		float m_NetReconcileThreshold = 0.1f;
+		float m_NetReconcileTime = 0.1f;
 
 		friend class Application;
 		friend class Entity;

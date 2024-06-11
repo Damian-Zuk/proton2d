@@ -119,8 +119,8 @@ namespace proton {
 
 		newScene->m_NetTranformSyncMethod = m_NetTranformSyncMethod;
 		newScene->m_NetExtrapolationTimeThreshold = m_NetExtrapolationTimeThreshold;
-		newScene->m_NetReconciliationThreshold = m_NetReconciliationThreshold;
-		newScene->m_NetReconciliationTime = m_NetReconciliationTime;
+		newScene->m_NetReconcileThreshold = m_NetReconcileThreshold;
+		newScene->m_NetReconcileTime = m_NetReconcileTime;
 
 		if (gameInstance)
 			newScene->m_GameInstance = gameInstance;

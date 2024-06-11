@@ -51,7 +51,7 @@ namespace proton {
 
 		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
 		{
-			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName());
+			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName().c_str());
 			ImGui::Dummy({ 0, 5 });
 		}
 
@@ -670,7 +670,7 @@ namespace proton {
 
 		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
 		{
-			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName());
+			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName().c_str());
 			ImGui::Dummy({ 0, 5 });
 		}
 
@@ -735,7 +735,7 @@ namespace proton {
 		const NetMode netMode = Application::GetGameInstance()->GetNetMode();
 		bool inheritNetMode = m_ActiveScene->m_InheritNetMode;
 
-		ImGui::PushItemWidth(160.0f);
+		ImGui::PushItemWidth(180.0f);
 		if (ImGui::BeginCombo("Net Mode", netmodeItems[!inheritNetMode]))
 		{
 			for (uint8_t i = 0; i < 2; i++)
@@ -763,9 +763,9 @@ namespace proton {
 		}
 
 		ImGui::Dummy({ 0, 5 });
-		ImGui::InputFloat("Extrapolation Time Threshold", &m_ActiveScene->m_NetExtrapolationTimeThreshold, 0.01f);
-		ImGui::InputFloat("Reconciliation Threshold", &m_ActiveScene->m_NetReconciliationThreshold, 0.001f);
-		ImGui::InputFloat("Reconciliation Time", &m_ActiveScene->m_NetReconciliationTime, 0.001f);
+		ImGui::InputFloat("Extrapolate Time Threshold", &m_ActiveScene->m_NetExtrapolationTimeThreshold, 0.01f);
+		ImGui::InputFloat("Reconcile Threshold", &m_ActiveScene->m_NetReconcileThreshold, 0.001f);
+		ImGui::InputFloat("Reconcile Time", &m_ActiveScene->m_NetReconcileTime, 0.001f);
 
 		ImGui::PopItemWidth();
 

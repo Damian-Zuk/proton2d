@@ -26,14 +26,14 @@ namespace proton {
 			if (velocity.LinearVelocity == glm::vec2{ 0.0f } && netTransform.LinearVelocity == glm::vec2{ 0.0f })
 				continue;
 
-			float lastUpdateTime = netTransform.UpdateTimer.Elapsed();
+			float elapsed = netTransform.UpdateTimer.Elapsed();
 
 			// Synchronize with Server State
 			switch (syncMethod)
 			{
 			case NetTranformSyncMethod::Interpolate:
 			{
-				if (lastUpdateTime < netTransform.PacketDelay)
+				if (elapsed < netTransform.PacketDelay)
 				{
 					// Interpolate
 					float alpha = glm::clamp(ts / netTransform.PacketDelay, 0.0f, 1.0f);
@@ -43,7 +43,7 @@ namespace proton {
 					transform.Rotation = glm::mix(transform.Rotation, netTransform.Rotation, alpha);
 				}
 				// Extrapolate for some time if packet did not arrive at time
-				else if (lastUpdateTime < scene->m_NetExtrapolationTimeThreshold)
+				else if (elapsed < scene->m_NetExtrapolationTimeThreshold)
 				{
 					transform.LocalPosition.x += velocity.LinearVelocity.x * ts;
 					transform.LocalPosition.y += velocity.LinearVelocity.y * ts;
@@ -53,7 +53,7 @@ namespace proton {
 			}
 			case NetTranformSyncMethod::Extrapolate:
 			{
-				if (lastUpdateTime < scene->m_NetExtrapolationTimeThreshold)
+				if (elapsed < scene->m_NetExtrapolationTimeThreshold)
 				{
 					transform.LocalPosition.x += velocity.LinearVelocity.x * ts;
 					transform.LocalPosition.y += velocity.LinearVelocity.y * ts;
@@ -91,28 +91,35 @@ namespace proton {
 			if (!rb.RuntimeBody)
 				continue;
 
-			if (!net.NetTransform.ReconciliationStarted)
+			if (!net.NetTransform.ReconcileStarted)
 			{
 				float distance = glm::distance(
 					glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
 					glm::vec2{ netTransform.Position.x, netTransform.Position.y }
 				);
 
-				if (distance >= scene->m_NetReconciliationThreshold * glm::length(velocity.LinearVelocity))
+				if (distance >= scene->m_NetReconcileThreshold)
 				{
-					net.NetTransform.ReconciliationStarted = true;
-					net.NetTransform.ReconciliationTimer.Reset();
+					if (entity.GetTag() == "Player")
+					{
+						_PT_CORE_TRACE("Start reconcile, distance={}", distance);
+					}
+					net.NetTransform.ReconcileStarted = true;
+					net.NetTransform.ReconcileTimer.Reset();
+					rb.RuntimeBody->SetGravityScale(0.0f);
+					//rb.RuntimeBody->
 				}
 			}
 
-			if (net.NetTransform.ReconciliationStarted)
+			if (net.NetTransform.ReconcileStarted)
 			{
-				if (net.NetTransform.ReconciliationTimer.Elapsed() <= scene->m_NetReconciliationTime)
+				float elapsed = net.NetTransform.ReconcileTimer.Elapsed();
+				if (elapsed <= scene->m_NetReconcileTime)
 				{
-					float alpha = glm::clamp(4.0f * ts / scene->m_NetReconciliationTime, 0.0f, 1.0f);
+					float alpha = glm::clamp((elapsed / scene->m_NetReconcileTime), 0.0f, 1.0f);
 
-					glm::vec3 newPosition = glm::mix(transform.WorldPosition, netTransform.Position, alpha);
-					glm::vec2 newLinearVelocity = glm::mix(velocity.LinearVelocity, netTransform.LinearVelocity, alpha);
+					glm::vec3 newPosition = glm::mix(netTransform.OldPosition, netTransform.Position, alpha);
+					glm::vec2 newLinearVelocity = glm::mix(netTransform.OldLinearVelocity, netTransform.LinearVelocity, alpha);
 					//float newRotation = glm::mix(transform.Rotation, netTransform.Rotation, alpha);
 					//float newAngularVelocity = glm::mix(velocity.AngularVelocity, netTransform.AngularVelocity, alpha);
 
@@ -121,9 +128,10 @@ namespace proton {
 					//body->SetAngularVelocity(newAngularVelocity);
 				}
 						
-				if (net.NetTransform.ReconciliationTimer.Elapsed() >= scene->m_NetReconciliationTime)
+				if (elapsed >= scene->m_NetReconcileTime)
 				{
-					net.NetTransform.ReconciliationStarted = false;
+					net.NetTransform.ReconcileStarted = false;
+					rb.RuntimeBody->SetGravityScale(1.0f);
 				}
 			}
 

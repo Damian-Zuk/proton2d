@@ -3,6 +3,7 @@
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Panels/SettingsPanel.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Panels/InspectorPanel.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Core/Application.h"
@@ -21,6 +22,9 @@ namespace proton {
 		ImGui::Begin("Settings");
 
 		ProjectSettings& project = Application::Get().GetGameInstance()->m_ProjectSettings;
+		
+		// Get selected game instance
+		SceneViewportPanel* viewportPanel = EditorLayer::GetInspectorPanel()->m_ActiveScene->m_GameInstance->m_EditorViewport;
 
 		char buffer[256];
 		strcpy_s(buffer, project.m_StartScene.c_str());
@@ -88,6 +92,9 @@ namespace proton {
 				ImGui::PopItemWidth();
 			}
 
+			ImGui::Dummy({ 0, 5 });
+			ImGui::Checkbox("Debug Show Net Position", &viewportPanel->m_ShowNetPosition);
+
 			ImGui::TreePop();
 		}
 
@@ -95,12 +102,11 @@ namespace proton {
 
 		if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			SceneViewportPanel* viewportPanel = EditorLayer::GetSceneViewportPanel();
 			ImGui::Dummy({ 0, 2 });
 			ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
 			ImGui::Checkbox("Selection Collider", &viewportPanel->m_ShowSelectionCollider);
 			ImGui::Checkbox("Show Colliders", &viewportPanel->m_ShowAllColliders);
-			ImGui::Checkbox("Runtime Camera", &EditorLayer::GetCamera()->m_UseInRuntime);
+			ImGui::Checkbox("Runtime Freecam", &EditorLayer::GetCamera()->m_UseInRuntime);
 			ImGui::TreePop();
 		}
 		ImGui::Dummy({ 0, 5 });

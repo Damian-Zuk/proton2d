@@ -228,7 +228,10 @@ namespace proton {
 		struct NetworkTransform
 		{
 			glm::vec3 Position;
+			glm::vec3 OldPosition;
+
 			glm::vec2 LinearVelocity;
+			glm::vec2 OldLinearVelocity;
 
 			float Rotation;
 			float AngularVelocity;
@@ -236,8 +239,8 @@ namespace proton {
 			float PacketDelay;
 			Timer UpdateTimer;
 
-			bool ReconciliationStarted = false;
-			Timer ReconciliationTimer;
+			bool ReconcileStarted = false;
+			Timer ReconcileTimer;
 
 		} NetTransform;
 

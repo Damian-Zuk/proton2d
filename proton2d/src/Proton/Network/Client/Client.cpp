@@ -282,6 +282,9 @@ namespace proton {
 			}
 
 			auto& net = entity.GetComponent<NetworkComponent>();
+			auto& transform = entity.GetTransform();
+			auto& velocity = entity.GetComponent<VelocityComponent>();
+
 			auto syncMethod = net.SyncMethod == NetTranformSyncMethod::Inherit ? scene->m_NetTranformSyncMethod : net.SyncMethod;
 			bool updateTransformImmediately = updateTransformNow || 
 				syncMethod == NetTranformSyncMethod::None || syncMethod == NetTranformSyncMethod::Extrapolate;
@@ -293,12 +296,13 @@ namespace proton {
 				auto& position = net.NetTransform.Position;
 				auto& rotation = net.NetTransform.Rotation;
 
+				net.NetTransform.OldPosition = net.NetTransform.Position;
+
 				stream.ReadRaw(position);
 				stream.ReadRaw(rotation);
 
 				if (updateTransformImmediately)
 				{
-					auto& transform = entity.GetTransform();
 					transform.LocalPosition.x = position.x;
 					transform.LocalPosition.y = position.y;
 					transform.Rotation = rotation;
@@ -313,12 +317,13 @@ namespace proton {
 				auto& linearVelocity = net.NetTransform.LinearVelocity;
 				auto& angularVelocity = net.NetTransform.AngularVelocity;
 
+				net.NetTransform.OldLinearVelocity = net.NetTransform.LinearVelocity;
+
 				stream.ReadRaw(linearVelocity);
 				stream.ReadRaw(angularVelocity);
 
 				if (updateTransformImmediately)
 				{
-					auto& velocity = entity.GetComponent<VelocityComponent>();
 					velocity.LinearVelocity = linearVelocity;
 					velocity.AngularVelocity = angularVelocity;
 				}

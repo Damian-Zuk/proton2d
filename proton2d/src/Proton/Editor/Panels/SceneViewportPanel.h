@@ -59,6 +59,7 @@ namespace proton {
 		bool m_ShowSelectionOutline = true;
 		bool m_ShowSelectionCollider = true;
 		bool m_ShowAllColliders = false;
+		bool m_ShowNetPosition = false;
 	
 		friend class Scene;
 		friend class SceneManager;

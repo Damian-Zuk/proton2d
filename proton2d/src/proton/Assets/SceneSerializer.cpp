@@ -57,8 +57,8 @@ namespace proton {
 			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } },
 			{ "InheritNetMode",     m_Scene->m_InheritNetMode },
 			{ "ExtrapolationTimeThreshold", m_Scene->m_NetExtrapolationTimeThreshold },
-			{ "ReconciliationThreshold", m_Scene->m_NetReconciliationThreshold },
-			{ "ReconciliationTime", m_Scene->m_NetReconciliationTime }
+			{ "ReconciliationThreshold", m_Scene->m_NetReconcileThreshold },
+			{ "ReconciliationTime", m_Scene->m_NetReconcileTime }
 		};
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
@@ -91,10 +91,10 @@ namespace proton {
 			m_Scene->m_NetExtrapolationTimeThreshold = jsonObj.at("ExtrapolationTimeThreshold");
 
 		if (jsonObj.contains("ReconciliationThreshold"))
-			m_Scene->m_NetReconciliationThreshold = jsonObj.at("ReconciliationThreshold");
+			m_Scene->m_NetReconcileThreshold = jsonObj.at("ReconciliationThreshold");
 
 		if (jsonObj.contains("ReconciliationTime"))
-			m_Scene->m_NetReconciliationTime = jsonObj.at("ReconciliationTime");
+			m_Scene->m_NetReconcileTime = jsonObj.at("ReconciliationTime");
 
 		if (jsonObj.contains("GameModeClass"))
 			m_Scene->SetGameModeByClassName(jsonObj.at("GameModeClass"));
