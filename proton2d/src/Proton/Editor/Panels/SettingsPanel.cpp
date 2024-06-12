@@ -108,7 +108,7 @@ namespace proton {
 			if (ImGui::Button("Set") && server)
 				server->SetPacketFakeLag(fakePacketLag);
 
-			ImGui::Checkbox("Trace Server Position", &viewportPanel->m_ShowNetPosition);
+			ImGui::Checkbox("Trace Server Entity Position", &viewportPanel->m_ShowNetPosition);
 
 			ImGui::TreePop();
 		}

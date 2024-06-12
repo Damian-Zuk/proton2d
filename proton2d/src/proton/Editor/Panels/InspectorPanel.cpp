@@ -638,6 +638,7 @@ namespace proton {
 					ImGui::Dummy({ 0, 5 });
 					RepComponent("Transform", ComponentType_Transform);
 					RepComponent("Velocity", ComponentType_Velocity);
+					RepComponent("Sprite", ComponentType_Sprite);
 					ImGui::TreePop();
 				}
 				ImGui::Dummy({ 0, 5 });

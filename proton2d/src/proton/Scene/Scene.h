@@ -158,7 +158,7 @@ namespace proton {
 
 		// Network
 		bool m_InheritNetMode = true;
-		NetTranformSyncMethod m_NetTranformSyncMethod = NetTranformSyncMethod::NetworkRigidbody;
+		NetTranformSyncMethod m_NetTranformSyncMethod = NetTranformSyncMethod::Interpolate;
 		float m_NetExtrapolationTimeThreshold = 0.5f;
 		float m_NetReconcileThreshold = 0.1f;
 		float m_NetReconcileTime = 0.1f;

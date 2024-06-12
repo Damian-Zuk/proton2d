@@ -1,6 +1,6 @@
 {
-    "net_mode": "Standalone",
+    "net_mode": "ListenServer",
     "port": 8192,
     "server_ip": "127.0.0.1",
-    "start_scene": "level_0"
+    "start_scene": "level_00"
 }

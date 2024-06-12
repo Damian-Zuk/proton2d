@@ -91,7 +91,7 @@ namespace proton {
 				#endif
 					{
 						// Update application layers
-						PROFILE_SCOPE("app_layers_on_update");
+						PROFILE_SCOPE("app_layers_update");
 						for (AppLayer* layer : m_AppLayers)
 							layer->OnUpdate(m_FrameTime * m_TimeScale);
 					}
