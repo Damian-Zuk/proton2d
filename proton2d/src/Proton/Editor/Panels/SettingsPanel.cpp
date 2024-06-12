@@ -10,6 +10,7 @@
 #include "Proton/Core/ProjectSettings.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/Server/Server.h"
 
 #include "imgui.h"
 
@@ -52,6 +53,8 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
+			NetworkManager* networkManager = m_ActiveScene->m_GameInstance->GetNetworkManager();
+
 			constexpr char* netModesNames[] = { "Standalone", "Listen Server" };
 			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
 
@@ -63,7 +66,7 @@ namespace proton {
 					bool selected = (uint8_t)netMode == i;
 					if (ImGui::Selectable(netModesNames[i], selected))
 					{
-						Application::GetGameInstance()->SetNetMode((NetMode)i);
+						networkManager->SetNetMode((NetMode)i);
 					}
 				}
 				ImGui::EndCombo();
@@ -83,7 +86,6 @@ namespace proton {
 						EditorLayer::Get()->OnRemoveClientButton();
 				}
 
-				NetworkManager* networkManager = m_ActiveScene->m_GameInstance->GetNetworkManager();
 				int tickRate = networkManager->m_ServerTickRate;
 				if (ImGui::InputInt("Server Tick Rate", &tickRate, 1))
 				{
@@ -93,7 +95,20 @@ namespace proton {
 			}
 
 			ImGui::Dummy({ 0, 5 });
-			ImGui::Checkbox("Debug Show Net Position", &viewportPanel->m_ShowNetPosition);
+			ImGui::Text("Debug");
+
+			Server* server = networkManager->GetServer();
+
+			static float fakePacketLag = 0.0f;
+			ImGui::PushItemWidth(150.0f);
+			if (ImGui::InputFloat("Fake Packet Lag", &fakePacketLag, 1.0f, 1.0f, "%.1f"))
+				fakePacketLag = glm::max(fakePacketLag, 0.0f);
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			if (ImGui::Button("Set") && server)
+				server->SetPacketFakeLag(fakePacketLag);
+
+			ImGui::Checkbox("Trace Server Position", &viewportPanel->m_ShowNetPosition);
 
 			ImGui::TreePop();
 		}

@@ -68,6 +68,7 @@ namespace proton {
 		uint32_t m_SaveStatsForClientID = 0;
 
 		static uint32_t s_NetworkServicesRunning; // across all editor's game instances (server + clients)
+		static uint32_t s_EditorClientInstances; // count of running client instances
 		static bool s_NetworkResourcesFreed; // free resources after all network services finished running
 
 		friend class Application;

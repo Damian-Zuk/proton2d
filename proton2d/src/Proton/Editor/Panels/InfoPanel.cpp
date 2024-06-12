@@ -98,6 +98,7 @@ namespace proton {
 	{
 		static HSteamNetConnection selectedConn = 0;
 		NetworkManager* networkManager = Application::GetGameInstance()->GetNetworkManager();
+		Server* server = networkManager->GetServer();
 
 		ImGui::Checkbox("Log To File", &networkManager->m_SaveNetworkStatsToLogFile);
 		if (networkManager->m_SaveNetworkStatsToLogFile)
@@ -113,7 +114,6 @@ namespace proton {
 			return;
 		}
 
-		Server* server = networkManager->GetServer();
 		const auto& statsAll = server->GetNetworkStats();
 
 		if (statsAll.empty())

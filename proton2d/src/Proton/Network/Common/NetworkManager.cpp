@@ -17,6 +17,7 @@
 namespace proton {
 
 	uint32_t NetworkManager::s_NetworkServicesRunning = 0;
+	uint32_t NetworkManager::s_EditorClientInstances = 0;
 	bool NetworkManager::s_NetworkResourcesFreed = false;
 
 	NetworkManager::NetworkManager(GameInstance* instance, SceneManager* manager)
@@ -105,6 +106,7 @@ namespace proton {
 
 		m_IsNetworkServiceRunning = true;
 		s_NetworkServicesRunning++;
+		s_EditorClientInstances++;
 		s_NetworkResourcesFreed = false;
 	}
 
@@ -118,6 +120,7 @@ namespace proton {
 
 		m_Server.reset();
 		s_NetworkServicesRunning--;
+		s_EditorClientInstances--;
 		m_IsNetworkServiceRunning = false;
 
 		CheckNetworkResourcesRelease();

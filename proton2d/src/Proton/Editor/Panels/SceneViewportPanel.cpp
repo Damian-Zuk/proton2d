@@ -15,6 +15,7 @@
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Utils/Utils.h"
+#include "Proton/Network/Common/NetworkManager.h"
 
 #include <imgui.h>
 
@@ -436,7 +437,8 @@ namespace proton {
 			DrawSelectionOutline(m_SelectedEntity, m_MoveSelectedEntity ? COLOR_YELLOW : COLOR_WHITE, ts);
 		}
 
-		if (m_ShowNetPosition && m_SelectedEntity.IsValid())
+		NetworkManager* netManager = m_ActiveScene->GetOwningGameInstance()->GetNetworkManager();
+		if (m_ShowNetPosition && netManager->IsNetModeClient() && m_SelectedEntity.IsValid())
 		{
 			if (m_SelectedEntity.HasComponent<NetworkComponent>())
 			{

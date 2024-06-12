@@ -80,6 +80,8 @@ namespace proton {
 		void SetClientNick(HSteamNetConnection hConn, const char* nick);
 		void KickClient(ClientID clientID);
 
+		void SetPacketFakeLag(float latencyMs);
+
 		// Server lower-level functionality
 		void NetworkThreadFunction(); 
 
@@ -132,6 +134,8 @@ namespace proton {
 		std::string m_StatsLogsFilename;
 		bool m_StatsLogsHeaderWritten = false;
 
+		float m_FakePacketLag = 0.0f;
+
 		// Queues
 		struct ClientConnectionStatusChangeInfo
 		{
@@ -163,6 +167,9 @@ namespace proton {
 		friend class NetworkManager;
 		friend class GameModeBase;
 		friend class Scene;
+	
+		friend class SettingsPanel;
+		friend class InfoPanel;
 	};
 
 }

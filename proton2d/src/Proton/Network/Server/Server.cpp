@@ -554,6 +554,16 @@ namespace proton {
 		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
 	}
 
+	void Server::SetPacketFakeLag(float latencyMs)
+	{
+		m_FakePacketLag = glm::max(latencyMs, 0.0f);
+
+		float simulatedLatency = NetworkManager::s_EditorClientInstances > 0 ? m_FakePacketLag / 4.0f : m_FakePacketLag / 2.0f;
+
+		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Send, simulatedLatency);
+		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Recv, simulatedLatency);
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	////                           Network Traffic and Replication Statistics                          ////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
