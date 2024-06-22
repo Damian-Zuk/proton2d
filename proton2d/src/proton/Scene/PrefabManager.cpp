@@ -98,6 +98,15 @@ namespace proton {
 		SceneSerializer serializer(scene);
 		const json& prefabData = s_Instance->m_PrefabsJsonData.at(prefabPath);
 		Entity entity = serializer.DeserializeEntity(prefabData, false);
+
+		if (entity.HasComponent<NetworkComponent>())
+		{
+			if (scene->m_OverrideNetSyncParamsAfterPrefabSpawn)
+			{
+				auto& net = entity.GetComponent<NetworkComponent>();
+				net.SyncParams = scene->m_NetDefaultSyncParams;
+			}
+		}
 		
 		return entity;
 	}

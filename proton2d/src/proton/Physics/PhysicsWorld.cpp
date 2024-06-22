@@ -1,5 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Network/Common/NetworkManager.h"
 
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
@@ -148,9 +149,21 @@ namespace proton {
 		m_World = new b2World({ 0.0f, -m_Gravity });
 		m_World->SetContactListener((b2ContactListener*)&m_ContactListener);
 		
+		NetworkManager* networkManager = m_Scene->GetNetworkManager();
+
 		// Create runtime bodies (b2Body)
-		for (entt::entity entity : m_Scene->m_Registry.view<RigidbodyComponent>())
-			CreateRuntimeBody(Entity{ entity, m_Scene });
+		for (entt::entity e : m_Scene->m_Registry.view<RigidbodyComponent>())
+		{
+			Entity entity(e, m_Scene);
+			if (networkManager->IsNetModeClient() && entity.HasComponent<NetworkComponent>())
+			{
+				auto& net = entity.GetComponent<NetworkComponent>();
+				if (net.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+					continue;
+			}
+
+			CreateRuntimeBody(entity);
+		}
 
 		// Add colliders to parent's body
 		auto viewBoxes = m_Scene->m_Registry.view<BoxColliderComponent>(entt::exclude<RigidbodyComponent>);
@@ -173,8 +186,9 @@ namespace proton {
 			if (!parent.HasComponent<RigidbodyComponent>())
 				continue;
 
-			b2Body* body = GetRuntimeBody(parent.GetUUID());
-			AddFixtureToRuntimeBody(entity, body, true);
+			auto& rb = parent.GetComponent<RigidbodyComponent>();
+			if (rb.RuntimeBody)
+				AddFixtureToRuntimeBody(entity, rb.RuntimeBody, true);
 		}
 
 		// Add colliders to parent's body
@@ -198,8 +212,9 @@ namespace proton {
 			if (!parent.HasComponent<RigidbodyComponent>())
 				continue;
 
-			b2Body* body = GetRuntimeBody(parent.GetUUID());
-			AddFixtureToRuntimeBody(entity, body, true);
+			auto& rb = parent.GetComponent<RigidbodyComponent>();
+			if (rb.RuntimeBody)
+				AddFixtureToRuntimeBody(entity, rb.RuntimeBody, true);
 		}
 
 		CreateJoints();
@@ -253,6 +268,12 @@ namespace proton {
 			auto& rbB = entityB.GetComponent<RigidbodyComponent>();
 			auto& transform = entityA.GetTransform();
 
+			if (m_Scene->GetNetworkManager()->IsNetModeClient())
+			{
+				PT_CORE_TRACE("A: {}", entityA.GetTag());
+				PT_CORE_TRACE("B: {}", entityB.GetTag());
+			}
+
 			switch (info.Type)
 			{
 			case JointType::Revolute:
@@ -285,10 +306,35 @@ namespace proton {
 			auto& vec = m_EntitiesToInitialize;
 			vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
 
+			NetworkManager* networkManager = m_Scene->GetNetworkManager();
+
 			for (auto& entity : m_EntitiesToInitialize)
 			{
 				if (entity.HasComponent<RigidbodyComponent>())
 				{
+					if (networkManager->IsNetModeClient())
+					{
+						if (entity.HasComponent<NetworkComponent>())
+						{
+							auto& net = entity.GetComponent<NetworkComponent>();
+							if (net.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+								continue;
+						}
+
+						auto& hierarchy = entity.GetComponent<RelationshipComponent>();
+						auto& rb = entity.GetComponent<RigidbodyComponent>();
+						if (rb.AttachToParent && hierarchy.Parent != entt::null)
+						{
+							Entity parent(hierarchy.Parent, m_Scene);
+							if (parent.HasComponent<NetworkComponent>())
+							{
+								auto& net = parent.GetComponent<NetworkComponent>();
+								if (net.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+									continue;
+							}
+						}
+					}
+
 					m_Scene->CalculateEntityWorldPosition(entity, false);
 					CreateRuntimeBody(entity);
 					continue;
@@ -312,6 +358,14 @@ namespace proton {
 				if (rc.Parent != entt::null)
 				{
 					Entity parent{ rc.Parent, m_Scene };
+
+					if (networkManager->IsNetModeClient() && parent.HasComponent<NetworkComponent>())
+					{
+						auto& net = parent.GetComponent<NetworkComponent>();
+						if (net.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+							continue;
+					}
+
 					AddFixtureToRuntimeBody(entity, GetRuntimeBody(parent.GetUUID()));
 				}
 			}
@@ -329,8 +383,12 @@ namespace proton {
 		auto view = m_Scene->m_Registry.view<IDComponent, TransformComponent, VelocityComponent, RigidbodyComponent>();
 		for (auto entity : view)
 		{
-			auto [id, transform, velocity] = view.get<IDComponent, TransformComponent, VelocityComponent>(entity);
-			b2Body* body = m_RuntimeBodies.at(id.ID);
+			auto [id, transform, velocity, rb] = view.get<IDComponent, TransformComponent, VelocityComponent, RigidbodyComponent>(entity);
+			
+			if (!rb.RuntimeBody)
+				continue;
+			
+			b2Body* body = rb.RuntimeBody;
 			
 			// Retrive positions of entities
 			transform.WorldPosition.x = body->GetPosition().x;

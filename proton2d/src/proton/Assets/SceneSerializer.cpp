@@ -55,10 +55,7 @@ namespace proton {
 			{ "VelocityIterations", m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations },
 			{ "PositionIterations", m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations },
 			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } },
-			{ "InheritNetMode",     m_Scene->m_InheritNetMode },
-			{ "ExtrapolationTimeThreshold", m_Scene->m_NetExtrapolationTimeThreshold },
-			{ "ReconciliationThreshold", m_Scene->m_NetReconcileThreshold },
-			{ "ReconciliationTime", m_Scene->m_NetReconcileTime }
+			{ "InheritNetMode",     m_Scene->m_InheritNetMode }
 		};
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
@@ -86,15 +83,6 @@ namespace proton {
 		
 		if (jsonObj.contains("InheritNetMode"))
 			m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
-
-		if (jsonObj.contains("ExtrapolationTimeThreshold"))
-			m_Scene->m_NetExtrapolationTimeThreshold = jsonObj.at("ExtrapolationTimeThreshold");
-
-		if (jsonObj.contains("ReconciliationThreshold"))
-			m_Scene->m_NetReconcileThreshold = jsonObj.at("ReconciliationThreshold");
-
-		if (jsonObj.contains("ReconciliationTime"))
-			m_Scene->m_NetReconcileTime = jsonObj.at("ReconciliationTime");
 
 		if (jsonObj.contains("GameModeClass"))
 			m_Scene->SetGameModeByClassName(jsonObj.at("GameModeClass"));
@@ -157,10 +145,15 @@ namespace proton {
 		// Serialize NetworkComponent
 		if (entity.HasComponent<NetworkComponent>())
 		{
-			auto& netComponent = entity.GetComponent<NetworkComponent>();
-			// TODO: Serialize to hex
+			auto& net = entity.GetComponent<NetworkComponent>();
+			
 			jsonObj["Network"] = {
-				{ "ReplicatedComponentsBitset", netComponent.ComponentsToReplicate.to_string() }
+				{ "ReplicatedComponentsBitset", net.ComponentsToReplicate.to_string() }, // TODO: Serialize to hex
+				{ "SyncMethod", NetSyncMethodToString(net.SyncParams.SyncMethod) },
+				{ "ExtrapolationLimit", net.SyncParams.ExtrapolationLimit },
+				{ "ReconcileThreshold", net.SyncParams.ReconcileThreshold },
+				{ "ReconcileTime", net.SyncParams.ReconcileTime },
+				{ "ReconcileCooldownTime", net.SyncParams.ReconcileCooldownTime },
 			};
 		}
 
@@ -409,19 +402,33 @@ namespace proton {
 		// Deserialize NetworkComponent
 		if (jsonObj.contains("Network"))
 		{
-			auto& netComponent = entity.AddComponent<NetworkComponent>();
+			auto& net = entity.AddComponent<NetworkComponent>();
 			auto& netJson = jsonObj.at("Network");
 			if (netJson.contains("ReplicatedComponentsBitset"))
 			{
 				std::string bitsetStr = netJson.at("ReplicatedComponentsBitset");
-				netComponent.ComponentsToReplicate = std::bitset<MAX_COMPONENTS>(bitsetStr);
+				net.ComponentsToReplicate = std::bitset<MAX_COMPONENTS>(bitsetStr);
 
 				for (size_t i = 0; i < MAX_COMPONENTS; i++)
 				{
-					if (netComponent.ComponentsToReplicate.test(i))
-						netComponent.ComponentChecksum[(EComponentType)i] = 0;
+					if (net.ComponentsToReplicate.test(i))
+						net.ComponentChecksum[(EComponentType)i] = 0;
 				}
 			}
+			if (netJson.contains("SyncMethod"))
+				net.SyncParams.SyncMethod = StringToNetSyncMethod(netJson["SyncMethod"]);
+
+			if (netJson.contains("ExtrapolationLimit"))
+				net.SyncParams.ExtrapolationLimit = netJson["ExtrapolationLimit"];
+
+			if (netJson.contains("ReconcileThreshold"))
+				net.SyncParams.ReconcileThreshold = netJson["ReconcileThreshold"];
+
+			if (netJson.contains("ReconcileTime"))
+				net.SyncParams.ReconcileTime = netJson["ReconcileTime"];
+
+			if (netJson.contains("ReconcileCooldownTime"))
+				net.SyncParams.ReconcileCooldownTime = netJson["ReconcileCooldownTime"];
 		}
 
 		// Deserialize SpriteComponent

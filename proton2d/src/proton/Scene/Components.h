@@ -8,6 +8,7 @@
 #include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Physics/PhysicsCommon.h"
 #include "Proton/Network/Common/Common.h"
+#include "Proton/Network/Client/NetSyncData.h"
 
 #include "Proton/UI/UIText.h"
 #include <entt/entity/entity.hpp>
@@ -223,26 +224,11 @@ namespace proton {
 		std::bitset<MAX_COMPONENTS> ComponentsToReplicate;
 		std::unordered_map<EComponentType, uint32_t> ComponentChecksum;
 
-		NetTranformSyncMethod SyncMethod;
-
-		struct NetworkTransform
-		{
-			glm::vec3 Position;
-			glm::vec3 OldPosition;
-
-			glm::vec2 LinearVelocity;
-			glm::vec2 OldLinearVelocity;
-
-			float Rotation;
-			float AngularVelocity;
-
-			float PacketDelay;
-			Timer UpdateTimer;
-
-			bool ReconcileStarted = false;
-			Timer ReconcileTimer;
-
-		} NetTransform;
+		NetSyncParams SyncParams;
+		NetSyncState SyncState;
+		NetTransform PreviousTransform;
+		NetTransform CurrentTransform;
+		bool TransformInitialized = false;
 
 		struct ReplicatedScript
 		{

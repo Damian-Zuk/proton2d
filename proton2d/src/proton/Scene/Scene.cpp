@@ -14,7 +14,7 @@
 #include "Proton/UI/UIElement.h"
 
 #include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Client/NetClientTransformSyncSystem.h"
+#include "Proton/Network/Client/NetSyncSystem.h"
 #include "Proton/Network/Server/Server.h"
 
 #ifdef PT_EDITOR
@@ -38,6 +38,8 @@ namespace proton {
 		}
 		else
 			m_GameMode = new GameModeBase();
+
+		m_NetDefaultSyncParams.SyncMethod = NetSyncMethod::Interpolate;
 	}
 
 	Scene::~Scene()
@@ -117,10 +119,8 @@ namespace proton {
 		newScene->m_EnablePhysics = m_EnablePhysics;
 		newScene->m_PhysicsTimestep = m_PhysicsTimestep;
 
-		newScene->m_NetTranformSyncMethod = m_NetTranformSyncMethod;
-		newScene->m_NetExtrapolationTimeThreshold = m_NetExtrapolationTimeThreshold;
-		newScene->m_NetReconcileThreshold = m_NetReconcileThreshold;
-		newScene->m_NetReconcileTime = m_NetReconcileTime;
+		newScene->m_InheritNetMode = m_InheritNetMode;
+		newScene->m_NetDefaultSyncParams = m_NetDefaultSyncParams;
 
 		if (gameInstance)
 			newScene->m_GameInstance = gameInstance;
@@ -216,10 +216,10 @@ namespace proton {
 		EditorLayer::Get()->OnBeginSceneSimulation(this);
 	#endif
 
-		NetMode netMode = m_GameInstance->GetNetMode();
-		if (m_NetTranformSyncMethod != NetTranformSyncMethod::NetworkRigidbody 
-			&& netMode == NetMode::Client && m_InheritNetMode)
-			m_EnablePhysics = false;
+		//NetMode netMode = m_GameInstance->GetNetMode();
+		//if (m_NetDefaultSyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody 
+		//	&& netMode == NetMode::Client && m_InheritNetMode)
+		//	m_EnablePhysics = false;
 
 		m_SceneState = SceneState::Play;
 		m_GameInstance->OnSceneSimulationStart(this);
@@ -542,7 +542,7 @@ namespace proton {
 			if (isPhysicsTick)
 			{
 				if (m_GameInstance->GetNetworkManager()->IsNetModeClient())
-					NetClientTransformSyncSystem::UpdatePhysics(this, m_PhysicsTimer);
+					NetSyncSystem::UpdatePhysics(this, m_PhysicsTimer);
 				m_PhysicsWorld->Update(m_PhysicsTimer);
 			}
 
@@ -608,7 +608,8 @@ namespace proton {
 				{
 					scriptInstance->OnUpdate(ts);
 
-					if (isPhysicsTick && m_Registry.any_of<RigidbodyComponent>(entity))
+					if (isPhysicsTick && m_Registry.any_of<RigidbodyComponent>(entity)
+						&& m_Registry.get<RigidbodyComponent>(entity).RuntimeBody)
 						scriptInstance->OnPhysicsUpdate(m_PhysicsTimer);
 				}
 			}
@@ -892,6 +893,11 @@ namespace proton {
 	void Scene::SetScreenClearColor(const glm::vec4& color)
 	{
 		m_ClearColor = color;
+	}
+
+	NetworkManager* Scene::GetNetworkManager() const
+	{
+		return m_GameInstance->m_NetworkManager.get();
 	}
 
 	uint32_t Scene::GetEntitiesCount() const

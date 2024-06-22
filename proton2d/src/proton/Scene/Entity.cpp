@@ -225,6 +225,11 @@ namespace proton
 		body->SetLinearVelocity({ body->GetLinearVelocity().x, mps });
 	}
 
+	bool Entity::IsRigidbodyInitialized() const
+	{
+		return (bool)GetComponent<RigidbodyComponent>().RuntimeBody;
+	}
+
 	glm::vec2 Entity::GetLinearVelocity() const
 	{
 		b2Vec2 velocity = GetRuntimeBody()->GetLinearVelocity();

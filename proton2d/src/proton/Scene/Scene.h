@@ -3,7 +3,7 @@
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Events/Event.h"
 #include "Proton/Core/UUID.h"
-#include "Proton/Network/Common/Common.h"
+#include "Proton/Network/Client/NetSyncData.h"
 
 #include <entt/entt.hpp>
 
@@ -17,6 +17,7 @@ namespace proton {
 	class Entity;
 	class PhysicsWorld;
 	class GameInstance;
+	class NetworkManager;
 	class GameModeBase;
 
 	enum class SceneState
@@ -85,7 +86,8 @@ namespace proton {
 		template<typename... Components>
 		auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
-		GameInstance* GetOwningGameInstance() { return m_GameInstance; }
+		GameInstance* GetOwningGameInstance() const { return m_GameInstance; }
+		NetworkManager* GetNetworkManager() const;
 
 		template<typename TGameMode>
 		GameModeBase* SetGameMode()
@@ -158,21 +160,20 @@ namespace proton {
 
 		// Network
 		bool m_InheritNetMode = true;
-		NetTranformSyncMethod m_NetTranformSyncMethod = NetTranformSyncMethod::Interpolate;
-		float m_NetExtrapolationTimeThreshold = 0.5f;
-		float m_NetReconcileThreshold = 0.1f;
-		float m_NetReconcileTime = 0.1f;
+		NetSyncParams m_NetDefaultSyncParams;
+		bool m_OverrideNetSyncParamsAfterPrefabSpawn = true;
 
 		friend class Application;
 		friend class Entity;
 		friend class EntityScript;
 		friend class SceneSerializer;
 		friend class SceneManager;
+		friend class PrefabManager;
 		friend class PhysicsWorld;
 		friend class GameInstance;
 		friend class GameModeBase;
 		friend class NetworkManager;
-		friend class NetClientTransformSyncSystem;
+		friend class NetSyncSystem;
 		friend class Server;
 		friend class Client;
 		

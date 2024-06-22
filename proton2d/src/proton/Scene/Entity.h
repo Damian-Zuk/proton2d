@@ -148,6 +148,7 @@ namespace proton {
 		void RotateCenter(float angle) const;
 
 		// Box2D body related methods
+		bool IsRigidbodyInitialized() const;
 		glm::vec2 GetLinearVelocity() const;
 		void SetLinearVelocity(float x_mps, float y_mps) const;
 		void SetLinearVelocityX(float mps) const;

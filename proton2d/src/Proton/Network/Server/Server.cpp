@@ -402,7 +402,7 @@ namespace proton {
 			BEGIN_COMPONENT_BUFFER_WRITE(ComponentType_Transform);
 			{
 				auto& transform = entity.GetComponent<TransformComponent>();
-				if (entity.HasComponent<RigidbodyComponent>() && scene->m_NetTranformSyncMethod == NetTranformSyncMethod::NetworkRigidbody)
+				if (net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody)
 					stream.WriteRaw(transform.WorldPosition);
 				else
 					stream.WriteRaw(transform.LocalPosition);

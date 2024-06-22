@@ -647,13 +647,15 @@ namespace proton {
 				if (ImGui::InputFloat("Update Rate", &component.UpdateRate))
 					component.UpdateRate = glm::clamp(component.UpdateRate, 0.0f, 1.0f);
 
-				if (ImGui::BeginCombo("Transform Sync Method", NetSyncMethodToString(component.SyncMethod).c_str()))
+				auto& selectedMethod = component.SyncParams.SyncMethod;
+				if (ImGui::BeginCombo("Transform Sync Method", NetSyncMethodToString(selectedMethod).c_str()))
 				{
-					for (uint8_t i = 0; i < 5; i++)
+					for (uint8_t i = 0; i < 4; i++)
 					{
-						auto current = (NetTranformSyncMethod)i;
-						if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), component.SyncMethod == current))
-							component.SyncMethod = current;
+						auto current = (NetSyncMethod)i;
+						
+						if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), selectedMethod == current))
+							selectedMethod = current;
 					}
 					ImGui::EndCombo();
 				}
@@ -750,23 +752,95 @@ namespace proton {
 			ImGui::EndCombo();
 		}
 		
-		static NetTranformSyncMethod netSyncMethod;
+		auto& defaultSyncParams = m_ActiveScene->m_NetDefaultSyncParams;
+		auto& defaultSyncMethod = defaultSyncParams.SyncMethod;
 
-		if (ImGui::BeginCombo("Client Sync Method", NetSyncMethodToString(m_ActiveScene->m_NetTranformSyncMethod).c_str()))
+		if (ImGui::BeginCombo("Client Sync Method", NetSyncMethodToString(defaultSyncMethod).c_str()))
 		{
-			for (uint8_t i = 1; i < 5; i++)
+			for (uint8_t i = 0; i < 4; i++)
 			{
-				auto current = (NetTranformSyncMethod)i;
-				if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), m_ActiveScene->m_NetTranformSyncMethod == current))
-					m_ActiveScene->m_NetTranformSyncMethod = current;
+				auto current = (NetSyncMethod)i;
+				if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), defaultSyncMethod == current))
+					defaultSyncMethod = current;
 			}
 			ImGui::EndCombo();
 		}
 
+		ImGui::SameLine();
+		if (ImGui::Button("Set All"))
+		{
+			if (defaultSyncMethod == NetSyncMethod::NetworkRigidbody)
+			{
+				auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent, RigidbodyComponent>();
+				for (auto e : view)
+				{
+					auto& net = view.get<NetworkComponent>(e);
+					net.SyncParams.SyncMethod = NetSyncMethod::NetworkRigidbody;
+				}
+			}
+			else
+			{
+				auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+				for (auto e : view)
+				{
+					auto& net = view.get<NetworkComponent>(e);
+					net.SyncParams.SyncMethod = defaultSyncMethod;
+				}
+			}
+		}
+
 		ImGui::Dummy({ 0, 5 });
-		ImGui::InputFloat("Extrapolate Time Threshold", &m_ActiveScene->m_NetExtrapolationTimeThreshold, 0.01f);
-		ImGui::InputFloat("Reconcile Threshold", &m_ActiveScene->m_NetReconcileThreshold, 0.001f);
-		ImGui::InputFloat("Reconcile Time", &m_ActiveScene->m_NetReconcileTime, 0.001f);
+
+		ImGui::InputFloat("Extrapolation Limit", &defaultSyncParams.ExtrapolationLimit, 0.01f);
+		ImGui::SameLine();
+		if (ImGui::Button("Set All"))
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			for (auto e : view)
+			{
+				auto& net = view.get<NetworkComponent>(e);
+				net.SyncParams.ExtrapolationLimit = defaultSyncParams.ExtrapolationLimit;
+			}
+		}
+
+		ImGui::InputFloat("Reconcile Time", &defaultSyncParams.ReconcileTime, 0.001f);
+		ImGui::SameLine();
+		if (ImGui::Button("Set All"))
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			for (auto e : view)
+			{
+				auto& net = view.get<NetworkComponent>(e);
+				net.SyncParams.ReconcileTime = defaultSyncParams.ReconcileTime;
+			}
+		}
+
+		ImGui::InputFloat("Reconcile Threshold", &defaultSyncParams.ReconcileThreshold, 0.001f);
+		ImGui::SameLine();
+		if (ImGui::Button("Set All"))
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			for (auto e : view)
+			{
+				auto& net = view.get<NetworkComponent>(e);
+				net.SyncParams.ReconcileThreshold = defaultSyncParams.ReconcileThreshold;
+			}
+		}
+
+		ImGui::InputFloat("Reconcile Cooldown", &defaultSyncParams.ReconcileCooldownTime, 0.001f);
+		ImGui::SameLine();
+		if (ImGui::Button("Set All"))
+		{
+			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			for (auto e : view)
+			{
+				auto& net = view.get<NetworkComponent>(e);
+				net.SyncParams.ReconcileCooldownTime = defaultSyncParams.ReconcileCooldownTime;
+			}
+		}
+
+		ImGui::Dummy({ 0, 5 });
+		ImGui::Checkbox("Override Net Params After Prefab Spawn", &m_ActiveScene->m_OverrideNetSyncParamsAfterPrefabSpawn);
 
 		ImGui::PopItemWidth();
 

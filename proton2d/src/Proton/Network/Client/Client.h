@@ -17,7 +17,7 @@ namespace proton {
 	class GameInstance;
 	class Scene;
 	class NetworkManager;
-	class NetClientTransformSyncSystem;
+	class NetSyncSystem;
 
 	class Client
 	{

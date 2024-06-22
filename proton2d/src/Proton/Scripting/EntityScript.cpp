@@ -106,8 +106,7 @@ namespace proton {
 	{
 		Scene* scene = GetScene();
 		auto& net = GetComponent<NetworkComponent>();
-		auto method = net.SyncMethod == NetTranformSyncMethod::Inherit ? scene->m_NetTranformSyncMethod : net.SyncMethod;
-		return scene->IsPhysicsSimulated() && method == NetTranformSyncMethod::NetworkRigidbody;
+		return scene->IsPhysicsSimulated() && net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
 	}
 
 	bool EntityScript::IsRunningServer() const

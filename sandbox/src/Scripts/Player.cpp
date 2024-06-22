@@ -197,7 +197,7 @@ void Player::OnImGuiRender()
 	strcpy_s(buffer, colorStr.c_str());
 	ImGui::InputText("Color", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
 	
-	if (GetScene()->IsPhysicsSimulated())
+	if (IsRigidbodyInitialized())
 	{
 		auto vel = GetLinearVelocity();
 		std::string velocity = fmt::format("{:.3f}, {:.3f}", vel.x, vel.y);

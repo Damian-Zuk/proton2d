@@ -1,16 +1,15 @@
 #pragma once
-#include "Proton/Scene/Entity.h"
+#include "Proton/Network/Client/NetSyncData.h"
 
 namespace proton {
 
-	class NetClientTransformSyncSystem
+	class Scene;
+
+	class NetSyncSystem
 	{
 	public:
 		static void Update(Scene* scene, float ts);
 		static void UpdatePhysics(Scene* scene, float ts);
-
-	private:
-		static float s_ExtrapolationTimeThreshold;
 	};
 
 }

@@ -7,7 +7,7 @@ namespace proton {
 	{
 		Standalone = 0,
 		ListenServer = 1,
-		DedicatedServer = 2,
+		DedicatedServer = 2, /* currently not supported */
 		Client = 3,
 	};
 
@@ -16,17 +16,6 @@ namespace proton {
 		Connected = 0,
 		Disconnected = 1
 	};
-
-	enum class NetTranformSyncMethod : uint8_t
-	{
-		Inherit = 0,
-		None = 1,
-		Interpolate = 2,
-		Extrapolate = 3,
-		NetworkRigidbody = 4
-	};
-
-	std::string NetSyncMethodToString(NetTranformSyncMethod method);
 
 	using Server_OnPlayerActionCallback = std::function<void(BufferStreamReader& stream)>;
 	using Client_SendPlayerActionCallback = std::function<void(BufferStreamWriter& stream)>;

@@ -445,8 +445,8 @@ namespace proton {
 				auto& net = m_SelectedEntity.GetComponent<NetworkComponent>();
 				auto& transform = m_SelectedEntity.GetTransform();
 
-				glm::mat4 quadTransform = glm::translate(glm::mat4{ 1.0f }, { net.NetTransform.Position.x, net.NetTransform.Position.y, 0.201f })
-					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(net.NetTransform.Rotation), { 0.0f, 0.0f, 1.0f })
+				glm::mat4 quadTransform = glm::translate(glm::mat4{ 1.0f }, { net.CurrentTransform.Position.x, net.CurrentTransform.Position.y, 0.201f })
+					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(net.CurrentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
 					* glm::scale(glm::mat4{ 1.0f }, { transform.Scale.x,transform.Scale.y, 1.0f });
 
 				Renderer::DrawRect(quadTransform, COLOR_CYAN);

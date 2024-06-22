@@ -2,7 +2,7 @@
 #include "Proton/Network/Client/Client.h"
 #include "Proton/Network/Common/PacketType.h"
 #include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Client/NetClientTransformSyncSystem.h"
+#include "Proton/Network/Client/NetSyncSystem.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Assets/SceneSerializer.h"
@@ -62,7 +62,7 @@ namespace proton {
 
 		Scene* scene = m_GameInstance->GetActiveScene();
 		scene->CalculateWorldPositions(true);
-		NetClientTransformSyncSystem::Update(scene, ts);
+		NetSyncSystem::Update(scene, ts);
 	}
 
 	void Client::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
@@ -149,6 +149,21 @@ namespace proton {
 
 					SceneSerializer serializer(scene);
 					Entity entity = serializer.DeserializeEntity(jsonParsed);
+
+					auto& net = entity.GetComponent<NetworkComponent>();
+					auto& transform = entity.GetComponent<TransformComponent>();
+					auto& velocity = entity.GetComponent<VelocityComponent>();
+
+					if (net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody)
+						net.CurrentTransform.Position = transform.WorldPosition;
+					else
+						net.CurrentTransform.Position = transform.LocalPosition;
+
+					net.CurrentTransform.Rotation = transform.Rotation;
+					net.CurrentTransform.LinearVelocity = velocity.LinearVelocity;
+					net.CurrentTransform.AngularVelocity = velocity.AngularVelocity;
+
+					net.PreviousTransform = net.CurrentTransform;
 				}
 
 				// Destroy no longer existing entites
@@ -191,6 +206,7 @@ namespace proton {
 				{
 					std::string jsonData;
 					stream.ReadString(jsonData);
+
 					json jsonParsed = json::parse(jsonData);
 
 					if (scene->FindByID((UUID)jsonParsed.at("UUID")))
@@ -285,50 +301,42 @@ namespace proton {
 			auto& transform = entity.GetTransform();
 			auto& velocity = entity.GetComponent<VelocityComponent>();
 
-			auto syncMethod = net.SyncMethod == NetTranformSyncMethod::Inherit ? scene->m_NetTranformSyncMethod : net.SyncMethod;
-			bool updateTransformImmediately = updateTransformNow || 
-				syncMethod == NetTranformSyncMethod::None || syncMethod == NetTranformSyncMethod::Extrapolate;
-			bool updateTransformStateTimer = false;
-
 			// TransformComponent
 			if (componentBitset.test(ComponentType_Transform))
 			{
-				auto& position = net.NetTransform.Position;
-				auto& rotation = net.NetTransform.Rotation;
+				net.PreviousTransform.Position = net.CurrentTransform.Position;
+				net.PreviousTransform.Rotation = net.CurrentTransform.Rotation;
 
-				net.NetTransform.OldPosition = net.NetTransform.Position;
+				stream.ReadRaw(net.CurrentTransform.Position);
+				stream.ReadRaw(net.CurrentTransform.Rotation);
 
-				stream.ReadRaw(position);
-				stream.ReadRaw(rotation);
-
-				if (updateTransformImmediately)
+				if (net.SyncParams.SyncMethod == NetSyncMethod::None)
 				{
-					transform.LocalPosition.x = position.x;
-					transform.LocalPosition.y = position.y;
-					transform.Rotation = rotation;
+					transform.LocalPosition.x = net.CurrentTransform.Position.x;
+					transform.LocalPosition.y = net.CurrentTransform.Position.y;
+					transform.Rotation = net.CurrentTransform.Rotation;
 				}
 
-				updateTransformStateTimer = true;
+				// Update packet timer
+				net.SyncState.PacketDelay = net.SyncState.PacketTimer.Elapsed();
+				net.SyncState.PacketTimer.Reset();
+				net.SyncState.NewPacket = true;
 			}
 
 			// VelocityComponent
 			if (componentBitset.test(ComponentType_Velocity))
 			{
-				auto& linearVelocity = net.NetTransform.LinearVelocity;
-				auto& angularVelocity = net.NetTransform.AngularVelocity;
+				net.PreviousTransform.LinearVelocity = net.CurrentTransform.LinearVelocity;
+				net.PreviousTransform.AngularVelocity = net.CurrentTransform.AngularVelocity;
 
-				net.NetTransform.OldLinearVelocity = net.NetTransform.LinearVelocity;
+				stream.ReadRaw(net.CurrentTransform.LinearVelocity);
+				stream.ReadRaw(net.CurrentTransform.AngularVelocity);
 
-				stream.ReadRaw(linearVelocity);
-				stream.ReadRaw(angularVelocity);
-
-				if (updateTransformImmediately)
+				if (net.SyncParams.SyncMethod == NetSyncMethod::None)
 				{
-					velocity.LinearVelocity = linearVelocity;
-					velocity.AngularVelocity = angularVelocity;
+					velocity.LinearVelocity = net.CurrentTransform.LinearVelocity;
+					velocity.AngularVelocity = net.CurrentTransform.AngularVelocity;
 				}
-
-				updateTransformStateTimer = true;
 			}
 
 			// ScriptComponent
@@ -363,12 +371,6 @@ namespace proton {
 							field.NotifyFunction(&entity);
 					}
 				}
-			}
-
-			if (updateTransformStateTimer)
-			{
-				net.NetTransform.PacketDelay = net.NetTransform.UpdateTimer.Elapsed();
-				net.NetTransform.UpdateTimer.Reset();
 			}
 		}
 	}
