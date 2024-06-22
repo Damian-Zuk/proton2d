@@ -17,6 +17,6 @@ namespace proton {
 		Disconnected = 1
 	};
 
-	using Server_OnPlayerActionCallback = std::function<void(BufferStreamReader& stream)>;
-	using Client_SendPlayerActionCallback = std::function<void(BufferStreamWriter& stream)>;
+	using StreamReaderDelegate = std::function<void(BufferStreamReader& stream)>;
+	using StreamWriterDelegate = std::function<void(BufferStreamWriter& stream)>;
 }

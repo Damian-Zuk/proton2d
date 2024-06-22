@@ -25,6 +25,8 @@ namespace proton {
 	// Forward declarations
 	class NetworkManager;
 	class GameInstance;
+	class ReplicationManager;
+	class NetStatsManager;
 
 	class Server
 	{
@@ -32,21 +34,9 @@ namespace proton {
 		Server(GameInstance* gameInstance);
 		~Server();
 
-		struct NetworkStats
-		{
-			SteamNetConnectionRealTimeStatus_t RealTime;
-			Buffer Detailed;
-		};
-
-		struct ReplicationStats
-		{
-			uint32_t RepEntitiesCount = 0;
-			uint32_t RepPacketCount = 0;
-		};
-
 		bool IsRunning() const { return m_Running; }
+
 		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
-		const std::map<HSteamNetConnection, NetworkStats>& GetNetworkStats() const { return m_NetworkStats; }
 
 	private:
 		void Start(int port);
@@ -55,7 +45,7 @@ namespace proton {
 		// Game server functionality
 		void MainThread_OnTick();
 
-		void SetClientActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function);
+		void SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function);
 		void PushCreatedEntity(UUID entityUUID, Scene* scene, ClientID specificClient = 0);
 		void PushDestroyedEntity(UUID entityUUID, Scene* scene, ClientID specificClient = 0);
 
@@ -68,14 +58,6 @@ namespace proton {
 		void ProcessCreatedEntityQueue();
 		void ProcessDestroyedEntityQueue();
 		void SendReplicationUpdate(Scene* scene, ClientID clientID = 0, bool verifyComponentChecksum = true);
-		void WriteReplicationDataToBuffer(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum = true);
-
-		// Network statistics
-		void AllocateNetworkStatsBuffer(ClientID clientID);
-		void ReleaseNetworkStatsBuffer(ClientID clientID);
-		void UpdateNetworkStatistics();
-		void LogStatsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status);
-		void GenerateStatsLogFilename();
 
 		void SetClientNick(HSteamNetConnection hConn, const char* nick);
 		void KickClient(ClientID clientID);
@@ -127,12 +109,8 @@ namespace proton {
 		// Buffer for writting messages using BufferStreamWriter
 		Buffer m_ScratchBuffer;
 
-		// Statistics
-		const float m_StatsUpdateInterval = 0.2f;
-		std::map<HSteamNetConnection, NetworkStats> m_NetworkStats;
-		ReplicationStats m_ReplicationStats;
-		std::string m_StatsLogsFilename;
-		bool m_StatsLogsHeaderWritten = false;
+		Unique<ReplicationManager> m_ReplicationManager;
+		Unique<NetStatsManager> m_NetStatsManager;
 
 		float m_FakePacketLag = 0.0f;
 
@@ -158,13 +136,15 @@ namespace proton {
 		std::queue<EntityLifetimeQueueEntry> m_DestroyedEntityQueue;
 
 		// Player action callbacks
-		std::unordered_map<uint32_t, Server_OnPlayerActionCallback> m_PlayerActionCallbacks;
+		std::unordered_map<uint32_t, StreamReaderDelegate> m_PlayerActionCallbacks;
 
 		// Other
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 
 		friend class NetworkManager;
+		friend class ReplicationManager;
+		friend class NetStatsManager;
 		friend class GameModeBase;
 		friend class Scene;
 	

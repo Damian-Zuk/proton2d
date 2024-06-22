@@ -89,7 +89,7 @@ namespace proton {
 		SendBuffer(Buffer(m_ScratchBuffer, writer.GetStreamPosition()));
 	}
 
-	void Client::SendPlayerAction(Client_SendPlayerActionCallback sendFunction)
+	void Client::SendPlayerAction(StreamWriterDelegate sendFunction)
 	{
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(PacketType::PlayerAction);

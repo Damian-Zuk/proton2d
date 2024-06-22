@@ -10,7 +10,7 @@
 
 namespace proton {
 
-    void GameModeBase::Server_SetPlayerActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function)
+    void GameModeBase::Server_SetPlayerActionCallback(uint32_t clientID, StreamReaderDelegate function)
     {
         Server* server = m_Scene->m_GameInstance->GetNetworkManager()->GetServer();
         if (!server)
@@ -21,7 +21,7 @@ namespace proton {
         server->SetClientActionCallback(clientID, function);
     }
 
-    void GameModeBase::Client_SendPlayerAction(Client_SendPlayerActionCallback function)
+    void GameModeBase::Client_SendPlayerAction(StreamWriterDelegate function)
     {
         Client* client = m_Scene->m_GameInstance->GetNetworkManager()->GetClient();
         if (!client)

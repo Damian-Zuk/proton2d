@@ -39,7 +39,7 @@ namespace proton {
 		
 		// Game client functionality
 		void SendVerifyGameState();
-		void SendPlayerAction(Client_SendPlayerActionCallback sendFunction);
+		void SendPlayerAction(StreamWriterDelegate sendFunction);
 
 		void ProcessMessages();
 		void UpdateReplicatedEntities(Scene* scene, BufferStreamReader& stream, uint64_t bufferSize, bool updateTransformNow = false);

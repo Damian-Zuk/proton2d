@@ -8,6 +8,7 @@
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Network/Common/NetworkManager.h"
 #include "Proton/Network/Server/Server.h"
+#include "Proton/Network/Server/NetStatsManager.h"
 
 #include "imgui.h"
 
@@ -114,7 +115,7 @@ namespace proton {
 			return;
 		}
 
-		const auto& statsAll = server->GetNetworkStats();
+		const auto& statsAll = server->m_NetStatsManager->GetNetworkStats();
 
 		if (statsAll.empty())
 		{

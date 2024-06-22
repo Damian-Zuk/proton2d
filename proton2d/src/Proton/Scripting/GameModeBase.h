@@ -37,8 +37,8 @@ namespace proton {
 		virtual void Client_OnConnected(uint32_t clientID) {}
 		virtual void Client_OnDisconnected() {}
 		
-		void Server_SetPlayerActionCallback(uint32_t clientID, Server_OnPlayerActionCallback function);
-		void Client_SendPlayerAction(Client_SendPlayerActionCallback function);
+		void Server_SetPlayerActionCallback(uint32_t clientID, StreamReaderDelegate function);
+		void Client_SendPlayerAction(StreamWriterDelegate function);
 	
 		bool HasAuthority() const;
 		bool IsRunningServer() const;

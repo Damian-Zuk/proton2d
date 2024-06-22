@@ -1,0 +1,20 @@
+#pragma once
+#include "Proton/Network/Common/Common.h"
+
+namespace proton {
+
+	class Scene;
+	class Server;
+
+	class ReplicationManager
+	{
+	public:
+		ReplicationManager(Server* server);
+
+		void WriteReplicationDataToBuffer(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum);
+
+	private:
+		Server* m_Server;
+	};
+
+}
