@@ -16,17 +16,15 @@ namespace proton {
 		virtual ~GameInstance();
 
 		void Init(bool loadStartScene = true);
+		void OnUpdate(float ts);
 
 		void OnSceneSimulationStart(Scene* scene);
 		void OnSceneSimulationStop(Scene* scene);
-
-		void OnUpdate(float ts);
 
 		Scene* GetActiveScene();
 		SceneManager* GetSceneManager();
 
 		NetworkManager* GetNetworkManager();
-
 		void SetNetMode(NetMode mode);
 		NetMode GetNetMode() const;
 

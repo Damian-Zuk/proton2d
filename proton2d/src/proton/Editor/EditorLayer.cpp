@@ -8,7 +8,6 @@
 #include "Proton/Editor/Panels/ContentBrowserPanel.h"
 #include "Proton/Editor/Panels/SettingsPanel.h"
 #include "Proton/Editor/Panels/InfoPanel.h"
-#include "Proton/Editor/Panels/EditorGizmo2D.h"
 
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
@@ -83,7 +82,6 @@ namespace proton {
 		m_GameInstance = instance;
 		m_FocusedGameInstance = instance;
 		s_Panels.SceneViewport.m_GameInstance = instance;
-		//instance->m_EditorViewport = &s_Panels.SceneViewport;
 
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
@@ -390,7 +388,6 @@ namespace proton {
 		viewport->m_IsMainViewport = false;
 		viewport->OnCreate();
 
-		//instance->m_EditorViewport = viewport;
 		instance->Init(false);
 
 		SceneManager* sceneManager = instance->GetSceneManager();

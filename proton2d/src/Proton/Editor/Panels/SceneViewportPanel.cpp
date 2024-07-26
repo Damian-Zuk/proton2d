@@ -3,7 +3,6 @@
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/Panels/SceneHierarchyPanel.h"
 #include "Proton/Editor/Panels/InspectorPanel.h"
-#include "Proton/Editor/Panels/EditorGizmo2D.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/EditorCamera.h"
 #include "Proton/Core/Application.h"
@@ -35,8 +34,6 @@ namespace proton {
 		fbSpec.Height = 720;
 		m_Framebuffer = MakeShared<Framebuffer>(fbSpec);
 		m_Camera = MakeUnique<EditorCamera>();
-		m_EditorGizmo = MakeUnique<EditorGizmo2D>();
-		m_EditorGizmo->Init(this);
 	}
 
 	void SceneViewportPanel::OnImGuiRender()
@@ -139,7 +136,6 @@ namespace proton {
 		m_MousePos = { (int)mx, (int)my };
 
 		DrawCollidersAndSelectionOutline(ts);
-		m_EditorGizmo->Render();
 		m_Framebuffer->Unbind();
 
 		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
@@ -312,12 +308,10 @@ namespace proton {
 
 	void SceneViewportPanel::OnSelectEntity(Entity entity)
 	{
-		m_EditorGizmo->m_SelectedEntity = entity;
 	}
 
 	void SceneViewportPanel::OnSetActiveScene(Scene* scene)
 	{
-		m_EditorGizmo->m_ActiveScene = scene;
 	}
 
 	static constexpr glm::vec4 COLOR_WHITE = glm::vec4{ 1.0f };

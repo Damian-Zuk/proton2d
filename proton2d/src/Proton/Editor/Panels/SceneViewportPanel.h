@@ -7,7 +7,6 @@ namespace proton {
 
 	class GameInstance;
 	class EditorCamera;
-	class EditorGizmo2D;
 
 	class SceneViewportPanel : public EditorPanel
 	{
@@ -39,7 +38,6 @@ namespace proton {
 		GameInstance* m_GameInstance = nullptr;
 
 		Unique<EditorCamera> m_Camera;
-		Unique<EditorGizmo2D> m_EditorGizmo;
 
 		Shared<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
