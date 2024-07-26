@@ -42,10 +42,6 @@ namespace proton {
 		Unique<NetworkManager> m_NetworkManager;
 		ProjectSettings m_ProjectSettings;
 
-	#ifdef PT_EDITOR
-		SceneViewportPanel* m_EditorViewport;
-	#endif
-
 		friend class Application;
 		friend class SceneManager;
 		friend class Scene;

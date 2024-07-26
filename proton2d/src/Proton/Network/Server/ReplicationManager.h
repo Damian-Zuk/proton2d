@@ -11,7 +11,7 @@ namespace proton {
 	public:
 		ReplicationManager(Server* server);
 
-		void WriteReplicationDataToBuffer(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum);
+		void StreamWriteReplicationData(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum);
 
 	private:
 		Server* m_Server;

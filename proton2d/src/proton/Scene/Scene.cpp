@@ -39,7 +39,7 @@ namespace proton {
 		else
 			m_GameMode = new GameModeBase();
 
-		m_NetDefaultSyncParams.SyncMethod = NetSyncMethod::Interpolate;
+		m_NetDefaultSyncParams.SyncMethod = NetSyncMethod::NetworkRigidbody;
 	}
 
 	Scene::~Scene()
@@ -536,7 +536,7 @@ namespace proton {
 			{
 				m_PhysicsWorld->ProcessCreatedEntities();
 				m_PhysicsTimer += ts;
-				isPhysicsTick = m_PhysicsTimer > m_PhysicsTimestep;
+				isPhysicsTick = (bool)(m_PhysicsTimer > m_PhysicsTimestep);
 			}
 
 			if (isPhysicsTick)
@@ -545,6 +545,7 @@ namespace proton {
 					NetSyncSystem::UpdatePhysics(this, m_PhysicsTimer);
 				m_PhysicsWorld->Update(m_PhysicsTimer);
 			}
+			m_PhysicsTick = isPhysicsTick;
 
 			CalculateWorldPositions();
 			CachePrimaryCameraPosition();
@@ -595,7 +596,7 @@ namespace proton {
 				{
 					if (isNetModeClient && m_Registry.any_of<NetworkComponent>(entity)
 						&& !networkManager->m_ClientGameStateInitialized)
-						continue; // Do not update scripts before game state verified (after client connected)
+						continue; // Skip script update until server state initialized (after client connected)
 
 					scriptInstance->m_Initialized = true;
 					if (!scriptInstance->OnCreate())
@@ -606,11 +607,12 @@ namespace proton {
 				}
 				if (!scriptInstance->m_Stopped)
 				{
-					scriptInstance->OnUpdate(ts);
-
 					if (isPhysicsTick && m_Registry.any_of<RigidbodyComponent>(entity)
 						&& m_Registry.get<RigidbodyComponent>(entity).RuntimeBody)
 						scriptInstance->OnPhysicsUpdate(m_PhysicsTimer);
+					
+
+					scriptInstance->OnUpdate(ts);
 				}
 			}
 		}

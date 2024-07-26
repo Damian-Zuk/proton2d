@@ -57,6 +57,7 @@ namespace proton {
 		void ProcessClientMessagesQueue();
 		void ProcessCreatedEntityQueue();
 		void ProcessDestroyedEntityQueue();
+
 		void SendReplicationUpdate(Scene* scene, ClientID clientID = 0, bool verifyComponentChecksum = true);
 
 		void SetClientNick(HSteamNetConnection hConn, const char* nick);

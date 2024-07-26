@@ -105,6 +105,13 @@ namespace proton {
 		return true;
 	}
 
+	static std::filesystem::path StripFirstDir(std::filesystem::path p)
+	{
+		p = p.relative_path();
+		if (p.empty()) return {};
+		return p.lexically_relative(*p.begin());
+	}
+
 	void AssetManager::ReloadAssetsList()
 	{
 		auto& textureList = s_Instance->m_TexturesFilepathList;
@@ -113,8 +120,26 @@ namespace proton {
 		textureList.clear();
 		spritesheetList.clear();
 
-		textureList = Utils::ScanDirectoryRecursive("content/textures",
-			{ ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd" });
+		static std::vector<std::string> extensions = { ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd" };
+
+		for (const auto& entry : std::filesystem::recursive_directory_iterator("content/textures")) 
+		{
+			if (!entry.is_regular_file())
+				continue;
+
+			std::string filepath = entry.path().string();
+			std::string extension = entry.path().extension().string();
+
+			for (const std::string& ext : extensions)
+			{
+				if (extension != ext)
+					continue;
+
+				std::string textureFilename = StripFirstDir(filepath).string();
+				textureList.push_back(textureFilename);
+				break;
+			}
+		}
 
 		for (auto& s : json::parse(Utils::ReadFile("content/meta.json")))
 		{

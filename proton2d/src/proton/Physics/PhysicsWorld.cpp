@@ -40,7 +40,7 @@ namespace proton {
 		auto uuid = entity.GetUUID();
 		if (m_RuntimeBodies.find(uuid) != m_RuntimeBodies.end())
 		{
-			PT_CORE_ASSERT(false, "Physics runtime body already exists!");
+		//	PT_CORE_ASSERT(false, "Physics runtime body already exists!");
 			return nullptr;
 		}
 

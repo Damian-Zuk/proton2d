@@ -334,7 +334,7 @@ namespace proton {
 			* glm::translate(glm::mat4{ 1.0f }, { bc.Offset.x, bc.Offset.y, 0.0f })
 			* glm::scale(glm::mat4{ 1.0f }, { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f });
 
-		Renderer::DrawQuad(quadTransform, COLOR_COLLIDER);
+		//Renderer::DrawQuad(quadTransform, COLOR_COLLIDER);
 		
 		quadTransform[3].z += 0.001f;
 		glm::vec4 sensorColor = bc.ContactCallback.ContactCount > 0 ? COLOR_YELLOW : COLOR_SENSOR_OUTLINE;

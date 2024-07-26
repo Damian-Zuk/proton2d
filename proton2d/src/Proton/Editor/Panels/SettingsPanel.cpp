@@ -25,7 +25,7 @@ namespace proton {
 		ProjectSettings& project = Application::Get().GetGameInstance()->m_ProjectSettings;
 		
 		// Get selected game instance
-		SceneViewportPanel* viewportPanel = EditorLayer::GetInspectorPanel()->m_ActiveScene->m_GameInstance->m_EditorViewport;
+		SceneViewportPanel* viewportPanel = EditorLayer::GetActiveSceneViewportPanel();
 
 		char buffer[256];
 		strcpy_s(buffer, project.m_StartScene.c_str());
@@ -75,7 +75,7 @@ namespace proton {
 
 			if (netMode == NetMode::ListenServer)
 			{
-				int numClients = EditorLayer::Get()->m_NetNumClients;
+				int numClients = EditorLayer::Get()->m_NetNumberOfClients;
 				int count = numClients;
 				ImGui::PushItemWidth(150.0f);
 				if (ImGui::InputInt("Number of Clients", &count, 1, 1))

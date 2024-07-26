@@ -51,7 +51,8 @@ namespace proton {
 
 		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
 		{
-			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName().c_str());
+			SceneViewportPanel* viewport = EditorLayer::GetActiveSceneViewportPanel();
+			ImGui::Text("Game Instance: %s", viewport->GetWindowName().c_str());
 			ImGui::Dummy({ 0, 5 });
 		}
 
@@ -77,6 +78,7 @@ namespace proton {
 				m_SelectedEntity.AddComponent<component>()
 
 			ADD_COMPONENT_POPUP_MENU_ITEM(TransformComponent);
+			ADD_COMPONENT_POPUP_MENU_ITEM(NetworkComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(SpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(ResizableSpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CircleRendererComponent);
@@ -660,6 +662,13 @@ namespace proton {
 					ImGui::EndCombo();
 				}
 				ImGui::PopItemWidth();
+
+				ImGui::InputFloat("Extrapolation Limit", &component.SyncParams.ExtrapolationLimit, 0.01f);
+				ImGui::InputFloat("Reconcile Time", &component.SyncParams.ReconcileTime, 0.001f);
+				ImGui::InputFloat("Reconcile Threshold", &component.SyncParams.ReconcileThreshold, 0.001f);
+				ImGui::InputFloat("Reconcile Cooldown", &component.SyncParams.ReconcileCooldownTime, 0.001f);
+
+
 			});
 		}
 
@@ -673,7 +682,8 @@ namespace proton {
 
 		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
 		{
-			ImGui::Text("Game Instance: %s", m_ActiveScene->m_GameInstance->m_EditorViewport->GetWindowName().c_str());
+			SceneViewportPanel* viewport = EditorLayer::GetActiveSceneViewportPanel();
+			ImGui::Text("Game Instance: %s", viewport->GetWindowName().c_str());
 			ImGui::Dummy({ 0, 5 });
 		}
 

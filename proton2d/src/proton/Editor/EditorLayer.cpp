@@ -83,7 +83,7 @@ namespace proton {
 		m_GameInstance = instance;
 		m_FocusedGameInstance = instance;
 		s_Panels.SceneViewport.m_GameInstance = instance;
-		instance->m_EditorViewport = &s_Panels.SceneViewport;
+		//instance->m_EditorViewport = &s_Panels.SceneViewport;
 
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
@@ -113,7 +113,7 @@ namespace proton {
 					[id](const EditorClientInstance& instance) {
 						return instance.ID == id;
 					}));
-				m_FreeClientInstanceID.push_back(id);
+				m_ReleasedClientInstanceID.push_back(id);
 			}
 			if (m_ClientInstancesToClose.size())
 			{
@@ -197,9 +197,18 @@ namespace proton {
 			instance.Viewport->OnEvent(event);
 	}
 
-	SceneViewportPanel* EditorLayer::GetSceneViewportPanel()
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
 	{
+		if (gameInstance && gameInstance != Get()->m_GameInstance)
+		{
+			return Get()->m_ClientViewports.at(gameInstance);
+		}
 		return &s_Panels.SceneViewport;
+	}
+
+	SceneViewportPanel* EditorLayer::GetActiveSceneViewportPanel()
+	{
+		return GetSceneViewportPanel(s_Panels.Inspector.m_ActiveScene->m_GameInstance);
 	}
 
 	SceneHierarchyPanel* EditorLayer::GetSceneHierarchyPanel()
@@ -240,7 +249,7 @@ namespace proton {
 		{
 			// On deselect entity
 			Entity selectedEntity = s_Panels.Inspector.m_SelectedEntity;
-			if (!selectedEntity)
+			if (!selectedEntity.IsValid())
 				return;
 
 			gameInstance = selectedEntity.GetScene()->m_GameInstance;
@@ -263,7 +272,7 @@ namespace proton {
 			Scene* scene = entity.GetScene();
 			s_Panels.Inspector.m_SelectedEntity = entity;
 			s_Panels.SceneHiearchy.m_SelectedEntity = entity;
-			gameInstance->m_EditorViewport->m_SelectedEntity = entity;
+			GetSceneViewportPanel(gameInstance)->m_SelectedEntity = entity;
 		}
 	}
 
@@ -278,7 +287,7 @@ namespace proton {
 
 		if (m_GameInstance->GetNetMode() == NetMode::ListenServer)
 		{
-			for (uint32_t i = 0; i < m_NetNumClients; i++)
+			for (uint32_t i = 0; i < m_NetNumberOfClients; i++)
 			{
 				OpenNewClientGameInstance(i + 1);
 			}
@@ -290,7 +299,7 @@ namespace proton {
 		if (m_GameInstance->GetNetMode() == NetMode::ListenServer)
 		{
 			m_ClientInstances.clear();
-			m_FreeClientInstanceID.clear();
+			m_ReleasedClientInstanceID.clear();
 		}
 		m_ActiveScene->Stop();
 	}
@@ -329,18 +338,18 @@ namespace proton {
 
 	void EditorLayer::OnAddClientButton()
 	{
-		if (m_NetNumClients >= 10)
+		if (m_NetNumberOfClients >= 10)
 			return;
 
-		m_NetNumClients++;
+		m_NetNumberOfClients++;
 		
 		if (m_GameInstance->HasSimulationStarted())
 		{
 			uint32_t instanceID = (uint32_t)m_ClientInstances.size() + 1;
-			if (m_FreeClientInstanceID.size())
+			if (m_ReleasedClientInstanceID.size())
 			{
-				instanceID = m_FreeClientInstanceID.back();
-				m_FreeClientInstanceID.pop_back();
+				instanceID = m_ReleasedClientInstanceID.back();
+				m_ReleasedClientInstanceID.pop_back();
 			}
 			OpenNewClientGameInstance(instanceID);
 		}
@@ -348,10 +357,10 @@ namespace proton {
 
 	void EditorLayer::OnRemoveClientButton()
 	{
-		if (m_NetNumClients == 0)
+		if (m_NetNumberOfClients == 0)
 			return;
 
-		m_NetNumClients--;
+		m_NetNumberOfClients--;
 
 		if (m_GameInstance->HasSimulationStarted())
 		{
@@ -371,6 +380,7 @@ namespace proton {
 		GameInstance* instance = m_ClientInstances.back().Instance.get();
 		SceneViewportPanel* viewport = m_ClientInstances.back().Viewport.get();
 
+		m_ClientViewports[instance] = viewport;
 		instance->m_IsMainInstance = false;
 		instance->m_InstanceID = instanceID;
 		instance->SetNetMode(NetMode::Client);
@@ -380,7 +390,7 @@ namespace proton {
 		viewport->m_IsMainViewport = false;
 		viewport->OnCreate();
 
-		instance->m_EditorViewport = viewport;
+		//instance->m_EditorViewport = viewport;
 		instance->Init(false);
 
 		SceneManager* sceneManager = instance->GetSceneManager();
@@ -397,7 +407,7 @@ namespace proton {
 
 	void EditorLayer::CloseClientGameInstance(uint32_t instanceID)
 	{
-		m_NetNumClients--;
+		m_NetNumberOfClients--;
 		m_ClientInstancesToClose.push_back(instanceID);
 	}
 

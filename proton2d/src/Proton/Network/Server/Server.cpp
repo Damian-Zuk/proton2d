@@ -67,7 +67,7 @@ namespace proton {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	////                        Game Server and Entity Replication Functionality                       ////
+	////                                   Game Server Functionality                                   ////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void Server::MainThread_OnTick()
@@ -194,7 +194,7 @@ namespace proton {
 				writer.WriteRaw(destroyed);
 				writer.SetStreamPosition(streamPos);
 
-				m_ReplicationManager->WriteReplicationDataToBuffer(writer, scene, false);
+				m_ReplicationManager->StreamWriteReplicationData(writer, scene, false);
 				uint64_t streamEnd = writer.GetStreamPosition();
 				PT_CORE_TRACE("SendRepSync: end={}, size={}", streamPos, streamEnd);
 				
@@ -337,7 +337,7 @@ namespace proton {
 		stream.WriteRaw(PacketType::UpdateReplicated);
 
 		uint64_t packetStreamStart = stream.GetStreamPosition();
-		m_ReplicationManager->WriteReplicationDataToBuffer(stream, scene, verifyComponentChecksum);
+		m_ReplicationManager->StreamWriteReplicationData(stream, scene, verifyComponentChecksum);
 
 		// If anything was written, send buffer to clients
 		if (stream.GetStreamPosition() > packetStreamStart)
@@ -556,7 +556,7 @@ namespace proton {
 			client.ID = (ClientID)status->m_hConn;
 			client.ConnectionDesc = connectionInfo.m_szConnectionDescription;
 
-			PT_CORE_INFO("New connection from client {}", client.ID);
+			PT_CORE_INFO("New connection from client {}", client.ConnectionDesc);
 			OnClientConnected(client);
 
 			break;

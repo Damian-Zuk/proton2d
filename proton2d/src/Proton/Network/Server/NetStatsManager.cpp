@@ -63,7 +63,7 @@ namespace proton {
 				NetworkManager* manager = m_Server->m_NetworkManager;
 				if (manager->m_SaveNetworkStatsToLogFile && (hConn == manager->m_SaveStatsForClientID || manager->m_SaveStatsForAllClients))
 				{
-					LogStatsToFile(hConn, stats.RealTime);
+					LogStatsToFile(hConn, stats);
 				}
 			}
 			timer.Reset();
@@ -75,8 +75,9 @@ namespace proton {
 		return std::round((double)f * 100000) / 100000;
 	}
 
-	void NetStatsManager::LogStatsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status)
+	void NetStatsManager::LogStatsToFile(ClientID clientID, const NetworkStats& stats)
 	{
+		const SteamNetConnectionRealTimeStatus_t& status = stats.RealTime;
 		int in = (int)status.m_flInBytesPerSec;
 		int out = (int)status.m_flOutBytesPerSec;
 		int ping = status.m_nPing;

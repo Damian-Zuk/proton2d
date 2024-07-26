@@ -24,7 +24,10 @@ namespace proton {
 	{
 		Timer ExtrapolationTimer;
 		Timer ReconcileTimer;
+		Timer ReconcileCooldownTimer;
 		Timer PacketTimer;
+
+		glm::vec3 ExtrapolatedPoint;
 
 		bool ReconcileStarted = false;
 		bool NewPacket = true;

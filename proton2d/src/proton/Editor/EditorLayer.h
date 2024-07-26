@@ -34,7 +34,8 @@ namespace proton {
 		static ImFont* GetSmallFont();
 		static EditorCamera* GetCamera();
 
-		static SceneViewportPanel* GetSceneViewportPanel();
+		static SceneViewportPanel* GetSceneViewportPanel(GameInstance* gameInstance = nullptr);
+		static SceneViewportPanel* GetActiveSceneViewportPanel();
 		static SceneHierarchyPanel* GetSceneHierarchyPanel();
 		static InspectorPanel* GetInspectorPanel();
 
@@ -70,22 +71,22 @@ namespace proton {
 
 	private:
 		bool m_EnableViewports = false; // true: ImGui windows can be detached from main GLFW window
-		uint32_t m_SimulatedScenes = 0;
+		bool m_BlockEvents = false;
+		std::vector<EditorPanel*> m_EditorPanels;
 
 		GameInstance* m_GameInstance;
 		Scene* m_ActiveScene = nullptr;
 		Entity m_SelectedEntity;
 
-		std::unordered_map<std::string, Shared<Scene>> m_SceneBackup;
-
 		EditorConfig m_Config;
 		EditorMenuBar m_MenuBar;
 
-		std::vector<EditorPanel*> m_EditorPanels;
-		bool m_BlockEvents = false;
-		GameInstance* m_FocusedGameInstance = nullptr;
+		uint32_t m_SimulatedScenes = 0;
+		std::unordered_map<std::string, Shared<Scene>> m_SceneBackup;
 
-		uint32_t m_NetNumClients = 1;
+		// Multiple game instances
+		uint32_t m_NetNumberOfClients = 1;
+		GameInstance* m_FocusedGameInstance = nullptr;
 
 		struct EditorClientInstance
 		{
@@ -94,8 +95,9 @@ namespace proton {
 			uint32_t ID;
 		};
 		std::vector<EditorClientInstance> m_ClientInstances;
+		std::unordered_map<GameInstance*, SceneViewportPanel*> m_ClientViewports;
 		std::vector<uint32_t> m_ClientInstancesToClose;
-		std::vector<uint32_t> m_FreeClientInstanceID;
+		std::vector<uint32_t> m_ReleasedClientInstanceID;
 
 		friend class Application;
 		friend class Scene;

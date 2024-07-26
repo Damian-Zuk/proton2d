@@ -14,29 +14,29 @@ namespace proton {
 	{
 	}
 
-#define BEGIN_COMPONENT_BUFFER_WRITE(__component_type)                                  \
-	if (net.ComponentsToReplicate.test(__component_type)) {                             \
-		EComponentType _component_type = __component_type;                              \
-		uint64_t _streamStart = stream.GetStreamPosition();
-
-#define END_COMPONENT_BUFFER_WRITE()                                                    \
-		if (verifyComponentChecksum) {											        \
-			uint64_t _streamEnd = stream.GetStreamPosition();                           \
-			uint64_t _streamSize = _streamEnd - _streamStart;                           \
-			void* _componentDataBuffer = (char*)stream.GetBuffer().Data + _streamStart; \
-			uint32_t _checksum = crc32_bitwise(_componentDataBuffer, _streamSize);      \
-			uint32_t& _previousChecksum = net.ComponentChecksum[_component_type];       \
-			if (_checksum == _previousChecksum) {                                       \
-				stream.SetStreamPosition(_streamStart);                                 \
-				replicatedComponentsBitset.set(_component_type, false);                 \
-			}                                                                           \
-			else _previousChecksum = _checksum;                                         \
-		}                                                                               \
+#define BEGIN_COMPONENT_BUFFER_WRITE(__component_type)                             \
+	if (net.ComponentsToReplicate.test(__component_type)) {                        \
+		EComponentType _component_type = __component_type;                         \
+		uint64_t _streamStart = stream.GetStreamPosition();						
+																				
+#define END_COMPONENT_BUFFER_WRITE()                                               \
+		if (verifyComponentChecksum) {											   \
+			uint64_t _streamEnd = stream.GetStreamPosition();                      \
+			uint64_t _streamSize = _streamEnd - _streamStart;                      \
+			void* _dataBuffer = (char*)stream.GetBuffer().Data + _streamStart;     \
+			uint32_t _checksum = crc32_bitwise(_dataBuffer, _streamSize);          \
+			uint32_t& _previousChecksum = net.ComponentChecksum[_component_type];  \
+			if (_checksum == _previousChecksum) {                                  \
+				stream.SetStreamPosition(_streamStart);                            \
+				replicatedComponentsBitset.set(_component_type, false);            \
+			}                                                                      \
+			else _previousChecksum = _checksum;                                    \
+		}                                                                          \
 	}
 
-	void ReplicationManager::WriteReplicationDataToBuffer(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum)
+	void ReplicationManager::StreamWriteReplicationData(BufferStreamWriter& stream, Scene* scene, bool verifyComponentChecksum)
 	{
-
+		PROFILE_FUNCTION();
 		// Replicate entitites with NetworkComponent
 		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
 		if (view.empty())
@@ -65,10 +65,8 @@ namespace proton {
 			BEGIN_COMPONENT_BUFFER_WRITE(ComponentType_Transform);
 			{
 				auto& transform = entity.GetComponent<TransformComponent>();
-				if (net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody)
-					stream.WriteRaw(transform.WorldPosition);
-				else
-					stream.WriteRaw(transform.LocalPosition);
+				bool rbSync = net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
+				stream.WriteRaw(rbSync ? transform.WorldPosition : transform.LocalPosition);
 				stream.WriteRaw(transform.Rotation);
 			}
 			END_COMPONENT_BUFFER_WRITE();

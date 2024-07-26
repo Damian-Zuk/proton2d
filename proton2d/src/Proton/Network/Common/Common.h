@@ -7,7 +7,7 @@ namespace proton {
 	{
 		Standalone = 0,
 		ListenServer = 1,
-		DedicatedServer = 2, /* currently not supported */
+		DedicatedServer = 2,
 		Client = 3,
 	};
 

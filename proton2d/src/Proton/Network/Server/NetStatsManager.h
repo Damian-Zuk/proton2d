@@ -37,7 +37,7 @@ namespace proton {
 		void AllocateNetworkStatsBuffer(ClientID clientID);
 		void ReleaseNetworkStatsBuffer(ClientID clientID);
 		void UpdateNetworkStatistics();
-		void LogStatsToFile(ClientID clientID, SteamNetConnectionRealTimeStatus_t& status);
+		void LogStatsToFile(ClientID clientID, const NetworkStats& stats);
 		void GenerateStatsLogFilename();
 
 		const std::map<HSteamNetConnection, NetworkStats>& GetNetworkStats() const { return m_NetworkStats; }
@@ -46,7 +46,7 @@ namespace proton {
 		Server* m_Server;
 
 		const float m_StatsUpdateInterval = 0.2f;
-		std::map<HSteamNetConnection, NetworkStats> m_NetworkStats;
+		std::map<ClientID, NetworkStats> m_NetworkStats;
 		ReplicationStats m_ReplicationStats;
 		std::string m_StatsLogsFilename;
 		bool m_StatsLogsHeaderWritten = false;
