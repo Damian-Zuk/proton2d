@@ -529,34 +529,33 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 		
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState == SceneState::Play && IsPhysicsSimulated())
 		{
-			bool isPhysicsTick = false;
-			if (IsPhysicsSimulated())
+			m_PhysicsWorld->ProcessCreatedEntities();
+			m_PhysicsTimer += ts;
+			m_PhysicsTick = (bool)(m_PhysicsTimer >= m_PhysicsTimestep);
+				
+			if (m_PhysicsTick)
 			{
-				m_PhysicsWorld->ProcessCreatedEntities();
-				m_PhysicsTimer += ts;
-				isPhysicsTick = (bool)(m_PhysicsTimer > m_PhysicsTimestep);
-			}
-
-			if (isPhysicsTick)
-			{
-				if (m_GameInstance->GetNetworkManager()->IsNetModeClient())
+				if (m_GameInstance->m_NetworkManager->IsNetModeClient())
 					NetSyncSystem::UpdatePhysics(this, m_PhysicsTimer);
+
 				m_PhysicsWorld->Update(m_PhysicsTimer);
 			}
-			m_PhysicsTick = isPhysicsTick;
+		}
 
-			CalculateWorldPositions();
-			CachePrimaryCameraPosition();
-			CacheCursorWorldPosition();
+		CalculateWorldPositions();
+		CachePrimaryCameraPosition();
+		CacheCursorWorldPosition();
 
+		if (m_SceneState == SceneState::Play)
+		{
 			if (m_GameMode)
 				m_GameMode->OnUpdate(ts);
 
-			UpdateScripts(ts, isPhysicsTick);
+			UpdateScripts(ts);
 
-			if (isPhysicsTick)
+			if (m_PhysicsTick)
 				m_PhysicsTimer = 0.0f;
 
 			auto view = m_Registry.view<SpriteAnimationComponent>();
@@ -566,54 +565,49 @@ namespace proton {
 				animation.Update(ts);
 			}
 		}
-		else
-		{
-			CalculateWorldPositions();
-			CachePrimaryCameraPosition();
-			CacheCursorWorldPosition();
-		}
 
-		RenderScene(GetPrimaryCamera());
+		Camera& camera = GetPrimaryCamera();
+		RenderScene(camera);
 		RenderUI();
 	}
 
-	void Scene::UpdateScripts(float ts, bool isPhysicsTick)
+	void Scene::UpdateScripts(float ts)
 	{
 		PROFILE_FUNCTION();
-		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
-		bool isNetModeClient = networkManager->IsNetModeClient();
+
+		NetworkManager* networkManager = m_GameInstance->m_NetworkManager.get();
+		if (networkManager->IsNetModeClient() && !networkManager->m_ClientGameStateInitialized)
+			return;// Update scripts after client state initialized
 
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view)
 		{
+			if (!m_Registry.valid(entity))
+				continue;
+
 			auto& component = view.get<ScriptComponent>(entity);
-			for (auto& [scriptClassName, scriptInstance] : component.Scripts)
+			for (auto& script : component.Scripts)
 			{
-				if (!m_Registry.valid(entity))
-					break;
+				EntityScript* instance = script.second;
 
-				if (!scriptInstance->m_Initialized)
+				if (!instance->m_Initialized)
 				{
-					if (isNetModeClient && m_Registry.any_of<NetworkComponent>(entity)
-						&& !networkManager->m_ClientGameStateInitialized)
-						continue; // Skip script update until server state initialized (after client connected)
+					instance->m_Initialized = true;
 
-					scriptInstance->m_Initialized = true;
-					if (!scriptInstance->OnCreate())
-					{
-						scriptInstance->m_Stopped = true;
-						continue;
-					}
+					if (!instance->OnCreate())
+						instance->m_Stopped = true;
 				}
-				if (!scriptInstance->m_Stopped)
+				
+				if (instance->m_Stopped)
+					continue;
+
+				if (m_PhysicsTick && m_Registry.any_of<RigidbodyComponent>(entity)
+					&& m_Registry.get<RigidbodyComponent>(entity).RuntimeBody)
 				{
-					if (isPhysicsTick && m_Registry.any_of<RigidbodyComponent>(entity)
-						&& m_Registry.get<RigidbodyComponent>(entity).RuntimeBody)
-						scriptInstance->OnPhysicsUpdate(m_PhysicsTimer);
-					
-
-					scriptInstance->OnUpdate(ts);
+					instance->OnPhysicsUpdate(m_PhysicsTimer);
 				}
+
+				instance->OnUpdate(ts);
 			}
 		}
 	}

@@ -1,0 +1,42 @@
+{
+    "UUID": 3161293344327081337,
+    "Tag": "Wheel",
+    "Transform": {
+        "Position": [
+            0.0,
+            -0.673,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            0.41,
+            0.41
+        ]
+    },
+    "Network": {
+        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100001000",
+        "SyncMethod": "NetworkRigidbody",
+        "ExtrapolationLimit": 0.5,
+        "ReconcileThreshold": 0.5,
+        "ReconcileTime": 0.10000000149011612,
+        "ReconcileCooldownTime": 1.0
+    },
+    "Rigidbody": {
+        "Type": 2,
+        "FixedRotation": false,
+        "AttachToParent": true
+    },
+    "CircleCollider": {
+        "Offset": [
+            0.0,
+            0.0
+        ],
+        "Radius": 1.0,
+        "Friction": 0.5,
+        "Restitution": 0.0,
+        "RestitutionThreshold": 0.5,
+        "Density": 25.0,
+        "IsSensor": false,
+        "AttachToParent": false
+    }
+}

@@ -57,9 +57,8 @@ namespace proton {
 			for (auto& [hConn, stats] : m_NetworkStats)
 			{
 				m_Server->m_Interface->GetConnectionRealTimeStatus(hConn, &stats.RealTime, 0, NULL);
-			#ifdef PT_EDITOR
 				m_Server->m_Interface->GetDetailedConnectionStatus(hConn, (char*)stats.Detailed.Data, s_DetailedStatusBufferSize);
-			#endif
+
 				NetworkManager* manager = m_Server->m_NetworkManager;
 				if (manager->m_SaveNetworkStatsToLogFile && (hConn == manager->m_SaveStatsForClientID || manager->m_SaveStatsForAllClients))
 				{

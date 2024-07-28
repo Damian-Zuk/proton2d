@@ -27,6 +27,9 @@ namespace proton
 		if (m_Handle == entt::null)
 			return false;
 
+		if (!m_Scene)
+			return false;
+
 		if (!m_Scene->m_Registry.valid(m_Handle))
 		{
 			m_Handle = entt::null;

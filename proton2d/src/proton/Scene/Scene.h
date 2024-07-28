@@ -111,7 +111,7 @@ namespace proton {
 
 	private:
 		void OnUpdate(float ts);
-		void UpdateScripts(float ts, bool isPhysicsTick);
+		void UpdateScripts(float ts);
 		void RenderScene(const Camera& camera);
 		void RenderUI();
 

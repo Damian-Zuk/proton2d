@@ -645,12 +645,12 @@ namespace proton {
 				}
 				ImGui::Dummy({ 0, 5 });
 
-				ImGui::PushItemWidth(150.0f);
+				ImGui::PushItemWidth(175.0f);
 				if (ImGui::InputFloat("Update Rate", &component.UpdateRate))
 					component.UpdateRate = glm::clamp(component.UpdateRate, 0.0f, 1.0f);
 
 				auto& selectedMethod = component.SyncParams.SyncMethod;
-				if (ImGui::BeginCombo("Transform Sync Method", NetSyncMethodToString(selectedMethod).c_str()))
+				if (ImGui::BeginCombo("Sync Method", NetSyncMethodToString(selectedMethod).c_str()))
 				{
 					for (uint8_t i = 0; i < 4; i++)
 					{
@@ -663,12 +663,13 @@ namespace proton {
 				}
 				ImGui::PopItemWidth();
 
+				ImGui::Dummy({ 0, 5 });
+				ImGui::PushItemWidth(125.0f);
 				ImGui::InputFloat("Extrapolation Limit", &component.SyncParams.ExtrapolationLimit, 0.01f);
 				ImGui::InputFloat("Reconcile Time", &component.SyncParams.ReconcileTime, 0.001f);
 				ImGui::InputFloat("Reconcile Threshold", &component.SyncParams.ReconcileThreshold, 0.001f);
 				ImGui::InputFloat("Reconcile Cooldown", &component.SyncParams.ReconcileCooldownTime, 0.001f);
-
-
+				ImGui::PopItemWidth();
 			});
 		}
 
@@ -799,8 +800,10 @@ namespace proton {
 			}
 		}
 
+		ImGui::PopItemWidth();
 		ImGui::Dummy({ 0, 5 });
 
+		ImGui::PushItemWidth(125.0f);
 		ImGui::InputFloat("Extrapolation Limit", &defaultSyncParams.ExtrapolationLimit, 0.01f);
 		ImGui::SameLine();
 		if (ImGui::Button("Set All"))

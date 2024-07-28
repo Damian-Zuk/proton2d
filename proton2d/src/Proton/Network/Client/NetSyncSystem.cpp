@@ -88,7 +88,7 @@ namespace proton {
 			}
 			case NetSyncMethod::NetworkRigidbody:
 			{
-				if (!isPhysicsTick || !entity.HasComponent<RigidbodyComponent>())
+				if (!entity.HasComponent<RigidbodyComponent>())
 					break;
 
 				auto& rb = entity.GetComponent<RigidbodyComponent>();
@@ -98,12 +98,12 @@ namespace proton {
 					break;
 
 				syncState.ExtrapolatedPoint = {
-					current.Position.x + current.LinearVelocity.x * syncState.PacketDelay,
-					current.Position.y + current.LinearVelocity.y * syncState.PacketDelay,
+					current.Position.x + previous.LinearVelocity.x * syncState.PacketDelay,
+					current.Position.y + previous.LinearVelocity.y * syncState.PacketDelay,
 					current.Position.z
 				};
 
-				if (syncState.ReconcileCooldownTimer.Elapsed() > syncParams.ReconcileCooldownTime)
+				if (!syncState.ReconcileStarted && syncState.ReconcileCooldownTimer.Elapsed() > syncParams.ReconcileCooldownTime)
 				{
 					float distanceError = glm::distance(
 						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
@@ -112,16 +112,10 @@ namespace proton {
 
 					if (distanceError >= syncParams.ReconcileThreshold)
 					{
-						// Start reconcile
 						if (entity.GetTag() == "Player")
 							_PT_CORE_TRACE("RECONCILE: distance_error={}", distanceError);
 
-						body->SetTransform({ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }, current.Rotation);
-						//previous.Position.x = position.x;
-						//previous.Position.y = position.y;
-
-						//body->SetGravityScale(0.0f);
-						//rb.RuntimeBody->
+						body->SetGravityScale(0.0f);
 
 						syncState.ReconcileStarted = true;
 						syncState.ReconcileTimer.Reset();
@@ -131,45 +125,19 @@ namespace proton {
 
 				if (syncState.ReconcileStarted)
 				{
+					body->SetTransform({ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }, current.Rotation);
 
+					float distanceError = glm::distance(
+						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
+						glm::vec2{ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }
+					);
+
+					if (distanceError < 0.005f)
+					{
+						syncState.ReconcileStarted = false;
+						body->SetGravityScale(1.0f);
+					}
 				}
-				//if (syncState.NewPacket && syncState.ReconcileStarted)
-				//{
-				//	previous.Position.x = transform.WorldPosition.x;
-				//	previous.Position.y = transform.WorldPosition.y;
-				//	syncState.ReconcileTimer.Reset();
-				//}
-
-				//if (syncState.ReconcileStarted)
-				//{
-				//	//static glm::vec3 newPosition;
-				//	float reconcileElapsed = syncState.ReconcileTimer.Elapsed();
-				//	if (reconcileElapsed < syncParams.ReconcileTime)
-				//	{
-				//		float alpha = glm::clamp(reconcileElapsed / syncParams.ReconcileTime, 0.0f, 1.0f);
-
-				//		glm::vec3 newPosition = current.Position;//glm::mix(previous.Position, syncState.ExtrapolatedPoint, alpha);
-				//		glm::vec2 newLinearVelocity = glm::mix(previous.LinearVelocity, previous.LinearVelocity, alpha);
-				//		//float newRotation = glm::mix(transform.Rotation, netTransform.Rotation, alpha);
-				//		//float newAngularVelocity = glm::mix(velocity.AngularVelocity, netTransform.AngularVelocity, alpha);
-
-				//		b2Body* body = rb.RuntimeBody;
-				//		//body->SetTransform({ newPosition.x, newPosition.y }, current.Rotation);
-				//		body->SetLinearVelocity({ newLinearVelocity.x, newLinearVelocity.y });
-
-				//		//transform.WorldPosition = newPosition;
-				//		//velocity.LinearVelocity = newLinearVelocity;
-				//		//body->SetAngularVelocity(newAngularVelocity);
-				//	}
-
-				//	if (reconcileElapsed >= syncParams.ReconcileTime)
-				//	{
-				//		syncState.ReconcileStarted = false;
-				//		syncState.ReconcileCooldownTimer.Reset();
-				//		rb.RuntimeBody->SetGravityScale(1.0f);
-				//	}
-				//}
-
 				break;
 			}
 			}

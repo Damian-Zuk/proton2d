@@ -28,11 +28,11 @@ void Player::OnRegisterFields()
 	REGISTER_FIELD(Float, m_GravityModifier);
 	REGISTER_FIELD(Int, m_ClientID);
 
-	if (!IsNetworkPhysicsSyncEnabled())
-	{
-		REPLICATED_DATA(m_Direction);
-		REPLICATED_DATA(m_State);
-	}
+	//if (!HasComponent<NetworkComponent>() || GetComponent<NetworkComponent>().SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+	//	return;
+	
+	REPLICATED_DATA(m_Direction);
+	REPLICATED_DATA(m_State);
 }
 
 bool Player::OnCreate()
@@ -106,6 +106,11 @@ void Player::OnUpdate(float ts)
 	// Play current animation
 	animation.Play(m_State);
 	animation.SetMirrorFlip(m_Direction < 0.0f);
+
+	if (m_IsLocalPlayer && Input::IsKeyPressed(Key::P, this))
+	{
+		GetRuntimeBody()->SetTransform({ 0, 3 }, 0);
+	}
 }
 
 void Player::OnPhysicsUpdate(float ts)

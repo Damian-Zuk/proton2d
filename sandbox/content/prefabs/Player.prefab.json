@@ -1,10 +1,10 @@
 {
-    "UUID": 15140784237525174968,
+    "UUID": 14794189050332624784,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            2.65217,
-            2.81159,
+            1.64495,
+            1.90554,
             0.1
         ],
         "Rotation": 0.0,
@@ -14,7 +14,12 @@
         ]
     },
     "Network": {
-        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000101001000"
+        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000101001000",
+        "SyncMethod": "NetworkRigidbody",
+        "ExtrapolationLimit": 0.5,
+        "ReconcileThreshold": 0.5,
+        "ReconcileTime": 0.10000000149011612,
+        "ReconcileCooldownTime": 1.0
     },
     "Sprite": {
         "Texture": "character.png",
@@ -79,7 +84,7 @@
     ],
     "Entities": [
         {
-            "UUID": 541754857076114316,
+            "UUID": 10559016087250184944,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -111,7 +116,7 @@
             }
         },
         {
-            "UUID": 15948920504616662888,
+            "UUID": 2399991323368264121,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -145,7 +150,7 @@
             }
         },
         {
-            "UUID": 8753585113467967090,
+            "UUID": 14182460134562725129,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -177,7 +182,7 @@
             }
         },
         {
-            "UUID": 15481270859431317242,
+            "UUID": 16805228311455578146,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -209,7 +214,7 @@
             }
         },
         {
-            "UUID": 7593851491380223013,
+            "UUID": 10371933481870848429,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [
