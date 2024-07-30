@@ -1,4 +1,5 @@
 #include "ptpch.h"
+#ifdef PT_EDITOR
 #include "Proton/Editor/Panels/EditorPanel.h"
 #include "Proton/Editor/EditorLayer.h"
 
@@ -15,3 +16,4 @@ namespace proton {
 	}
 
 }
+#endif // PT_EDITOR

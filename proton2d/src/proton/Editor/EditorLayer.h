@@ -16,8 +16,6 @@ namespace proton {
 	class SceneHierarchyPanel;
 	class InspectorPanel;
 
-
-
 	class EditorLayer : AppLayer
 	{
 	public:
@@ -81,10 +79,6 @@ namespace proton {
 		std::vector<EditorPanel*> m_EditorPanels;
 
 		GameInstance* m_GameInstanceMain = nullptr;
-		//GameInstance* m_GameInstanceContext = nullptr;
-
-		//Scene* m_ActiveScene = nullptr;
-		//Entity m_SelectedEntity;
 
 		EditorConfig m_Config;
 		EditorMenuBar m_MenuBar;
