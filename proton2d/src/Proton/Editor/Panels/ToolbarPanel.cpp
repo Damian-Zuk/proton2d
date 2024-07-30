@@ -22,16 +22,18 @@ namespace proton {
 	{
 		ImGui::Begin("Toolbar", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollWithMouse);
 		
-		if (!m_ActiveScene)
+		Scene* activeScene = GetActiveScene();
+
+		if (!activeScene)
 		{
 			ImGui::End();
 			return;
 		}
 
 		ImGui::PushFont(EditorLayer::GetFontAwesome());
-		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (!m_ActiveScene->IsSimulated() ? 60 : 145)) / 2.0f);
+		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (!activeScene->IsSimulated() ? 60 : 145)) / 2.0f);
 
-		if (m_ActiveScene->IsSimulated())
+		if (activeScene->IsSimulated())
 		{
 			if (ImGui::Button(FontAwesome_Stop, { 60, 32 }))
 			{
@@ -39,7 +41,7 @@ namespace proton {
 			}
 			ImGui::SameLine();
 
-			if (ImGui::Button(m_ActiveScene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, {60, 32}))
+			if (ImGui::Button(activeScene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, {60, 32}))
 			{
 				EditorLayer::Get()->OnPauseButton();
 			}

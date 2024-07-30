@@ -24,7 +24,13 @@ namespace proton {
 		EditorCamera* GetCamera() const { return m_Camera.get(); }
 		float GetAspectRatio() const { return m_ViewportAspectRatio; }
 
-		const std::string& GetWindowName() const { return m_ImGuiWindowName;}
+		const std::string& GetWindowName() const { return m_ImGuiWindowName; }
+
+		void SetActiveScene(Scene* scene) const;
+		void SetSelectedEntity(Entity entity);
+
+		Scene* GetActiveScene() const;
+		Entity GetSelectedEntity() const;
 
 	private:
 		void DrawCollidersAndSelectionOutline(float ts);
@@ -35,10 +41,11 @@ namespace proton {
 
 		bool m_IsMainViewport = true;
 		bool m_IsViewportFocused = false;
+
 		GameInstance* m_GameInstance = nullptr;
+		Entity m_SelectedEntity;
 
 		Unique<EditorCamera> m_Camera;
-
 		Shared<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_ViewportBounds[2] = { { 0.0f, 0.0f }, {0.0f, 0.0f} };

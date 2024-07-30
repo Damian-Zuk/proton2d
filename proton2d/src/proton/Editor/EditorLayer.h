@@ -16,6 +16,8 @@ namespace proton {
 	class SceneHierarchyPanel;
 	class InspectorPanel;
 
+
+
 	class EditorLayer : AppLayer
 	{
 	public:
@@ -35,14 +37,17 @@ namespace proton {
 		static EditorCamera* GetCamera();
 
 		static SceneViewportPanel* GetSceneViewportPanel(GameInstance* gameInstance = nullptr);
-		static SceneViewportPanel* GetActiveSceneViewportPanel();
 		static SceneHierarchyPanel* GetSceneHierarchyPanel();
 		static InspectorPanel* GetInspectorPanel();
 
 		static void SetActiveScene(Scene* scene);
 		static void SelectEntity(Entity entity);
 
-		GameInstance* GetFocusedGameInstance();
+		static Entity GetSelectedEntity(bool targetFocusedViewport = true);
+		static Scene* GetActiveScene(bool targetFocusedViewport = true);
+
+		static GameInstance* GetFocusedGameInstance();
+		static SceneViewportPanel* GetFocusedViewportPanel();
 
 	private:
 		// ImGui setup
@@ -72,11 +77,14 @@ namespace proton {
 	private:
 		bool m_EnableViewports = false; // true: ImGui windows can be detached from main GLFW window
 		bool m_BlockEvents = false;
+
 		std::vector<EditorPanel*> m_EditorPanels;
 
-		GameInstance* m_GameInstance;
-		Scene* m_ActiveScene = nullptr;
-		Entity m_SelectedEntity;
+		GameInstance* m_GameInstanceMain = nullptr;
+		//GameInstance* m_GameInstanceContext = nullptr;
+
+		//Scene* m_ActiveScene = nullptr;
+		//Entity m_SelectedEntity;
 
 		EditorConfig m_Config;
 		EditorMenuBar m_MenuBar;

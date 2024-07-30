@@ -40,6 +40,7 @@ namespace proton {
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
 		m_Window->SetFullscreen(m_AppConfig.Fullscreen);
 		m_Window->SetVSync(m_AppConfig.VSync);
+
 		m_GameInstance = MakeUnique<GameInstance>();
 	}
 
@@ -61,8 +62,6 @@ namespace proton {
 			return;
 		}
 
-		PROFILE_BEGIN_SESSION("Proton-Runtime");
-
 		AssetManager::Init();
 		Renderer::Init();
 		PrefabManager::Init();
@@ -71,53 +70,58 @@ namespace proton {
 		PushOverlay(EditorLayer::Get());
 	#endif
 
-		if (OnCreate()) 
+		if (!OnCreate())
 		{
-			m_IsRunning = true;
+			PT_CORE_ERROR("Application initialization failed! Exiting.");
+			return;
+		}
 
-			m_GameInstance->Init();
-			Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+		m_IsRunning = true;
+		m_GameInstance->Init();
 
-			// The game loop
-			while (m_IsRunning) 
+		PROFILE_BEGIN_SESSION("Proton-Runtime");
+
+		// Application loop
+		while (m_IsRunning) 
+		{
+			PROFILE_SCOPE("app_game_loop");
+			Timer timer;
+
+			if (!m_WindowMinimized) 
 			{
-				PROFILE_SCOPE("app_game_loop");
-				Timer timer;
-
-				if (!m_WindowMinimized) 
+			#ifndef PT_EDITOR
+				Renderer::Clear();
+			#endif
+			{
+				PROFILE_SCOPE("app_layers_update");
+				for (AppLayer* layer : m_AppLayers)
 				{
-				#ifndef PT_EDITOR
-					Renderer::Clear();
-				#endif
-					{
-						// Update application layers
-						PROFILE_SCOPE("app_layers_update");
-						for (AppLayer* layer : m_AppLayers)
-							layer->OnUpdate(m_FrameTime * m_TimeScale);
-					}
-
-				#ifdef PT_EDITOR
-					// Update and render Editor ImGui interface
-					{
-						PROFILE_SCOPE("imgui_render");
-					
-						EditorLayer::Get()->BeginImGuiRender();
-
-						for (AppLayer* layer : m_AppLayers)
-							layer->OnImGuiRender();
-
-						EditorLayer::Get()->EndImGuiRender();
-					}
-				#else
-					m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);
-				#endif
+					layer->OnUpdate(m_FrameTime * m_TimeScale);
 				}
-
-				// Update window
-				m_Window->OnUpdate();
-				
-				m_FrameTime = timer.Elapsed();
 			}
+
+			#ifdef PT_EDITOR
+			{
+				PROFILE_SCOPE("imgui_render");
+				EditorLayer* editorLayer = EditorLayer::Get();
+				editorLayer->BeginImGuiRender();
+
+				for (AppLayer* layer : m_AppLayers)
+				{
+					layer->OnImGuiRender();
+				}
+					
+				editorLayer->EndImGuiRender();
+			}
+			#else
+				m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);
+			#endif
+			}
+
+			// Update window
+			m_Window->OnUpdate();
+			m_FrameTime = timer.Elapsed();
 		}
 
 		PROFILE_END_SESSION();

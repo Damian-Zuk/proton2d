@@ -54,15 +54,6 @@ namespace proton {
 	Scene* SceneManager::SetActiveScene(Scene* scene)
 	{
 		m_ActiveScene = scene;
-	#ifdef PT_EDITOR
-		if (!m_GameInstance->IsMainInstance())
-		{
-			SceneViewportPanel* viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
-			viewport->m_ActiveScene = scene;
-		}
-		else
-			EditorLayer::SetActiveScene(scene);
-	#endif
 		return scene;
 	}
 

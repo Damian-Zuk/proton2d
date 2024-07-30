@@ -25,7 +25,7 @@ namespace proton {
 		ProjectSettings& project = Application::Get().GetGameInstance()->m_ProjectSettings;
 		
 		// Get selected game instance
-		SceneViewportPanel* viewportPanel = EditorLayer::GetActiveSceneViewportPanel();
+		SceneViewportPanel* viewportPanel = EditorLayer::GetFocusedViewportPanel();
 
 		char buffer[256];
 		strcpy_s(buffer, project.m_StartScene.c_str());
@@ -53,7 +53,8 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			NetworkManager* networkManager = m_ActiveScene->m_GameInstance->GetNetworkManager();
+			Scene* activeScene = GetActiveScene();
+			NetworkManager* networkManager = activeScene->m_GameInstance->GetNetworkManager();
 
 			constexpr char* netModesNames[] = { "Standalone", "Listen Server" };
 			const NetMode netMode = Application::GetGameInstance()->GetNetMode();

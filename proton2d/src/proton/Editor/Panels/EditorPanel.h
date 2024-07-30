@@ -19,10 +19,13 @@ namespace proton {
 
 		virtual void OnSelectEntity(Entity entity) {}
 		virtual void OnSetActiveScene(Scene* scene) {}
-	
+
+		virtual Entity GetSelectedEntity(bool targetFocusedViewport = true);
+		virtual Scene* GetActiveScene(bool targetFocusedViewport = true);
+
 	protected:
-		Scene* m_ActiveScene = nullptr;
-		Entity m_SelectedEntity;
+		//Scene* m_ActiveScene = nullptr;
+		//Entity m_SelectedEntity;
 
 		friend class EditorLayer;
 	};

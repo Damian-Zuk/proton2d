@@ -50,14 +50,16 @@ namespace proton {
 
 		ImGui::Begin("Info");
 
+		Scene* activeScene = GetActiveScene(false);
+
 		if (ImGui::TreeNodeEx("General", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 5 });
-			uint32_t entitiesCount = m_ActiveScene ? m_ActiveScene->GetEntitiesCount() : 0;
-			uint32_t scriptedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetScriptedEntitiesCount() : 0;
-			uint32_t networkedEntitiesCount = m_ActiveScene ? m_ActiveScene->GetNetworkedEntitiesCount() : 0;
+			uint32_t entitiesCount = activeScene ? activeScene->GetEntitiesCount() : 0;
+			uint32_t scriptedEntitiesCount = activeScene ? activeScene->GetScriptedEntitiesCount() : 0;
+			uint32_t networkedEntitiesCount = activeScene ? activeScene->GetNetworkedEntitiesCount() : 0;
 			ImGui::Text("Entities: %i (%i scripted, %i networked)", entitiesCount, scriptedEntitiesCount, networkedEntitiesCount);
-			//ImGui::Text("OpenGL Draw Calls: %i", m_ActiveScene ? Renderer::GetDrawCallsCount() : 0);
+			//ImGui::Text("OpenGL Draw Calls: %i", activeScene ? Renderer::GetDrawCallsCount() : 0);
 
 			ImGui::Dummy({ 0, 5 });
 			ImGui::Text("Frame Time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
@@ -83,9 +85,9 @@ namespace proton {
 		ImGui::Dummy({ 0, 15 });
 		if (ImGui::TreeNodeEx("Debug", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (m_ActiveScene)
+			if (activeScene)
 			{
-				auto& position = m_ActiveScene->GetPrimaryCameraPosition();
+				auto& position = activeScene->GetPrimaryCameraPosition();
 				ImGui::Text("Camera Position: (%.2f, %.2f)", position.x, position.y);
 			}
 			ImGui::TreePop();

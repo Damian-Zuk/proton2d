@@ -24,6 +24,9 @@ namespace proton {
 
 	SceneViewportPanel::~SceneViewportPanel()
 	{
+		EditorLayer* editorLayer = EditorLayer::Get();
+		if (editorLayer->GetFocusedGameInstance() == m_GameInstance)
+			editorLayer->m_FocusedGameInstance = editorLayer->m_GameInstanceMain;
 	}
 
 	void SceneViewportPanel::OnCreate()
@@ -34,6 +37,29 @@ namespace proton {
 		fbSpec.Height = 720;
 		m_Framebuffer = MakeShared<Framebuffer>(fbSpec);
 		m_Camera = MakeUnique<EditorCamera>();
+	}
+
+	void SceneViewportPanel::SetActiveScene(Scene* scene) const
+	{
+		PT_CORE_ASSERT(scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
+		m_GameInstance->m_SceneManager->SetActiveScene(scene);
+	}
+
+	void SceneViewportPanel::SetSelectedEntity(Entity entity)
+	{
+		PT_CORE_ASSERT(!entity || entity.m_Scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
+		PT_CORE_ASSERT(!entity || entity.m_Scene == GetActiveScene(), "Scene mismatch");
+		m_SelectedEntity = entity;
+	}
+
+	Scene* SceneViewportPanel::GetActiveScene() const
+	{
+		return m_GameInstance->GetActiveScene();
+	}
+
+	Entity SceneViewportPanel::GetSelectedEntity() const
+	{
+		return m_SelectedEntity;
 	}
 
 	void SceneViewportPanel::OnImGuiRender()
@@ -52,10 +78,6 @@ namespace proton {
 			if (!open)
 			{
 				EditorLayer::Get()->CloseClientGameInstance(m_GameInstance->m_InstanceID);
-				Scene* scene = Application::Get().GetGameInstance()->GetActiveScene();
-				EditorLayer::GetSceneHierarchyPanel()->m_ActiveScene = scene;
-				EditorLayer::GetInspectorPanel()->m_ActiveScene = scene;
-				EditorLayer::SelectEntity({});
 			}
 		}
 
@@ -73,7 +95,9 @@ namespace proton {
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-		if (m_ActiveScene)
+		Scene* activeScene = m_GameInstance->GetActiveScene();
+
+		if (activeScene)
 		{
 			uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 			ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
@@ -93,9 +117,6 @@ namespace proton {
 				EditorLayer::Get()->m_FocusedGameInstance = m_GameInstance;
 
 				Scene* scene = m_GameInstance->GetActiveScene();
-				EditorLayer::GetSceneHierarchyPanel()->m_ActiveScene = scene;
-				EditorLayer::GetInspectorPanel()->m_ActiveScene = scene;
-				EditorLayer::SelectEntity({});
 			}
 			m_IsViewportFocused = isFocused;
 		}
@@ -106,10 +127,12 @@ namespace proton {
 
 	void SceneViewportPanel::OnUpdate(float ts)
 	{
-		if (!m_ActiveScene)
+		Scene* activeScene = m_GameInstance->GetActiveScene();
+
+		if (!activeScene)
 			return;
 
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		activeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		// On viewport resize
 		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
@@ -122,7 +145,7 @@ namespace proton {
 		}
 
 		m_Framebuffer->Bind();
-		Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
+		Renderer::SetClearColor(activeScene->m_ClearColor);
 		Renderer::Clear();
 
 		// Update game instance
@@ -138,7 +161,7 @@ namespace proton {
 		DrawCollidersAndSelectionOutline(ts);
 		m_Framebuffer->Unbind();
 
-		const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
+		const glm::vec2& cursor = activeScene->GetCursorWorldPosition();
 
 		// Update editor camera
 		m_Camera->OnUpdate(ts);
@@ -159,14 +182,14 @@ namespace proton {
 			if (Input::IsKeyPressed(Key::LeftShift))
 			{
 				auto& relation = m_SelectedEntity.GetComponent<RelationshipComponent>();
-				Entity current(relation.First, m_ActiveScene);
+				Entity current(relation.First, activeScene);
 				while (current)
 				{
 					auto& r = current.GetComponent<RelationshipComponent>();
 					auto& t = current.GetTransform();
 					t.LocalPosition.x -= offset.x;
 					t.LocalPosition.y -= offset.y;
-					current = Entity(r.Next, m_ActiveScene);
+					current = Entity(r.Next, activeScene);
 				}
 			}
 
@@ -186,7 +209,9 @@ namespace proton {
 
 	void SceneViewportPanel::OnEvent(Event& event)
 	{
-		if (!m_ActiveScene || !m_ViewportHovered)
+		Scene* activeScene = m_GameInstance->GetActiveScene();
+
+		if (!activeScene || !m_ViewportHovered)
 			return;
 
 		m_Camera->OnEvent(event);
@@ -199,8 +224,8 @@ namespace proton {
 			if (!m_IsMainViewport)
 				return false;
 
-			SceneState state = m_ActiveScene->GetSceneState();
-			const glm::vec2& cursor = m_ActiveScene->GetCursorWorldPosition();
+			SceneState state = activeScene->GetSceneState();
+			const glm::vec2& cursor = activeScene->GetCursorWorldPosition();
 
 			// Mouse Button 1 (Right): Move editor camera
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
@@ -210,7 +235,7 @@ namespace proton {
 				m_MoveEditorCamera = true;
 			}
 
-			if (m_ActiveScene->IsSimulated() || !m_IsViewportFocused)
+			if (activeScene->IsSimulated() || !m_IsViewportFocused)
 				return false;
 
 			// Mouse Button 0 (Left): Select Entity
@@ -218,7 +243,7 @@ namespace proton {
 			{
 				Entity target; float transformMaxZ = 0.0f;
 
-				for (auto& entity : m_ActiveScene->GetEntitiesOnCursorLocation())
+				for (auto& entity : activeScene->GetEntitiesOnCursorLocation())
 				{
 					if (!entity.HasAnyComponent<SpriteComponent, ResizableSpriteComponent,
 						CircleRendererComponent, BoxColliderComponent, CircleColliderComponent>())
@@ -232,7 +257,7 @@ namespace proton {
 					}
 				}
 
-				if (m_SelectedEntity && m_ActiveScene->IsCursorHoveringEntity(m_SelectedEntity))
+				if (m_SelectedEntity && activeScene->IsCursorHoveringEntity(m_SelectedEntity))
 				{
 					// Discard selection
 					target = m_SelectedEntity;
@@ -282,7 +307,7 @@ namespace proton {
 
 			if (key == Key::D && Input::IsKeyPressed(Key::LeftControl) && m_SelectedEntity)
 			{
-				Entity newEntity = m_ActiveScene->DuplicateEntity(m_SelectedEntity, Entity());
+				Entity newEntity = activeScene->DuplicateEntity(m_SelectedEntity, Entity());
 				auto& transform = newEntity.GetTransform();
 				transform.LocalPosition.x += 0.1f;
 				transform.LocalPosition.y += 0.1f;
@@ -402,20 +427,21 @@ namespace proton {
 
 	void SceneViewportPanel::DrawCollidersAndSelectionOutline(float ts)
 	{
-		Camera& camera = m_ActiveScene->GetPrimaryCamera();
-		Renderer::BeginScene(camera, m_ActiveScene->GetPrimaryCameraPosition());
+		Scene* activeScene = GetActiveScene();
+		Camera& camera = activeScene->GetPrimaryCamera();
+		Renderer::BeginScene(camera, activeScene->GetPrimaryCameraPosition());
 		Renderer::SetLineWidth(2.5f);
 
 		if (m_ShowAllColliders)
 		{
-			auto boxesView = m_ActiveScene->m_Registry.view<TransformComponent, BoxColliderComponent>();
+			auto boxesView = activeScene->m_Registry.view<TransformComponent, BoxColliderComponent>();
 			for (auto entity : boxesView)
 			{
 				auto [transform, bc] = boxesView.get<TransformComponent, BoxColliderComponent>(entity);
 				DrawBoxCollider(transform, bc);
 			}
 
-			auto circlesView = m_ActiveScene->m_Registry.view<TransformComponent, CircleColliderComponent>();
+			auto circlesView = activeScene->m_Registry.view<TransformComponent, CircleColliderComponent>();
 			for (auto entity : circlesView)
 			{
 				auto [transform, cc] = circlesView.get<TransformComponent, CircleColliderComponent>(entity);
@@ -432,7 +458,7 @@ namespace proton {
 			DrawSelectionOutline(m_SelectedEntity, m_MoveSelectedEntity ? COLOR_YELLOW : COLOR_WHITE, ts);
 		}
 
-		NetworkManager* netManager = m_ActiveScene->GetOwningGameInstance()->GetNetworkManager();
+		NetworkManager* netManager = activeScene->GetOwningGameInstance()->GetNetworkManager();
 		if (m_ShowNetPosition && netManager->IsNetModeClient() && m_SelectedEntity.IsValid())
 		{
 			if (m_SelectedEntity.HasComponent<NetworkComponent>())
@@ -459,17 +485,18 @@ namespace proton {
 
 	void SceneViewportPanel::HandleImGuiDragAndDrop()
 	{
+		Scene* activeScene = GetActiveScene();
 		if (ImGui::BeginDragDropTarget())
 		{
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_PREFAB");
-			if (payload && m_ActiveScene)
+			if (payload && activeScene)
 			{
 				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
 				std::filesystem::path path(path_wchar);
 
-				Entity entity = PrefabManager::Spawn(m_ActiveScene, path.string());
+				Entity entity = PrefabManager::Spawn(activeScene, path.string());
 				auto& transform = entity.GetComponent<TransformComponent>();
-				glm::vec2 cameraPos = m_ActiveScene->GetCursorWorldPosition();
+				glm::vec2 cameraPos = activeScene->GetCursorWorldPosition();
 				entity.SetWorldPosition({ cameraPos.x, cameraPos.y, transform.WorldPosition.z });
 			}
 			payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE");

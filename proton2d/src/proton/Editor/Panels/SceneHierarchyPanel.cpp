@@ -11,7 +11,10 @@ namespace proton {
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Hierarchy");
-		if (!m_ActiveScene)
+
+		Scene* activeScene = GetActiveScene();
+
+		if (!activeScene)
 		{
 			ImGui::End();
 			return;
@@ -31,7 +34,7 @@ namespace proton {
 		ImGui::Dummy({ 0, 2 });
 
 
-		for (Entity entity : m_ActiveScene->m_Root)
+		for (Entity entity : activeScene->m_Root)
 		{
 			DrawEntityTreeNode(entity);
 		}
@@ -51,7 +54,7 @@ namespace proton {
 			if (!treeNodeHovered)
 			{
 				if (ImGui::MenuItem("Create Entity"))
-					EditorLayer::SelectEntity(m_ActiveScene->CreateEntity());
+					EditorLayer::SelectEntity(activeScene->CreateEntity());
 			}
 			else
 			{
@@ -69,10 +72,12 @@ namespace proton {
 	void SceneHierarchyPanel::DrawEntityTreeNode(Entity entity)
 	{
 		auto& relationship = entity.GetComponent<RelationshipComponent>();
+		Scene* activeScene = GetActiveScene();
+		Entity selectedEntity = GetSelectedEntity();
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 
-		if (m_SelectedEntity == entity)
+		if (selectedEntity == entity)
 			flags |= ImGuiTreeNodeFlags_Selected;
 
 		if (relationship.First == entt::null)
@@ -117,7 +122,7 @@ namespace proton {
 				auto current = relationship.First;
 				for (uint32_t i = 0; i < relationship.ChildrenCount; i++)
 				{
-					Entity e{ current, m_ActiveScene };
+					Entity e{ current, activeScene };
 					DrawEntityTreeNode(e);
 					current = e.GetComponent<RelationshipComponent>().Next;
 				}

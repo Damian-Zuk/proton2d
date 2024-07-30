@@ -13,7 +13,7 @@ namespace proton {
 
 	void EditorCamera::OnUpdate(float ts)
 	{
-		Scene* activeScene = EditorLayer::Get()->m_ActiveScene;
+		Scene* activeScene = EditorLayer::GetActiveScene();
 		if (!activeScene)
 			return;
 
@@ -34,7 +34,7 @@ namespace proton {
 	void EditorCamera::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		Scene* activeScene = EditorLayer::Get()->m_ActiveScene;
+		Scene* activeScene = EditorLayer::GetActiveScene();
 		if (!activeScene) 
 			return;
 

@@ -36,31 +36,34 @@ namespace proton {
 	{
 		ImGui::Begin("Inspector");
 
-		if (!m_ActiveScene) {
+		Scene* activeScene = GetActiveScene();
+		Entity selectedEntity = GetSelectedEntity();
+
+		if (!activeScene) {
 			ImGui::End();
 			return;
 		}
 
 		// Draw scene proporties if no entity is selected
-		if (!m_SelectedEntity.IsValid())
+		if (!selectedEntity.IsValid())
 		{
 			DrawSceneProporties();
 			ImGui::End();
 			return;
 		}
 
-		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
+		if (!activeScene->m_GameInstance->IsMainInstance())
 		{
-			SceneViewportPanel* viewport = EditorLayer::GetActiveSceneViewportPanel();
+			SceneViewportPanel* viewport = EditorLayer::GetFocusedViewportPanel();
 			ImGui::Text("Game Instance: %s", viewport->GetWindowName().c_str());
 			ImGui::Dummy({ 0, 5 });
 		}
 
 		char buffer[256];
-		strcpy_s(buffer, sizeof(buffer), m_SelectedEntity.GetTag().c_str());
+		strcpy_s(buffer, sizeof(buffer), selectedEntity.GetTag().c_str());
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8, 5 });
 		if (ImGui::InputText("##tag", buffer, sizeof(buffer)))
-			m_SelectedEntity.GetComponent<TagComponent>().Tag = std::string(buffer);
+			selectedEntity.GetComponent<TagComponent>().Tag = std::string(buffer);
 		ImGui::PopStyleVar();
 		ImGui::SameLine();
 
@@ -74,8 +77,8 @@ namespace proton {
 		if (ImGui::BeginPopup("Add component"))
 		{
 			#define ADD_COMPONENT_POPUP_MENU_ITEM(component) \
-			if (!m_SelectedEntity.HasComponent<component>() && ImGui::MenuItem(#component)) \
-				m_SelectedEntity.AddComponent<component>()
+			if (!selectedEntity.HasComponent<component>() && ImGui::MenuItem(#component)) \
+				selectedEntity.AddComponent<component>()
 
 			ADD_COMPONENT_POPUP_MENU_ITEM(TransformComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(NetworkComponent);
@@ -95,14 +98,14 @@ namespace proton {
 			{
 				for (auto& [scriptName, addScriptFunction] : ScriptFactory::Get().m_ScriptRegistry)
 				{
-					if (m_SelectedEntity.HasComponent<ScriptComponent>())
+					if (selectedEntity.HasComponent<ScriptComponent>())
 					{
-						auto& component = m_SelectedEntity.GetComponent<ScriptComponent>();
+						auto& component = selectedEntity.GetComponent<ScriptComponent>();
 						if (component.Scripts.find(scriptName) != component.Scripts.end())
 							continue;
 					}
 					if (ImGui::MenuItem(scriptName.c_str()))
-						addScriptFunction(m_SelectedEntity);
+						addScriptFunction(selectedEntity);
 				}
 				ImGui::EndMenu();
 			}
@@ -121,11 +124,11 @@ namespace proton {
 		if (ImGui::BeginPopup("Entity options")) {
 			if (ImGui::MenuItem("Create Prefab"))
 			{
-				PrefabManager::CreatePrefabFromEntity(m_SelectedEntity);
+				PrefabManager::CreatePrefabFromEntity(selectedEntity);
 			}
 			if (ImGui::MenuItem("Delete Entity"))
 			{
-				m_SelectedEntity.Destroy();
+				selectedEntity.Destroy();
 				EditorLayer::SelectEntity({});
 				ImGui::EndPopup();
 				ImGui::End();
@@ -140,7 +143,7 @@ namespace proton {
 		// ******************************************************
 		// Transform Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<TransformComponent>())
+		if (selectedEntity.HasComponent<TransformComponent>())
 		{
 			DrawComponentUI<TransformComponent>("Transform", [&](auto& component)
 			{
@@ -166,9 +169,9 @@ namespace proton {
 				ImGui::PushItemWidth(75.0f);
 				if (ImGui::DragFloat("##S_X", &component.Scale.x, 0.01f, 0.0f, 0.0f, "%.3f"))
 				{
-					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
+					if (selectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
-						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
+						auto& nsc = selectedEntity.GetComponent<ResizableSpriteComponent>();
 						nsc.ResizableSprite.Generate(component.Scale);
 					}
 				}
@@ -176,9 +179,9 @@ namespace proton {
 				ImGui::PushItemWidth(75.0f);
 				if(ImGui::DragFloat("##S_Y", &component.Scale.y, 0.01f, 0.0f, 0.0f, "%.3f"))
 				{
-					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
+					if (selectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
-						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
+						auto& nsc = selectedEntity.GetComponent<ResizableSpriteComponent>();
 						nsc.ResizableSprite.Generate(component.Scale);
 					}
 				}
@@ -199,9 +202,9 @@ namespace proton {
 		// ******************************************************
 		// Script Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<ScriptComponent>())
+		if (selectedEntity.HasComponent<ScriptComponent>())
 		{
-			auto& component = m_SelectedEntity.GetComponent<ScriptComponent>();
+			auto& component = selectedEntity.GetComponent<ScriptComponent>();
 			for (auto& [scriptClassName, scriptInstance] : component.Scripts)
 			{
 				if (!scriptInstance)
@@ -266,7 +269,7 @@ namespace proton {
 
 				if (removeScript)
 				{
-					m_SelectedEntity.RemoveScript(scriptClassName);
+					selectedEntity.RemoveScript(scriptClassName);
 					break;
 				}
 				ImGui::Dummy({ 0.0f, 5.0f });
@@ -276,7 +279,7 @@ namespace proton {
 		// ******************************************************
 		// Sprite Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<SpriteComponent>())
+		if (selectedEntity.HasComponent<SpriteComponent>())
 		{
 			DrawComponentUI<SpriteComponent>("Sprite", [&](auto& component)
 			{
@@ -302,7 +305,7 @@ namespace proton {
 							if (spritesheet)
 							{
 								sprite = Sprite(spritesheet);
-								auto& scale = m_SelectedEntity.GetTransform().Scale;
+								auto& scale = selectedEntity.GetTransform().Scale;
 								float ratio = sprite.GetAspectRatio();
 								if (scale.x / scale.y != ratio)
 									scale.x = scale.y * ratio;
@@ -323,7 +326,7 @@ namespace proton {
 							if (texture)
 							{
 								sprite = Sprite(texture);
-								auto& scale = m_SelectedEntity.GetTransform().Scale;
+								auto& scale = selectedEntity.GetTransform().Scale;
 								float ratio = sprite.GetAspectRatio();
 								if (scale.x / scale.y != ratio)
 									scale.x = scale.y * ratio;
@@ -406,7 +409,7 @@ namespace proton {
 		// ******************************************************
 		// ResizableSpriteComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
+		if (selectedEntity.HasComponent<ResizableSpriteComponent>())
 		{
 			DrawComponentUI<ResizableSpriteComponent>("ResizableSprite", [&](auto& component)
 				{
@@ -475,7 +478,7 @@ namespace proton {
 					
 					if (ImGui::Button("Regenerate"))
 					{
-						sprite.Generate(m_SelectedEntity.GetTransform().Scale);
+						sprite.Generate(selectedEntity.GetTransform().Scale);
 					}
 			});
 		}
@@ -483,7 +486,7 @@ namespace proton {
 		// ******************************************************
 		// Circle Renderer Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<CircleRendererComponent>())
+		if (selectedEntity.HasComponent<CircleRendererComponent>())
 		{
 			DrawComponentUI<CircleRendererComponent>("CircleRenderer", [&](auto& component)
 				{
@@ -497,7 +500,7 @@ namespace proton {
 		// ******************************************************
 		// Text Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<TextComponent>())
+		if (selectedEntity.HasComponent<TextComponent>())
 		{
 			DrawComponentUI<TextComponent>("Text", [&](auto& component)
 				{
@@ -517,7 +520,7 @@ namespace proton {
 		// ******************************************************
 		// UI Text Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<UITextComponent>())
+		if (selectedEntity.HasComponent<UITextComponent>())
 		{
 			DrawComponentUI<UITextComponent>("UI Text", [&](auto& component)
 				{
@@ -538,13 +541,13 @@ namespace proton {
 		// ******************************************************
 		// CameraComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<CameraComponent>())
+		if (selectedEntity.HasComponent<CameraComponent>())
 		{
 			DrawComponentUI<CameraComponent>("Camera", [&](auto& component)
 				{
-					bool isPrimary = m_ActiveScene->m_PrimaryCameraEntity == m_SelectedEntity.m_Handle;
+					bool isPrimary = activeScene->m_PrimaryCameraEntity == selectedEntity.m_Handle;
 					if (ImGui::Checkbox("Set as primary", &isPrimary) && isPrimary)
-						m_ActiveScene->SetPrimaryCameraEntity(m_SelectedEntity);
+						activeScene->SetPrimaryCameraEntity(selectedEntity);
 
 					float zoom = component.Camera.GetZoomLevel();
 					if (ImGui::DragFloat("Zoom Level", &zoom, 0.01f))
@@ -556,7 +559,7 @@ namespace proton {
 		// ******************************************************
 		// RigidbodyComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<RigidbodyComponent>())
+		if (selectedEntity.HasComponent<RigidbodyComponent>())
 		{
 			DrawComponentUI<RigidbodyComponent>("Rigidbody", [](auto& component)
 			{
@@ -588,7 +591,7 @@ namespace proton {
 		// ******************************************************
 		// BoxColliderComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<BoxColliderComponent>())
+		if (selectedEntity.HasComponent<BoxColliderComponent>())
 		{
 			DrawComponentUI<BoxColliderComponent>("BoxCollider", [](auto& component)
 			{
@@ -606,7 +609,7 @@ namespace proton {
 		// ******************************************************
 		// CircleColliderComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<CircleColliderComponent>())
+		if (selectedEntity.HasComponent<CircleColliderComponent>())
 		{
 			DrawComponentUI<CircleColliderComponent>("CircleCollider", [](auto& component)
 			{
@@ -625,7 +628,7 @@ namespace proton {
 		// ******************************************************
 		// NetworkComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<NetworkComponent>())
+		if (selectedEntity.HasComponent<NetworkComponent>())
 		{
 			DrawComponentUI<NetworkComponent>("Network", [](auto& component)
 			{
@@ -678,12 +681,15 @@ namespace proton {
 
 	void InspectorPanel::DrawSceneProporties()
 	{
-		if (!m_ActiveScene->m_GameInstance)
-			m_ActiveScene = Application::Get().GetGameInstance()->GetSceneManager()->GetActiveScene();
+		Scene* activeScene = GetActiveScene();
+		Entity selectedEntity = GetSelectedEntity();
 
-		if (!m_ActiveScene->m_GameInstance->IsMainInstance())
+		if (!activeScene->m_GameInstance)
+			activeScene = Application::Get().GetGameInstance()->GetSceneManager()->GetActiveScene();
+
+		if (!activeScene->m_GameInstance->IsMainInstance())
 		{
-			SceneViewportPanel* viewport = EditorLayer::GetActiveSceneViewportPanel();
+			SceneViewportPanel* viewport = EditorLayer::GetFocusedViewportPanel();
 			ImGui::Text("Game Instance: %s", viewport->GetWindowName().c_str());
 			ImGui::Dummy({ 0, 5 });
 		}
@@ -694,7 +700,7 @@ namespace proton {
 
 		// Select game mode
 		ImGui::Text("Game Mode Class");
-		const std::string& selectedGameMode = m_ActiveScene->m_GameModeClassName;
+		const std::string& selectedGameMode = activeScene->m_GameModeClassName;
 		if (ImGui::BeginCombo("##gameMode", selectedGameMode.c_str()))
 		{
 			for (auto& [className, instanciateFunc] : GameModeFactory::Get().m_GameModeRegistry)
@@ -702,7 +708,7 @@ namespace proton {
 				bool selected = selectedGameMode == className;
 				if (ImGui::Selectable(className.c_str(), selected))
 				{
-					m_ActiveScene->SetGameModeByClassName(className);
+					activeScene->SetGameModeByClassName(className);
 				}
 			}
 			ImGui::EndCombo();
@@ -711,26 +717,26 @@ namespace proton {
 		// Screen clear color
 		ImGui::Dummy({ 0.0f, 5.0f });
 		ImGui::Text("Background Color");
-		if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(m_ActiveScene->m_ClearColor)))
-			Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
+		if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(activeScene->m_ClearColor)))
+			Renderer::SetClearColor(activeScene->m_ClearColor);
 		ImGui::Dummy({ 0.0f, 10.0f });
 
 		// Physics configuration
 		ImGui::Text("Physics Settings");
 		ImGui::Dummy({ 0.0f, 3.0f });
 		ImGui::Separator();
-		bool enablePhysics = m_ActiveScene->m_EnablePhysics;
-		if (ImGui::Checkbox("Enable Physics", &enablePhysics) && m_ActiveScene->m_SceneState == SceneState::Stop)
-			m_ActiveScene->m_EnablePhysics = enablePhysics;
-		if (m_ActiveScene->m_EnablePhysics) 
+		bool enablePhysics = activeScene->m_EnablePhysics;
+		if (ImGui::Checkbox("Enable Physics", &enablePhysics) && activeScene->m_SceneState == SceneState::Stop)
+			activeScene->m_EnablePhysics = enablePhysics;
+		if (activeScene->m_EnablePhysics) 
 		{
 			ImGui::Dummy({ 0,5 });
 			ImGui::PushItemWidth(100.0f);
-			ImGui::DragFloat("Physics Timestep", &m_ActiveScene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
-			ImGui::DragFloat("World Gravity", &m_ActiveScene->m_PhysicsWorld->m_Gravity, 0.1f);
+			ImGui::DragFloat("Physics Timestep", &activeScene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
+			ImGui::DragFloat("World Gravity", &activeScene->m_PhysicsWorld->m_Gravity, 0.1f);
 
-			int* vi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
-			int* pi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsPositionIterations;
+			int* vi = &activeScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
+			int* pi = &activeScene->m_PhysicsWorld->m_PhysicsPositionIterations;
 			if (ImGui::DragInt("Velocity Iterations", vi))
 				*vi = glm::max(*vi, 1);
 			if (ImGui::DragInt("Position Iterations", pi))
@@ -747,7 +753,7 @@ namespace proton {
 
 		constexpr char* netmodeItems[] = { "Inherit", "Standalone" };
 		const NetMode netMode = Application::GetGameInstance()->GetNetMode();
-		bool inheritNetMode = m_ActiveScene->m_InheritNetMode;
+		bool inheritNetMode = activeScene->m_InheritNetMode;
 
 		ImGui::PushItemWidth(180.0f);
 		if (ImGui::BeginCombo("Net Mode", netmodeItems[!inheritNetMode]))
@@ -757,13 +763,13 @@ namespace proton {
 				bool selected = inheritNetMode != (bool)i;
 				if (ImGui::Selectable(netmodeItems[i], selected))
 				{
-					m_ActiveScene->m_InheritNetMode = !(bool)i;
+					activeScene->m_InheritNetMode = !(bool)i;
 				}
 			}
 			ImGui::EndCombo();
 		}
 		
-		auto& defaultSyncParams = m_ActiveScene->m_NetDefaultSyncParams;
+		auto& defaultSyncParams = activeScene->m_NetDefaultSyncParams;
 		auto& defaultSyncMethod = defaultSyncParams.SyncMethod;
 
 		if (ImGui::BeginCombo("Client Sync Method", NetSyncMethodToString(defaultSyncMethod).c_str()))
@@ -782,7 +788,7 @@ namespace proton {
 		{
 			if (defaultSyncMethod == NetSyncMethod::NetworkRigidbody)
 			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent, RigidbodyComponent>();
+				auto view = activeScene->GetAllEntitiesWith<NetworkComponent, RigidbodyComponent>();
 				for (auto e : view)
 				{
 					auto& net = view.get<NetworkComponent>(e);
@@ -791,7 +797,7 @@ namespace proton {
 			}
 			else
 			{
-				auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
 				for (auto e : view)
 				{
 					auto& net = view.get<NetworkComponent>(e);
@@ -808,7 +814,7 @@ namespace proton {
 		ImGui::SameLine();
 		if (ImGui::Button("Set All"))
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
 			for (auto e : view)
 			{
 				auto& net = view.get<NetworkComponent>(e);
@@ -820,7 +826,7 @@ namespace proton {
 		ImGui::SameLine();
 		if (ImGui::Button("Set All"))
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
 			for (auto e : view)
 			{
 				auto& net = view.get<NetworkComponent>(e);
@@ -832,7 +838,7 @@ namespace proton {
 		ImGui::SameLine();
 		if (ImGui::Button("Set All"))
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
 			for (auto e : view)
 			{
 				auto& net = view.get<NetworkComponent>(e);
@@ -844,7 +850,7 @@ namespace proton {
 		ImGui::SameLine();
 		if (ImGui::Button("Set All"))
 		{
-			auto view = m_ActiveScene->GetAllEntitiesWith<NetworkComponent>();
+			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
 			for (auto e : view)
 			{
 				auto& net = view.get<NetworkComponent>(e);
@@ -853,7 +859,7 @@ namespace proton {
 		}
 
 		ImGui::Dummy({ 0, 5 });
-		ImGui::Checkbox("Override Net Params After Prefab Spawn", &m_ActiveScene->m_OverrideNetSyncParamsAfterPrefabSpawn);
+		ImGui::Checkbox("Override Net Params After Prefab Spawn", &activeScene->m_OverrideNetSyncParamsAfterPrefabSpawn);
 
 		ImGui::PopItemWidth();
 
@@ -864,7 +870,8 @@ namespace proton {
 	template<typename T>
 	void InspectorPanel::DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction)
 	{
-		T& component = m_SelectedEntity.GetComponent<T>();
+		Entity selectedEntity = GetSelectedEntity();
+		T& component = selectedEntity.GetComponent<T>();
 
 		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
@@ -879,8 +886,8 @@ namespace proton {
 		}
 
 		NetworkComponent* networkComponent = nullptr;
-		if (m_SelectedEntity.HasComponent<NetworkComponent>())
-			networkComponent = &m_SelectedEntity.GetComponent<NetworkComponent>();
+		if (selectedEntity.HasComponent<NetworkComponent>())
+			networkComponent = &selectedEntity.GetComponent<NetworkComponent>();
 
 		if (opened)
 		{
@@ -890,7 +897,7 @@ namespace proton {
 		}
 
 		if (removeComponent)
-			m_SelectedEntity.RemoveComponent<T>();
+			selectedEntity.RemoveComponent<T>();
 
 		ImGui::Dummy({ 0.0f, 3.0f });
 	}

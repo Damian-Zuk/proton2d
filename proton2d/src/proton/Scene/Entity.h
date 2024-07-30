@@ -176,6 +176,7 @@ namespace proton {
 		friend class PhysicsContactListener;
 		friend struct PhysicsContact;
 
+		friend class EditorLayer;
 		friend class InspectorPanel;
 		friend class SceneViewportPanel;
 	};
