@@ -19,4 +19,8 @@ namespace proton {
 
 	using StreamReaderDelegate = std::function<void(BufferStreamReader& stream)>;
 	using StreamWriterDelegate = std::function<void(BufferStreamWriter& stream)>;
+
+	std::string NetModeToString(NetMode netMode);
+
+	NetMode StringToNetMode(const std::string& netModeStr);
 }

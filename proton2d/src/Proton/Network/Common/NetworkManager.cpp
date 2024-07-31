@@ -141,6 +141,16 @@ namespace proton {
 		CheckNetworkResourcesRelease();
 	}
 
+	void NetworkManager::SetServerIpAddress(const std::string& ip)
+	{
+		m_IpAddress = ip;
+	}
+
+	void NetworkManager::SetServerPort(int port)
+	{
+		m_Port = port;
+	}
+
 	void NetworkManager::SetNetMode(NetMode mode)
 	{
 		if (m_IsNetworkServiceRunning)

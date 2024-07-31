@@ -11,7 +11,26 @@ namespace proton {
 
 	private:
 		void DrawSceneTabBar();
+		void HandleLaunchInstancePopup();
+		void UpdateInstancePropsWindowTitle();
 
+	private:
+
+		struct LaunchInstanceProps
+		{
+			bool OpenPopup = false;
+
+			NetMode NetMode = NetMode::Client;
+			std::string ClientNickname;
+			
+			std::string ServerIp = "127.0.0.1";
+			int Port = 8192;
+			int ServerTickrate = 32;
+
+			bool CurrentSceneStartup = true;
+			std::string ImGuiWindowName = "";
+
+		} m_LaunchInstanceProps;
 	};
 
 }

@@ -52,13 +52,6 @@ namespace proton {
 			return;
 		}
 
-		if (!activeScene->m_GameInstance->IsMainInstance())
-		{
-			SceneViewportPanel* viewport = EditorLayer::GetFocusedViewportPanel();
-			ImGui::Text("Game Instance: %s", viewport->GetWindowName().c_str());
-			ImGui::Dummy({ 0, 5 });
-		}
-
 		char buffer[256];
 		strcpy_s(buffer, sizeof(buffer), selectedEntity.GetTag().c_str());
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8, 5 });
@@ -684,188 +677,185 @@ namespace proton {
 		Scene* activeScene = GetActiveScene();
 		Entity selectedEntity = GetSelectedEntity();
 
-		if (!activeScene->m_GameInstance)
-			activeScene = Application::Get().GetGameInstance()->GetSceneManager()->GetActiveScene();
-
-		if (!activeScene->m_GameInstance->IsMainInstance())
-		{
-			SceneViewportPanel* viewport = EditorLayer::GetFocusedViewportPanel();
-			ImGui::Text("Game Instance: %s", viewport->GetWindowName().c_str());
-			ImGui::Dummy({ 0, 5 });
-		}
-
 		ImGui::Text("Scene Proporties");
+		ImGui::Dummy({ 0.0f, 2.0f });
 		ImGui::Separator();
-		ImGui::Dummy({ 0.0f, 3.0f });
+		ImGui::Dummy({ 0.0f, 5.0f });
 
-		// Select game mode
-		ImGui::Text("Game Mode Class");
-		const std::string& selectedGameMode = activeScene->m_GameModeClassName;
-		if (ImGui::BeginCombo("##gameMode", selectedGameMode.c_str()))
+		if (ImGui::TreeNodeEx("General", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			for (auto& [className, instanciateFunc] : GameModeFactory::Get().m_GameModeRegistry)
+			ImGui::Dummy({ 0, 2 });
+			const std::string& selectedGameMode = activeScene->m_GameModeClassName;
+			ImGui::PushItemWidth(210.0f);
+			if (ImGui::BeginCombo("GameMode Class", selectedGameMode.c_str()))
 			{
-				bool selected = selectedGameMode == className;
-				if (ImGui::Selectable(className.c_str(), selected))
+				for (auto& [className, instanciateFunc] : GameModeFactory::Get().m_GameModeRegistry)
 				{
-					activeScene->SetGameModeByClassName(className);
+					bool selected = selectedGameMode == className;
+					if (ImGui::Selectable(className.c_str(), selected))
+					{
+						activeScene->SetGameModeByClassName(className);
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Dummy({ 0.0f, 5.0f });
+			if (ImGui::ColorEdit4("Background Color", glm::value_ptr(activeScene->m_ClearColor)))
+				Renderer::SetClearColor(activeScene->m_ClearColor);
+			ImGui::PopItemWidth();
+
+			ImGui::TreePop();
+		}
+		ImGui::Dummy({ 0, 5 });
+
+		if (ImGui::TreeNodeEx("Physics", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+
+			bool enablePhysics = activeScene->m_EnablePhysics;
+			if (ImGui::Checkbox("Enable Physics", &enablePhysics) && activeScene->m_SceneState == SceneState::Stop)
+				activeScene->m_EnablePhysics = enablePhysics;
+			if (activeScene->m_EnablePhysics)
+			{
+				ImGui::Dummy({ 0,5 });
+				ImGui::PushItemWidth(100.0f);
+				ImGui::DragFloat("Physics Timestep", &activeScene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
+				ImGui::DragFloat("World Gravity", &activeScene->m_PhysicsWorld->m_Gravity, 0.1f);
+
+				int* vi = &activeScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
+				int* pi = &activeScene->m_PhysicsWorld->m_PhysicsPositionIterations;
+				if (ImGui::DragInt("Velocity Iterations", vi))
+					*vi = glm::max(*vi, 1);
+				if (ImGui::DragInt("Position Iterations", pi))
+					*pi = glm::max(*pi, 1);
+
+				ImGui::PopItemWidth();
+			}
+
+			ImGui::TreePop();
+		}
+		ImGui::Dummy({ 0, 5 });
+
+		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+
+			constexpr char* netmodeItems[] = { "Inherit", "Standalone" };
+			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
+			bool inheritNetMode = activeScene->m_InheritNetMode;
+
+			ImGui::PushItemWidth(180.0f);
+			if (ImGui::BeginCombo("Net Mode", netmodeItems[!inheritNetMode]))
+			{
+				for (uint8_t i = 0; i < 2; i++)
+				{
+					bool selected = inheritNetMode != (bool)i;
+					if (ImGui::Selectable(netmodeItems[i], selected))
+					{
+						activeScene->m_InheritNetMode = !(bool)i;
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			auto& defaultSyncParams = activeScene->m_NetDefaultSyncParams;
+			auto& defaultSyncMethod = defaultSyncParams.SyncMethod;
+
+			if (ImGui::BeginCombo("Client Sync Method", NetSyncMethodToString(defaultSyncMethod).c_str()))
+			{
+				for (uint8_t i = 0; i < 4; i++)
+				{
+					auto current = (NetSyncMethod)i;
+					if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), defaultSyncMethod == current))
+						defaultSyncMethod = current;
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Set All"))
+			{
+				if (defaultSyncMethod == NetSyncMethod::NetworkRigidbody)
+				{
+					auto view = activeScene->GetAllEntitiesWith<NetworkComponent, RigidbodyComponent>();
+					for (auto e : view)
+					{
+						auto& net = view.get<NetworkComponent>(e);
+						net.SyncParams.SyncMethod = NetSyncMethod::NetworkRigidbody;
+					}
+				}
+				else
+				{
+					auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
+					for (auto e : view)
+					{
+						auto& net = view.get<NetworkComponent>(e);
+						net.SyncParams.SyncMethod = defaultSyncMethod;
+					}
 				}
 			}
-			ImGui::EndCombo();
-		}
-
-		// Screen clear color
-		ImGui::Dummy({ 0.0f, 5.0f });
-		ImGui::Text("Background Color");
-		if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(activeScene->m_ClearColor)))
-			Renderer::SetClearColor(activeScene->m_ClearColor);
-		ImGui::Dummy({ 0.0f, 10.0f });
-
-		// Physics configuration
-		ImGui::Text("Physics Settings");
-		ImGui::Dummy({ 0.0f, 3.0f });
-		ImGui::Separator();
-		bool enablePhysics = activeScene->m_EnablePhysics;
-		if (ImGui::Checkbox("Enable Physics", &enablePhysics) && activeScene->m_SceneState == SceneState::Stop)
-			activeScene->m_EnablePhysics = enablePhysics;
-		if (activeScene->m_EnablePhysics) 
-		{
-			ImGui::Dummy({ 0,5 });
-			ImGui::PushItemWidth(100.0f);
-			ImGui::DragFloat("Physics Timestep", &activeScene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
-			ImGui::DragFloat("World Gravity", &activeScene->m_PhysicsWorld->m_Gravity, 0.1f);
-
-			int* vi = &activeScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
-			int* pi = &activeScene->m_PhysicsWorld->m_PhysicsPositionIterations;
-			if (ImGui::DragInt("Velocity Iterations", vi))
-				*vi = glm::max(*vi, 1);
-			if (ImGui::DragInt("Position Iterations", pi))
-				*pi = glm::max(*pi, 1);
 
 			ImGui::PopItemWidth();
-		}
-		ImGui::Dummy({ 0.0f, 10.0f });
+			ImGui::Dummy({ 0, 5 });
 
-		// Network
-		ImGui::Text("Network Settings");
-		ImGui::Dummy({ 0.0f, 3.0f });
-		ImGui::Separator();
-
-		constexpr char* netmodeItems[] = { "Inherit", "Standalone" };
-		const NetMode netMode = Application::GetGameInstance()->GetNetMode();
-		bool inheritNetMode = activeScene->m_InheritNetMode;
-
-		ImGui::PushItemWidth(180.0f);
-		if (ImGui::BeginCombo("Net Mode", netmodeItems[!inheritNetMode]))
-		{
-			for (uint8_t i = 0; i < 2; i++)
-			{
-				bool selected = inheritNetMode != (bool)i;
-				if (ImGui::Selectable(netmodeItems[i], selected))
-				{
-					activeScene->m_InheritNetMode = !(bool)i;
-				}
-			}
-			ImGui::EndCombo();
-		}
-		
-		auto& defaultSyncParams = activeScene->m_NetDefaultSyncParams;
-		auto& defaultSyncMethod = defaultSyncParams.SyncMethod;
-
-		if (ImGui::BeginCombo("Client Sync Method", NetSyncMethodToString(defaultSyncMethod).c_str()))
-		{
-			for (uint8_t i = 0; i < 4; i++)
-			{
-				auto current = (NetSyncMethod)i;
-				if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), defaultSyncMethod == current))
-					defaultSyncMethod = current;
-			}
-			ImGui::EndCombo();
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button("Set All"))
-		{
-			if (defaultSyncMethod == NetSyncMethod::NetworkRigidbody)
-			{
-				auto view = activeScene->GetAllEntitiesWith<NetworkComponent, RigidbodyComponent>();
-				for (auto e : view)
-				{
-					auto& net = view.get<NetworkComponent>(e);
-					net.SyncParams.SyncMethod = NetSyncMethod::NetworkRigidbody;
-				}
-			}
-			else
+			ImGui::PushItemWidth(125.0f);
+			ImGui::InputFloat("Extrapolation Limit", &defaultSyncParams.ExtrapolationLimit, 0.01f);
+			ImGui::SameLine();
+			if (ImGui::Button("Set All"))
 			{
 				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
 				for (auto e : view)
 				{
 					auto& net = view.get<NetworkComponent>(e);
-					net.SyncParams.SyncMethod = defaultSyncMethod;
+					net.SyncParams.ExtrapolationLimit = defaultSyncParams.ExtrapolationLimit;
 				}
 			}
-		}
 
-		ImGui::PopItemWidth();
-		ImGui::Dummy({ 0, 5 });
-
-		ImGui::PushItemWidth(125.0f);
-		ImGui::InputFloat("Extrapolation Limit", &defaultSyncParams.ExtrapolationLimit, 0.01f);
-		ImGui::SameLine();
-		if (ImGui::Button("Set All"))
-		{
-			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-			for (auto e : view)
+			ImGui::InputFloat("Reconcile Time", &defaultSyncParams.ReconcileTime, 0.001f);
+			ImGui::SameLine();
+			if (ImGui::Button("Set All"))
 			{
-				auto& net = view.get<NetworkComponent>(e);
-				net.SyncParams.ExtrapolationLimit = defaultSyncParams.ExtrapolationLimit;
+				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
+				for (auto e : view)
+				{
+					auto& net = view.get<NetworkComponent>(e);
+					net.SyncParams.ReconcileTime = defaultSyncParams.ReconcileTime;
+				}
 			}
-		}
 
-		ImGui::InputFloat("Reconcile Time", &defaultSyncParams.ReconcileTime, 0.001f);
-		ImGui::SameLine();
-		if (ImGui::Button("Set All"))
-		{
-			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-			for (auto e : view)
+			ImGui::InputFloat("Reconcile Threshold", &defaultSyncParams.ReconcileThreshold, 0.001f);
+			ImGui::SameLine();
+			if (ImGui::Button("Set All"))
 			{
-				auto& net = view.get<NetworkComponent>(e);
-				net.SyncParams.ReconcileTime = defaultSyncParams.ReconcileTime;
+				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
+				for (auto e : view)
+				{
+					auto& net = view.get<NetworkComponent>(e);
+					net.SyncParams.ReconcileThreshold = defaultSyncParams.ReconcileThreshold;
+				}
 			}
-		}
 
-		ImGui::InputFloat("Reconcile Threshold", &defaultSyncParams.ReconcileThreshold, 0.001f);
-		ImGui::SameLine();
-		if (ImGui::Button("Set All"))
-		{
-			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-			for (auto e : view)
+			ImGui::InputFloat("Reconcile Cooldown", &defaultSyncParams.ReconcileCooldownTime, 0.001f);
+			ImGui::SameLine();
+			if (ImGui::Button("Set All"))
 			{
-				auto& net = view.get<NetworkComponent>(e);
-				net.SyncParams.ReconcileThreshold = defaultSyncParams.ReconcileThreshold;
+				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
+				for (auto e : view)
+				{
+					auto& net = view.get<NetworkComponent>(e);
+					net.SyncParams.ReconcileCooldownTime = defaultSyncParams.ReconcileCooldownTime;
+				}
 			}
+
+			ImGui::Dummy({ 0, 5 });
+			ImGui::Checkbox("Override Net Params After Prefab Spawn", &activeScene->m_OverrideNetSyncParamsAfterPrefabSpawn);
+
+			ImGui::PopItemWidth();
+
+			ImGui::TreePop();
 		}
-
-		ImGui::InputFloat("Reconcile Cooldown", &defaultSyncParams.ReconcileCooldownTime, 0.001f);
-		ImGui::SameLine();
-		if (ImGui::Button("Set All"))
-		{
-			auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-			for (auto e : view)
-			{
-				auto& net = view.get<NetworkComponent>(e);
-				net.SyncParams.ReconcileCooldownTime = defaultSyncParams.ReconcileCooldownTime;
-			}
-		}
-
-		ImGui::Dummy({ 0, 5 });
-		ImGui::Checkbox("Override Net Params After Prefab Spawn", &activeScene->m_OverrideNetSyncParamsAfterPrefabSpawn);
-
-		ImGui::PopItemWidth();
-
-		ImGui::SameLine();
 	}
-
 
 	template<typename T>
 	void InspectorPanel::DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction)

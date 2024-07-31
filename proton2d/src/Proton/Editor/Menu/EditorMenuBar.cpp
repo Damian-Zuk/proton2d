@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #ifdef PT_EDITOR
-#include "Proton/Editor/EditorMenuBar.h"
+#include "Proton/Editor/Menu/EditorMenuBar.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Core/Application.h"
@@ -14,22 +14,24 @@ namespace proton {
 
 	void EditorMenuBar::OnImGuiRender()
 	{
+		static bool openNewInstancePopupModal = false;
+
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Open Scene...", "Ctrl+O"))
+				if (ImGui::MenuItem("Open scene...", "Ctrl+O"))
 					OpenScene();
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("New Scene", "Ctrl+N"))
+				if (ImGui::MenuItem("New scene", "Ctrl+N"))
 					NewScene();
 
-				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
+				if (ImGui::MenuItem("Save scene", "Ctrl+S"))
 					SaveScene();
 
-				if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+				if (ImGui::MenuItem("Save scene as...", "Ctrl+Shift+S"))
 					SaveSceneAs();
 
 				ImGui::Separator();
@@ -40,15 +42,24 @@ namespace proton {
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Project"))
+			{
+				if (ImGui::MenuItem("Project proporties"))
+					m_OpenProjectProporties = true;
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("Editor"))
 			{
-				if (ImGui::MenuItem("Reset Camera"))
+				if (ImGui::MenuItem("Reset camera"))
 					EditorLayer::GetCamera()->SetPosition({0.0f, 0.0f, 0.0f});
 				ImGui::EndMenu();
 			}
 
 			ImGui::EndMenuBar();
 		}
+
+		HandleProjectProportiesPopup();
 	}
 
 	static std::string GetSceneFilename(const std::string& filepath)
@@ -116,6 +127,41 @@ namespace proton {
 			}
 			manager->Load(filepath);
 			manager->SetActiveScene(filepath);
+		}
+	}
+
+	void EditorMenuBar::HandleProjectProportiesPopup()
+	{
+		if (m_OpenProjectProporties)
+			ImGui::OpenPopup("Project Proporties");
+
+		if (ImGui::BeginPopupModal("Project Proporties", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ProjectSettings& project = Application::Get().GetGameInstance()->m_ProjectSettings;
+
+			char buffer[256];
+			strcpy_s(buffer, project.m_StartScene.c_str());
+
+			ImGui::Dummy({ 0, 5 });
+			ImGui::PushItemWidth(150.0f);
+			if (ImGui::InputText("Startup scene", buffer, 256))
+			{
+				project.m_StartScene = buffer;
+			}
+			ImGui::PopItemWidth();
+			ImGui::Dummy({ 0, 5 });
+
+			if (ImGui::Button("Save", {120, 0}))
+			{
+				project.WriteProjectSettings();
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", { 120, 0 })) { ImGui::CloseCurrentPopup(); }
+
+			ImGui::EndPopup();
+			m_OpenProjectProporties = false;
 		}
 	}
 

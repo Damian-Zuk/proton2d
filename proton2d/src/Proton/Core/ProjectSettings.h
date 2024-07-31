@@ -17,6 +17,7 @@ namespace proton {
 
 		friend class GameInstance;
 		friend class SettingsPanel;
+		friend class EditorMenuBar;
 	};
 
 }

@@ -70,6 +70,7 @@ namespace proton {
 		friend class EditorLayer;
 		friend class SettingsPanel;
 		friend class EditorMenuBar;
+		friend class ToolbarPanel;
 	};
 
 }

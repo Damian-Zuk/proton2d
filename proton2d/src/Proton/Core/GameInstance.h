@@ -50,6 +50,7 @@ namespace proton {
 		friend class InspectorPanel;
 		friend class SceneViewportPanel;
 		friend class SettingsPanel;
+		friend class EditorMenuBar;
 	};
 
 }

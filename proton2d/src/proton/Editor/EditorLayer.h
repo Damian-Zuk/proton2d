@@ -1,7 +1,7 @@
 #pragma once
 #ifdef PT_EDITOR
-#include "Proton/Editor/EditorCamera.h"
-#include "Proton/Editor/EditorMenuBar.h"
+#include "Proton/Editor/Tools/EditorCamera.h"
+#include "Proton/Editor/Menu/EditorMenuBar.h"
 #include "Proton/Core/AppLayer.h"
 #include "Proton/Core/Config.h"
 #include "Proton/Scene/Entity.h"
@@ -67,10 +67,7 @@ namespace proton {
 		void OnBeginSceneSimulation(Scene* scene);
 		void OnStopSceneSimulation(Scene* scene);
 
-		void OnAddClientButton();
-		void OnRemoveClientButton();
-
-		void OpenNewClientGameInstance(NetMode netMode, bool loadStartScene);
+		GameInstance* OpenNewClientGameInstance(NetMode netMode, bool currentSceneStartup, const std::string& windowName);
 		void CloseClientGameInstance(uint32_t id);
 		void HandleClientGameInstanceCloseEvent();
 
@@ -97,12 +94,9 @@ namespace proton {
 			uint32_t ID;
 		};
 		std::vector<EditorClientInstance> m_ClientInstances;
-		std::unordered_map<GameInstance*, SceneViewportPanel*> m_ClientViewportMap;
-		
+		std::unordered_map<GameInstance*, SceneViewportPanel*> m_ClientViewportMap;	
 		std::vector<uint32_t> m_ClientInstancesToClose;
-		std::vector<uint32_t> m_ReleasedClientInstanceIDs;
-
-		uint32_t m_NetNumberOfClients = 1;
+		uint32_t m_CurrentInstanceID = 0;
 
 		friend class Application;
 		friend class Scene;
@@ -114,6 +108,7 @@ namespace proton {
 		friend class ToolbarPanel;
 		friend class EditorCamera;
 		friend class EditorMenuBar;
+		friend class NewInstanceModal;
 	};
 
 }

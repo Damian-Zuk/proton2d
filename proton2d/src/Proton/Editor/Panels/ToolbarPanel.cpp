@@ -1,13 +1,16 @@
 #include "ptpch.h"
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/ToolbarPanel.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Assets/SceneSerializer.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Network/Common/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
+#include "Proton/Utils/Random.h"
 
 #include <imgui.h>
 
@@ -15,6 +18,7 @@ static constexpr const char FontAwesome_Play[]   = u8"\uf04b";
 static constexpr const char FontAwesome_Pause[]  = u8"\uf04c";
 static constexpr const char FontAwesome_Resume[] = u8"\uf051";
 static constexpr const char FontAwesome_Stop[]   = u8"\uf04d";
+static constexpr const char FontAwesome_Rocket[] = u8"\uf135";
 
 namespace proton {
 
@@ -22,12 +26,19 @@ namespace proton {
 	{
 		ImGui::Begin("Toolbar", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollWithMouse);
 		
-		Scene* activeScene = GetActiveScene(false);
+		Scene* activeScene = GetActiveScene();
 
 		if (!activeScene)
 		{
 			ImGui::End();
 			return;
+		}
+
+		auto focusedViewport = EditorLayer::GetFocusedViewportPanel();
+		if (!focusedViewport->m_IsMainViewport)
+		{
+			ImGui::Text("Edit Context:  %s", focusedViewport->m_ImGuiWindowName.c_str());
+			ImGui::SameLine();
 		}
 
 		ImGui::PushFont(EditorLayer::GetFontAwesome());
@@ -50,8 +61,26 @@ namespace proton {
 		{
 			EditorLayer::Get()->OnStartSimulationButton();
 		}
+		
+
+		ImGui::SameLine();
+		float availX = ImGui::GetContentRegionAvail().x;
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availX - 38.0f);
+		if (ImGui::Button(FontAwesome_Rocket, {36, 32}))
+		{
+			m_LaunchInstanceProps.OpenPopup = true;
+			UpdateInstancePropsWindowTitle();
+		}
 		ImGui::PopFont();
+
+		float availY = ImGui::GetContentRegionAvail().y;
+		if (availY >= 21.0f)
+			ImGui::Dummy({ 0.0f, availY - 21.0f });
+		else
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + availY - 17.0f);
+		
 		DrawSceneTabBar();
+		HandleLaunchInstancePopup();
 
 		ImGui::End();
 	}
@@ -85,6 +114,144 @@ namespace proton {
 			}
 			ImGui::EndTabBar();
 		}
+	}
+
+	static const std::array<std::string, 50> s_ExamplePlayerNicknames = {
+		"AppleCrunch","BerryBlitz","CarrotCraze","MangoMania","PeachPunch","RadishRider","KiwiKicker","TomatoTwist","LemonLancer",
+		"PotatoPaladin","GrapeGunner","OliveOverlord","OnionOracle","CherryChase","MelonMarauder","CucumberCrush","PineappleProwl",
+		"StrawberryStorm","AvocadoAssault","BroccoliBrigade","PepperPioneer","ZucchiniZealot","LettuceLancer","BananaBrawler",
+		"CoconutCommander","OrangeOutlaw","SpinachSentry","PumpkinPatrol","TurnipTitan","BeetleBuster","FigFury","NectarineNinja",
+		"PlumPirate","ApricotAce","PapayaPaladin","SquashSquire","RadicchioRider","PearProwler","PersimmonPioneer","QuinceQuester",
+		"RutabagaRogue","DateDestroyer","LycheeLancer","MulberryMystic","ElderberryEcho","PomegranatePunch","StarfruitSlicer",
+		"DurianDominator","GuavaGuardian","GooseberryGlider"
+	};
+
+	static std::string GenerateRandomNickname()
+	{
+		uint32_t rng = Random::Int(1, 99);
+		std::string rngStr = rng < 10 ? "0" + std::to_string(rng) : std::to_string(rng);
+		return s_ExamplePlayerNicknames[Random::Int(0, 49)] + rngStr;
+	}
+
+	void ToolbarPanel::HandleLaunchInstancePopup()
+	{
+		char buffer[256];
+		auto& props = m_LaunchInstanceProps;
+
+		if (props.OpenPopup)
+			ImGui::OpenPopup("Launch Game Instance");
+
+		if (ImGui::BeginPopupModal("Launch Game Instance", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			constexpr char* netModesNames[] = { "Standalone", "Listen Server", "Dedicated Server", "Client" };
+			NetMode& netMode = props.NetMode;
+
+			ImGui::Dummy({ 0, 5 });
+			ImGui::PushItemWidth(160.0f);
+			if (ImGui::BeginCombo("Net Mode", netModesNames[(uint8_t)netMode]))
+			{
+				for (uint8_t i = 0; i < 4; i++)
+				{
+					bool selected = (uint8_t)netMode == i;
+					if (ImGui::Selectable(netModesNames[i], selected))
+					{
+						netMode = (NetMode)i;
+						UpdateInstancePropsWindowTitle();
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::Dummy({ 0, 5 });
+			ImGui::PopItemWidth();
+
+			if (netMode == NetMode::Client || netMode == NetMode::ListenServer)
+			{
+				ImGui::PushItemWidth(160.0f);
+
+				std::strncpy(buffer, props.ClientNickname.c_str(), sizeof(buffer));
+				if (ImGui::InputText("Nick", buffer, sizeof(buffer)))
+					props.ClientNickname = buffer;
+
+				ImGui::SameLine();
+
+				ImGui::PushFont(EditorLayer::GetFontAwesome());
+				if (ImGui::Button(u8"\uF522", ImVec2(40, 25)))
+				{
+					props.ClientNickname = GenerateRandomNickname();
+				}
+				ImGui::PopFont();
+
+				if (netMode == NetMode::Client)
+				{
+					std::strncpy(buffer, props.ServerIp.c_str(), sizeof(buffer));
+					if (ImGui::InputText("Server IP", buffer, sizeof(buffer)))
+						props.ServerIp = buffer;
+
+					ImGui::DragInt("Port", &props.Port, 1.0f, 0, 65535);
+				}
+				ImGui::PopItemWidth();
+			}
+
+			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
+			{	
+				ImGui::PushItemWidth(160.0f);
+				if (ImGui::DragInt("Tick Rate (hz)", &props.ServerTickrate, 1.0f, 1, 256))
+					props.ServerTickrate = std::clamp(props.ServerTickrate, 1, 256);
+				ImGui::DragInt("Port", &props.Port, 1.0f, 0, 65535);
+				ImGui::PopItemWidth();
+			}
+			
+			if (netMode != NetMode::Standalone)
+				ImGui::Dummy({ 0, 5 });
+
+			if (ImGui::TreeNode("More options"))
+			{
+				ImGui::Dummy({ 0, 2 });
+				ImGui::PushItemWidth(140.0f);
+				std::strncpy(buffer, props.ImGuiWindowName.c_str(), sizeof(buffer));
+				if (ImGui::InputText("Window Name", buffer, sizeof(buffer)))
+					props.ImGuiWindowName = buffer;
+				ImGui::PopItemWidth();
+				ImGui::Checkbox("Current Scene Startup", &props.CurrentSceneStartup);
+				ImGui::TreePop();
+			}
+
+			ImGui::Dummy({ 0, 5 });
+			if (ImGui::Button("Launch", { 130, 0 }))
+			{
+				auto instance = EditorLayer::Get()->OpenNewClientGameInstance(netMode, props.CurrentSceneStartup, props.ImGuiWindowName);
+				auto netManager = instance->GetNetworkManager();
+
+				if (netMode == NetMode::Client)
+				{
+					netManager->SetServerIpAddress(props.ServerIp);
+					netManager->SetServerPort(props.Port);
+				}
+				else if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
+				{
+					netManager->SetServerTickRate(props.ServerTickrate);
+					netManager->SetServerPort(props.Port);
+				}
+
+				instance->GetActiveScene()->BeginPlay();
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", { 130, 0 })) { ImGui::CloseCurrentPopup(); }
+
+			ImGui::EndPopup();
+			props.OpenPopup = false;
+		}
+
+		if (!props.ClientNickname.size())
+			props.ClientNickname = GenerateRandomNickname();
+	}
+
+	void ToolbarPanel::UpdateInstancePropsWindowTitle()
+	{
+		auto& props = m_LaunchInstanceProps;
+		props.ImGuiWindowName = NetModeToString(props.NetMode) + " " + std::to_string(EditorLayer::Get()->m_CurrentInstanceID + 1);
 	}
 
 }

@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #ifdef PT_EDITOR
-#include "Proton/Editor/EditorCamera.h"
+#include "Proton/Editor/Tools/EditorCamera.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/Input.h"

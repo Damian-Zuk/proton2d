@@ -27,6 +27,9 @@ namespace proton {
 		void StartClient();
 		void StopClient();
 
+		void SetServerIpAddress(const std::string& ip);
+		void SetServerPort(int port);
+
 		void SetNetMode(NetMode mode);
 		NetMode GetNetMode() const { return m_NetMode; }
 		bool IsNetModeServer() const { return m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer; }

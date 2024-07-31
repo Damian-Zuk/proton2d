@@ -13,6 +13,11 @@ namespace proton {
 		void SaveScene();
 		void SaveSceneAs();
 
+	private:
+		void HandleProjectProportiesPopup();
+
+	private:
+		bool m_OpenProjectProporties = false;
 	};
 
 }

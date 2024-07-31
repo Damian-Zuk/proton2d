@@ -33,8 +33,6 @@ namespace proton {
 
 	EditorLayer* EditorLayer::s_Instance = nullptr;
 
-	constexpr uint16_t s_MaxGameClients = 10;
-
 	struct EditorPanels
 	{
 		SettingsPanel Settings;
@@ -266,28 +264,31 @@ namespace proton {
 	{
 		Scene* activeScene = GetActiveScene(false);
 		activeScene->BeginPlay();
-
-		if (m_MainGameInstance->GetNetMode() == NetMode::ListenServer)
-		{
-			for (uint32_t i = 0; i < m_NetNumberOfClients; i++)
-				OpenNewClientGameInstance(NetMode::Client, false);
-		}
 	}
 
 	void EditorLayer::OnStopSimulationButton()
 	{
-		Scene* activeScene = GetActiveScene(false);
-		if (m_MainGameInstance->GetNetMode() == NetMode::ListenServer)
+		auto viewport = GetFocusedViewportPanel();
+		if (viewport == &s_Panels.SceneViewport)
 		{
-			m_ClientInstances.clear();
-			m_ReleasedClientInstanceIDs.clear();
+			Scene* activeScene = GetActiveScene(false);
+			if (m_MainGameInstance->GetNetMode() == NetMode::ListenServer)
+			{
+				m_ClientInstances.clear();
+				m_CurrentInstanceID = 0;
+			}
+			activeScene->Stop();
 		}
-		activeScene->Stop();
+		else
+		{
+			auto instance = GetFocusedGameInstance();
+			CloseClientGameInstance(instance->m_InstanceID);
+		}
 	}
 
 	void EditorLayer::OnPauseSimulationButton()
 	{
-		Scene* activeScene = GetActiveScene(false);
+		Scene* activeScene = GetActiveScene();
 		activeScene->Pause(!activeScene->IsPaused());
 	}
 
@@ -321,43 +322,9 @@ namespace proton {
 		m_SimulatedScenes--;
 	}
 
-	void EditorLayer::OnAddClientButton()
+	GameInstance* EditorLayer::OpenNewClientGameInstance(NetMode netMode, bool currentSceneStartup, const std::string& windowName)
 	{
-		if (m_NetNumberOfClients >= s_MaxGameClients)
-			return;
-
-		if (m_MainGameInstance->HasSimulationStarted())
-		{
-			OpenNewClientGameInstance(NetMode::Client, false);
-		}
-
-		m_NetNumberOfClients++;
-	}
-
-	void EditorLayer::OnRemoveClientButton()
-	{
-		if (m_NetNumberOfClients == 0)
-			return;
-
-		if (m_MainGameInstance->HasSimulationStarted())
-		{
-			m_ClientInstancesToClose.push_back(m_ClientInstances.back().ID);
-			Scene* mainGameInstanceScene = GetActiveScene(false);
-			SetActiveScene(mainGameInstanceScene);
-		}
-
-		m_NetNumberOfClients--;
-	}
-
-	void EditorLayer::OpenNewClientGameInstance(NetMode netMode, bool loadStartScene)
-	{
-		uint32_t id = (uint32_t)m_ClientInstances.size() + 1;
-
-		if (m_ReleasedClientInstanceIDs.size())
-		{
-			id = m_ReleasedClientInstanceIDs.back();
-			m_ReleasedClientInstanceIDs.pop_back();
-		}
+		uint32_t id = ++m_CurrentInstanceID;
 
 		m_ClientInstances.push_back(EditorClientInstance{
 			MakeUnique<GameInstance>(),
@@ -374,12 +341,12 @@ namespace proton {
 		instance->m_InstanceID = id;
 		instance->SetNetMode(netMode);
 
-		viewport->m_ImGuiWindowName = "Client " + std::to_string(id);
+		viewport->m_ImGuiWindowName = windowName;
 		viewport->m_GameInstance = instance;
 		viewport->m_IsMainViewport = false;
 		viewport->OnCreate();
 
-		if (!loadStartScene)
+		if (currentSceneStartup)
 		{
 			instance->Init(false);
 
@@ -397,13 +364,15 @@ namespace proton {
 			instance->Init();
 		}
 
-		instance->GetActiveScene()->BeginPlay();
+		return instance;
 	}
 
 	void EditorLayer::CloseClientGameInstance(uint32_t instanceID)
 	{
-		m_NetNumberOfClients--;
 		m_ClientInstancesToClose.push_back(instanceID);
+
+		if (m_ClientInstances.size() == 1)
+			m_CurrentInstanceID = 0;
 	}
 
 	void EditorLayer::HandleClientGameInstanceCloseEvent()
@@ -419,7 +388,6 @@ namespace proton {
 					return instance.ID == id;
 				}
 			));
-			m_ReleasedClientInstanceIDs.push_back(id);
 		}
 
 		m_ClientInstancesToClose.clear();
@@ -467,7 +435,7 @@ namespace proton {
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImGuiIO& io = ImGui::GetIO();
 
-		style.FrameRounding = 7.0f;
+		style.FrameRounding = 6.0f;
 		style.PopupRounding = 7.0f;
 		style.ScrollbarSize = 20.0f;
 		style.WindowBorderSize = 0.0f;

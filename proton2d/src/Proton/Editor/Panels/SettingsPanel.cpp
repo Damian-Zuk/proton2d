@@ -21,8 +21,6 @@ namespace proton {
 	void SettingsPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Settings");
-
-		ProjectSettings& project = Application::Get().GetGameInstance()->m_ProjectSettings;
 		
 		// Get selected game instance
 		SceneViewportPanel* viewportPanel = EditorLayer::GetFocusedViewportPanel();
@@ -54,19 +52,10 @@ namespace proton {
 
 			if (netMode == NetMode::ListenServer)
 			{
-				int numClients = EditorLayer::Get()->m_NetNumberOfClients;
-				int count = numClients;
-				ImGui::PushItemWidth(150.0f);
-				if (ImGui::InputInt("Number of Clients", &count, 1, 1))
-				{
-					if (count > numClients)
-						EditorLayer::Get()->OnAddClientButton();
-					else
-						EditorLayer::Get()->OnRemoveClientButton();
-				}
+				ImGui::PushItemWidth(95.0f);
 
 				int tickRate = networkManager->m_ServerTickRate;
-				if (ImGui::InputInt("Server Tick Rate", &tickRate, 1))
+				if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
 				{
 					networkManager->SetServerTickRate(glm::max(tickRate, 1));
 				}
@@ -75,14 +64,14 @@ namespace proton {
 
 			ImGui::PushItemWidth(95.0f);
 			if (netMode == NetMode::ListenServer &&
-				ImGui::DragFloat("Fake Packet Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
+				ImGui::DragFloat("Fake Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
 			{
 				if (Server* server = networkManager->GetServer())
 					server->SetPacketFakeLag(Server::s_FakeServerLag);
 			}
 			ImGui::PopItemWidth();
 
-			ImGui::Checkbox("Trace Net Sync System", &viewportPanel->m_ShowNetPosition);
+			ImGui::Checkbox("Trace Entity Net Sync", &viewportPanel->m_ShowNetPosition);
 
 			ImGui::TreePop();
 		}
@@ -91,10 +80,10 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
-			ImGui::Checkbox("Selection Collider", &viewportPanel->m_ShowSelectionCollider);
-			ImGui::Checkbox("Show Colliders", &viewportPanel->m_ShowAllColliders);
-			ImGui::Checkbox("Runtime Freecam", &EditorLayer::GetCamera()->m_UseInRuntime);
+			//ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
+			ImGui::Checkbox("Show Entity Collider", &viewportPanel->m_ShowSelectionCollider);
+			ImGui::Checkbox("Show All Colliders", &viewportPanel->m_ShowAllColliders);
+			ImGui::Checkbox("Simulation Freecam", &EditorLayer::GetCamera()->m_UseInRuntime);
 			ImGui::TreePop();
 		}
 		ImGui::Dummy({ 0, 5 });
@@ -118,28 +107,6 @@ namespace proton {
 				Application::Get().m_TimeScale = timeScale;
 			}
 			ImGui::PopItemWidth();
-			ImGui::TreePop();
-		}
-		ImGui::Dummy({ 0, 5 });
-
-		char buffer[256];
-		strcpy_s(buffer, project.m_StartScene.c_str());
-
-		if (ImGui::TreeNodeEx("Project", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Dummy({ 0, 2 });
-			ImGui::PushItemWidth(120.0f);
-			if (ImGui::InputText("Start Scene", buffer, 256))
-			{
-				project.m_StartScene = buffer;
-			}
-			ImGui::PopItemWidth();
-
-			ImGui::SameLine();
-			if (ImGui::Button("Apply"))
-			{
-				project.WriteProjectSettings();
-			}
 
 			ImGui::TreePop();
 		}
