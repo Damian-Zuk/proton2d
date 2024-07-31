@@ -28,6 +28,8 @@ namespace proton {
 	{
 		if (m_NetworkThread.joinable())
 			m_NetworkThread.join();
+
+		m_ScratchBuffer.Release();
 	}
 
 	void Client::ConnectToServer(const std::string& serverAddress)
