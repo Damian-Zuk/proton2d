@@ -12,10 +12,6 @@ namespace proton {
 	{
 	}
 
-	GameInstance::~GameInstance()
-	{
-	}
-
 	void GameInstance::Init(bool loadStartScene)
 	{
 		if (!m_ProjectSettings.LoadProjectSettings())
@@ -24,8 +20,8 @@ namespace proton {
 		}
 		else if (loadStartScene)
 		{
-			m_SceneManager->Load(m_ProjectSettings.m_StartScene);
-			Scene* scene = m_SceneManager->SetActiveScene(m_ProjectSettings.m_StartScene);
+			Scene* scene = m_SceneManager->Load(m_ProjectSettings.m_StartScene);
+			m_SceneManager->SetActiveScene(scene);
 
 		#ifdef PROTON_DISTRIBUTION
 			scene->BeginPlay();

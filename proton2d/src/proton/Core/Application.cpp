@@ -67,7 +67,8 @@ namespace proton {
 		PrefabManager::Init();
 
 	#ifdef PT_EDITOR
-		PushOverlay(EditorLayer::Get());
+		EditorLayer::s_Instance = new EditorLayer(m_GameInstance.get());
+		PushOverlay(EditorLayer::s_Instance);
 	#endif
 
 		if (!OnCreate())
@@ -76,9 +77,10 @@ namespace proton {
 			return;
 		}
 
-		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 		m_IsRunning = true;
 		m_GameInstance->Init();
+
+		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 
 		PROFILE_BEGIN_SESSION("Proton-Runtime");
 
@@ -114,7 +116,7 @@ namespace proton {
 					
 				editorLayer->EndImGuiRender();
 			}
-			#else
+			#else // Distribution
 				m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);
 			#endif
 			}
@@ -189,9 +191,11 @@ namespace proton {
 			layer->OnEvent(event);
 		}
 
-		Scene* scene = m_GameInstance->GetActiveScene();
-		if (scene)
-			scene->GetGameMode()->OnEvent(event);
+		if (!event.Handled)
+		{
+			if (Scene* scene = m_GameInstance->GetActiveScene())
+				scene->GetGameMode()->OnEvent(event);
+		}
 	}
 
 }

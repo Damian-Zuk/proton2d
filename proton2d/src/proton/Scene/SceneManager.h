@@ -14,6 +14,7 @@ namespace proton {
 	{
 	public:
 		SceneManager(GameInstance* gameInstance);
+		virtual ~SceneManager() = default;
 
 		void OnUpdate(float ts);
 
@@ -21,6 +22,9 @@ namespace proton {
 		Scene* GetActiveScene();
 		Scene* SetActiveScene(const std::string& scenePath);
 		Scene* SetActiveScene(Scene* scene);
+
+		void Add(const std::string& scenePath, const Shared<Scene> scene);
+		void AddNewActiveScene(const std::string& scenePath, const Shared<Scene> scene);
 
 		Scene* Load(const std::string& scenePath);
 		void Unload(const std::string& scenePath);

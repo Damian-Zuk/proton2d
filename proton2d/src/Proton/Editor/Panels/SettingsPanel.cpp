@@ -26,34 +26,12 @@ namespace proton {
 		
 		// Get selected game instance
 		SceneViewportPanel* viewportPanel = EditorLayer::GetFocusedViewportPanel();
+		Scene* activeScene = GetActiveScene(false);
 
-		char buffer[256];
-		strcpy_s(buffer, project.m_StartScene.c_str());
-
-		if (ImGui::TreeNodeEx("Project", ImGuiTreeNodeFlags_DefaultOpen))
+		if (activeScene && ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			ImGui::PushItemWidth(120.0f);
-			if (ImGui::InputText("Start Scene", buffer, 256))
-			{
-				project.m_StartScene = buffer;
-			}
-			ImGui::PopItemWidth();
-		
-			ImGui::SameLine();
-			if (ImGui::Button("Apply"))
-			{
-				project.WriteProjectSettings();
-			}
-
-			ImGui::TreePop();
-		}
-		ImGui::Dummy({ 0, 5 });
-
-		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Dummy({ 0, 2 });
-			Scene* activeScene = GetActiveScene();
+			
 			NetworkManager* networkManager = activeScene->m_GameInstance->GetNetworkManager();
 
 			constexpr char* netModesNames[] = { "Standalone", "Listen Server" };
@@ -95,25 +73,19 @@ namespace proton {
 				ImGui::PopItemWidth();
 			}
 
-			ImGui::Dummy({ 0, 5 });
-			ImGui::Text("Debug");
-
-			Server* server = networkManager->GetServer();
-
-			static float fakePacketLag = 0.0f;
-			ImGui::PushItemWidth(150.0f);
-			if (ImGui::InputFloat("Fake Packet Lag", &fakePacketLag, 1.0f, 1.0f, "%.1f"))
-				fakePacketLag = glm::max(fakePacketLag, 0.0f);
+			ImGui::PushItemWidth(95.0f);
+			if (netMode == NetMode::ListenServer &&
+				ImGui::DragFloat("Fake Packet Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
+			{
+				if (Server* server = networkManager->GetServer())
+					server->SetPacketFakeLag(Server::s_FakeServerLag);
+			}
 			ImGui::PopItemWidth();
-			ImGui::SameLine();
-			if (ImGui::Button("Set") && server)
-				server->SetPacketFakeLag(fakePacketLag);
 
-			ImGui::Checkbox("Trace Server Entity Position", &viewportPanel->m_ShowNetPosition);
+			ImGui::Checkbox("Trace Net Sync System", &viewportPanel->m_ShowNetPosition);
 
 			ImGui::TreePop();
 		}
-
 		ImGui::Dummy({ 0, 5 });
 
 		if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
@@ -146,6 +118,29 @@ namespace proton {
 				Application::Get().m_TimeScale = timeScale;
 			}
 			ImGui::PopItemWidth();
+			ImGui::TreePop();
+		}
+		ImGui::Dummy({ 0, 5 });
+
+		char buffer[256];
+		strcpy_s(buffer, project.m_StartScene.c_str());
+
+		if (ImGui::TreeNodeEx("Project", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+			ImGui::PushItemWidth(120.0f);
+			if (ImGui::InputText("Start Scene", buffer, 256))
+			{
+				project.m_StartScene = buffer;
+			}
+			ImGui::PopItemWidth();
+
+			ImGui::SameLine();
+			if (ImGui::Button("Apply"))
+			{
+				project.WriteProjectSettings();
+			}
+
 			ImGui::TreePop();
 		}
 

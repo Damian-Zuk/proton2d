@@ -13,7 +13,7 @@ namespace proton {
 	{
 	public:
 		GameInstance();
-		virtual ~GameInstance();
+		virtual ~GameInstance() = default;
 
 		void Init(bool loadStartScene = true);
 		void OnUpdate(float ts);

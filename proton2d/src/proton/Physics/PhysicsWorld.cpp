@@ -268,12 +268,6 @@ namespace proton {
 			auto& rbB = entityB.GetComponent<RigidbodyComponent>();
 			auto& transform = entityA.GetTransform();
 
-			if (m_Scene->GetNetworkManager()->IsNetModeClient())
-			{
-				PT_CORE_TRACE("A: {}", entityA.GetTag());
-				PT_CORE_TRACE("B: {}", entityB.GetTag());
-			}
-
 			switch (info.Type)
 			{
 			case JointType::Revolute:

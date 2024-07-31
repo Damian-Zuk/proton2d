@@ -22,7 +22,7 @@ namespace proton {
 	{
 		ImGui::Begin("Toolbar", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollWithMouse);
 		
-		Scene* activeScene = GetActiveScene();
+		Scene* activeScene = GetActiveScene(false);
 
 		if (!activeScene)
 		{
@@ -37,18 +37,18 @@ namespace proton {
 		{
 			if (ImGui::Button(FontAwesome_Stop, { 60, 32 }))
 			{
-				EditorLayer::Get()->OnStopButton();
+				EditorLayer::Get()->OnStopSimulationButton();
 			}
 			ImGui::SameLine();
 
 			if (ImGui::Button(activeScene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, {60, 32}))
 			{
-				EditorLayer::Get()->OnPauseButton();
+				EditorLayer::Get()->OnPauseSimulationButton();
 			}
 		}
 		else if (ImGui::Button(FontAwesome_Play, { 60, 32 }))
 		{
-			EditorLayer::Get()->OnPlayButton();
+			EditorLayer::Get()->OnStartSimulationButton();
 		}
 		ImGui::PopFont();
 		DrawSceneTabBar();

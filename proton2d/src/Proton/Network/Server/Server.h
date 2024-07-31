@@ -143,6 +143,8 @@ namespace proton {
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 
+		static float s_FakeServerLag;
+
 		friend class NetworkManager;
 		friend class ReplicationManager;
 		friend class NetStatsManager;

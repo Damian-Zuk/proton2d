@@ -8,29 +8,18 @@
 #include <imgui.h>
 #include <filesystem>
 
-namespace proton {
+#define ICON_PATH "editor/content/textures/icon/"
 
-	static std::filesystem::path stripFirstDir(const std::filesystem::path& path)
-	{
-		std::filesystem::path result;
-		int i = 0;
-		for (const auto& part : path)
-		{
-			if (i)
-				result /= part;
-			i++;
-		}
-		return result;
-	}
+namespace proton {
 
 	void ContentBrowserPanel::OnCreate()
 	{
-		m_BackIcon = MakeUnique<Texture>("editor/content/textures/icon/back.png");
-		m_FolderIcon = MakeUnique<Texture>("editor/content/textures/icon/folder.png");
-		m_FileIcon = MakeUnique<Texture>("editor/content/textures/icon/file.png");
-		m_ImageIcon = MakeUnique<Texture>("editor/content/textures/icon/image.png");
-		m_PrefabIcon = MakeUnique<Texture>("editor/content/textures/icon/prefab.png");
-		m_SceneIcon = MakeUnique<Texture>("editor/content/textures/icon/scene.png");
+		m_BackIcon   = MakeUnique<Texture>(ICON_PATH "back.png");
+		m_FolderIcon = MakeUnique<Texture>(ICON_PATH "folder.png");
+		m_FileIcon   = MakeUnique<Texture>(ICON_PATH "file.png");
+		m_ImageIcon  = MakeUnique<Texture>(ICON_PATH "image.png");
+		m_PrefabIcon = MakeUnique<Texture>(ICON_PATH "prefab.png");
+		m_SceneIcon  = MakeUnique<Texture>(ICON_PATH "scene.png");
 	}
 
 	static void DrawChevronRightIcon()
@@ -141,6 +130,19 @@ namespace proton {
 	void ContentBrowserPanel::Update()
 	{
 		m_UpdateTimer = 0.0f;
+	}
+
+	static std::filesystem::path stripFirstDir(const std::filesystem::path& path)
+	{
+		std::filesystem::path result;
+		int i = 0;
+		for (const auto& part : path)
+		{
+			if (i)
+				result /= part;
+			i++;
+		}
+		return result;
 	}
 
 	bool ContentBrowserPanel::DrawDirectoryItem(const std::filesystem::path& path, Texture* icon)

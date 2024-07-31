@@ -11,6 +11,7 @@ namespace proton {
 	class SceneViewportPanel : public EditorPanel
 	{
 	public:
+		SceneViewportPanel() = default;
 		virtual ~SceneViewportPanel();
 
 		virtual void OnCreate() override;
@@ -18,18 +19,15 @@ namespace proton {
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
 
-		virtual void OnSelectEntity(Entity entity) override;
-		virtual void OnSetActiveScene(Scene* scene) override;
-
 		EditorCamera* GetCamera() const { return m_Camera.get(); }
 		float GetAspectRatio() const { return m_ViewportAspectRatio; }
 
 		const std::string& GetWindowName() const { return m_ImGuiWindowName; }
 
-		void SetActiveScene(Scene* scene) const;
-		void SetSelectedEntity(Entity entity);
+		void SetActiveScene(Scene* scene, bool sceneManagerCall = false) const;
+		void SetSelectedEntity(Entity entity, bool sceneManagerCall = false);
 
-		Scene* GetActiveScene() const;
+		virtual Scene* GetActiveScene() const;
 		Entity GetSelectedEntity() const;
 
 	private:
@@ -46,7 +44,7 @@ namespace proton {
 		Entity m_SelectedEntity;
 
 		Unique<EditorCamera> m_Camera;
-		Shared<Framebuffer> m_Framebuffer;
+		Unique<Framebuffer> m_Framebuffer;
 		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::vec2 m_ViewportBounds[2] = { { 0.0f, 0.0f }, {0.0f, 0.0f} };
 		float m_ViewportAspectRatio = 1.0f;

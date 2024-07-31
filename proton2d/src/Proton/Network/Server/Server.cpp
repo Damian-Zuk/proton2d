@@ -32,6 +32,7 @@ namespace proton {
 
 	// Can only have one server instance per-process
 	static Server* s_Instance = nullptr;
+	float Server::s_FakeServerLag = 0.0f;
 
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
@@ -39,6 +40,7 @@ namespace proton {
 		m_NetStatsManager(MakeUnique<NetStatsManager>(this))
 	{
 		m_ScratchBuffer.Allocate(s_ScratchBufferSize);
+		SetPacketFakeLag(s_FakeServerLag);
 	}
 
 	Server::~Server()
@@ -399,7 +401,7 @@ namespace proton {
 	{
 		m_FakePacketLag = glm::max(latencyMs, 0.0f);
 
-		float simulatedLatency = NetworkManager::s_EditorClientInstances > 0 ? m_FakePacketLag / 4.0f : m_FakePacketLag / 2.0f;
+		float simulatedLatency = m_FakePacketLag / 4.0f;
 
 		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Send, simulatedLatency);
 		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Recv, simulatedLatency);

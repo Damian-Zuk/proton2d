@@ -43,10 +43,9 @@ namespace proton {
 				return nullptr;
 			}
 		}
-
-		//PT_CORE_INFO("scene='{}'", scenePath);
-		SetActiveScene(GetScene(scenePath));
-		Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
+		
+		Scene* scene = GetScene(scenePath);
+		SetActiveScene(scene);
 
 		return m_ActiveScene;
 	}
@@ -54,13 +53,34 @@ namespace proton {
 	Scene* SceneManager::SetActiveScene(Scene* scene)
 	{
 		m_ActiveScene = scene;
+
+	#ifdef PT_EDITOR
+		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
+		viewport->SetActiveScene(scene, true);
+	#endif
+
+		if (scene)
+		{
+			Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
+		}
 		return scene;
+	}
+
+	void SceneManager::Add(const std::string& scenePath, const Shared<Scene> scene)
+	{
+		m_Scenes[scenePath] = scene;
+	}
+
+	void SceneManager::AddNewActiveScene(const std::string& scenePath, const Shared<Scene> scene)
+	{
+		m_Scenes[scenePath] = scene;
+		SetActiveScene(scene.get());
 	}
 
 	Scene* SceneManager::Load(const std::string& scenePath)
 	{
 		//PT_CORE_INFO("file='{}.scene.json'", scenePath);
-		Shared<Scene> scene = MakeShared<Scene>(std::string(), scenePath);
+		auto scene = MakeShared<Scene>(std::string(), scenePath);
 		SceneSerializer serializer(scene.get());
 		scene->m_GameInstance = m_GameInstance;
 
@@ -115,7 +135,7 @@ namespace proton {
 
 	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)
 	{
-		Shared<Scene> scene = MakeShared<Scene>("Unnamed Scene", scenePath);
+		auto scene = MakeShared<Scene>("Unnamed Scene", scenePath);
 		scene->m_GameInstance = m_GameInstance;
 		m_Scenes[scenePath] = scene;
 		return scene.get();

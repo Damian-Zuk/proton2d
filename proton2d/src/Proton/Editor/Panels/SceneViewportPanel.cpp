@@ -24,9 +24,14 @@ namespace proton {
 
 	SceneViewportPanel::~SceneViewportPanel()
 	{
-		EditorLayer* editorLayer = EditorLayer::Get();
-		if (editorLayer->GetFocusedGameInstance() == m_GameInstance)
-			editorLayer->m_FocusedGameInstance = editorLayer->m_GameInstanceMain;
+		if (!m_IsMainViewport)
+		{
+			EditorLayer* editorLayer = EditorLayer::Get();
+			if (editorLayer->GetFocusedGameInstance() == m_GameInstance)
+			{
+				editorLayer->m_FocusedGameInstance = editorLayer->m_MainGameInstance;
+			}
+		}
 	}
 
 	void SceneViewportPanel::OnCreate()
@@ -35,20 +40,26 @@ namespace proton {
 		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = MakeShared<Framebuffer>(fbSpec);
+
+		m_Framebuffer = MakeUnique<Framebuffer>(fbSpec);
 		m_Camera = MakeUnique<EditorCamera>();
 	}
 
-	void SceneViewportPanel::SetActiveScene(Scene* scene) const
+	void SceneViewportPanel::SetActiveScene(Scene* scene, bool sceneManagerCall) const
 	{
-		PT_CORE_ASSERT(scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
-		m_GameInstance->m_SceneManager->SetActiveScene(scene);
+		PT_CORE_ASSERT(!scene || scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
+		
+		if (!sceneManagerCall)
+		{
+			m_GameInstance->m_SceneManager->SetActiveScene(scene);
+		}
 	}
 
-	void SceneViewportPanel::SetSelectedEntity(Entity entity)
+	void SceneViewportPanel::SetSelectedEntity(Entity entity, bool sceneManagerCall)
 	{
 		PT_CORE_ASSERT(!entity || entity.m_Scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
 		PT_CORE_ASSERT(!entity || entity.m_Scene == GetActiveScene(), "Scene mismatch");
+		
 		m_SelectedEntity = entity;
 	}
 
@@ -109,14 +120,13 @@ namespace proton {
  
 		HandleImGuiDragAndDrop();
 
+		// Handle Viewport window focus
 		bool isFocused = ImGui::IsWindowFocused();
 		if (isFocused != m_IsViewportFocused)
 		{
 			if (isFocused && EditorLayer::Get()->m_FocusedGameInstance != m_GameInstance)
 			{
 				EditorLayer::Get()->m_FocusedGameInstance = m_GameInstance;
-
-				Scene* scene = m_GameInstance->GetActiveScene();
 			}
 			m_IsViewportFocused = isFocused;
 		}
@@ -218,7 +228,7 @@ namespace proton {
 
 		EventDispatcher dispatcher(event);
 
-		// Dispatch mouse events
+		// ------------------------ Dispatch mouse event ------------------------
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
 			if (!m_IsMainViewport)
@@ -276,7 +286,7 @@ namespace proton {
 			return false;
 		});
 
-		// Dispatch keyboard events
+		// ------------------------ Dispatch keyboard event ------------------------
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
 			if (!m_IsViewportFocused)
@@ -287,7 +297,7 @@ namespace proton {
 			if (key == Key::F3)
 				m_ShowAllColliders = !m_ShowAllColliders;
 
-			if (!m_IsMainViewport)
+			if (!m_IsMainViewport) // Main viewport only
 				return false;
 
 			if (key == Key::F1)
@@ -296,28 +306,31 @@ namespace proton {
 			if (key == Key::F2)
 				m_ShowSelectionCollider = !m_ShowSelectionCollider;
 
-			if (key == Key::Escape && m_SelectedEntity)
-				EditorLayer::Get()->SelectEntity({});
-
-			if (key == Key::Delete && m_SelectedEntity)
+			if (m_SelectedEntity)
 			{
-				m_SelectedEntity.Destroy();
-				EditorLayer::Get()->SelectEntity({});
-			}
+				if (key == Key::Escape)
+					EditorLayer::Get()->SelectEntity({});
 
-			if (key == Key::D && Input::IsKeyPressed(Key::LeftControl) && m_SelectedEntity)
-			{
-				Entity newEntity = activeScene->DuplicateEntity(m_SelectedEntity, Entity());
-				auto& transform = newEntity.GetTransform();
-				transform.LocalPosition.x += 0.1f;
-				transform.LocalPosition.y += 0.1f;
-				EditorLayer::Get()->SelectEntity(newEntity);
+				if (key == Key::Delete)
+				{
+					m_SelectedEntity.Destroy();
+					EditorLayer::Get()->SelectEntity({});
+				}
+
+				if (key == Key::D && Input::IsKeyPressed(Key::LeftControl))
+				{
+					Entity newEntity = activeScene->DuplicateEntity(m_SelectedEntity, Entity());
+					auto& transform = newEntity.GetTransform();
+					transform.LocalPosition.x += 0.1f;
+					transform.LocalPosition.y += 0.1f;
+					EditorLayer::Get()->SelectEntity(newEntity);
+				}
 			}
 
 			return false;
 		});
 
-		// Mouse evenets (button released)
+		// ------------------------ Mouse event (button released) ------------------------
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
 		{
 			if (e.GetMouseButton() == Mouse::Button0)
@@ -331,20 +344,12 @@ namespace proton {
 		});
 	}
 
-	void SceneViewportPanel::OnSelectEntity(Entity entity)
-	{
-	}
-
-	void SceneViewportPanel::OnSetActiveScene(Scene* scene)
-	{
-	}
-
 	static constexpr glm::vec4 COLOR_WHITE = glm::vec4{ 1.0f };
 	static constexpr glm::vec4 COLOR_YELLOW = { 0.8f, 0.8f, 0.2f, 1.0f };
 	static constexpr glm::vec4 COLOR_LIGHT_RED = { 0.9f, 0.38f, 0.3f, 1.0f };
 	static constexpr glm::vec4 COLOR_CYAN = { 0.0f, 0.987f, 1.0f, 1.0f };
-	static constexpr glm::vec4 COLOR_COLLIDER = { 0.9f, 0.6f, 0.3f, 0.2f };
-	static constexpr glm::vec4 COLOR_OUTLINE = { 0.95f, 0.25f, 0.18f, 0.75f}; 
+	static constexpr glm::vec4 COLOR_ORANGE = { 0.9f, 0.6f, 0.3f, 0.2f };
+	static constexpr glm::vec4 COLOR_RED = { 0.95f, 0.25f, 0.18f, 0.75f}; 
 	static constexpr glm::vec4 COLOR_GREEN = { 0.2f, 0.85f, 0.15f, 1.0f };
 
 	static void DrawBoxCollider(TransformComponent& transform, BoxColliderComponent& bc)
@@ -353,12 +358,10 @@ namespace proton {
 			* glm::rotate(glm::mat4{ 1.0f }, glm::radians(transform.Rotation), { 0.0f, 0.0f, 1.0f })
 			* glm::translate(glm::mat4{ 1.0f }, { bc.Offset.x, bc.Offset.y, 0.0f })
 			* glm::scale(glm::mat4{ 1.0f }, { bc.Size.x * transform.Scale.x, bc.Size.y * transform.Scale.y, 1.0f });
-
-		//Renderer::DrawQuad(quadTransform, COLOR_COLLIDER);
 		
 		quadTransform[3].z += 0.001f;
 		glm::vec4 sensorColor = bc.ContactCallback.ContactCount > 0 ? COLOR_YELLOW : COLOR_GREEN;
-		Renderer::DrawRect(quadTransform, bc.IsSensor ? sensorColor : COLOR_OUTLINE);
+		Renderer::DrawRect(quadTransform, bc.IsSensor ? sensorColor : COLOR_RED);
 	}
 
 	static void DrawCircleCollider(TransformComponent& transform, CircleColliderComponent& cc, Camera& camera)
@@ -369,17 +372,17 @@ namespace proton {
 		};
 		glm::vec3 scale = { cc.Radius * transform.Scale.x, cc.Radius * transform.Scale.x, 1.0f };
 		glm::mat4 circleTransform = Math::GetTransform(position, scale, transform.Rotation);
-		Renderer::DrawCircle(circleTransform, COLOR_COLLIDER);
+		Renderer::DrawCircle(circleTransform, COLOR_ORANGE);
 
 		circleTransform[3].z += 0.001f;
-		Renderer::DrawCircle(circleTransform, COLOR_OUTLINE,
+		Renderer::DrawCircle(circleTransform, COLOR_RED,
 			0.05f / glm::sqrt(1.0f / camera.GetZoomLevel() * 0.3f));
 
 		position.z += 0.002f;
 		glm::vec3 point = position;
 		point.x += cc.Radius * transform.Scale.x / 2.0f * std::cos(glm::radians(transform.Rotation));
 		point.y += cc.Radius * transform.Scale.x / 2.0f * std::sin(glm::radians(transform.Rotation));
-		Renderer::DrawLine(position, point, COLOR_OUTLINE);
+		Renderer::DrawLine(position, point, COLOR_RED);
 	}
 
 	static void DrawSelectionOutline(Entity entity, glm::vec4 color, float ts)

@@ -71,12 +71,9 @@ namespace proton {
 
 	void EntityScript::SetReplicatedData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction)
 	{
-		bool hasNetComponent = HasComponent<NetworkComponent>();
-		PT_CORE_ASSERT(hasNetComponent, "NetworkComponent");
-		
-		if (!hasNetComponent)
+		if (!HasComponent<NetworkComponent>())
 		{
-			PT_CORE_ERROR("Entity: ({}, {}) missing NetworkComponent)");
+			PT_CORE_ERROR("Entity: ({}, {}) missing NetworkComponent)", GetUUID(), GetTag());
 			return;
 		}
 
