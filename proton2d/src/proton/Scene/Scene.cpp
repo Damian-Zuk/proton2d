@@ -37,9 +37,9 @@ namespace proton {
 			GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
 		}
 		else
+		{
 			m_GameMode = new GameModeBase();
-
-		m_NetDefaultSyncParams.SyncMethod = NetSyncMethod::NetworkRigidbody;
+		}
 	}
 
 	Scene::~Scene()
@@ -119,8 +119,7 @@ namespace proton {
 		newScene->m_EnablePhysics = m_EnablePhysics;
 		newScene->m_PhysicsTimestep = m_PhysicsTimestep;
 
-		newScene->m_InheritNetMode = m_InheritNetMode;
-		newScene->m_NetDefaultSyncParams = m_NetDefaultSyncParams;
+		newScene->m_EnableNetworking = m_EnableNetworking;
 
 		if (gameInstance)
 			newScene->m_GameInstance = gameInstance;
@@ -215,11 +214,6 @@ namespace proton {
 	#ifdef PT_EDITOR
 		EditorLayer::Get()->OnBeginSceneSimulation(this);
 	#endif
-
-		//NetMode netMode = m_GameInstance->GetNetMode();
-		//if (m_NetDefaultSyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody 
-		//	&& netMode == NetMode::Client && m_InheritNetMode)
-		//	m_EnablePhysics = false;
 
 		m_SceneState = SceneState::Play;
 		m_GameInstance->OnSceneSimulationStart(this);
@@ -741,12 +735,24 @@ namespace proton {
 		m_GameMode = nullptr;
 	}
 
+	Camera& Scene::GetPrimaryCamera()
+	{
+	#ifdef PT_EDITOR
+		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
+
+		if (m_SceneState == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
+			return viewport->m_Camera->GetBaseCamera();
+	#endif
+		return m_PrimaryCamera ? *m_PrimaryCamera : m_DefaultCamera;
+	}
+
 	void Scene::CachePrimaryCameraPosition()
 	{
 	#ifdef PT_EDITOR
-		if (m_GameInstance->m_IsMainInstance && (m_SceneState == SceneState::Stop || EditorLayer::GetCamera()->m_UseInRuntime))
+		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
+		if (m_SceneState == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
 		{
-			m_PrimaryCameraPosition = EditorLayer::GetCamera()->GetPosition();
+			m_PrimaryCameraPosition = viewport->GetCamera()->GetPosition();
 			return;
 		}
 	#endif
@@ -765,28 +771,20 @@ namespace proton {
 	void Scene::CacheCursorWorldPosition()
 	{
 	#ifdef PT_EDITOR
-		uint32_t width = (uint32_t)EditorLayer::GetSceneViewportPanel()->m_ViewportSize.x;
-		uint32_t height = (uint32_t)EditorLayer::GetSceneViewportPanel()->m_ViewportSize.y;
-		const glm::vec2& mouse = EditorLayer::GetSceneViewportPanel()->m_MousePos;
+		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
+		const uint32_t width = (uint32_t)viewport->m_ViewportSize.x;
+		const uint32_t height = (uint32_t)viewport->m_ViewportSize.y;
+		const glm::vec2& mouse = viewport->m_MousePos;
 	#else
 		Window& window = Application::Get().GetWindow();
-		uint32_t width = window.GetWidth();
-		uint32_t height = window.GetHeight();
-		glm::vec2 mouse = Input::GetMousePosition();
+		const uint32_t width = window.GetWidth();
+		const uint32_t height = window.GetHeight();
+		const glm::vec2 mouse = Input::GetMousePosition();
 	#endif
 		OrthoProjection ortho = GetPrimaryCamera().GetOrthoProjection();
 		auto& camera = GetPrimaryCameraPosition();
 		m_CursorWorldPosition[0] = mouse.x / (float)width * ortho.Right * 2.0f + camera.x + ortho.Left;
 		m_CursorWorldPosition[1] = mouse.y / (float)height * ortho.Bottom * 2.0f + camera.y + ortho.Top;
-	}
-
-	Camera& Scene::GetPrimaryCamera()
-	{
-	#ifdef PT_EDITOR
-		if (m_GameInstance->m_IsMainInstance && (m_SceneState == SceneState::Stop || EditorLayer::GetCamera()->m_UseInRuntime))
-			return EditorLayer::GetCamera()->GetBaseCamera();
-	#endif
-		return m_PrimaryCamera ? *m_PrimaryCamera : m_DefaultCamera;
 	}
 
 	void Scene::SetPrimaryCameraEntity(Entity entity)

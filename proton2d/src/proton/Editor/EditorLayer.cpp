@@ -308,10 +308,13 @@ namespace proton {
 		if (!scene->m_GameInstance->IsMainInstance())
 			return;
 
+		SelectEntity(Entity{});
+
 		Scene* activeScene = GetActiveScene(false);
 		bool isActiveScene = scene == activeScene;
 		std::string sceneFilepath = scene->m_SceneFilepath;
 
+		// Restore scene state from backup
 		SceneManager* manager = m_MainGameInstance->GetSceneManager();
 		manager->m_Scenes[sceneFilepath] = m_SimulatedScenesBackup.at(sceneFilepath);
 			
@@ -320,9 +323,10 @@ namespace proton {
 			
 		m_SimulatedScenesBackup.erase(sceneFilepath);
 		m_SimulatedScenes--;
+
 	}
 
-	GameInstance* EditorLayer::OpenNewClientGameInstance(NetMode netMode, bool currentSceneStartup, const std::string& windowName)
+	GameInstance* EditorLayer::OpenNewClientGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
 	{
 		uint32_t id = ++m_CurrentInstanceID;
 
@@ -346,7 +350,7 @@ namespace proton {
 		viewport->m_IsMainViewport = false;
 		viewport->OnCreate();
 
-		if (currentSceneStartup)
+		if (!loadStartupScene)
 		{
 			instance->Init(false);
 
@@ -418,7 +422,7 @@ namespace proton {
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		// Main font
-		const EditorConfig::Font font = m_Config.EditorFonts["roboto"];
+		const auto& font = m_Config.EditorFonts["FiraCode"];
 		io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), font.FontSize);
 
 		// Small font
@@ -461,10 +465,12 @@ namespace proton {
 		style.Colors[ImGuiCol_TitleBg] = ImVec4(0.23f, 0.23f, 0.22f, 1.0f);
 		style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.23f, 0.23f, 0.22f, 1.0f);
 
-		style.Colors[ImGuiCol_Tab] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
-		style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
-		style.Colors[ImGuiCol_TabHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
-		style.Colors[ImGuiCol_TabActive] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+		style.Colors[ImGuiCol_Tab] = ImVec4(0.12f, 0.12f, 0.12f, 1.0f);
+		style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.12f, 0.12f, 0.12f, 1.0f);
+		style.Colors[ImGuiCol_TabHovered] = ImVec4(0.175f, 0.175f, 0.175f, 1.0f);
+		style.Colors[ImGuiCol_TabActive] = ImVec4(0.175f, 0.175f, 0.175f, 1.0f);
+
+		style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 	}
 
 	void EditorLayer::SetupImGuiViewports()

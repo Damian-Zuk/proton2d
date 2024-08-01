@@ -67,7 +67,7 @@ namespace proton {
 		void OnBeginSceneSimulation(Scene* scene);
 		void OnStopSceneSimulation(Scene* scene);
 
-		GameInstance* OpenNewClientGameInstance(NetMode netMode, bool currentSceneStartup, const std::string& windowName);
+		GameInstance* OpenNewClientGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName);
 		void CloseClientGameInstance(uint32_t id);
 		void HandleClientGameInstanceCloseEvent();
 

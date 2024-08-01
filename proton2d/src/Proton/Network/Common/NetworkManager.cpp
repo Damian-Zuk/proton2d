@@ -59,7 +59,7 @@ namespace proton {
 
 	void NetworkManager::OnSceneSimulationStart(Scene* scene)
 	{
-		if (!scene->m_InheritNetMode || m_NetMode == NetMode::Standalone)
+		if (!scene->m_EnableNetworking || m_NetMode == NetMode::Standalone)
 			return;
 
 		m_NetworkedSceneCount++;
@@ -75,7 +75,7 @@ namespace proton {
 
 	void NetworkManager::OnSceneSimulationStop(Scene* scene)
 	{
-		if (!scene->m_InheritNetMode || m_NetMode == NetMode::Standalone)
+		if (!scene->m_EnableNetworking || m_NetMode == NetMode::Standalone)
 			return;
 
 		m_NetworkedSceneCount--;

@@ -221,7 +221,10 @@ namespace proton {
 	{
 		Scene* activeScene = m_GameInstance->GetActiveScene();
 
-		if (!activeScene || !m_ViewportHovered)
+		if (!activeScene)
+			return;
+
+		if (!m_ViewportHovered && !m_MoveEditorCamera)
 			return;
 
 		m_Camera->OnEvent(event);
@@ -231,8 +234,6 @@ namespace proton {
 		// ------------------------ Dispatch mouse event ------------------------
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			if (!m_IsMainViewport)
-				return false;
 
 			SceneState state = activeScene->GetSceneState();
 			const glm::vec2& cursor = activeScene->GetCursorWorldPosition();
@@ -289,7 +290,7 @@ namespace proton {
 		// ------------------------ Dispatch keyboard event ------------------------
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
-			if (!m_IsViewportFocused)
+			if (!m_IsViewportFocused || !m_ViewportHovered)
 				return false;
 
 			KeyCode key = e.GetKeyCode();

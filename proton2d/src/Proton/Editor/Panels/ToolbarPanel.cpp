@@ -24,8 +24,10 @@ namespace proton {
 
 	void ToolbarPanel::OnImGuiRender()
 	{
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 		ImGui::Begin("Toolbar", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollWithMouse);
-		
+		ImGui::PopStyleColor();
+
 		Scene* activeScene = GetActiveScene();
 
 		if (!activeScene)
@@ -34,38 +36,54 @@ namespace proton {
 			return;
 		}
 
-		auto focusedViewport = EditorLayer::GetFocusedViewportPanel();
-		if (!focusedViewport->m_IsMainViewport)
-		{
-			ImGui::Text("Edit Context:  %s", focusedViewport->m_ImGuiWindowName.c_str());
-			ImGui::SameLine();
-		}
+		float availY = ImGui::GetContentRegionAvail().y;
+		if (availY >= 70.0f)
+			ImGui::Dummy({ 0.0f, availY - 70.0f });
+		else
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + availY - 66.0f);
+
+		ImGui::Dummy({ 0, 5 });
+		DrawSceneTabBar();
+
+		float toolbarStartX = 50.0f;
+		float toolbarStartY = ImGui::GetCursorPosY();
+
+		ImGui::SetCursorPos({ 0.0f, toolbarStartY - 5.0f });
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		ImVec2 cursor = ImGui::GetCursorScreenPos();
+		ImVec2 containerSize = ImVec2(ImGui::GetContentRegionAvail().x + 10.0f, 120.0f);
+		ImU32 color = IM_COL32(45, 45, 45, 255);
+
+		// Draw the filled rectangle as a background
+		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + containerSize.x, cursor.y + containerSize.y), color);
+
+		ImGui::SetCursorPos({ toolbarStartX, toolbarStartY });
 
 		ImGui::PushFont(EditorLayer::GetFontAwesome());
-		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (!activeScene->IsSimulated() ? 60 : 145)) / 2.0f);
+		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (activeScene->IsSimulated() ? 145 : 90)) / 2.0f);
 
 		if (activeScene->IsSimulated())
 		{
+			// Stop button
 			if (ImGui::Button(FontAwesome_Stop, { 60, 32 }))
 			{
 				EditorLayer::Get()->OnStopSimulationButton();
 			}
 			ImGui::SameLine();
 
-			if (ImGui::Button(activeScene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, {60, 32}))
+			// Pause button
+			if (ImGui::Button(activeScene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, { 60, 32 }))
 			{
 				EditorLayer::Get()->OnPauseSimulationButton();
 			}
 		}
+		// Play button
 		else if (ImGui::Button(FontAwesome_Play, { 60, 32 }))
 		{
 			EditorLayer::Get()->OnStartSimulationButton();
 		}
-		
 
 		ImGui::SameLine();
-		float availX = ImGui::GetContentRegionAvail().x;
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availX - 38.0f);
 		if (ImGui::Button(FontAwesome_Rocket, {36, 32}))
 		{
 			m_LaunchInstanceProps.OpenPopup = true;
@@ -73,20 +91,24 @@ namespace proton {
 		}
 		ImGui::PopFont();
 
-		float availY = ImGui::GetContentRegionAvail().y;
-		if (availY >= 21.0f)
-			ImGui::Dummy({ 0.0f, availY - 21.0f });
-		else
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + availY - 17.0f);
+		auto viewport = EditorLayer::GetFocusedViewportPanel();
+		if (!viewport->m_IsMainViewport)
+		{
+			ImVec2 textSize = ImGui::CalcTextSize(viewport->m_ImGuiWindowName.c_str());
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - textSize.x - 5.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
+			ImGui::TextColored({ 1.0f, 0.8f, 0.12f, 1.0f }, "%s", viewport->m_ImGuiWindowName.c_str());
+		}
 		
-		DrawSceneTabBar();
 		HandleLaunchInstancePopup();
 
 		ImGui::End();
 	}
 
 	void ToolbarPanel::DrawSceneTabBar()
-	{
+	{	
+		ImGui::SetCursorPosX(20.0f);
 		if (ImGui::BeginTabBar("SceneTabBar", ImGuiTabBarFlags_AutoSelectNewTabs)) 
 		{
 			SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
@@ -208,18 +230,18 @@ namespace proton {
 			{
 				ImGui::Dummy({ 0, 2 });
 				ImGui::PushItemWidth(140.0f);
-				std::strncpy(buffer, props.ImGuiWindowName.c_str(), sizeof(buffer));
+				std::strncpy(buffer, props.WindowName.c_str(), sizeof(buffer));
 				if (ImGui::InputText("Window Name", buffer, sizeof(buffer)))
-					props.ImGuiWindowName = buffer;
+					props.WindowName = buffer;
 				ImGui::PopItemWidth();
-				ImGui::Checkbox("Current Scene Startup", &props.CurrentSceneStartup);
+				ImGui::Checkbox("Load Startup Scene", &props.LoadStartupScene);
 				ImGui::TreePop();
 			}
 
 			ImGui::Dummy({ 0, 5 });
-			if (ImGui::Button("Launch", { 130, 0 }))
+			if (ImGui::Button("Launch", { 150, 0 }))
 			{
-				auto instance = EditorLayer::Get()->OpenNewClientGameInstance(netMode, props.CurrentSceneStartup, props.ImGuiWindowName);
+				auto instance = EditorLayer::Get()->OpenNewClientGameInstance(netMode, props.LoadStartupScene, props.WindowName);
 				auto netManager = instance->GetNetworkManager();
 
 				if (netMode == NetMode::Client)
@@ -238,7 +260,7 @@ namespace proton {
 			}
 			ImGui::SetItemDefaultFocus();
 			ImGui::SameLine();
-			if (ImGui::Button("Cancel", { 130, 0 })) { ImGui::CloseCurrentPopup(); }
+			if (ImGui::Button("Cancel", { 150, 0 })) { ImGui::CloseCurrentPopup(); }
 
 			ImGui::EndPopup();
 			props.OpenPopup = false;
@@ -251,7 +273,7 @@ namespace proton {
 	void ToolbarPanel::UpdateInstancePropsWindowTitle()
 	{
 		auto& props = m_LaunchInstanceProps;
-		props.ImGuiWindowName = NetModeToString(props.NetMode) + " " + std::to_string(EditorLayer::Get()->m_CurrentInstanceID + 1);
+		props.WindowName = NetModeToString(props.NetMode) + " " + std::to_string(EditorLayer::Get()->m_CurrentInstanceID + 1);
 	}
 
 }

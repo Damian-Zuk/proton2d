@@ -27,8 +27,8 @@ namespace proton {
 			int Port = 8192;
 			int ServerTickrate = 32;
 
-			bool CurrentSceneStartup = true;
-			std::string ImGuiWindowName = "";
+			bool LoadStartupScene = false;
+			std::string WindowName;
 
 		} m_LaunchInstanceProps;
 	};

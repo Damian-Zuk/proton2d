@@ -77,13 +77,13 @@ namespace proton {
 		}
 		ImGui::Dummy({ 0, 5 });
 
-		if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::TreeNodeEx("Game Viewport", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
 			//ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
 			ImGui::Checkbox("Show Entity Collider", &viewportPanel->m_ShowSelectionCollider);
 			ImGui::Checkbox("Show All Colliders", &viewportPanel->m_ShowAllColliders);
-			ImGui::Checkbox("Simulation Freecam", &EditorLayer::GetCamera()->m_UseInRuntime);
+			ImGui::Checkbox("Simulation Freecam", &viewportPanel->m_Camera->m_UseInRuntime);
 			ImGui::TreePop();
 		}
 		ImGui::Dummy({ 0, 5 });

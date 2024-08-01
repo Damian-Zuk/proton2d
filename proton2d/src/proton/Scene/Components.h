@@ -228,7 +228,6 @@ namespace proton {
 		NetSyncState SyncState;
 		NetTransform PreviousTransform;
 		NetTransform CurrentTransform;
-		bool TransformInitialized = false;
 
 		struct ReplicatedScript
 		{

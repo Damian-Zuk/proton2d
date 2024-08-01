@@ -31,6 +31,21 @@ namespace proton {
 	{
 		return fullFilepath.substr(parentDir.size(), fullFilepath.size() - parentDir.size());;
 	}
+	
+	static bool DrawTreeNodeRemoveButton(const std::string& id)
+	{
+		ImGui::PushFont(EditorLayer::GetFontAwesome());
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.45f, 0.45f, 0.45f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.55f, 0.55f, 0.55f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.65f, 0.65f, 0.65f, 1.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 100.0f);
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - 20.0f);
+		bool pressed = ImGui::Button((u8"\uF00D##" + id).c_str());
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::PopStyleVar();
+		return pressed;
+	}
 
 	void InspectorPanel::OnImGuiRender()
 	{
@@ -141,7 +156,7 @@ namespace proton {
 			DrawComponentUI<TransformComponent>("Transform", [&](auto& component)
 			{
 				// Posittion
-				ImGui::Columns(2); ImGui::SetColumnWidth(0, 75.0f);
+				ImGui::Columns(2); ImGui::SetColumnWidth(0, 100.0f);
 				ImGui::Text("Position");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(75.0f);
@@ -156,7 +171,7 @@ namespace proton {
 
 				// Scale
 				ImGui::Columns(2);
-				ImGui::SetColumnWidth(0, 75.0f);
+				ImGui::SetColumnWidth(0, 100.0f);
 				ImGui::Text("Scale");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(75.0f);
@@ -182,7 +197,7 @@ namespace proton {
 
 				// Rotation 
 				ImGui::Columns(2);
-				ImGui::SetColumnWidth(0, 75.0f);
+				ImGui::SetColumnWidth(0, 100.0f);
 				ImGui::Text("Rotation");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(75.0f);
@@ -209,8 +224,7 @@ namespace proton {
 				std::string label = scriptClassName + " (Script)";
 				bool opened = ImGui::TreeNodeEx(label.c_str(), treeNodeFlags, label.c_str());
 
-				ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
-				bool removeScript = ImGui::Button(("Remove##" + scriptClassName).c_str());
+				bool removeScript = DrawTreeNodeRemoveButton(scriptClassName);
 
 				if (opened)
 				{
@@ -641,10 +655,12 @@ namespace proton {
 				}
 				ImGui::Dummy({ 0, 5 });
 
-				ImGui::PushItemWidth(175.0f);
+				ImGui::PushItemWidth(125.0f);
 				if (ImGui::InputFloat("Update Rate", &component.UpdateRate))
 					component.UpdateRate = glm::clamp(component.UpdateRate, 0.0f, 1.0f);
+				ImGui::PopItemWidth();
 
+				ImGui::PushItemWidth(200.0f);
 				auto& selectedMethod = component.SyncParams.SyncMethod;
 				if (ImGui::BeginCombo("Sync Method", NetSyncMethodToString(selectedMethod).c_str()))
 				{
@@ -661,10 +677,10 @@ namespace proton {
 
 				ImGui::Dummy({ 0, 5 });
 				ImGui::PushItemWidth(125.0f);
-				ImGui::InputFloat("Extrapolation Limit", &component.SyncParams.ExtrapolationLimit, 0.01f);
-				ImGui::InputFloat("Reconcile Time", &component.SyncParams.ReconcileTime, 0.001f);
-				ImGui::InputFloat("Reconcile Threshold", &component.SyncParams.ReconcileThreshold, 0.001f);
-				ImGui::InputFloat("Reconcile Cooldown", &component.SyncParams.ReconcileCooldownTime, 0.001f);
+				ImGui::DragFloat("Extrapolation Limit", &component.SyncParams.ExtrapolationLimit, 0.01f);
+				ImGui::DragFloat("Reconcile Time", &component.SyncParams.ReconcileTime, 0.001f);
+				ImGui::DragFloat("Reconcile Threshold", &component.SyncParams.ReconcileThreshold, 0.001f);
+				ImGui::DragFloat("Reconcile Cooldown", &component.SyncParams.ReconcileCooldownTime, 0.001f);
 				ImGui::PopItemWidth();
 			});
 		}
@@ -740,118 +756,7 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-
-			constexpr char* netmodeItems[] = { "Inherit", "Standalone" };
-			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
-			bool inheritNetMode = activeScene->m_InheritNetMode;
-
-			ImGui::PushItemWidth(180.0f);
-			if (ImGui::BeginCombo("Net Mode", netmodeItems[!inheritNetMode]))
-			{
-				for (uint8_t i = 0; i < 2; i++)
-				{
-					bool selected = inheritNetMode != (bool)i;
-					if (ImGui::Selectable(netmodeItems[i], selected))
-					{
-						activeScene->m_InheritNetMode = !(bool)i;
-					}
-				}
-				ImGui::EndCombo();
-			}
-
-			auto& defaultSyncParams = activeScene->m_NetDefaultSyncParams;
-			auto& defaultSyncMethod = defaultSyncParams.SyncMethod;
-
-			if (ImGui::BeginCombo("Client Sync Method", NetSyncMethodToString(defaultSyncMethod).c_str()))
-			{
-				for (uint8_t i = 0; i < 4; i++)
-				{
-					auto current = (NetSyncMethod)i;
-					if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), defaultSyncMethod == current))
-						defaultSyncMethod = current;
-				}
-				ImGui::EndCombo();
-			}
-
-			ImGui::SameLine();
-			if (ImGui::Button("Set All"))
-			{
-				if (defaultSyncMethod == NetSyncMethod::NetworkRigidbody)
-				{
-					auto view = activeScene->GetAllEntitiesWith<NetworkComponent, RigidbodyComponent>();
-					for (auto e : view)
-					{
-						auto& net = view.get<NetworkComponent>(e);
-						net.SyncParams.SyncMethod = NetSyncMethod::NetworkRigidbody;
-					}
-				}
-				else
-				{
-					auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-					for (auto e : view)
-					{
-						auto& net = view.get<NetworkComponent>(e);
-						net.SyncParams.SyncMethod = defaultSyncMethod;
-					}
-				}
-			}
-
-			ImGui::PopItemWidth();
-			ImGui::Dummy({ 0, 5 });
-
-			ImGui::PushItemWidth(125.0f);
-			ImGui::InputFloat("Extrapolation Limit", &defaultSyncParams.ExtrapolationLimit, 0.01f);
-			ImGui::SameLine();
-			if (ImGui::Button("Set All"))
-			{
-				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-				for (auto e : view)
-				{
-					auto& net = view.get<NetworkComponent>(e);
-					net.SyncParams.ExtrapolationLimit = defaultSyncParams.ExtrapolationLimit;
-				}
-			}
-
-			ImGui::InputFloat("Reconcile Time", &defaultSyncParams.ReconcileTime, 0.001f);
-			ImGui::SameLine();
-			if (ImGui::Button("Set All"))
-			{
-				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-				for (auto e : view)
-				{
-					auto& net = view.get<NetworkComponent>(e);
-					net.SyncParams.ReconcileTime = defaultSyncParams.ReconcileTime;
-				}
-			}
-
-			ImGui::InputFloat("Reconcile Threshold", &defaultSyncParams.ReconcileThreshold, 0.001f);
-			ImGui::SameLine();
-			if (ImGui::Button("Set All"))
-			{
-				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-				for (auto e : view)
-				{
-					auto& net = view.get<NetworkComponent>(e);
-					net.SyncParams.ReconcileThreshold = defaultSyncParams.ReconcileThreshold;
-				}
-			}
-
-			ImGui::InputFloat("Reconcile Cooldown", &defaultSyncParams.ReconcileCooldownTime, 0.001f);
-			ImGui::SameLine();
-			if (ImGui::Button("Set All"))
-			{
-				auto view = activeScene->GetAllEntitiesWith<NetworkComponent>();
-				for (auto e : view)
-				{
-					auto& net = view.get<NetworkComponent>(e);
-					net.SyncParams.ReconcileCooldownTime = defaultSyncParams.ReconcileCooldownTime;
-				}
-			}
-
-			ImGui::Dummy({ 0, 5 });
-			ImGui::Checkbox("Override Net Params After Prefab Spawn", &activeScene->m_OverrideNetSyncParamsAfterPrefabSpawn);
-
-			ImGui::PopItemWidth();
+			ImGui::Checkbox("Enable Networking", &activeScene->m_EnableNetworking);
 
 			ImGui::TreePop();
 		}
@@ -871,8 +776,7 @@ namespace proton {
 		bool removeComponent = false;
 		if (!std::is_same<T, TagComponent>::value && !std::is_same<T, TransformComponent>::value)
 		{
-			ImGui::SameLine(ImGui::GetWindowWidth() - 90.0f);
-			removeComponent = ImGui::Button(("Remove##" + name).c_str());
+			removeComponent = DrawTreeNodeRemoveButton(name);
 		}
 
 		NetworkComponent* networkComponent = nullptr;

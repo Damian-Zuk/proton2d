@@ -55,7 +55,7 @@ namespace proton {
 			{ "VelocityIterations", m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations },
 			{ "PositionIterations", m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations },
 			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } },
-			{ "InheritNetMode",     m_Scene->m_InheritNetMode }
+			{ "EnableNetworking",     m_Scene->m_EnableNetworking }
 		};
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
@@ -81,11 +81,11 @@ namespace proton {
 		m_Scene->m_SceneName = jsonObj["SceneName"];
 		m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
 		
-		if (jsonObj.contains("InheritNetMode"))
-			m_Scene->m_InheritNetMode = jsonObj.at("InheritNetMode");
+		if (jsonObj.contains("EnableNetworking"))
+			m_Scene->m_EnableNetworking = jsonObj["EnableNetworking"];
 
 		if (jsonObj.contains("GameModeClass"))
-			m_Scene->SetGameModeByClassName(jsonObj.at("GameModeClass"));
+			m_Scene->SetGameModeByClassName(jsonObj["GameModeClass"]);
 
 		m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
 		m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];

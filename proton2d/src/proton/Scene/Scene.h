@@ -160,9 +160,7 @@ namespace proton {
 		glm::vec2 m_CursorWorldPosition = { 0.0f, 0.0f };
 
 		// Network
-		bool m_InheritNetMode = true;
-		NetSyncParams m_NetDefaultSyncParams;
-		bool m_OverrideNetSyncParamsAfterPrefabSpawn = true;
+		bool m_EnableNetworking = true;
 
 		friend class Application;
 		friend class Entity;

@@ -6,7 +6,7 @@ namespace proton {
 
 	class Scene;
 
-	// Interface for all editor panels
+	// Interface
 	class EditorPanel
 	{
 	public:

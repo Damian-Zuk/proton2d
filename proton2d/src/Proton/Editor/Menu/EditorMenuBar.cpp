@@ -151,14 +151,14 @@ namespace proton {
 			ImGui::PopItemWidth();
 			ImGui::Dummy({ 0, 5 });
 
-			if (ImGui::Button("Save", {120, 0}))
+			if (ImGui::Button("Save", {150, 0}))
 			{
 				project.WriteProjectSettings();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SetItemDefaultFocus();
 			ImGui::SameLine();
-			if (ImGui::Button("Cancel", { 120, 0 })) { ImGui::CloseCurrentPopup(); }
+			if (ImGui::Button("Cancel", { 150, 0 })) { ImGui::CloseCurrentPopup(); }
 
 			ImGui::EndPopup();
 			m_OpenProjectProporties = false;
