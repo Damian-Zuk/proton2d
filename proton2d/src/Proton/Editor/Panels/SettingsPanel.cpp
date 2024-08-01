@@ -35,7 +35,7 @@ namespace proton {
 			constexpr char* netModesNames[] = { "Standalone", "Listen Server" };
 			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
 
-			ImGui::PushItemWidth(150.0f);
+			ImGui::PushItemWidth(160.0f);
 			if (ImGui::BeginCombo("Net Mode", netModesNames[(uint8_t)netMode]))
 			{
 				for (uint8_t i = 0; i < 2; i++)

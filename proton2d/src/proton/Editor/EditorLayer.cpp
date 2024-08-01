@@ -443,6 +443,7 @@ namespace proton {
 		style.PopupRounding = 7.0f;
 		style.ScrollbarSize = 20.0f;
 		style.WindowBorderSize = 0.0f;
+		style.TabBarOverlineSize = 0.0f;
 
 		// Color styles
 		style.Colors[ImGuiCol_Border] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);

@@ -13,6 +13,7 @@
 #include "Proton/Utils/Random.h"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 static constexpr const char FontAwesome_Play[]   = u8"\uf04b";
 static constexpr const char FontAwesome_Pause[]  = u8"\uf04c";
@@ -24,9 +25,14 @@ namespace proton {
 
 	void ToolbarPanel::OnImGuiRender()
 	{
+		ImGuiWindowClass windowClass;
+		windowClass.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize | ImGuiDockNodeFlags_NoTabBar;
+		ImGui::SetNextWindowClass(&windowClass);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-		ImGui::Begin("Toolbar", NULL, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollWithMouse);
+		ImGui::Begin("Toolbar", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollWithMouse);
 		ImGui::PopStyleColor();
+		ImGui::PopStyleVar();
 
 		Scene* activeScene = GetActiveScene();
 
@@ -35,13 +41,7 @@ namespace proton {
 			ImGui::End();
 			return;
 		}
-
-		float availY = ImGui::GetContentRegionAvail().y;
-		if (availY >= 70.0f)
-			ImGui::Dummy({ 0.0f, availY - 70.0f });
-		else
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + availY - 66.0f);
-
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
 		ImGui::Dummy({ 0, 5 });
 		DrawSceneTabBar();
 
@@ -51,10 +51,8 @@ namespace proton {
 		ImGui::SetCursorPos({ 0.0f, toolbarStartY - 5.0f });
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		ImVec2 cursor = ImGui::GetCursorScreenPos();
-		ImVec2 containerSize = ImVec2(ImGui::GetContentRegionAvail().x + 10.0f, 120.0f);
+		ImVec2 containerSize = ImVec2(ImGui::GetContentRegionAvail().x + 10.0f, 100.0f);
 		ImU32 color = IM_COL32(45, 45, 45, 255);
-
-		// Draw the filled rectangle as a background
 		draw_list->AddRectFilled(cursor, ImVec2(cursor.x + containerSize.x, cursor.y + containerSize.y), color);
 
 		ImGui::SetCursorPos({ toolbarStartX, toolbarStartY });
@@ -108,7 +106,7 @@ namespace proton {
 
 	void ToolbarPanel::DrawSceneTabBar()
 	{	
-		ImGui::SetCursorPosX(20.0f);
+		ImGui::SetCursorPosX(30.0f);
 		if (ImGui::BeginTabBar("SceneTabBar", ImGuiTabBarFlags_AutoSelectNewTabs)) 
 		{
 			SceneManager* manager = Application::GetGameInstance()->GetSceneManager();

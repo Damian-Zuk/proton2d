@@ -717,7 +717,7 @@ namespace proton {
 			}
 
 			ImGui::Dummy({ 0.0f, 5.0f });
-			if (ImGui::ColorEdit4("Background Color", glm::value_ptr(activeScene->m_ClearColor)))
+			if (ImGui::ColorEdit4("Clear Color", glm::value_ptr(activeScene->m_ClearColor)))
 				Renderer::SetClearColor(activeScene->m_ClearColor);
 			ImGui::PopItemWidth();
 

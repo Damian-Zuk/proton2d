@@ -33,7 +33,7 @@ namespace proton {
 
 	void ContentBrowserPanel::OnImGuiRender()
 	{
-		ImGui::Begin("Content");
+		ImGui::Begin("Content Browser");
 
 		DrawChevronRightIcon();
 
