@@ -54,8 +54,6 @@ namespace proton {
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
 		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
 
-		bool m_ViewportFocused = false;
-
 		bool m_MoveSelectedEntity = false;
 		bool m_MoveEditorCamera = false;
 

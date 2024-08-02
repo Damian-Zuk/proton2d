@@ -137,16 +137,19 @@ namespace proton {
 			return;
 
 		// On viewport resize
-		scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
 			m_ViewportAspectRatio = m_ViewportSize.x / m_ViewportSize.y;
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_Camera->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+			m_Camera->m_Camera.SetViewportSize(m_ViewportSize);
+			scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			Renderer::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
+
+		if (scene->m_ViewportSize.x == 0.0f || scene->m_ViewportSize.y == 0)
+			scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 		// Get mouse position
 		auto mousePos = ImGui::GetMousePos();

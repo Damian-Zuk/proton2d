@@ -719,13 +719,14 @@ namespace proton {
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
+		m_ViewportSize = { (float)width, float(height) };
 		auto view = m_Registry.view<CameraComponent>();
 		for (auto entity : view)
 		{
 			auto& camera = view.get<CameraComponent>(entity);
-			camera.Camera.SetAspectRatio((float)width / float(height));
+			camera.Camera.SetViewportSize(m_ViewportSize);
 		}
-		m_DefaultCamera.SetAspectRatio((float)width / float(height));
+		m_DefaultCamera.SetViewportSize(m_ViewportSize);
 	}
 
 	void Scene::ReleaseGameMode()
@@ -928,4 +929,128 @@ namespace proton {
 	{
 		return IsPhysicsEnabled() && IsPhysicsWorldInitialized();
 	}
+
+	template<typename T>
+	void Scene::OnComponentAdded(Entity entity, T& component)
+	{
+		static_assert(sizeof(T) == 0);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
+	}
+	
+	template<>
+	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<MetadataComponent>(Entity entity, MetadataComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<VelocityComponent>(Entity entity, VelocityComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<RelationshipComponent>(Entity entity, RelationshipComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
+	{
+		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
+			component.Camera.SetViewportSize(m_ViewportSize);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<SpriteComponent>(Entity entity, SpriteComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<ResizableSpriteComponent>(Entity entity, ResizableSpriteComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<CircleRendererComponent>(Entity entity, CircleRendererComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<TextComponent>(Entity entity, TextComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<UIComponent>(Entity entity, UIComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<UITextComponent>(Entity entity, UITextComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<SpriteAnimationComponent>(Entity entity, SpriteAnimationComponent& component)
+	{
+		component.SpriteAnimation.m_OwningEntity = MakeUnique<Entity>(entity, this);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<RigidbodyComponent>(Entity entity, RigidbodyComponent& component)
+	{
+
+		if (m_SceneState == SceneState::Play && m_PhysicsWorld->IsInitialized())
+			m_PhysicsWorld->m_EntitiesToInitialize.push_back(entity);
+
+		if (!entity.HasComponent<VelocityComponent>())
+			entity.AddComponent<VelocityComponent>();
+
+		if (entity.HasComponent<NetworkComponent>())
+		{
+			auto& net = entity.GetComponent<NetworkComponent>();
+			net.ComponentsToReplicate.set(ComponentType_Velocity);
+		}
+	}
+
+	template<>
+	void Scene::OnComponentAdded<BoxColliderComponent>(Entity entity, BoxColliderComponent& component)
+	{
+		if (m_SceneState == SceneState::Play && m_PhysicsWorld->IsInitialized())
+			m_PhysicsWorld->m_EntitiesToInitialize.push_back(entity);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<CircleColliderComponent>(Entity entity, CircleColliderComponent& component)
+	{
+		if (m_SceneState == SceneState::Play && m_PhysicsWorld->IsInitialized())
+			m_PhysicsWorld->m_EntitiesToInitialize.push_back(entity);
+	}
+
+	template<>
+	void Scene::OnComponentAdded<NetworkComponent>(Entity entity, NetworkComponent& component)
+	{
+		component.ComponentsToReplicate.set(ComponentType_Transform);
+		if (entity.HasComponent<VelocityComponent>())
+			component.ComponentsToReplicate.set(ComponentType_Velocity);
+	}
+
 }

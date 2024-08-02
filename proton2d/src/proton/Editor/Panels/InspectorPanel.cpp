@@ -12,7 +12,6 @@
 #include "Proton/Scripting/ScriptFactory.h"
 #include "Proton/Scripting/GameModeFactory.h"
 #include "Proton/Scripting/GameModeBase.h"
-#include "Proton/Scene/EntityComponent.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"

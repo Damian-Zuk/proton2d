@@ -1,6 +1,5 @@
 #include "ptpch.h"
 #include "Proton/Assets/SceneSerializer.h"
-#include "Proton/Scene/EntityComponent.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Assets/AssetManager.h"
 #include "Proton/Scripting/EntityScript.h"

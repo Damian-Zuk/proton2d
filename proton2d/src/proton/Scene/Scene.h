@@ -126,6 +126,9 @@ namespace proton {
 
 		void BuildPhysicsWorld();
 
+		template<typename T>
+		void OnComponentAdded(Entity entity, T& component);
+
 	private:
 		SceneState m_SceneState = SceneState::Stop;
 		GameInstance* m_GameInstance = nullptr;
@@ -144,6 +147,7 @@ namespace proton {
 		std::vector<Entity> m_Root;
 
 		// Camera
+		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		entt::entity m_PrimaryCameraEntity = entt::null;
 		Camera* m_PrimaryCamera = nullptr;
 		Camera m_DefaultCamera;

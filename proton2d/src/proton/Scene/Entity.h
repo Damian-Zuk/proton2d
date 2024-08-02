@@ -28,13 +28,17 @@ namespace proton {
 		TComponent& AddComponent(TArgs&& ...args) const
 		{
 			PT_CORE_ASSERT(!HasComponent<TComponent>(), "Entity already have component!");
-			return m_Scene->m_Registry.emplace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
+			auto& component = m_Scene->m_Registry.emplace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
+			m_Scene->OnComponentAdded<TComponent>(*this, component);
+			return component;
 		}
 
 		template<typename TComponent, typename... TArgs>
 		TComponent& AddOrReplaceComponent(TArgs&&... args)
 		{
-			return m_Scene->m_Registry.emplace_or_replace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
+			auto& component = m_Scene->m_Registry.emplace_or_replace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
+			m_Scene->OnComponentAdded<TComponent>(*this, component);
+			return component;
 		}
 
 		template <typename TComponent>
@@ -54,15 +58,6 @@ namespace proton {
 		{
 			return m_Scene->m_Registry.any_of<TComponents...>(m_Handle);
 		}
-
-		// AddComponent overrides: Definitions in EntityComponent.h
-		// TODO: Move these to Scene::OnComponentAdded<TComponent>
-		template<> ResizableSpriteComponent& AddComponent() const;
-		template<> RigidbodyComponent& AddComponent() const;
-		template<> BoxColliderComponent& AddComponent() const;
-		template<> CircleColliderComponent& AddComponent() const;
-		template<> SpriteAnimationComponent& AddComponent() const;
-		template<> NetworkComponent& AddComponent() const;
 
 		template <typename TComponent>
 		void RemoveComponent()

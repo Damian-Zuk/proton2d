@@ -24,16 +24,16 @@ namespace proton {
 		
 		// Get selected game instance
 		SceneViewportPanel* viewportPanel = EditorLayer::GetFocusedViewportPanel();
-		Scene* activeScene = GetActiveScene();
+		Scene* scene = GetActiveScene();
 
-		if (activeScene && ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
+		if (scene && ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
 			
-			NetworkManager* networkManager = activeScene->m_GameInstance->GetNetworkManager();
+			NetworkManager* networkManager = scene->m_GameInstance->GetNetworkManager();
 
 			constexpr char* netModesNames[] = { "Standalone", "Listen Server", "Dedicated Server", "Client"};
-			const NetMode netMode = activeScene->m_GameInstance->GetNetMode();
+			const NetMode netMode = scene->m_GameInstance->GetNetMode();
 
 			ImGui::PushItemWidth(200.0f);
 			if (ImGui::BeginCombo("Net Mode", netModesNames[(uint8_t)netMode]))

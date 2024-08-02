@@ -55,10 +55,5 @@ namespace proton {
 		m_Position = position;
 	}
 
-	void EditorCamera::OnViewportResize(float w, float h)
-	{
-		m_Camera.SetAspectRatio(w / h);
-	}
-
 }
 #endif // PT_EDITOR

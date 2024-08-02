@@ -264,6 +264,7 @@ namespace proton {
 	{
 		Scene* scene = GetActiveScene(false);
 		scene->BeginPlay();
+
 	}
 
 	void EditorLayer::OnStopSimulationButton()

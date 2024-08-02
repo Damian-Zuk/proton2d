@@ -20,8 +20,6 @@ namespace proton {
 		const glm::vec3& GetPosition() const { return m_Position; }
 		void SetPosition(const glm::vec3& position);
 
-		void OnViewportResize(float w, float h);
-
 	private:
 		Camera m_Camera;
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
@@ -34,7 +32,6 @@ namespace proton {
 		friend class SceneSerializer;
 		friend class SceneViewportPanel;
 		friend class SettingsPanel;
-		friend class EditorGizmo2D;
 	};
 }
 #endif // PT_EDITOR

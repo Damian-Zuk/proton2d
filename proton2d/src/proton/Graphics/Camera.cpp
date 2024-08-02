@@ -14,20 +14,21 @@ namespace proton {
 		RecalculateProjection();
 	}
 
+	void Camera::SetViewportSize(const glm::vec2& viewportSize)
+	{
+		if (m_ViewportSize != viewportSize)
+		{
+			m_ViewportSize = viewportSize;
+			m_AspectRatio = viewportSize.x / viewportSize.y;
+			RecalculateProjection();
+		}
+	}
+
 	void Camera::SetZoomLevel(float zoomLevel)
 	{
 		if (m_ZoomLevel != zoomLevel)
 		{
 			m_ZoomLevel = zoomLevel;
-			RecalculateProjection();
-		}
-	}
-
-	void Camera::SetAspectRatio(float aspectRatio)
-	{
-		if (m_AspectRatio != aspectRatio)
-		{
-			m_AspectRatio = aspectRatio;
 			RecalculateProjection();
 		}
 	}

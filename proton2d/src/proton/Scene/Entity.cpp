@@ -1,6 +1,5 @@
 #include "ptpch.h"
 #include "Proton/Scene/Entity.h"
-#include "Proton/Scene/EntityComponent.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Physics/PhysicsWorld.h"
 
