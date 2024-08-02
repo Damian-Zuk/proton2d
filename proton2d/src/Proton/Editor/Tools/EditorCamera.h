@@ -7,8 +7,11 @@
 
 namespace proton {
 
+	class SceneViewportPanel;
+
 	class EditorCamera {
 	public:
+		EditorCamera(SceneViewportPanel* viewportPanel);
 		virtual ~EditorCamera() = default;
 
 		void OnUpdate(float ts);
@@ -21,9 +24,14 @@ namespace proton {
 		void SetPosition(const glm::vec3& position);
 
 	private:
+		SceneViewportPanel* m_ViewportPanel;
+
 		Camera m_Camera;
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		
+		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
+		bool m_MoveEditorCamera = false;
+
 		float m_ZoomLevelTarget = 1.0f;
 		float m_CameraZoomSpeed = 0.10f;
 		bool m_UseInRuntime = false;

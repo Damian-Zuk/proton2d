@@ -52,10 +52,7 @@ namespace proton {
 		
 		glm::vec2 m_MousePos = { 0.0f, 0.0f };
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
-		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
-
 		bool m_MoveSelectedEntity = false;
-		bool m_MoveEditorCamera = false;
 
 		bool m_ShowSelectionOutline = true;
 		bool m_ShowSelectionCollider = true;
@@ -66,6 +63,7 @@ namespace proton {
 		friend class SceneManager;
 
 		friend class EditorLayer;
+		friend class EditorCamera;
 		friend class SettingsPanel;
 		friend class EditorMenuBar;
 		friend class ToolbarPanel;

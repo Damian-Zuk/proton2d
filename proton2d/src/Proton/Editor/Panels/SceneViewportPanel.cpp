@@ -42,7 +42,7 @@ namespace proton {
 		fbSpec.Height = 720;
 
 		m_Framebuffer = MakeUnique<Framebuffer>(fbSpec);
-		m_Camera = MakeUnique<EditorCamera>();
+		m_Camera = MakeUnique<EditorCamera>(this);
 	}
 
 	void SceneViewportPanel::SetActiveScene(Scene* scene, bool sceneManagerCall) const
@@ -149,7 +149,9 @@ namespace proton {
 		}
 
 		if (scene->m_ViewportSize.x == 0.0f || scene->m_ViewportSize.y == 0)
+		{
 			scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
 
 		// Get mouse position
 		auto mousePos = ImGui::GetMousePos();
@@ -201,23 +203,12 @@ namespace proton {
 
 			ImGui::SetMouseCursor(7);
 		}
-
-		// Move editor camera
-		if (m_MoveEditorCamera)
-		{
-			glm::vec2 offset = m_CameraDragOffset - cursor;
-			//PT_CORE_TRACE("{}, {}, {}", offset, m_CameraDragOffset, cursor);
-			m_Camera->m_Position.x += offset.x;
-			m_Camera->m_Position.y += offset.y;
-			ImGui::SetMouseCursor(2);
-		}
 	}
 
 	void SceneViewportPanel::OnEvent(Event& event)
 	{
 		Scene* scene = m_GameInstance->GetActiveScene();
-
-		if (!scene || (!m_IsViewportHovered && !m_MoveEditorCamera))
+		if (!scene)
 			return;
 
 		EventDispatcher dispatcher(event);
@@ -225,18 +216,6 @@ namespace proton {
 		// ------------------------ Dispatch mouse event ------------------------
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-
-			SceneState state = scene->GetSceneState();
-			const glm::vec2& cursor = scene->GetCursorWorldPosition();
-
-			// Mouse Button 1 (Right): Move editor camera
-			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
-				&& (state == SceneState::Stop || m_Camera->m_UseInRuntime ))
-			{
-				m_CameraDragOffset = cursor;
-				m_MoveEditorCamera = true;
-			}
-
 			if (scene->IsSimulated() || !m_IsViewportFocused)
 				return false;
 
@@ -268,6 +247,7 @@ namespace proton {
 				if (target && target == m_SelectedEntity)
 				{
 					m_MoveSelectedEntity = true;
+					const glm::vec2& cursor = scene->GetCursorWorldPosition();
 					auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
 					m_SelectionMouseOffset = glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y } - cursor;
 				}
@@ -288,9 +268,6 @@ namespace proton {
 
 			if (key == Key::F3)
 				m_ShowAllColliders = !m_ShowAllColliders;
-
-			if (!m_IsMainViewport) // Main viewport only
-				return false;
 
 			if (key == Key::F1)
 				m_ShowSelectionOutline = !m_ShowSelectionOutline;
@@ -327,11 +304,8 @@ namespace proton {
 		{
 			if (e.GetMouseButton() == Mouse::Button0)
 				m_MoveSelectedEntity = false;
-			if (e.GetMouseButton() == Mouse::Button1)
-				m_MoveEditorCamera = false;
 
 			ImGui::SetMouseCursor(0);
-
 			return false;
 		});
 

@@ -52,7 +52,10 @@ namespace proton {
 			if (ImGui::BeginMenu("Editor"))
 			{
 				if (ImGui::MenuItem("Reset camera"))
-					EditorLayer::GetCamera()->SetPosition({0.0f, 0.0f, 0.0f});
+				{
+					auto viewport = EditorLayer::GetFocusedViewportPanel();
+					viewport->m_Camera->SetPosition({0.0f, 0.0f, 0.0f});
+				}
 				ImGui::EndMenu();
 			}
 

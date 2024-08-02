@@ -34,6 +34,7 @@ namespace proton {
 
 		static EditorCamera* GetCamera();
 		static SceneViewportPanel* GetSceneViewportPanel(GameInstance* gameInstance = nullptr);
+		static SceneViewportPanel* GetSceneViewportPanel(Scene* scene);
 		static SceneHierarchyPanel* GetSceneHierarchyPanel();
 		static InspectorPanel* GetInspectorPanel();
 

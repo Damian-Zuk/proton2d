@@ -190,6 +190,11 @@ namespace proton {
 		return &s_Panels.SceneViewport;
 	}
 
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(Scene* scene)
+	{
+		return GetSceneViewportPanel(scene->m_GameInstance);
+	}
+
 	SceneHierarchyPanel* EditorLayer::GetSceneHierarchyPanel()
 	{
 		return &s_Panels.SceneHiearchy;
