@@ -39,6 +39,7 @@ namespace proton {
 
 		bool m_IsMainViewport = true;
 		bool m_IsViewportFocused = false;
+		bool m_IsViewportHovered = false;
 
 		GameInstance* m_GameInstance = nullptr;
 		Entity m_SelectedEntity;
@@ -54,7 +55,6 @@ namespace proton {
 		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
 
 		bool m_ViewportFocused = false;
-		bool m_ViewportHovered = false;
 
 		bool m_MoveSelectedEntity = false;
 		bool m_MoveEditorCamera = false;

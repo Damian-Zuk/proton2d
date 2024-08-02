@@ -24,7 +24,7 @@ namespace proton {
 		
 		// Get selected game instance
 		SceneViewportPanel* viewportPanel = EditorLayer::GetFocusedViewportPanel();
-		Scene* activeScene = GetActiveScene(false);
+		Scene* activeScene = GetActiveScene();
 
 		if (activeScene && ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -32,13 +32,13 @@ namespace proton {
 			
 			NetworkManager* networkManager = activeScene->m_GameInstance->GetNetworkManager();
 
-			constexpr char* netModesNames[] = { "Standalone", "Listen Server" };
-			const NetMode netMode = Application::GetGameInstance()->GetNetMode();
+			constexpr char* netModesNames[] = { "Standalone", "Listen Server", "Dedicated Server", "Client"};
+			const NetMode netMode = activeScene->m_GameInstance->GetNetMode();
 
-			ImGui::PushItemWidth(160.0f);
+			ImGui::PushItemWidth(200.0f);
 			if (ImGui::BeginCombo("Net Mode", netModesNames[(uint8_t)netMode]))
 			{
-				for (uint8_t i = 0; i < 2; i++)
+				for (uint8_t i = 0; i < 4; i++)
 				{
 					bool selected = (uint8_t)netMode == i;
 					if (ImGui::Selectable(netModesNames[i], selected))
@@ -50,7 +50,7 @@ namespace proton {
 			}
 			ImGui::PopItemWidth();
 
-			if (netMode == NetMode::ListenServer)
+			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 			{
 				ImGui::PushItemWidth(95.0f);
 
@@ -63,7 +63,7 @@ namespace proton {
 			}
 
 			ImGui::PushItemWidth(95.0f);
-			if (netMode == NetMode::ListenServer &&
+			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer) &&
 				ImGui::DragFloat("Fake Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
 			{
 				if (Server* server = networkManager->GetServer())
@@ -71,7 +71,8 @@ namespace proton {
 			}
 			ImGui::PopItemWidth();
 
-			ImGui::Checkbox("Trace Entity Net Sync", &viewportPanel->m_ShowNetPosition);
+			if ((netMode == NetMode::ListenServer || netMode == NetMode::Client))
+			ImGui::Checkbox("Trace Entity Sync", &viewportPanel->m_ShowNetPosition);
 
 			ImGui::TreePop();
 		}

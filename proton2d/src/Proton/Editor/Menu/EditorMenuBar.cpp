@@ -97,13 +97,13 @@ namespace proton {
 	void EditorMenuBar::SaveScene()
 	{
 		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
-		Scene* activeScene = manager->GetActiveScene();
-		if (!activeScene)
+		Scene* scene = manager->GetActiveScene();
+		if (!scene)
 			return;
 
-		if (activeScene->m_SceneFilepath != "<Unsaved scene>")
+		if (scene->m_SceneFilepath != "<Unsaved scene>")
 		{
-			const std::string filepath = activeScene->m_SceneFilepath;
+			const std::string filepath = scene->m_SceneFilepath;
 			manager->SaveSceneAs(filepath, filepath);
 		}
 		else
@@ -113,15 +113,15 @@ namespace proton {
 	void EditorMenuBar::SaveSceneAs()
 	{
 		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
-		Scene* activeScene = manager->GetActiveScene();
-		if (!activeScene)
+		Scene* scene = manager->GetActiveScene();
+		if (!scene)
 			return;
 
 		std::string filepath = GetSceneFilename(FileDialogs::SaveFile(".scene.json"));
 		if (filepath.size())
 		{
-			manager->SaveSceneAs(activeScene->m_SceneFilepath, filepath);
-			if (activeScene->m_SceneFilepath == "<Unsaved scene>")
+			manager->SaveSceneAs(scene->m_SceneFilepath, filepath);
+			if (scene->m_SceneFilepath == "<Unsaved scene>")
 			{
 				manager->Unload("<Unsaved scene>");
 			}

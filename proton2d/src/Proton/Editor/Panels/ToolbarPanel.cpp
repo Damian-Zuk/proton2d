@@ -34,15 +34,16 @@ namespace proton {
 		ImGui::PopStyleColor();
 		ImGui::PopStyleVar();
 
-		Scene* activeScene = GetActiveScene();
+		Scene* scene = GetActiveScene();
 
-		if (!activeScene)
+		if (!scene)
 		{
 			ImGui::End();
 			return;
 		}
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
 		ImGui::Dummy({ 0, 5 });
+
 		DrawSceneTabBar();
 
 		float toolbarStartX = 50.0f;
@@ -58,9 +59,9 @@ namespace proton {
 		ImGui::SetCursorPos({ toolbarStartX, toolbarStartY });
 
 		ImGui::PushFont(EditorLayer::GetFontAwesome());
-		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (activeScene->IsSimulated() ? 145 : 90)) / 2.0f);
+		ImGui::SetCursorPosX((ImGui::GetWindowWidth() - (scene->IsSimulated() ? 145 : 90)) / 2.0f);
 
-		if (activeScene->IsSimulated())
+		if (scene->IsSimulated())
 		{
 			// Stop button
 			if (ImGui::Button(FontAwesome_Stop, { 60, 32 }))
@@ -70,7 +71,7 @@ namespace proton {
 			ImGui::SameLine();
 
 			// Pause button
-			if (ImGui::Button(activeScene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, { 60, 32 }))
+			if (ImGui::Button(scene->IsPaused() ? FontAwesome_Resume : FontAwesome_Pause, { 60, 32 }))
 			{
 				EditorLayer::Get()->OnPauseSimulationButton();
 			}
@@ -94,7 +95,7 @@ namespace proton {
 		{
 			ImVec2 textSize = ImGui::CalcTextSize(viewport->m_ImGuiWindowName.c_str());
 			ImGui::SameLine();
-			ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - textSize.x - 5.0f);
+			ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - textSize.x - 10.0f);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2.0f);
 			ImGui::TextColored({ 1.0f, 0.8f, 0.12f, 1.0f }, "%s", viewport->m_ImGuiWindowName.c_str());
 		}
@@ -110,12 +111,12 @@ namespace proton {
 		if (ImGui::BeginTabBar("SceneTabBar", ImGuiTabBarFlags_AutoSelectNewTabs)) 
 		{
 			SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
-			const std::string& activeScene = manager->GetActiveScene()->GetFilepath();
+			const std::string& activeSceneName = manager->GetActiveScene()->GetFilepath();
 
 			for (auto& [name, scene] : manager->m_Scenes)
 			{
 				bool keepOpen = true;
-				bool selected = activeScene == name;
+				bool selected = activeSceneName == name;
 				ImGuiTabBarFlags flags = selected ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None;
 
 				bool result = ImGui::BeginTabItem(name.c_str(), &keepOpen, flags);
@@ -167,7 +168,7 @@ namespace proton {
 			NetMode& netMode = props.NetMode;
 
 			ImGui::Dummy({ 0, 5 });
-			ImGui::PushItemWidth(160.0f);
+			ImGui::PushItemWidth(200.0f);
 			if (ImGui::BeginCombo("Net Mode", netModesNames[(uint8_t)netMode]))
 			{
 				for (uint8_t i = 0; i < 4; i++)
@@ -186,7 +187,7 @@ namespace proton {
 
 			if (netMode == NetMode::Client || netMode == NetMode::ListenServer)
 			{
-				ImGui::PushItemWidth(160.0f);
+				ImGui::PushItemWidth(180.0f);
 
 				std::strncpy(buffer, props.ClientNickname.c_str(), sizeof(buffer));
 				if (ImGui::InputText("Nick", buffer, sizeof(buffer)))
@@ -214,7 +215,7 @@ namespace proton {
 
 			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 			{	
-				ImGui::PushItemWidth(160.0f);
+				ImGui::PushItemWidth(180.0f);
 				if (ImGui::DragInt("Tick Rate (hz)", &props.ServerTickrate, 1.0f, 1, 256))
 					props.ServerTickrate = std::clamp(props.ServerTickrate, 1, 256);
 				ImGui::DragInt("Port", &props.Port, 1.0f, 0, 65535);
@@ -227,7 +228,7 @@ namespace proton {
 			if (ImGui::TreeNode("More options"))
 			{
 				ImGui::Dummy({ 0, 2 });
-				ImGui::PushItemWidth(140.0f);
+				ImGui::PushItemWidth(160.0f);
 				std::strncpy(buffer, props.WindowName.c_str(), sizeof(buffer));
 				if (ImGui::InputText("Window Name", buffer, sizeof(buffer)))
 					props.WindowName = buffer;

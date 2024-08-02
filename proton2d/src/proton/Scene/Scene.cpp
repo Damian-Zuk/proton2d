@@ -70,7 +70,7 @@ namespace proton {
 
 	using ComponentsToCopy =
 		ComponentGroup<TransformComponent, CameraComponent, VelocityComponent,
-		SpriteComponent, CircleRendererComponent, ResizableSpriteComponent,
+		SpriteComponent, CircleRendererComponent, ResizableSpriteComponent, TextComponent,
 		RigidbodyComponent, BoxColliderComponent, CircleColliderComponent,
 		NetworkComponent>;
 

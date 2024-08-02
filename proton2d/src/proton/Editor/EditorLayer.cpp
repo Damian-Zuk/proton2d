@@ -262,8 +262,8 @@ namespace proton {
 
 	void EditorLayer::OnStartSimulationButton()
 	{
-		Scene* activeScene = GetActiveScene(false);
-		activeScene->BeginPlay();
+		Scene* scene = GetActiveScene(false);
+		scene->BeginPlay();
 	}
 
 	void EditorLayer::OnStopSimulationButton()
@@ -271,13 +271,13 @@ namespace proton {
 		auto viewport = GetFocusedViewportPanel();
 		if (viewport == &s_Panels.SceneViewport)
 		{
-			Scene* activeScene = GetActiveScene(false);
+			Scene* scene = GetActiveScene(false);
 			if (m_MainGameInstance->GetNetMode() == NetMode::ListenServer)
 			{
 				m_ClientInstances.clear();
 				m_CurrentInstanceID = 0;
 			}
-			activeScene->Stop();
+			scene->Stop();
 		}
 		else
 		{
@@ -288,8 +288,8 @@ namespace proton {
 
 	void EditorLayer::OnPauseSimulationButton()
 	{
-		Scene* activeScene = GetActiveScene();
-		activeScene->Pause(!activeScene->IsPaused());
+		Scene* scene = GetActiveScene();
+		scene->Pause(!scene->IsPaused());
 	}
 
 	void EditorLayer::OnBeginSceneSimulation(Scene* scene)

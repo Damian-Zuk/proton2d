@@ -25,12 +25,12 @@ namespace proton {
 	SceneViewportPanel::~SceneViewportPanel()
 	{
 		if (!m_IsMainViewport)
+			return;
+	
+		EditorLayer* editorLayer = EditorLayer::Get();
+		if (editorLayer->GetFocusedGameInstance() == m_GameInstance)
 		{
-			EditorLayer* editorLayer = EditorLayer::Get();
-			if (editorLayer->GetFocusedGameInstance() == m_GameInstance)
-			{
-				editorLayer->m_FocusedGameInstance = editorLayer->m_MainGameInstance;
-			}
+			editorLayer->m_FocusedGameInstance = editorLayer->m_MainGameInstance;
 		}
 	}
 
@@ -77,7 +77,8 @@ namespace proton {
 	{
 		// Scene Viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2{ 320, 280 });
+
 		if (m_IsMainViewport)
 		{
 			ImGui::Begin(m_ImGuiWindowName.c_str());
@@ -94,21 +95,14 @@ namespace proton {
 
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportPanelSize = ImGui::GetContentRegionAvail();
 		auto viewportOffset = ImGui::GetWindowPos();
+
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
-
-		m_ViewportFocused = ImGui::IsWindowFocused();
-		m_ViewportHovered = ImGui::IsWindowHovered();
-
-		//EditorLayer::Get()->m_BlockEvents = !m_ViewportHovered;
-
-		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
-		Scene* activeScene = m_GameInstance->GetActiveScene();
-
-		if (activeScene)
+		if (m_GameInstance->GetActiveScene())
 		{
 			uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 			ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
@@ -117,33 +111,33 @@ namespace proton {
 		{
 			ImGui::Dummy(ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
 		}
- 
-		HandleImGuiDragAndDrop();
 
 		// Handle Viewport window focus
-		bool isFocused = ImGui::IsWindowFocused();
-		if (isFocused != m_IsViewportFocused)
+		bool focused = ImGui::IsWindowFocused();
+		if (focused != m_IsViewportFocused)
 		{
-			if (isFocused && EditorLayer::Get()->m_FocusedGameInstance != m_GameInstance)
+			if (focused && EditorLayer::Get()->m_FocusedGameInstance != m_GameInstance)
 			{
 				EditorLayer::Get()->m_FocusedGameInstance = m_GameInstance;
 			}
-			m_IsViewportFocused = isFocused;
+			m_IsViewportFocused = focused;
 		}
+		m_IsViewportHovered = ImGui::IsWindowHovered();
+
+		HandleImGuiDragAndDrop();
 
 		ImGui::End();
-		ImGui::PopStyleVar();
+		ImGui::PopStyleVar(2);
 	}
 
 	void SceneViewportPanel::OnUpdate(float ts)
 	{
-		Scene* activeScene = m_GameInstance->GetActiveScene();
-
-		if (!activeScene)
+		Scene* scene = m_GameInstance->GetActiveScene();
+		if (!scene)
 			return;
 
-		activeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		// On viewport resize
+		scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
 		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
@@ -154,27 +148,26 @@ namespace proton {
 			Renderer::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		m_Framebuffer->Bind();
-		Renderer::SetClearColor(activeScene->m_ClearColor);
+		// Get mouse position
+		auto mousePos = ImGui::GetMousePos();
+		mousePos.x -= m_ViewportBounds[0].x;
+		mousePos.y -= m_ViewportBounds[0].y;
+		m_MousePos = { (int)mousePos.x, (int)mousePos.y };
+
+		m_Framebuffer->Bind(); // Begin scene render
+
+		Renderer::SetClearColor(scene->m_ClearColor);
 		Renderer::Clear();
 
-		// Update game instance
 		m_GameInstance->OnUpdate(ts * Application::Get().GetTimeScale());
-
-		// Get mouse position
-		auto [mx, my] = ImGui::GetMousePos();
-		mx -= m_ViewportBounds[0].x;
-		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-		m_MousePos = { (int)mx, (int)my };
-
 		DrawCollidersAndSelectionOutline(ts);
-		m_Framebuffer->Unbind();
 
-		const glm::vec2& cursor = activeScene->GetCursorWorldPosition();
+		m_Framebuffer->Unbind(); // End scene render
 
 		// Update editor camera
 		m_Camera->OnUpdate(ts);
+		
+		const glm::vec2& cursor = scene->GetCursorWorldPosition();
 
 		// Move selected entity
 		if (m_MoveSelectedEntity && m_SelectedEntity.IsValid())
@@ -192,14 +185,14 @@ namespace proton {
 			if (Input::IsKeyPressed(Key::LeftShift))
 			{
 				auto& relation = m_SelectedEntity.GetComponent<RelationshipComponent>();
-				Entity current(relation.First, activeScene);
+				Entity current(relation.First, scene);
 				while (current)
 				{
 					auto& r = current.GetComponent<RelationshipComponent>();
 					auto& t = current.GetTransform();
 					t.LocalPosition.x -= offset.x;
 					t.LocalPosition.y -= offset.y;
-					current = Entity(r.Next, activeScene);
+					current = Entity(r.Next, scene);
 				}
 			}
 
@@ -219,15 +212,10 @@ namespace proton {
 
 	void SceneViewportPanel::OnEvent(Event& event)
 	{
-		Scene* activeScene = m_GameInstance->GetActiveScene();
+		Scene* scene = m_GameInstance->GetActiveScene();
 
-		if (!activeScene)
+		if (!scene || (!m_IsViewportHovered && !m_MoveEditorCamera))
 			return;
-
-		if (!m_ViewportHovered && !m_MoveEditorCamera)
-			return;
-
-		m_Camera->OnEvent(event);
 
 		EventDispatcher dispatcher(event);
 
@@ -235,8 +223,8 @@ namespace proton {
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
 
-			SceneState state = activeScene->GetSceneState();
-			const glm::vec2& cursor = activeScene->GetCursorWorldPosition();
+			SceneState state = scene->GetSceneState();
+			const glm::vec2& cursor = scene->GetCursorWorldPosition();
 
 			// Mouse Button 1 (Right): Move editor camera
 			if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
@@ -246,7 +234,7 @@ namespace proton {
 				m_MoveEditorCamera = true;
 			}
 
-			if (activeScene->IsSimulated() || !m_IsViewportFocused)
+			if (scene->IsSimulated() || !m_IsViewportFocused)
 				return false;
 
 			// Mouse Button 0 (Left): Select Entity
@@ -254,7 +242,7 @@ namespace proton {
 			{
 				Entity target; float transformMaxZ = 0.0f;
 
-				for (auto& entity : activeScene->GetEntitiesOnCursorLocation())
+				for (auto& entity : scene->GetEntitiesOnCursorLocation())
 				{
 					if (!entity.HasAnyComponent<SpriteComponent, ResizableSpriteComponent,
 						CircleRendererComponent, BoxColliderComponent, CircleColliderComponent>())
@@ -268,7 +256,7 @@ namespace proton {
 					}
 				}
 
-				if (m_SelectedEntity && activeScene->IsCursorHoveringEntity(m_SelectedEntity))
+				if (m_SelectedEntity && scene->IsCursorHoveringEntity(m_SelectedEntity))
 				{
 					// Discard selection
 					target = m_SelectedEntity;
@@ -290,7 +278,7 @@ namespace proton {
 		// ------------------------ Dispatch keyboard event ------------------------
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
 		{
-			if (!m_IsViewportFocused || !m_ViewportHovered)
+			if (!m_IsViewportFocused || !m_IsViewportHovered)
 				return false;
 
 			KeyCode key = e.GetKeyCode();
@@ -320,7 +308,7 @@ namespace proton {
 
 				if (key == Key::D && Input::IsKeyPressed(Key::LeftControl))
 				{
-					Entity newEntity = activeScene->DuplicateEntity(m_SelectedEntity, Entity());
+					Entity newEntity = scene->DuplicateEntity(m_SelectedEntity, Entity());
 					auto& transform = newEntity.GetTransform();
 					transform.LocalPosition.x += 0.1f;
 					transform.LocalPosition.y += 0.1f;
@@ -343,6 +331,8 @@ namespace proton {
 
 			return false;
 		});
+
+		m_Camera->OnEvent(event);
 	}
 
 	static constexpr glm::vec4 COLOR_WHITE = glm::vec4{ 1.0f };
@@ -431,21 +421,21 @@ namespace proton {
 
 	void SceneViewportPanel::DrawCollidersAndSelectionOutline(float ts)
 	{
-		Scene* activeScene = GetActiveScene();
-		Camera& camera = activeScene->GetPrimaryCamera();
-		Renderer::BeginScene(camera, activeScene->GetPrimaryCameraPosition());
+		Scene* scene = GetActiveScene();
+		Camera& camera = scene->GetPrimaryCamera();
+		Renderer::BeginScene(camera, scene->GetPrimaryCameraPosition());
 		Renderer::SetLineWidth(2.5f);
 
 		if (m_ShowAllColliders)
 		{
-			auto boxesView = activeScene->m_Registry.view<TransformComponent, BoxColliderComponent>();
+			auto boxesView = scene->m_Registry.view<TransformComponent, BoxColliderComponent>();
 			for (auto entity : boxesView)
 			{
 				auto [transform, bc] = boxesView.get<TransformComponent, BoxColliderComponent>(entity);
 				DrawBoxCollider(transform, bc);
 			}
 
-			auto circlesView = activeScene->m_Registry.view<TransformComponent, CircleColliderComponent>();
+			auto circlesView = scene->m_Registry.view<TransformComponent, CircleColliderComponent>();
 			for (auto entity : circlesView)
 			{
 				auto [transform, cc] = circlesView.get<TransformComponent, CircleColliderComponent>(entity);
@@ -462,7 +452,7 @@ namespace proton {
 			DrawSelectionOutline(m_SelectedEntity, m_MoveSelectedEntity ? COLOR_YELLOW : COLOR_WHITE, ts);
 		}
 
-		NetworkManager* netManager = activeScene->GetOwningGameInstance()->GetNetworkManager();
+		NetworkManager* netManager = scene->GetOwningGameInstance()->GetNetworkManager();
 		if (m_ShowNetPosition && netManager->IsNetModeClient() && m_SelectedEntity.IsValid())
 		{
 			if (m_SelectedEntity.HasComponent<NetworkComponent>())
@@ -489,18 +479,18 @@ namespace proton {
 
 	void SceneViewportPanel::HandleImGuiDragAndDrop()
 	{
-		Scene* activeScene = GetActiveScene();
+		Scene* scene = GetActiveScene();
 		if (ImGui::BeginDragDropTarget())
 		{
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_PREFAB");
-			if (payload && activeScene)
+			if (payload && scene)
 			{
 				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
 				std::filesystem::path path(path_wchar);
 
-				Entity entity = PrefabManager::Spawn(activeScene, path.string());
+				Entity entity = PrefabManager::Spawn(scene, path.string());
 				auto& transform = entity.GetComponent<TransformComponent>();
-				glm::vec2 cameraPos = activeScene->GetCursorWorldPosition();
+				glm::vec2 cameraPos = scene->GetCursorWorldPosition();
 				entity.SetWorldPosition({ cameraPos.x, cameraPos.y, transform.WorldPosition.z });
 			}
 			payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE");

@@ -51,10 +51,10 @@ namespace proton {
 	{
 		ImGui::Begin("Inspector");
 
-		Scene* activeScene = GetActiveScene();
+		Scene* scene = GetActiveScene();
 		Entity selectedEntity = GetSelectedEntity();
 
-		if (!activeScene) {
+		if (!scene) {
 			ImGui::End();
 			return;
 		}
@@ -552,9 +552,9 @@ namespace proton {
 		{
 			DrawComponentUI<CameraComponent>("Camera", [&](auto& component)
 				{
-					bool isPrimary = activeScene->m_PrimaryCameraEntity == selectedEntity.m_Handle;
+					bool isPrimary = scene->m_PrimaryCameraEntity == selectedEntity.m_Handle;
 					if (ImGui::Checkbox("Set as primary", &isPrimary) && isPrimary)
-						activeScene->SetPrimaryCameraEntity(selectedEntity);
+						scene->SetPrimaryCameraEntity(selectedEntity);
 
 					float zoom = component.Camera.GetZoomLevel();
 					if (ImGui::DragFloat("Zoom Level", &zoom, 0.01f))
@@ -690,7 +690,7 @@ namespace proton {
 
 	void InspectorPanel::DrawSceneProporties()
 	{
-		Scene* activeScene = GetActiveScene();
+		Scene* scene = GetActiveScene();
 		Entity selectedEntity = GetSelectedEntity();
 
 		ImGui::Text("Scene Proporties");
@@ -701,7 +701,7 @@ namespace proton {
 		if (ImGui::TreeNodeEx("General", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			const std::string& selectedGameMode = activeScene->m_GameModeClassName;
+			const std::string& selectedGameMode = scene->m_GameModeClassName;
 			ImGui::PushItemWidth(210.0f);
 			if (ImGui::BeginCombo("GameMode Class", selectedGameMode.c_str()))
 			{
@@ -710,15 +710,15 @@ namespace proton {
 					bool selected = selectedGameMode == className;
 					if (ImGui::Selectable(className.c_str(), selected))
 					{
-						activeScene->SetGameModeByClassName(className);
+						scene->SetGameModeByClassName(className);
 					}
 				}
 				ImGui::EndCombo();
 			}
 
 			ImGui::Dummy({ 0.0f, 5.0f });
-			if (ImGui::ColorEdit4("Clear Color", glm::value_ptr(activeScene->m_ClearColor)))
-				Renderer::SetClearColor(activeScene->m_ClearColor);
+			if (ImGui::ColorEdit4("Clear Color", glm::value_ptr(scene->m_ClearColor)))
+				Renderer::SetClearColor(scene->m_ClearColor);
 			ImGui::PopItemWidth();
 
 			ImGui::TreePop();
@@ -729,18 +729,18 @@ namespace proton {
 		{
 			ImGui::Dummy({ 0, 2 });
 
-			bool enablePhysics = activeScene->m_EnablePhysics;
-			if (ImGui::Checkbox("Enable Physics", &enablePhysics) && activeScene->m_SceneState == SceneState::Stop)
-				activeScene->m_EnablePhysics = enablePhysics;
-			if (activeScene->m_EnablePhysics)
+			bool enablePhysics = scene->m_EnablePhysics;
+			if (ImGui::Checkbox("Enable Physics", &enablePhysics) && scene->m_SceneState == SceneState::Stop)
+				scene->m_EnablePhysics = enablePhysics;
+			if (scene->m_EnablePhysics)
 			{
 				ImGui::Dummy({ 0,5 });
 				ImGui::PushItemWidth(100.0f);
-				ImGui::DragFloat("Physics Timestep", &activeScene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
-				ImGui::DragFloat("World Gravity", &activeScene->m_PhysicsWorld->m_Gravity, 0.1f);
+				ImGui::DragFloat("Physics Timestep", &scene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
+				ImGui::DragFloat("World Gravity", &scene->m_PhysicsWorld->m_Gravity, 0.1f);
 
-				int* vi = &activeScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
-				int* pi = &activeScene->m_PhysicsWorld->m_PhysicsPositionIterations;
+				int* vi = &scene->m_PhysicsWorld->m_PhysicsVelocityIterations;
+				int* pi = &scene->m_PhysicsWorld->m_PhysicsPositionIterations;
 				if (ImGui::DragInt("Velocity Iterations", vi))
 					*vi = glm::max(*vi, 1);
 				if (ImGui::DragInt("Position Iterations", pi))
@@ -756,7 +756,7 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			ImGui::Checkbox("Enable Networking", &activeScene->m_EnableNetworking);
+			ImGui::Checkbox("Enable Networking", &scene->m_EnableNetworking);
 
 			ImGui::TreePop();
 		}

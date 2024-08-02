@@ -16,7 +16,7 @@ using namespace proton;
 #define COLOR_WHITE  glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }
 
 static const glm::vec4 s_PlayerColors[10] = {
-	COLOR_RED, COLOR_YELLOW, COLOR_GREEN, COLOR_ORANGE, COLOR_CYAN,
+	COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_ORANGE, COLOR_CYAN,
 	COLOR_BLUE, COLOR_PURPLE, COLOR_PINK, COLOR_BLACK, COLOR_WHITE
 };
 
@@ -34,7 +34,7 @@ bool MyGameMode::OnCreate()
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
 		m_LocalPlayer = SpawnPrefab("Player").As<Player>();
 		m_LocalPlayer->SetWorldPosition(spawnTransform.WorldPosition);
-		m_LocalPlayer->GetColor() = COLOR_RED;
+		m_LocalPlayer->GetColor() = COLOR_GREEN;
 	}
 	return true;
 }
