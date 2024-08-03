@@ -20,7 +20,6 @@
 #include "Proton/Events/MouseEvents.h"
 #include "Proton/Events/WindowEvents.h"
 
-#include "Proton/Scene/EntityComponent.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
 

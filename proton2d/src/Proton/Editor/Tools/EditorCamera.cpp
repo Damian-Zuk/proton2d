@@ -58,12 +58,10 @@ namespace proton {
 			return;
 
 		auto focusedGameInstasnce = EditorLayer::GetFocusedGameInstance();
-		if (scene->m_GameInstance != focusedGameInstasnce)
+		if (m_ViewportPanel->m_GameInstance != focusedGameInstasnce)
 			return;
 
-		SceneState state = scene->GetSceneState();
-
-		if (state == SceneState::Stop || m_UseInRuntime)
+		if (scene->m_SceneState == SceneState::Stop || m_UseInRuntime)
 		{
 			EventDispatcher dispatcher(e);
 			
@@ -72,7 +70,7 @@ namespace proton {
 				const glm::vec2& cursor = scene->GetCursorWorldPosition();
 					
 				if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
-					&& (state == SceneState::Stop || m_UseInRuntime))
+					&& (scene->m_SceneState == SceneState::Stop || m_UseInRuntime))
 				{
 					m_CameraDragOffset = cursor;
 					m_MoveEditorCamera = true;
@@ -97,6 +95,11 @@ namespace proton {
 				return false;
 			});
 		}
+	}
+
+	void EditorCamera::SetViewportSize(const glm::vec2& viewportSize)
+	{
+		m_Camera.SetViewportSize(viewportSize);
 	}
 
 	void EditorCamera::SetPosition(const glm::vec3& position)

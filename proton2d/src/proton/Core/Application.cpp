@@ -79,7 +79,6 @@ namespace proton {
 
 		m_IsRunning = true;
 		m_GameInstance->Init();
-
 		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 
 		PROFILE_BEGIN_SESSION("Proton-Runtime");
@@ -92,9 +91,6 @@ namespace proton {
 
 			if (!m_WindowMinimized) 
 			{
-			#ifndef PT_EDITOR
-				Renderer::Clear();
-			#endif
 			{
 				PROFILE_SCOPE("app_layers_update");
 				for (AppLayer* layer : m_AppLayers)

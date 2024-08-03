@@ -17,6 +17,8 @@ namespace proton {
 		void OnUpdate(float ts);
 		void OnEvent(Event& e);
 
+		void SetViewportSize(const glm::vec2& viewportSize);
+
 		Camera& GetBaseCamera() { return m_Camera; }
 		const Camera& GetBaseCamera() const { return m_Camera; }
 

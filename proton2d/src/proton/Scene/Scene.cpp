@@ -28,10 +28,9 @@ namespace proton {
 	Scene::Scene(const std::string& name,
 		const std::string& filepath, 
 		const std::string& gameModeClass)
-		: m_SceneName(name), m_SceneFilepath(filepath),
-		  m_PhysicsWorld(MakeUnique<PhysicsWorld>(this))
+		: m_SceneName(name), m_SceneFilepath(filepath)
 	{
-		if (gameModeClass.length() && gameModeClass != "GameModeBase")
+		if (gameModeClass.size() && gameModeClass != "GameModeBase")
 		{
 			m_GameModeClassName = gameModeClass;
 			GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
@@ -40,6 +39,8 @@ namespace proton {
 		{
 			m_GameMode = new GameModeBase();
 		}
+
+		m_PhysicsWorld = MakeUnique<PhysicsWorld>(this);
 	}
 
 	Scene::~Scene()
@@ -59,10 +60,10 @@ namespace proton {
 		}
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	// CopyComponent function implementations taken from:
-	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Scene/Scene.cp
-	/////////////////////////////////////////////////////////////////////////////////////////////
+	// ---------------------------------------------------------------------------------
+	// CopyComponent functions from:
+	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Scene/Scene.cpp
+	// ---------------------------------------------------------------------------------
 	template<typename... Component>
 	struct ComponentGroup
 	{
@@ -110,7 +111,7 @@ namespace proton {
 	{
 		CopyComponentIfExists<TComponent...>(dst, src);
 	}
-	/////////////////////////////////////////////////////////////////////////////////////////////
+	// ---------------------------------------------------------------------------------
 
 	Shared<Scene> Scene::CreateSceneCopy(GameInstance* gameInstance)
 	{
@@ -342,6 +343,12 @@ namespace proton {
 	void Scene::DestroyEntity(Entity entity, bool popHierarchy)
 	{
 		if (!entity.IsValid()) return;
+
+	#ifdef PT_EDITOR
+		auto viewport = EditorLayer::GetSceneViewportPanel(this);
+		if (entity == viewport->GetSelectedEntity())
+			viewport->SetSelectedEntity(Entity{});
+	#endif
 
 		// If server is running and entity has NetworkComponent
 		// inform clients that entity has been destroyed.
@@ -641,6 +648,9 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 		auto campos = GetPrimaryCameraPosition();
+
+		Renderer::SetClearColor(m_ClearColor);
+		Renderer::Clear();
 		Renderer::BeginScene(camera, campos);
 
 		// Render entities with SpriteComponent
@@ -933,7 +943,7 @@ namespace proton {
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		static_assert(sizeof(T) == 0);
+		static_assert(sizeof(T) == 0); // missing OnComponentAdded<T> definition
 	}
 
 	template<>

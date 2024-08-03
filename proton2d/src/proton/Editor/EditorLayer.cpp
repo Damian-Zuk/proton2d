@@ -73,7 +73,9 @@ namespace proton {
 		SetupThemeStyle();
 
 		// Initialize ImGui implementation for GLFW
-		InitializeImGui();
+		GLFWwindow* window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 410");
 
 		// Initialize editor panels
 		m_EditorPanels.push_back(&s_Panels.Settings);
@@ -110,40 +112,31 @@ namespace proton {
 
 	void EditorLayer::OnImGuiRender()
 	{
-		//ImGui::ShowDemoWindow(); // Demo window for reference
-		
-		// DockSpace window flags
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_TabBarBorderSize, 0.0f);
-
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
+
 		ImGui::SetNextWindowPos(viewport->Pos);
 		ImGui::SetNextWindowSize(viewport->Size);
 		ImGui::SetNextWindowViewport(viewport->ID);
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		static bool dockspaceOpen = true;
-		ImGui::Begin("DockSpace", &dockspaceOpen, window_flags);
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar;
+		windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+		ImGui::Begin("DockSpace", NULL, windowFlags);
 		ImGui::PopStyleVar(3);
 
-		// DockSpace
 		ImGuiIO& io = ImGui::GetIO();
-		ImGuiStyle& style = ImGui::GetStyle();
-		float minWinSizeX = style.WindowMinSize.x;
-		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+			ImGui::DockSpace(dockspace_id);
 		}
-		style.WindowMinSize.x = minWinSizeX;
 
-		// Render editor panels
+		// Draw menu bar and editor panels
 		m_MenuBar.OnImGuiRender();
 
 		for (auto& panel : m_EditorPanels)
@@ -152,8 +145,7 @@ namespace proton {
 		for (auto& client : m_ClientInstances)
 			client.Viewport->OnImGuiRender();
 
-		ImGui::End(); // DockSpace
-		ImGui::PopStyleVar();
+		ImGui::End();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -221,7 +213,7 @@ namespace proton {
 				return;
 
 			auto viewport = GetSceneViewportPanel(current.m_Scene->m_GameInstance);
-			viewport->SetSelectedEntity(entity);
+			viewport->SetSelectedEntity(Entity{});
 			return;
 		}
 
@@ -495,13 +487,6 @@ namespace proton {
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
-	}
-
-	void EditorLayer::InitializeImGui()
-	{
-		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
 	void EditorLayer::BeginImGuiRender()

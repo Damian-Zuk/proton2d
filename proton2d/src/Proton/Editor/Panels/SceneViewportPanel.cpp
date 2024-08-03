@@ -75,9 +75,10 @@ namespace proton {
 
 	void SceneViewportPanel::OnImGuiRender()
 	{
-		// Scene Viewport
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2{ 320, 280 });
+
+		EditorLayer* editorLayer = EditorLayer::Get();
 
 		if (m_IsMainViewport)
 		{
@@ -89,14 +90,14 @@ namespace proton {
 			ImGui::Begin(m_ImGuiWindowName.c_str(), &open);
 			if (!open)
 			{
-				EditorLayer::Get()->CloseClientGameInstance(m_GameInstance->m_InstanceID);
+				editorLayer->CloseClientGameInstance(m_GameInstance->m_InstanceID);
 			}
 		}
 
-		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-		auto viewportPanelSize = ImGui::GetContentRegionAvail();
-		auto viewportOffset = ImGui::GetWindowPos();
+		ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		ImVec2 viewportOffset = ImGui::GetWindowPos();
 
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
@@ -109,16 +110,15 @@ namespace proton {
 		}
 		else
 		{
-			ImGui::Dummy(ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
+			ImGui::Dummy({ m_ViewportSize.x, m_ViewportSize.y });
 		}
 
-		// Handle Viewport window focus
 		bool focused = ImGui::IsWindowFocused();
 		if (focused != m_IsViewportFocused)
 		{
-			if (focused && EditorLayer::Get()->m_FocusedGameInstance != m_GameInstance)
+			if (focused && editorLayer->m_FocusedGameInstance != m_GameInstance)
 			{
-				EditorLayer::Get()->m_FocusedGameInstance = m_GameInstance;
+				editorLayer->m_FocusedGameInstance = m_GameInstance;
 			}
 			m_IsViewportFocused = focused;
 		}
@@ -136,72 +136,103 @@ namespace proton {
 		if (!scene)
 			return;
 
-		// On viewport resize
-		FramebufferSpecification spec = m_Framebuffer->GetSpecification();
-		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
-			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
-		{
-			m_ViewportAspectRatio = m_ViewportSize.x / m_ViewportSize.y;
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_Camera->m_Camera.SetViewportSize(m_ViewportSize);
-			scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			Renderer::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		}
+		// Handle viewport resize
+		const FramebufferSpecification& spec = m_Framebuffer->GetSpecification();
 
-		if (scene->m_ViewportSize.x == 0.0f || scene->m_ViewportSize.y == 0)
+		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f) // zero sized framebuffer is invalid
 		{
-			scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			if (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y)
+			{
+				m_ViewportAspectRatio = m_ViewportSize.x / m_ViewportSize.y;
+				m_Camera->SetViewportSize(m_ViewportSize);
+				m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				Renderer::SetViewport(0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			}
+			else if (scene->m_ViewportSize.x <= 0.0f || scene->m_ViewportSize.y <= 0.0f)
+			{
+				scene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			}
 		}
 
 		// Get mouse position
-		auto mousePos = ImGui::GetMousePos();
-		mousePos.x -= m_ViewportBounds[0].x;
-		mousePos.y -= m_ViewportBounds[0].y;
-		m_MousePos = { (int)mousePos.x, (int)mousePos.y };
-
-		m_Framebuffer->Bind(); // Begin scene render
-
-		Renderer::SetClearColor(scene->m_ClearColor);
-		Renderer::Clear();
-
-		m_GameInstance->OnUpdate(ts * Application::Get().GetTimeScale());
-		DrawCollidersAndSelectionOutline(ts);
-
-		m_Framebuffer->Unbind(); // End scene render
+		ImVec2 mousePos = ImGui::GetMousePos();
+		m_MousePos = {
+			(int)mousePos.x - m_ViewportBounds[0].x,
+			(int)mousePos.y - m_ViewportBounds[0].y
+		};
 
 		// Update editor camera
 		m_Camera->OnUpdate(ts);
-		
-		const glm::vec2& cursor = scene->GetCursorWorldPosition();
+
+		// Render scene to framebuffer
+		m_Framebuffer->Bind();
+		m_GameInstance->OnUpdate(ts * Application::Get().GetTimeScale());
+		DrawCollidersAndSelectionOutline(ts);
+		m_Framebuffer->Unbind(); 
 
 		// Move selected entity
 		if (m_MoveSelectedEntity && m_SelectedEntity.IsValid())
 		{
 			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
 			
+			const glm::vec2& cursor = scene->GetCursorWorldPosition();
 			glm::vec2 offset = {
 				cursor.x + m_SelectionMouseOffset.x - transform.WorldPosition.x,
 				cursor.y + m_SelectionMouseOffset.y - transform.WorldPosition.y
 			};
 
-			transform.LocalPosition.x += offset.x;
-			transform.LocalPosition.y += offset.y;
-
-			if (Input::IsKeyPressed(Key::LeftShift))
+			if (offset.x != 0.0f || offset.y != 0.0f)
 			{
-				auto& relation = m_SelectedEntity.GetComponent<RelationshipComponent>();
-				Entity current(relation.First, scene);
-				while (current)
+				transform.LocalPosition.x += offset.x;
+				transform.LocalPosition.y += offset.y;
+
+				if (Input::IsKeyPressed(Key::LeftShift))
 				{
-					auto& r = current.GetComponent<RelationshipComponent>();
-					auto& t = current.GetTransform();
-					t.LocalPosition.x -= offset.x;
-					t.LocalPosition.y -= offset.y;
-					current = Entity(r.Next, scene);
+					auto& relation = m_SelectedEntity.GetComponent<RelationshipComponent>();
+					Entity current(relation.First, scene);
+					while (current)
+					{
+						auto& r = current.GetComponent<RelationshipComponent>();
+						auto& t = current.GetTransform();
+						t.LocalPosition.x -= offset.x;
+						t.LocalPosition.y -= offset.y;
+						current = Entity(r.Next, scene);
+					}
 				}
 			}
 
 			ImGui::SetMouseCursor(7);
+		}
+	}
+
+	void SceneViewportPanel::HandleImGuiDragAndDrop()
+	{
+		Scene* scene = GetActiveScene();
+		if (ImGui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_PREFAB");
+			if (payload && scene)
+			{
+				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
+				std::filesystem::path path(path_wchar);
+
+				Entity entity = PrefabManager::Spawn(scene, path.string());
+				auto& transform = entity.GetComponent<TransformComponent>();
+				glm::vec2 cameraPos = scene->GetCursorWorldPosition();
+				entity.SetWorldPosition({ cameraPos.x, cameraPos.y, transform.WorldPosition.z });
+			}
+			payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE");
+			if (payload)
+			{
+				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
+				std::filesystem::path path(path_wchar);
+				std::string sceneFilepath = path.string();
+				m_GameInstance->m_SceneManager->Load(sceneFilepath);
+				m_GameInstance->m_SceneManager->SetActiveScene(sceneFilepath);
+			}
+
+			ImGui::EndDragDropTarget();
 		}
 	}
 
@@ -219,10 +250,20 @@ namespace proton {
 			if (scene->IsSimulated() || !m_IsViewportFocused)
 				return false;
 
-			// Mouse Button 0 (Left): Select Entity
-			else if (e.GetMouseButton() == Mouse::Button0)
+			// Mouse Button 0 (Left): Select / Move Entity
+			if (e.GetMouseButton() == Mouse::Button0)
 			{
-				Entity target; float transformMaxZ = 0.0f;
+				// Move selected entity
+				if (m_SelectedEntity && scene->IsCursorHoveringEntity(m_SelectedEntity))
+				{
+					m_MoveSelectedEntity = true;
+					const glm::vec2& cursor = scene->GetCursorWorldPosition();
+					auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
+					m_SelectionMouseOffset = glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y } - cursor;
+					return false;
+				}
+				// Select entity
+				Entity target; float positionMaxZ = 0.0f;
 
 				for (auto& entity : scene->GetEntitiesOnCursorLocation())
 				{
@@ -231,25 +272,11 @@ namespace proton {
 						continue;
 
 					auto& transform = entity.GetComponent<TransformComponent>();
-					if (!target || transform.WorldPosition.z > transformMaxZ)
+					if (!target || transform.WorldPosition.z > positionMaxZ)
 					{
 						target = entity;
-						transformMaxZ = transform.WorldPosition.z;
+						positionMaxZ = transform.WorldPosition.z;
 					}
-				}
-
-				if (m_SelectedEntity && scene->IsCursorHoveringEntity(m_SelectedEntity))
-				{
-					// Discard selection
-					target = m_SelectedEntity;
-				}
-
-				if (target && target == m_SelectedEntity)
-				{
-					m_MoveSelectedEntity = true;
-					const glm::vec2& cursor = scene->GetCursorWorldPosition();
-					auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-					m_SelectionMouseOffset = glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y } - cursor;
 				}
 
 				EditorLayer::Get()->SelectEntity(target);
@@ -281,10 +308,7 @@ namespace proton {
 					EditorLayer::Get()->SelectEntity({});
 
 				if (key == Key::Delete)
-				{
 					m_SelectedEntity.Destroy();
-					EditorLayer::Get()->SelectEntity({});
-				}
 
 				if (key == Key::D && Input::IsKeyPressed(Key::LeftControl))
 				{
@@ -452,36 +476,6 @@ namespace proton {
 		}
 
 		Renderer::EndScene();
-	}
-
-	void SceneViewportPanel::HandleImGuiDragAndDrop()
-	{
-		Scene* scene = GetActiveScene();
-		if (ImGui::BeginDragDropTarget())
-		{
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_PREFAB");
-			if (payload && scene)
-			{
-				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
-				std::filesystem::path path(path_wchar);
-
-				Entity entity = PrefabManager::Spawn(scene, path.string());
-				auto& transform = entity.GetComponent<TransformComponent>();
-				glm::vec2 cameraPos = scene->GetCursorWorldPosition();
-				entity.SetWorldPosition({ cameraPos.x, cameraPos.y, transform.WorldPosition.z });
-			}
-			payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE");
-			if (payload)
-			{
-				const wchar_t* path_wchar = (const wchar_t*)payload->Data;
-				std::filesystem::path path(path_wchar);
-				std::string sceneFilepath = path.string();
-				m_GameInstance->m_SceneManager->Load(sceneFilepath);
-				m_GameInstance->m_SceneManager->SetActiveScene(sceneFilepath);
-			}
-
-			ImGui::EndDragDropTarget();
-		}
 	}
 
 }

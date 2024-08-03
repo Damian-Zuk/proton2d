@@ -54,7 +54,6 @@ namespace proton {
 		void SetupFonts();
 		void SetupThemeStyle();
 		void SetupImGuiViewports();
-		void InitializeImGui();
 
 		// OpenGL/GLFW render
 		void BeginImGuiRender();
