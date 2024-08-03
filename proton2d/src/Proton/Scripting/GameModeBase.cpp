@@ -4,9 +4,9 @@
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/PrefabManager.h"
 
-#include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Client/Client.h"
-#include "Proton/Network/Server/Server.h"
+#include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/Client.h"
+#include "Proton/Network/Server.h"
 
 namespace proton {
 

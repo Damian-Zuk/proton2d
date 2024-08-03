@@ -14,7 +14,7 @@
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Utils/Utils.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 
 #include <imgui.h>
 

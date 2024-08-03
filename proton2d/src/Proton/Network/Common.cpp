@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Network/Common/Common.h"
+#include "Proton/Network/Common.h"
 
 namespace proton {
 

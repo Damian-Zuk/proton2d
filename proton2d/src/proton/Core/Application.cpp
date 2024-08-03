@@ -14,7 +14,7 @@
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Scripting/GameModeBase.h"
 
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 	#include "Proton/Platform/Windows/WindowsWindow.h"

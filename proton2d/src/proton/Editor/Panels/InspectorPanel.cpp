@@ -16,7 +16,7 @@
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Physics/PhysicsWorld.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 #include "Proton/UI/UIText.h"
 
 #include <imgui.h>

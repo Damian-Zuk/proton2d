@@ -1,6 +1,6 @@
 #pragma once
 #include "Proton/Core/ProjectSettings.h"
-#include "Proton/Network/Common/Common.h"
+#include "Proton/Network/Common.h"
 
 namespace proton {
 

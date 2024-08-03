@@ -2,7 +2,7 @@
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 
 namespace proton {
 

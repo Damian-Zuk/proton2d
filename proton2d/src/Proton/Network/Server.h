@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Proton/Network/Common/Common.h"
+#include "Proton/Network/Common.h"
 #include "Proton/Scene/Entity.h"
 
 #include <steam/steamnetworkingsockets.h>

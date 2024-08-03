@@ -3,7 +3,7 @@
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Events/Event.h"
 #include "Proton/Core/UUID.h"
-#include "Proton/Network/Client/NetSyncData.h"
+#include "Proton/Network/NetSyncData.h"
 
 #include <entt/entt.hpp>
 

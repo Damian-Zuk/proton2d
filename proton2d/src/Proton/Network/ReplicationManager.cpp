@@ -1,7 +1,7 @@
 #include "ptpch.h"
-#include "Proton/Network/Server/ReplicationManager.h"
-#include "Proton/Network/Server/Server.h"
-#include "Proton/Network/Server/NetStatsManager.h"
+#include "Proton/Network/ReplicationManager.h"
+#include "Proton/Network/Server.h"
+#include "Proton/Network/NetStatsManager.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
 

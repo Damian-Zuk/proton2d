@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Network/Client/NetSyncData.h"
+#include "Proton/Network/NetSyncData.h"
 
 namespace proton {
 

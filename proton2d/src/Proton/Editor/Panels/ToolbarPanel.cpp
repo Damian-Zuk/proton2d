@@ -8,7 +8,7 @@
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Physics/PhysicsWorld.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Utils/Random.h"
 

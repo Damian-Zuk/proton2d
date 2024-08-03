@@ -6,9 +6,9 @@
 #include "Proton/Core/AssetManager.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
-#include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Server/Server.h"
-#include "Proton/Network/Server/NetStatsManager.h"
+#include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/Server.h"
+#include "Proton/Network/NetStatsManager.h"
 
 #include "imgui.h"
 

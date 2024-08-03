@@ -3,7 +3,7 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Utils/Utils.h"
-#include "Proton/Network/Common/Common.h"
+#include "Proton/Network/Common.h"
 
 #include <nlohmann/json.hpp>
 

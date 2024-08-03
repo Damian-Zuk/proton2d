@@ -13,9 +13,9 @@
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/UI/UIElement.h"
 
-#include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Client/NetSyncSystem.h"
-#include "Proton/Network/Server/Server.h"
+#include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/NetSyncSystem.h"
+#include "Proton/Network/Server.h"
 
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"

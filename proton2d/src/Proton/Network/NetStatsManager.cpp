@@ -1,7 +1,7 @@
 #include "ptpch.h"
-#include "Proton/Network/Server/NetStatsManager.h"
-#include "Proton/Network/Server/Server.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetStatsManager.h"
+#include "Proton/Network/Server.h"
+#include "Proton/Network/NetworkManager.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Timer.h"
 

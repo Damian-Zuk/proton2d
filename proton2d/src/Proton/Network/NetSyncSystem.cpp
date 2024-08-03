@@ -1,8 +1,9 @@
 #include "ptpch.h"
-#include "Proton/Network/Client/NetSyncSystem.h"
+#include "Proton/Network/NetSyncSystem.h"
 #include "Proton/Physics/PhysicsWorld.h"
 
 #include <box2d/b2_world.h>
+#include <glm/gtx/norm.hpp>
 
 namespace proton {
 
@@ -88,6 +89,9 @@ namespace proton {
 			}
 			case NetSyncMethod::NetworkRigidbody:
 			{
+				if (!scene->m_PhysicsTick)
+					break;
+
 				if (!entity.HasComponent<RigidbodyComponent>())
 					break;
 
@@ -97,46 +101,60 @@ namespace proton {
 				if (!body || syncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
 					break;
 
-				syncState.ExtrapolatedPoint = {
-					current.Position.x + previous.LinearVelocity.x * syncState.PacketDelay,
-					current.Position.y + previous.LinearVelocity.y * syncState.PacketDelay,
-					current.Position.z
+				glm::vec2 diff = current.LinearVelocity - previous.LinearVelocity;
+				glm::vec2 estimatedVel = {
+					current.LinearVelocity.x + (previous.LinearVelocity.x == 0.0f ? 0.0f : diff.x),
+					current.LinearVelocity.y + (previous.LinearVelocity.y == 0.0f ? 0.0f : diff.y)
 				};
+				float multiplier = glm::min(syncState.PacketDelay, 1.0f / 16.0f);
+
+				if (syncState.NewPacket)
+				{
+					syncState.ExtrapolatedPoint = {
+						current.Position.x + current.LinearVelocity.x * multiplier,
+						current.Position.y + current.LinearVelocity.y * multiplier,
+						current.Position.z
+					};
+				}
 
 				if (!syncState.ReconcileStarted && syncState.ReconcileCooldownTimer.Elapsed() > syncParams.ReconcileCooldownTime)
 				{
-					float distanceError = glm::distance(
+					syncState.Error = glm::length2(syncState.ExtrapolatedPoint - transform.WorldPosition);
+
+					float distance = glm::distance(
 						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
 						glm::vec2{ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }
 					);
 
-					if (distanceError >= syncParams.ReconcileThreshold)
+					if (syncState.Error >= syncParams.ReconcileThreshold)
 					{
 						if (entity.GetTag() == "Player")
-							_PT_CORE_TRACE("RECONCILE: distance_error={}", distanceError);
-
-						body->SetGravityScale(0.0f);
+							_PT_CORE_TRACE("Reconcile: len2={:.3f}, dist={:.3}, mul={:.3f} vel={:.3f}", syncState.Error, distance, multiplier, current.LinearVelocity.x);
 
 						syncState.ReconcileStarted = true;
 						syncState.ReconcileTimer.Reset();
 						syncState.ReconcileCooldownTimer.Reset();
+						
+						body->SetGravityScale(0.0f);
 					}
 				}
 
 				if (syncState.ReconcileStarted)
 				{
 					body->SetTransform({ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }, current.Rotation);
+					body->SetLinearVelocity({ estimatedVel.x, estimatedVel.y });
 
 					float distanceError = glm::distance(
 						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
 						glm::vec2{ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }
 					);
+					//float distanceError = glm::length2(syncState.ExtrapolatedPoint - transform.WorldPosition);
 
 					if (distanceError < 0.005f)
 					{
 						syncState.ReconcileStarted = false;
 						body->SetGravityScale(1.0f);
-					}
+					}	
 				}
 				break;
 			}

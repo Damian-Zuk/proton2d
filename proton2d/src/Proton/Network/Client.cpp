@@ -1,8 +1,8 @@
 #include "ptpch.h"
-#include "Proton/Network/Client/Client.h"
-#include "Proton/Network/Common/PacketType.h"
-#include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Client/NetSyncSystem.h"
+#include "Proton/Network/Client.h"
+#include "Proton/Network/PacketType.h"
+#include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/NetSyncSystem.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneSerializer.h"

@@ -7,8 +7,8 @@
 #include "Proton/Graphics/SpriteAnimation.h"
 #include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Physics/PhysicsCommon.h"
-#include "Proton/Network/Common/Common.h"
-#include "Proton/Network/Client/NetSyncData.h"
+#include "Proton/Network/Common.h"
+#include "Proton/Network/NetSyncData.h"
 
 #include "Proton/UI/UIText.h"
 #include <entt/entity/entity.hpp>

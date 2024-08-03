@@ -2,7 +2,7 @@
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Scene.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 
 namespace proton {
 

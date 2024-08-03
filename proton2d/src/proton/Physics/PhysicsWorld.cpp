@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Physics/PhysicsWorld.h"
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>

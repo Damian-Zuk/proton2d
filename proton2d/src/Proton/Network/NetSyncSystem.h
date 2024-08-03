@@ -1,5 +1,5 @@
 #pragma once
-#include "Proton/Network/Client/NetSyncData.h"
+#include "Proton/Network/NetSyncData.h"
 
 namespace proton {
 

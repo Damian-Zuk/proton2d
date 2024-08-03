@@ -27,7 +27,7 @@
 #include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Scripting/GameModeFactory.h"
 
-#include "Proton/Network/Common/NetworkManager.h"
+#include "Proton/Network/NetworkManager.h"
 
 #ifdef PT_EDITOR
 #include <imgui/imgui.h>

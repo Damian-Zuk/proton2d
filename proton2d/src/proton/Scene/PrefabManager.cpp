@@ -3,8 +3,8 @@
 #include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Core/GameInstance.h"
-#include "Proton/Network/Common/NetworkManager.h"
-#include "Proton/Network/Server/Server.h"
+#include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/Server.h"
 
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
