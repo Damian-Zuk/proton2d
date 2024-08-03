@@ -5,7 +5,7 @@
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/Panels/InspectorPanel.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Core/AssetManager.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/ProjectSettings.h"
 #include "Proton/Core/GameInstance.h"

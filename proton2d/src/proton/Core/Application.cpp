@@ -9,7 +9,7 @@
 #include "Proton/Events/MouseEvents.h"
 
 #include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Core/AssetManager.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Scripting/GameModeBase.h"

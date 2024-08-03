@@ -7,7 +7,7 @@
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Timer.h"
-#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Entity.h"

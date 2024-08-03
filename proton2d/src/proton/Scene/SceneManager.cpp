@@ -1,7 +1,7 @@
 #include "ptpch.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Scene.h"
-#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Graphics/Renderer/Renderer.h"

@@ -13,8 +13,8 @@
 #include "Proton/Utils/Random.h"
 #include "Proton/Utils/Utils.h"
 
-#include "Proton/Assets/AssetManager.h"
-#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Core/AssetManager.h"
+#include "Proton/Scene/SceneSerializer.h"
 
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"

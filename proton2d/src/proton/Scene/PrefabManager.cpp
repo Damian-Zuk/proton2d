@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Scene/PrefabManager.h"
-#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Network/Common/NetworkManager.h"

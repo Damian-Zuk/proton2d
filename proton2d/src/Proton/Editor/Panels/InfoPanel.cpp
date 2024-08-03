@@ -3,7 +3,7 @@
 #include "Proton/Editor/Panels/InfoPanel.h"
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Core/AssetManager.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Network/Common/NetworkManager.h"

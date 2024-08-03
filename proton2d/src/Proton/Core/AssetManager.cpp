@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Core/AssetManager.h"
 #include "Proton/Utils/Utils.h"
 
 namespace proton {

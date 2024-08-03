@@ -8,7 +8,7 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Graphics/Renderer/Framebuffer.h"
 #include "Proton/Utils/Utils.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Core/AssetManager.h"
 #include "Proton/Scripting/ScriptFactory.h"
 #include "Proton/Scripting/GameModeFactory.h"
 #include "Proton/Scripting/GameModeBase.h"
