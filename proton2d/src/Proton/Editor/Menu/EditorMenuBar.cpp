@@ -104,9 +104,9 @@ namespace proton {
 		if (!scene)
 			return;
 
-		if (scene->m_SceneFilepath != "<Unsaved scene>")
+		if (scene->m_Filepath != "<Unsaved scene>")
 		{
-			const std::string filepath = scene->m_SceneFilepath;
+			const std::string filepath = scene->m_Filepath;
 			manager->SaveSceneAs(filepath, filepath);
 		}
 		else
@@ -123,8 +123,8 @@ namespace proton {
 		std::string filepath = GetSceneFilename(FileDialogs::SaveFile(".scene.json"));
 		if (filepath.size())
 		{
-			manager->SaveSceneAs(scene->m_SceneFilepath, filepath);
-			if (scene->m_SceneFilepath == "<Unsaved scene>")
+			manager->SaveSceneAs(scene->m_Filepath, filepath);
+			if (scene->m_Filepath == "<Unsaved scene>")
 			{
 				manager->Unload("<Unsaved scene>");
 			}

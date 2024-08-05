@@ -251,7 +251,7 @@ namespace proton {
 				return false;
 
 			// Mouse Button 0 (Left): Select / Move Entity
-			if (e.GetMouseButton() == Mouse::Button0)
+			if (e.GetMouseButton() == Mouse::Button0 && m_IsViewportHovered)
 			{
 				// Move selected entity
 				if (m_SelectedEntity && scene->IsCursorHoveringEntity(m_SelectedEntity))

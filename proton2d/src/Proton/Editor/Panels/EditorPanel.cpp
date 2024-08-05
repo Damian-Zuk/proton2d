@@ -5,14 +5,14 @@
 
 namespace proton {
 
-	Entity EditorPanel::GetSelectedEntity(bool targetFocusedViewport)
+	Entity EditorPanel::GetSelectedEntity(bool mainInstanceOnly)
 	{
-		return EditorLayer::GetSelectedEntity(targetFocusedViewport);
+		return EditorLayer::GetSelectedEntity(mainInstanceOnly);
 	}
 
-	Scene* EditorPanel::GetActiveScene(bool targetFocusedViewport)
+	Scene* EditorPanel::GetActiveScene(bool mainInstanceOnly)
 	{
-		return EditorLayer::GetActiveScene(targetFocusedViewport);
+		return EditorLayer::GetActiveScene(mainInstanceOnly);
 	}
 
 }

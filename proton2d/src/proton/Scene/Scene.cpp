@@ -25,10 +25,8 @@
 
 namespace proton {
 
-	Scene::Scene(const std::string& name,
-		const std::string& filepath, 
-		const std::string& gameModeClass)
-		: m_SceneName(name), m_SceneFilepath(filepath)
+	Scene::Scene(const std::string& filepath, const std::string& gameModeClass)
+		:  m_Filepath(filepath)
 	{
 		if (gameModeClass.size() && gameModeClass != "GameModeBase")
 		{
@@ -115,7 +113,7 @@ namespace proton {
 
 	Shared<Scene> Scene::CreateSceneCopy(GameInstance* gameInstance)
 	{
-		Shared<Scene> newScene = MakeShared<Scene>(m_SceneName, m_SceneFilepath, m_GameModeClassName);
+		Shared<Scene> newScene = MakeShared<Scene>(m_Filepath, m_GameModeClassName);
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
 		newScene->m_PhysicsTimestep = m_PhysicsTimestep;
@@ -209,14 +207,14 @@ namespace proton {
 
 	void Scene::BeginPlay()
 	{	
-		if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Paused)
+		if (m_State == SceneState::Play || m_State == SceneState::Paused)
 			return; 
 
 	#ifdef PT_EDITOR
 		EditorLayer::Get()->OnBeginSceneSimulation(this);
 	#endif
 
-		m_SceneState = SceneState::Play;
+		m_State = SceneState::Play;
 		m_GameInstance->OnSceneSimulationStart(this);
 		
 		CalculateWorldPositions();
@@ -239,15 +237,15 @@ namespace proton {
 
 	void Scene::Pause(bool pause)
 	{
-		if (m_SceneState == SceneState::Stop)
+		if (m_State == SceneState::Stop)
 			return;
 
-		m_SceneState = pause ? SceneState::Paused : SceneState::Play;
+		m_State = pause ? SceneState::Paused : SceneState::Play;
 	}
 
 	void Scene::Stop()
 	{
-		if (m_SceneState == SceneState::Stop)
+		if (m_State == SceneState::Stop)
 			return;
 
 		if (m_PhysicsWorld->IsInitialized())
@@ -256,7 +254,7 @@ namespace proton {
 		m_GameMode->OnDestroy();
 		m_GameMode = GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
 
-		m_SceneState = SceneState::Stop;
+		m_State = SceneState::Stop;
 		m_GameInstance->OnSceneSimulationStop(this);
 
 	#ifdef PT_EDITOR
@@ -530,7 +528,7 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 		
-		if (m_SceneState == SceneState::Play && IsPhysicsSimulated())
+		if (m_State == SceneState::Play && IsPhysicsSimulated())
 		{
 			m_PhysicsWorld->ProcessCreatedEntities();
 			m_PhysicsTimer += ts;
@@ -549,7 +547,7 @@ namespace proton {
 		CachePrimaryCameraPosition();
 		CacheCursorWorldPosition();
 
-		if (m_SceneState == SceneState::Play)
+		if (m_State == SceneState::Play)
 		{
 			if (m_GameMode)
 				m_GameMode->OnUpdate(ts);
@@ -751,7 +749,7 @@ namespace proton {
 	#ifdef PT_EDITOR
 		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
 
-		if (m_SceneState == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
+		if (m_State == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
 			return viewport->m_Camera->GetBaseCamera();
 	#endif
 		return m_PrimaryCamera ? *m_PrimaryCamera : m_DefaultCamera;
@@ -761,7 +759,7 @@ namespace proton {
 	{
 	#ifdef PT_EDITOR
 		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
-		if (m_SceneState == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
+		if (m_State == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
 		{
 			m_PrimaryCameraPosition = viewport->GetCamera()->GetPosition();
 			return;
@@ -922,7 +920,7 @@ namespace proton {
 
 	const std::string& Scene::GetFilepath() const
 	{
-		return m_SceneFilepath;
+		return m_Filepath;
 	}
 
 	bool Scene::IsPhysicsEnabled() const
@@ -940,8 +938,8 @@ namespace proton {
 		return IsPhysicsEnabled() && IsPhysicsWorldInitialized();
 	}
 
-	template<typename T>
-	void Scene::OnComponentAdded(Entity entity, T& component)
+	template<typename TComponent>
+	void Scene::OnComponentAdded(Entity entity, TComponent& component)
 	{
 		static_assert(sizeof(T) == 0); // missing OnComponentAdded<T> definition
 	}
@@ -1028,7 +1026,7 @@ namespace proton {
 	void Scene::OnComponentAdded<RigidbodyComponent>(Entity entity, RigidbodyComponent& component)
 	{
 
-		if (m_SceneState == SceneState::Play && m_PhysicsWorld->IsInitialized())
+		if (m_State == SceneState::Play && m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->m_EntitiesToInitialize.push_back(entity);
 
 		if (!entity.HasComponent<VelocityComponent>())
@@ -1044,14 +1042,14 @@ namespace proton {
 	template<>
 	void Scene::OnComponentAdded<BoxColliderComponent>(Entity entity, BoxColliderComponent& component)
 	{
-		if (m_SceneState == SceneState::Play && m_PhysicsWorld->IsInitialized())
+		if (m_State == SceneState::Play && m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->m_EntitiesToInitialize.push_back(entity);
 	}
 
 	template<>
 	void Scene::OnComponentAdded<CircleColliderComponent>(Entity entity, CircleColliderComponent& component)
 	{
-		if (m_SceneState == SceneState::Play && m_PhysicsWorld->IsInitialized())
+		if (m_State == SceneState::Play && m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->m_EntitiesToInitialize.push_back(entity);
 	}
 

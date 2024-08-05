@@ -33,9 +33,7 @@ namespace proton {
 	class Scene
 	{
 	public:
-		Scene(const std::string& name = "Unnamed scene",
-			const std::string& filepath = "",
-			const std::string& gameModeClass = "");
+		Scene(const std::string& filepath = "", const std::string& gameModeClass = "");
 
 		virtual ~Scene();
 
@@ -72,11 +70,11 @@ namespace proton {
 		bool IsPhysicsEnabled() const;
 		bool IsPhysicsWorldInitialized() const;
 		bool IsPhysicsSimulated() const;
-		bool IsSimulated() const { return m_SceneState != SceneState::Stop; };
-		bool IsPaused() const { return m_SceneState == SceneState::Paused; };
+		bool IsSimulated() const { return m_State != SceneState::Stop; };
+		bool IsPaused() const { return m_State == SceneState::Paused; };
 
 		const std::string& GetFilepath() const;
-		SceneState GetSceneState() const { return m_SceneState; }
+		SceneState GetSceneState() const { return m_State; }
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
 		uint32_t GetNetworkedEntitiesCount() const;
@@ -126,19 +124,18 @@ namespace proton {
 
 		void BuildPhysicsWorld();
 
-		template<typename T>
-		void OnComponentAdded(Entity entity, T& component);
+		template<typename TComponent>
+		void OnComponentAdded(Entity entity, TComponent& component);
 
 	private:
-		SceneState m_SceneState = SceneState::Stop;
+		SceneState m_State = SceneState::Stop;
 		GameInstance* m_GameInstance = nullptr;
 		
 		GameModeBase* m_GameMode = nullptr;
 		std::string m_GameModeClassName = "GameModeBase";
 
 		// General
-		std::string m_SceneName;
-		std::string m_SceneFilepath = "<Unsaved scene>";
+		std::string m_Filepath = "<Unsaved scene>";
 		glm::vec4 m_ClearColor = DEFAULT_SCENE_SCREEN_CLEAR_COLOR;
 
 		// ECS

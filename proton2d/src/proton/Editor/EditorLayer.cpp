@@ -205,11 +205,10 @@ namespace proton {
 
 	void EditorLayer::SelectEntity(Entity entity)
 	{
-		if (!entity.IsValid())
+		if (!entity.IsValid()) // Handle unselect
 		{
 			Entity current = GetSelectedEntity();
-
-			if (!current)
+			if (!current.IsValid())
 				return;
 
 			auto viewport = GetSceneViewportPanel(current.m_Scene->m_GameInstance);
@@ -221,9 +220,9 @@ namespace proton {
 		viewport->SetSelectedEntity(entity);
 	}
 
-	Entity EditorLayer::GetSelectedEntity(bool targetFocusedViewport)
+	Entity EditorLayer::GetSelectedEntity(bool mainInstanceOnly)
 	{
-		if (targetFocusedViewport)
+		if (!mainInstanceOnly)
 		{
 			if (auto instance = GetFocusedGameInstance())
 			{
@@ -234,9 +233,9 @@ namespace proton {
 		return s_Panels.SceneViewport.GetSelectedEntity();
 	}
 
-	Scene* EditorLayer::GetActiveScene(bool targetFocusedViewport)
+	Scene* EditorLayer::GetActiveScene(bool mainInstanceOnly)
 	{
-		if (targetFocusedViewport)
+		if (!mainInstanceOnly)
 		{
 			if (auto instance = GetFocusedGameInstance())
 			{
@@ -259,9 +258,8 @@ namespace proton {
 
 	void EditorLayer::OnStartSimulationButton()
 	{
-		Scene* scene = GetActiveScene(false);
+		Scene* scene = GetActiveScene(true);
 		scene->BeginPlay();
-
 	}
 
 	void EditorLayer::OnStopSimulationButton()
@@ -269,7 +267,7 @@ namespace proton {
 		auto viewport = GetFocusedViewportPanel();
 		if (viewport == &s_Panels.SceneViewport)
 		{
-			Scene* scene = GetActiveScene(false);
+			Scene* scene = GetActiveScene(true);
 			if (m_MainGameInstance->GetNetMode() == NetMode::ListenServer)
 			{
 				m_ClientInstances.clear();
@@ -295,7 +293,7 @@ namespace proton {
 		if (!scene->m_GameInstance->IsMainInstance())
 			return;
 
-		m_SimulatedScenesBackup[scene->m_SceneFilepath] = scene->CreateSceneCopy();
+		m_SimulatedScenesBackup[scene->m_Filepath] = scene->CreateSceneCopy();
 		m_SimulatedScenes++;
 
 		SelectEntity(Entity{});
@@ -308,9 +306,9 @@ namespace proton {
 
 		SelectEntity(Entity{});
 
-		Scene* activeScene = GetActiveScene(false);
+		Scene* activeScene = GetActiveScene(true);
 		bool isActiveScene = scene == activeScene;
-		std::string sceneFilepath = scene->m_SceneFilepath;
+		std::string sceneFilepath = scene->m_Filepath;
 
 		// Restore scene state from backup
 		SceneManager* manager = m_MainGameInstance->GetSceneManager();
@@ -353,8 +351,8 @@ namespace proton {
 			instance->Init(false);
 
 			SceneManager* sceneManager = instance->GetSceneManager();
-			Scene* activeScene = GetActiveScene(false);
-			const std::string& filepath = activeScene->m_SceneFilepath;
+			Scene* activeScene = GetActiveScene(true);
+			const std::string& filepath = activeScene->m_Filepath;
 
 			// Copy currently active scene to a new game instance
 			sceneManager->AddNewActiveScene(filepath, activeScene->IsSimulated() ?

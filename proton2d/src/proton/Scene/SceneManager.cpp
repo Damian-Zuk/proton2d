@@ -80,7 +80,7 @@ namespace proton {
 	Scene* SceneManager::Load(const std::string& scenePath)
 	{
 		//PT_CORE_INFO("file='{}.scene.json'", scenePath);
-		auto scene = MakeShared<Scene>(std::string(), scenePath);
+		auto scene = MakeShared<Scene>(scenePath);
 		SceneSerializer serializer(scene.get());
 		scene->m_GameInstance = m_GameInstance;
 
@@ -135,7 +135,7 @@ namespace proton {
 
 	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)
 	{
-		auto scene = MakeShared<Scene>("Unnamed Scene", scenePath);
+		auto scene = MakeShared<Scene>(scenePath);
 		scene->m_GameInstance = m_GameInstance;
 		m_Scenes[scenePath] = scene;
 		return scene.get();

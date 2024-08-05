@@ -50,7 +50,7 @@ namespace proton {
 
 		ImGui::Begin("Info");
 
-		Scene* scene = GetActiveScene(false);
+		Scene* scene = GetActiveScene(true);
 
 		if (ImGui::TreeNodeEx("General", ImGuiTreeNodeFlags_DefaultOpen))
 		{

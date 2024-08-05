@@ -729,8 +729,9 @@ namespace proton {
 			ImGui::Dummy({ 0, 2 });
 
 			bool enablePhysics = scene->m_EnablePhysics;
-			if (ImGui::Checkbox("Enable Physics", &enablePhysics) && scene->m_SceneState == SceneState::Stop)
+			if (ImGui::Checkbox("Enable Physics", &enablePhysics) && scene->m_State == SceneState::Stop)
 				scene->m_EnablePhysics = enablePhysics;
+
 			if (scene->m_EnablePhysics)
 			{
 				ImGui::Dummy({ 0,5 });

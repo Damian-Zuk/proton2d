@@ -33,7 +33,7 @@ namespace proton {
 			ImGui::SetMouseCursor(2);
 		}
 
-		if (scene->m_SceneState == SceneState::Stop || m_UseInRuntime)
+		if (scene->m_State == SceneState::Stop || m_UseInRuntime)
 		{
 			float zoomLevel = m_Camera.GetZoomLevel();
 			float zoomTargetDiff = glm::abs(m_ZoomLevelTarget - zoomLevel);
@@ -61,7 +61,7 @@ namespace proton {
 		if (m_ViewportPanel->m_GameInstance != focusedGameInstasnce)
 			return;
 
-		if (scene->m_SceneState == SceneState::Stop || m_UseInRuntime)
+		if (scene->m_State == SceneState::Stop || m_UseInRuntime)
 		{
 			EventDispatcher dispatcher(e);
 			
@@ -70,7 +70,7 @@ namespace proton {
 				const glm::vec2& cursor = scene->GetCursorWorldPosition();
 					
 				if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
-					&& (scene->m_SceneState == SceneState::Stop || m_UseInRuntime))
+					&& (scene->m_State == SceneState::Stop || m_UseInRuntime))
 				{
 					m_CameraDragOffset = cursor;
 					m_MoveEditorCamera = true;

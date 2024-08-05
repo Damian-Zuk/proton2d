@@ -286,7 +286,7 @@ namespace proton
 		auto& component = GetComponent<ScriptComponent>();
 		for (auto& [scriptName, scriptInstance] : component.Scripts)
 		{
-			if (m_Scene->m_SceneState != SceneState::Stop)
+			if (m_Scene->m_State != SceneState::Stop)
 				scriptInstance->OnDestroy();
 
 			delete scriptInstance;

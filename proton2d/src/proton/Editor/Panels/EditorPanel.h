@@ -17,10 +17,8 @@ namespace proton {
 		virtual void OnUpdate(float ts) {};
 		virtual void OnEvent(Event& event) {};
 
-		// If `targetFocusedViewport` is false: targets MainGameInstance
-		virtual Entity GetSelectedEntity(bool targetFocusedViewport = true);
-		// If `targetFocusedViewport` is false: targets MainGameInstance
-		virtual Scene* GetActiveScene(bool targetFocusedViewport = true);
+		virtual Entity GetSelectedEntity(bool mainInstanceOnly = false);
+		virtual Scene* GetActiveScene(bool mainInstanceOnly = false);
 
 		friend class EditorLayer;
 	};

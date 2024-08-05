@@ -41,10 +41,8 @@ namespace proton {
 		static void SetActiveScene(Scene* scene);
 		static void SelectEntity(Entity entity);
 
-		// If `targetFocusedViewport` is false: targets MainGameInstance
-		static Entity GetSelectedEntity(bool targetFocusedViewport = true);
-		// If `targetFocusedViewport` is false: targets MainGameInstance
-		static Scene* GetActiveScene(bool targetFocusedViewport = true);
+		static Entity GetSelectedEntity(bool mainInstanceOnly = false);
+		static Scene* GetActiveScene(bool mainInstanceOnly = false);
 
 		static GameInstance* GetFocusedGameInstance();
 		static SceneViewportPanel* GetFocusedViewportPanel();

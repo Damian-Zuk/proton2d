@@ -47,7 +47,6 @@ namespace proton {
 		PT_CORE_ASSERT(m_Scene, "Scene context not set!");
 		const auto& c = m_Scene->m_ClearColor;
 		json jsonObj = {
-			{ "SceneName",          m_Scene->m_SceneName },
 			{ "GameModeClass",      m_Scene->m_GameModeClassName },
 			{ "EnablePhysics",      m_Scene->m_EnablePhysics },
 			{ "GravityForce",       m_Scene->m_PhysicsWorld->m_Gravity },
@@ -77,7 +76,6 @@ namespace proton {
 	bool SceneSerializer::Deserialize(const std::string& jsonData)
 	{
 		json jsonObj = json::parse(jsonData);
-		m_Scene->m_SceneName = jsonObj["SceneName"];
 		m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
 		
 		if (jsonObj.contains("EnableNetworking"))
