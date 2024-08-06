@@ -84,7 +84,7 @@ namespace proton {
 		template<typename... Components>
 		auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
-		GameInstance* GetOwningGameInstance() const { return m_GameInstance; }
+		GameInstance* GetGameInstance() const { return m_GameInstance; }
 		NetworkManager* GetNetworkManager() const;
 
 		template<typename TGameMode>
@@ -98,13 +98,6 @@ namespace proton {
 		}
 
 		void SetGameModeByClassName(const std::string& gameModeClassName);
-
-		template<typename TGameMode>
-		TGameMode* GameModeCastTo()
-		{
-			return dynamic_cast<TGameMode*>(m_GameMode);
-		}
-
 		GameModeBase* GetGameMode() const { return m_GameMode; }
 
 	private:

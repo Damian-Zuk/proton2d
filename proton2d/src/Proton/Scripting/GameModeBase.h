@@ -2,12 +2,20 @@
 #include "Proton/Network/Common.h"
 #include "Proton/Scene/Entity.h"
 
+#define GAME_MODE_CLASS(game_mode_class) \
+static inline const char __ClassName[] = #game_mode_class; \
+static inline const bool __Registered = \
+	proton::GameModeFactory::Get().RegisterGameMode([&](proton::Scene* scene) { \
+		return scene->SetGameMode<game_mode_class>(); \
+	}, #game_mode_class);
+
 namespace proton {
 
 	class Scene;
 	class GameInstance;
 	class NetworkManager;
 	
+	// Scene Game Mode Script Base
 	class GameModeBase
 	{
 	public:
@@ -24,9 +32,9 @@ namespace proton {
 		NetworkManager* GetNetworkManager() const;
 
 		template<typename TGameMode>
-		TGameMode* CastTo()
+		TGameMode* As()
 		{
-			return m_Scene->GameModeCastTo<TGameMode>();
+			return dynamic_cast<TGameMode*>(this);
 		}
 
 		// Networking methods

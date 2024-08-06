@@ -110,7 +110,7 @@ namespace proton {
 		template<typename TGameMode>
 		TGameMode* GetGameMode()
 		{
-			return m_Scene->GameModeCastTo<TGameMode>();
+			return m_Scene->GetGameMode()->As<TGameMode>();
 		}
 
 		// Entity lifetime
@@ -127,7 +127,7 @@ namespace proton {
 
 		// Component getters
 		Scene* GetScene() const;
-		GameModeBase* GetGameModeBase() const;
+		GameModeBase* GetGameMode() const;
 		UUID GetUUID() const;
 		const std::string& GetTag() const;
 		TransformComponent& GetTransform() const;

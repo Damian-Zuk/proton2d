@@ -54,7 +54,7 @@ namespace proton {
 
 	SceneManager* EntityScript::GetSceneManager() const
 	{
-		return GetScene()->GetOwningGameInstance()->GetSceneManager();
+		return GetScene()->GetGameInstance()->GetSceneManager();
 	}
 
 	void EntityScript::SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction)
@@ -108,7 +108,7 @@ namespace proton {
 
 	bool EntityScript::IsRunningServer() const
 	{
-		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
+		NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();
 		return netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer;
 	}
 
@@ -119,7 +119,7 @@ namespace proton {
 
 	bool EntityScript::HasAuthority() const
 	{
-		NetMode netMode = GetScene()->GetOwningGameInstance()->GetNetworkManager()->GetNetMode();
+		NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();
 		return netMode != NetMode::Client;
 	}
 

@@ -159,7 +159,7 @@ namespace proton
 		return m_Scene;
 	}
 
-	GameModeBase* Entity::GetGameModeBase() const
+	GameModeBase* Entity::GetGameMode() const
 	{
 		return m_Scene->GetGameMode();
 	}

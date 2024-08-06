@@ -1,13 +1,6 @@
 #pragma once
 #include "Proton/Scene/Entity.h"
 
-#define GAME_MODE_CLASS(game_mode_class) \
-static inline const char __ClassName[] = #game_mode_class; \
-static inline const bool __Registered = \
-	proton::GameModeFactory::Get().RegisterGameMode([&](proton::Scene* scene) { \
-		return scene->SetGameMode<game_mode_class>(); \
-	}, #game_mode_class);
-
 namespace proton {
 
 	class Scene;

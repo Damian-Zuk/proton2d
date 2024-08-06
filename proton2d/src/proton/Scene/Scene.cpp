@@ -740,8 +740,10 @@ namespace proton {
 	void Scene::ReleaseGameMode()
 	{
 		if (m_GameMode)
+		{
 			delete m_GameMode;
-		m_GameMode = nullptr;
+			m_GameMode = nullptr;
+		}
 	}
 
 	Camera& Scene::GetPrimaryCamera()

@@ -453,7 +453,7 @@ namespace proton {
 			DrawSelectionOutline(m_SelectedEntity, m_MoveSelectedEntity ? COLOR_YELLOW : COLOR_WHITE, ts);
 		}
 
-		NetworkManager* netManager = scene->GetOwningGameInstance()->GetNetworkManager();
+		NetworkManager* netManager = scene->GetGameInstance()->GetNetworkManager();
 		if (m_ShowNetPosition && netManager->IsNetModeClient() && m_SelectedEntity.IsValid())
 		{
 			if (m_SelectedEntity.HasComponent<NetworkComponent>())

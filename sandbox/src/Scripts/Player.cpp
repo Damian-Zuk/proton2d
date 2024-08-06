@@ -57,7 +57,7 @@ bool Player::OnCreate()
 
 	if (IsRunningServer())
 	{
-		GetGameModeBase()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
+		GetGameMode()->Server_SetPlayerActionCallback(m_ClientID, [&](BufferStreamReader& stream) {
 			stream.ReadRaw(m_ActionState);
 		});
 	}
@@ -87,7 +87,7 @@ void Player::OnUpdate(float ts)
 
 		if (IsRunningClient() && m_ActionState != previous)
 		{
-			GetGameModeBase()->Client_SendPlayerAction([&](BufferStreamWriter& stream) {
+			GetGameMode()->Client_SendPlayerAction([&](BufferStreamWriter& stream) {
 				stream.WriteRaw(m_ActionState);
 			});
 		}

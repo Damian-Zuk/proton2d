@@ -18,6 +18,7 @@
 #include "Proton/Events/MouseEvents.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Scene/SceneManager.h"
+#include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Physics/PhysicsWorld.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
@@ -68,12 +69,15 @@ namespace proton {
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+
 		SetupFonts();
 		SetupImGuiViewports();
 		SetupThemeStyle();
 
 		// Initialize ImGui implementation for GLFW
-		GLFWwindow* window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
+		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
 
@@ -101,6 +105,8 @@ namespace proton {
 
 	void EditorLayer::OnUpdate(float ts)
 	{
+		m_BlockEvents = s_Panels.SceneViewport.m_IsViewportHovered;
+
 		for (auto& panel : m_EditorPanels)
 			panel->OnUpdate(ts);
 
@@ -152,25 +158,43 @@ namespace proton {
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		// Block events if viewport is not hovered by mouse
-		if (m_BlockEvents)
+		if (event.IsInCategory(EventCategoryKeyboard) && io.WantTextInput)
 		{
-			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
-			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+			event.Handled = true;
+			return;
+		}
+
+		// Block mouse events if viewport is not hovered by mouse and ImGui wants capture mouse
+		bool imguiMouseEvent = event.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
+		
+		for (const auto& editorInstance : m_ClientInstances)
+		{
+			auto viewport = editorInstance.Viewport.get();
+			if (!viewport->m_IsViewportHovered && imguiMouseEvent)
+				continue; 
+			
+			viewport->OnEvent(event);
+			if (event.Handled)
+				return;
+
+			Scene* scene = editorInstance.Instance->GetActiveScene();
+			scene->GetGameMode()->OnEvent(event);
 			if (event.Handled)
 				return;
 		}
-		else if (event.IsInCategory(EventCategoryKeyboard) && io.WantTextInput)
+
+		if (!s_Panels.SceneViewport.m_IsViewportHovered && imguiMouseEvent)
 		{
 			event.Handled = true;
 			return;
 		}
 
 		for (auto& panel : m_EditorPanels)
+		{
+			if (event.Handled)
+				return;
 			panel->OnEvent(event);
-
-		for (const auto& instance : m_ClientInstances)
-			instance.Viewport->OnEvent(event);
+		}
 	}
 
 	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
@@ -472,10 +496,9 @@ namespace proton {
 
 	void EditorLayer::SetupImGuiViewports()
 	{
-		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
+		ImGuiIO& io = ImGui::GetIO();
 
-		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 		// Enable viewports (ImGui windows can be detached from main application window)
 		if (m_EnableViewports)
 			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
