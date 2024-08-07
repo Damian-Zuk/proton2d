@@ -569,8 +569,6 @@ namespace proton {
 		{
 			DrawComponentUI<RigidbodyComponent>("Rigidbody", [](auto& component)
 			{
-				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
-
 				std::string bodyType = "Static";
 				if (component.Type == b2_dynamicBody)
 					bodyType = "Dynamic";
@@ -590,6 +588,7 @@ namespace proton {
 				}
 
 				ImGui::Dummy({ 0.0f, 3.0f });
+				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
 				ImGui::Checkbox("Fixed rotation", &component.FixedRotation);
 			});
 		}
@@ -636,7 +635,7 @@ namespace proton {
 		// ******************************************************
 		if (selectedEntity.HasComponent<NetworkComponent>())
 		{
-			DrawComponentUI<NetworkComponent>("Network", [](auto& component)
+			DrawComponentUI<NetworkComponent>("Network", [](NetworkComponent& component)
 			{
 				auto RepComponent = [&](const char* label, EComponentType componentType) {
 					bool replicated = component.ComponentsToReplicate.test(componentType);
@@ -681,6 +680,30 @@ namespace proton {
 				ImGui::DragFloat("Reconcile Threshold", &component.SyncParams.ReconcileThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Cooldown", &component.SyncParams.ReconcileCooldownTime, 0.001f);
 				ImGui::PopItemWidth();
+
+				ImGui::Dummy({ 0, 5 });
+				if (ImGui::TreeNode("Debug"))
+				{
+					ImGui::Dummy({ 0, 2 });
+					float prev[] = { component.PreviousTransform.Position.x, component.PreviousTransform.Position.y };
+					float curr[] = { component.CurrentTransform.Position.x, component.CurrentTransform.Position.y };
+					float extr[] = { component.SyncState.ExtrapolatedPoint.x, component.SyncState.ExtrapolatedPoint.y };
+					ImGui::DragFloat2("Previous Pos", prev);
+					ImGui::DragFloat2("Current Pos", curr);
+					ImGui::DragFloat2("Extrapolated Pos", extr);
+					
+					ImGui::Dummy({ 0, 5 });
+					float prevVel[] = { component.PreviousTransform.LinearVelocity.x, component.PreviousTransform.LinearVelocity.y };
+					float currVel[] = { component.CurrentTransform.LinearVelocity.x, component.CurrentTransform.LinearVelocity.y };
+					float estmVel[] = { component.SyncState.EstimatedVelocity.x, component.SyncState.EstimatedVelocity.y };
+					ImGui::DragFloat2("Previous Vel", prevVel);
+					ImGui::DragFloat2("Current Vel", currVel);
+					ImGui::DragFloat2("Estimated Vel", estmVel);
+
+					ImGui::Dummy({ 0, 5 });
+					ImGui::Text("Error: %.3f", component.SyncState.Error);
+					ImGui::TreePop();
+				}
 			});
 		}
 

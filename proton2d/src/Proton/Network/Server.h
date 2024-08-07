@@ -95,6 +95,8 @@ namespace proton {
 		}
 
 	private:
+		static Server* s_Instance;
+
 		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;
 		HSteamListenSocket m_ListenSocket = 0u;
@@ -148,6 +150,7 @@ namespace proton {
 		friend class NetworkManager;
 		friend class ReplicationManager;
 		friend class NetStatsManager;
+		friend class NetSyncSystem; // TODO: remove
 		friend class GameModeBase;
 		friend class Scene;
 	

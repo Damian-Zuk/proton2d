@@ -54,7 +54,7 @@ namespace proton {
 	} static s_Fonts;
 
 	EditorLayer::EditorLayer(GameInstance* instance)
-		: m_MainGameInstance(instance), m_FocusedGameInstance(instance)
+		: m_MainGameInstance(instance), m_GameInstanceContext(instance)
 	{
 	}
 
@@ -157,43 +157,38 @@ namespace proton {
 	void EditorLayer::OnEvent(Event& event)
 	{
 		ImGuiIO& io = ImGui::GetIO();
+		auto viewport = GetSceneViewportPanel(m_GameInstanceContext);
 
-		if (event.IsInCategory(EventCategoryKeyboard) && io.WantTextInput)
+		// Block keyboard events if typing in ImGui input fields
+		// Block mouse events if viewport is not hovered by mouse, user is not dragging camera and ImGui wants to capture mouse
+		if ((event.IsInCategory(EventCategoryKeyboard) && io.WantTextInput) ||
+		    (event.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse && !viewport->m_IsViewportHovered && !viewport->m_Camera->m_IsDragging))
 		{
 			event.Handled = true;
 			return;
 		}
 
-		// Block mouse events if viewport is not hovered by mouse and ImGui wants capture mouse
-		bool imguiMouseEvent = event.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
-		
-		for (const auto& editorInstance : m_ClientInstances)
-		{
-			auto viewport = editorInstance.Viewport.get();
-			if (!viewport->m_IsViewportHovered && imguiMouseEvent)
-				continue; 
-			
-			viewport->OnEvent(event);
-			if (event.Handled)
-				return;
-
-			Scene* scene = editorInstance.Instance->GetActiveScene();
-			scene->GetGameMode()->OnEvent(event);
-			if (event.Handled)
-				return;
-		}
-
-		if (!s_Panels.SceneViewport.m_IsViewportHovered && imguiMouseEvent)
-		{
-			event.Handled = true;
-			return;
-		}
-
+		// Propagate event to other panels
 		for (auto& panel : m_EditorPanels)
 		{
+			if (panel == &s_Panels.SceneViewport)
+			{
+				viewport->OnEvent(event);
+				if (event.Handled)
+					return;
+
+				continue;
+			}
+			panel->OnEvent(event);
 			if (event.Handled)
 				return;
-			panel->OnEvent(event);
+		}
+
+		// Propagate event to game mode
+		if (Scene* scene = m_GameInstanceContext->GetActiveScene())
+		{
+			GameModeBase* gameMode = scene->GetGameMode();
+			gameMode->OnEvent(event);
 		}
 	}
 
@@ -271,7 +266,7 @@ namespace proton {
 
 	GameInstance* EditorLayer::GetFocusedGameInstance()
 	{
-		return s_Instance->m_FocusedGameInstance;
+		return s_Instance->m_GameInstanceContext;
 	}
 
 	SceneViewportPanel* EditorLayer::GetFocusedViewportPanel()
@@ -318,7 +313,6 @@ namespace proton {
 			return;
 
 		m_SimulatedScenesBackup[scene->m_Filepath] = scene->CreateSceneCopy();
-		m_SimulatedScenes++;
 
 		SelectEntity(Entity{});
 	}
@@ -337,13 +331,10 @@ namespace proton {
 		// Restore scene state from backup
 		SceneManager* manager = m_MainGameInstance->GetSceneManager();
 		manager->m_Scenes[sceneFilepath] = m_SimulatedScenesBackup.at(sceneFilepath);
+		m_SimulatedScenesBackup.erase(sceneFilepath);
 			
 		if (isActiveScene)
 			manager->SetActiveScene(sceneFilepath);
-			
-		m_SimulatedScenesBackup.erase(sceneFilepath);
-		m_SimulatedScenes--;
-
 	}
 
 	GameInstance* EditorLayer::OpenNewClientGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
@@ -415,7 +406,7 @@ namespace proton {
 		}
 
 		m_ClientInstancesToClose.clear();
-		m_FocusedGameInstance = m_MainGameInstance;
+		m_GameInstanceContext = m_MainGameInstance;
 		
 		auto viewport = GetSceneViewportPanel();
 		viewport->m_IsViewportFocused = true;
@@ -538,4 +529,4 @@ namespace proton {
 	}
 
 }
-#endif
+#endif // PT_EDITOR

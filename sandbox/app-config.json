@@ -3,5 +3,5 @@
   "window_width": 2200,
   "window_height": 1000,
   "fullscreen": false,
-  "vsync": true
+  "vsync": false
 }

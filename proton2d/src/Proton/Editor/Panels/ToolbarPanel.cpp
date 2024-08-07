@@ -276,4 +276,4 @@ namespace proton {
 	}
 
 }
-#endif
+#endif // PT_EDITOR

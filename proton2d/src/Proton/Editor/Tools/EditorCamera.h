@@ -31,8 +31,8 @@ namespace proton {
 		Camera m_Camera;
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		
+		bool m_IsDragging = false;
 		glm::vec2 m_CameraDragOffset = { 0.0f, 0.0f };
-		bool m_MoveEditorCamera = false;
 
 		float m_ZoomLevelTarget = 1.0f;
 		float m_CameraZoomSpeed = 0.10f;
@@ -40,6 +40,8 @@ namespace proton {
 
 		friend class Scene;
 		friend class SceneSerializer;
+
+		friend class EditorLayer;
 		friend class SceneViewportPanel;
 		friend class SettingsPanel;
 	};

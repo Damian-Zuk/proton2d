@@ -24,7 +24,7 @@ namespace proton {
 		if (!scene)
 			return;
 
-		if (m_MoveEditorCamera)
+		if (m_IsDragging)
 		{
 			const glm::vec2& cursor = scene->GetCursorWorldPosition();
 			glm::vec2 offset = m_CameraDragOffset - cursor;
@@ -54,7 +54,7 @@ namespace proton {
 	{
 		Scene* scene = m_ViewportPanel->m_GameInstance->GetActiveScene();
 
-		if (!scene || (!m_ViewportPanel->m_IsViewportHovered && !m_MoveEditorCamera))
+		if (!scene || (!m_ViewportPanel->m_IsViewportHovered && !m_IsDragging))
 			return;
 
 		auto focusedGameInstasnce = EditorLayer::GetFocusedGameInstance();
@@ -69,11 +69,11 @@ namespace proton {
 			{
 				const glm::vec2& cursor = scene->GetCursorWorldPosition();
 					
-				if (e.GetMouseButton() == Mouse::Button1 && !m_MoveEditorCamera
+				if (e.GetMouseButton() == Mouse::Button1 && !m_IsDragging
 					&& (scene->m_State == SceneState::Stop || m_UseInRuntime))
 				{
 					m_CameraDragOffset = cursor;
-					m_MoveEditorCamera = true;
+					m_IsDragging = true;
 				}
 				return false;
 			});
@@ -81,7 +81,7 @@ namespace proton {
 			dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& e)
 			{
 				if (e.GetMouseButton() == Mouse::Button1)
-					m_MoveEditorCamera = false;
+					m_IsDragging = false;
 
 				ImGui::SetMouseCursor(0);
 				return false;

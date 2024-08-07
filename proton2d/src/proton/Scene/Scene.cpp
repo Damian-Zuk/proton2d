@@ -555,7 +555,10 @@ namespace proton {
 			UpdateScripts(ts);
 
 			if (m_PhysicsTick)
+			{
+				//PT_CORE_TRACE("timer: {}, timestep: {}", m_PhysicsTimer, m_PhysicsTimestep);
 				m_PhysicsTimer = 0.0f;
+			}
 
 			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
@@ -943,7 +946,7 @@ namespace proton {
 	template<typename TComponent>
 	void Scene::OnComponentAdded(Entity entity, TComponent& component)
 	{
-		static_assert(sizeof(T) == 0); // missing OnComponentAdded<T> definition
+		static_assert(false); // missing OnComponentAdded<T> definition
 	}
 
 	template<>
@@ -1061,6 +1064,11 @@ namespace proton {
 		component.ComponentsToReplicate.set(ComponentType_Transform);
 		if (entity.HasComponent<VelocityComponent>())
 			component.ComponentsToReplicate.set(ComponentType_Velocity);
+
+		auto& transform = entity.GetTransform();
+		bool hasRb = entity.HasComponent<RigidbodyComponent>();
+		component.CurrentTransform.Position = hasRb ? transform.WorldPosition : transform.LocalPosition;
+		component.PreviousTransform.Position = component.CurrentTransform.Position;
 	}
 
 }

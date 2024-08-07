@@ -79,7 +79,10 @@ namespace proton {
 
 		m_IsRunning = true;
 		m_GameInstance->Init();
+
+	#ifdef PROTON_DISTRIBUTION
 		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+	#endif
 
 		PROFILE_BEGIN_SESSION("Proton-Runtime");
 
@@ -103,16 +106,15 @@ namespace proton {
 			{
 				PROFILE_SCOPE("imgui_render");
 				EditorLayer* editorLayer = EditorLayer::Get();
-				editorLayer->BeginImGuiRender();
 
+				editorLayer->BeginImGuiRender();
 				for (AppLayer* layer : m_AppLayers)
 				{
 					layer->OnImGuiRender();
 				}
-					
 				editorLayer->EndImGuiRender();
 			}
-			#else // Distribution
+			#else // PROTON_DISTRIBUTION
 				m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);
 			#endif
 			}
@@ -128,14 +130,12 @@ namespace proton {
 	void Application::PushLayer(AppLayer* layer)
 	{
 		m_AppLayers.emplace_back(layer);
-		layer->m_GameInstance = m_GameInstance.get();
 		layer->OnCreate();
 	}
 
 	void Application::PushOverlay(AppLayer* layer)
 	{
 		m_AppLayers.insert(m_AppLayers.begin(), layer);
-		layer->m_GameInstance = m_GameInstance.get();
 		layer->OnCreate();
 	}
 
@@ -161,7 +161,7 @@ namespace proton {
 			return true;
 		});
 
-	#ifndef PT_EDITOR
+	#ifdef PROTON_DISTRIBUTION
 		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e)
 		{
 			uint32_t width = e.GetWidth(), height = e.GetHeight();
@@ -187,11 +187,13 @@ namespace proton {
 			layer->OnEvent(event);
 		}
 
+	#ifdef PROTON_DISTRIBUTION
 		if (!event.Handled)
 		{
 			if (Scene* scene = m_GameInstance->GetActiveScene())
 				scene->GetGameMode()->OnEvent(event);
 		}
+	#endif
 	}
 
 }

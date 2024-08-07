@@ -37,11 +37,12 @@ void Player::OnRegisterFields()
 
 bool Player::OnCreate()
 {
-	uint32_t localPlayerID = GetGameMode<MyGameMode>()->GetLocalPlayerID();
+	MyGameMode* gameMode = GetGameMode<MyGameMode>();
+	uint32_t localPlayerID = gameMode->GetLocalPlayerID();
 	m_IsLocalPlayer = m_ClientID == localPlayerID;
-
 	if (m_IsLocalPlayer)
 	{
+		gameMode->m_LocalPlayer = this;
 		GetScene()->SetPrimaryCameraEntity(*this);
 	}
 

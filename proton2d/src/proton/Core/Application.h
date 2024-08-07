@@ -58,7 +58,7 @@ namespace proton {
 #ifdef PROTON_DISTRIBUTION
 
 	#ifdef PROTON_PLATFORM_WINDOWS
-		#include <Windows.h>
+
 		#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass)\
 		int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)\
 		{\
@@ -66,6 +66,7 @@ namespace proton {
 			ApplcationClass app;\
 			app.Run();\
 		}
+
 	#endif
 
 #else

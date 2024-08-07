@@ -28,6 +28,7 @@ namespace proton {
 		Timer PacketTimer;
 
 		glm::vec3 ExtrapolatedPoint;
+		glm::vec2 EstimatedVelocity;
 		float Error = 0.0f;
 
 		bool ReconcileStarted = false;

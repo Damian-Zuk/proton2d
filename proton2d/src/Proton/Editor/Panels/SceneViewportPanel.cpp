@@ -30,7 +30,7 @@ namespace proton {
 		EditorLayer* editorLayer = EditorLayer::Get();
 		if (editorLayer->GetFocusedGameInstance() == m_GameInstance)
 		{
-			editorLayer->m_FocusedGameInstance = editorLayer->m_MainGameInstance;
+			editorLayer->m_GameInstanceContext = editorLayer->m_MainGameInstance;
 		}
 	}
 
@@ -116,9 +116,9 @@ namespace proton {
 		bool focused = ImGui::IsWindowFocused();
 		if (focused != m_IsViewportFocused)
 		{
-			if (focused && editorLayer->m_FocusedGameInstance != m_GameInstance)
+			if (focused && editorLayer->m_GameInstanceContext != m_GameInstance)
 			{
-				editorLayer->m_FocusedGameInstance = m_GameInstance;
+				editorLayer->m_GameInstanceContext = m_GameInstance;
 			}
 			m_IsViewportFocused = focused;
 		}
@@ -479,4 +479,4 @@ namespace proton {
 	}
 
 }
-#endif
+#endif // PT_EDITOR

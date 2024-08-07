@@ -77,12 +77,11 @@ namespace proton {
 
 		std::vector<EditorPanel*> m_EditorPanels;
 		GameInstance* m_MainGameInstance; // owned by Application
-		GameInstance* m_FocusedGameInstance;
+		GameInstance* m_GameInstanceContext;
 
 		EditorConfig m_Config;
 		EditorMenuBar m_MenuBar;
 
-		uint32_t m_SimulatedScenes = 0;
 		std::unordered_map<std::string, Shared<Scene>> m_SimulatedScenesBackup;
 
 		struct EditorClientInstance
@@ -110,4 +109,4 @@ namespace proton {
 	};
 
 }
-#endif
+#endif // PT_EDITOR

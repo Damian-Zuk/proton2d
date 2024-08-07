@@ -8,17 +8,14 @@ void RedPlatform::OnRegisterFields()
 	REGISTER_FIELD(Float, m_VanishAfter);
 	REGISTER_FIELD(Float, m_VanishTime);
 
-	REPLICATED_DATA(m_EnableCollision, [this](Entity* entity) {
-		auto& color = GetColor();
-		color.a = m_EnableCollision ? 1.0f : 0.33f;
-	});
+	//REPLICATED_DATA(m_EnableCollision, [this](Entity* entity) {
+	//	auto& color = GetColor();
+	//	color.a = m_EnableCollision ? 1.0f : 0.33f;
+	//});
 }
 
 bool RedPlatform::OnCreate()
 {
-	if (IsRunningClient())
-		return true;
-
 	auto& collider = GetComponent<BoxColliderComponent>();
 
 	// OnBegin Contact Callback
@@ -64,9 +61,6 @@ bool RedPlatform::OnCreate()
 
 void RedPlatform::OnUpdate(float ts)
 {
-	if (IsRunningClient())
-		return;
-
 	if (m_ContactWithPlayer && m_VanishAfter > 0.0f)
 	{
 		// Vanish the platform (disable collision)

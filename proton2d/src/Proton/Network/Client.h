@@ -105,6 +105,7 @@ namespace proton {
 
 		friend class NetworkManager;
 		friend class GameModeBase;
+		friend class NetSyncSystem;
 	};
 
 }

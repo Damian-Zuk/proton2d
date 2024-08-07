@@ -18,7 +18,7 @@ namespace proton {
 
 	void InfoPanel::OnImGuiRender()
 	{
-		m_FrameTime = Application::GetLastFrameTime();
+		m_FrameTime = Application::GetLastFrameTime() * 1000.0f;
 
 		if (m_RefreshStatsTimer <= 0.0f)
 		{
@@ -46,7 +46,7 @@ namespace proton {
 			m_RefreshStatsTimer = s_StatsRefreshInterval;
 		}
 		else
-			m_RefreshStatsTimer -= m_FrameTime;
+			m_RefreshStatsTimer -= m_FrameTime / 1000.0f;
 
 		ImGui::Begin("Info");
 
@@ -62,13 +62,13 @@ namespace proton {
 			//ImGui::Text("OpenGL Draw Calls: %i", scene ? Renderer::GetDrawCallsCount() : 0);
 
 			ImGui::Dummy({ 0, 5 });
-			ImGui::Text("Frame Time: %f sec. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
+			ImGui::Text("Frame Time: %0.3f ms. (%.2f FPS)", m_FrameTimeDisplay, m_FPS);
 
 			float max = 0.0f;
 			for (uint32_t i = 0; i < s_FrameTimePlotValuesCount; i++)
 				max = m_FrameTimeHistory[i] > max ? m_FrameTimeHistory[i] : max;
 
-			ImGui::Text("   max:\n%f\n   avg:\n%f", max, m_AvgFrameTime);
+			ImGui::Text("   max:\n%0.3f\n   avg:\n%0.3f", max, m_AvgFrameTime);
 			ImGui::SameLine();
 			ImGui::PlotLines("##Frame_Time", m_FrameTimeHistory, s_FrameTimePlotValuesCount, m_FrameTimeValuesOffset, NULL, 0.0f, glm::max(max * 1.1f, 1.0f / 60.0f), ImVec2(0, 80));
 			ImGui::TreePop();
@@ -189,4 +189,4 @@ namespace proton {
 
 }
 
-#endif PT_EDITOR
+#endif // PT_EDITOR

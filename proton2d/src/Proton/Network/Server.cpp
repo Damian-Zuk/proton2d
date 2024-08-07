@@ -31,7 +31,7 @@ namespace proton {
 	constexpr static size_t s_ScratchBufferSize = 1048576;
 
 	// Can only have one server instance per-process
-	static Server* s_Instance = nullptr;
+	Server* Server::s_Instance = nullptr;
 	float Server::s_FakeServerLag = 0.0f;
 
 	Server::Server(GameInstance* gameInstance)
@@ -49,6 +49,7 @@ namespace proton {
 			m_NetworkThread.join();
 
 		m_ScratchBuffer.Release();
+		Server::s_Instance = nullptr;
 	}
 
 	void Server::Start(int port)

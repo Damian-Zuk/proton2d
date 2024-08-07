@@ -390,7 +390,8 @@ namespace proton {
 			transform.Rotation = glm::degrees(body->GetAngle());
 
 			const b2Vec2& linearVelocity = body->GetLinearVelocity();
-			velocity.LinearVelocity = { linearVelocity.x, linearVelocity.y };
+			velocity.LinearVelocity.x = glm::abs(linearVelocity.x) > 0.0001f ? linearVelocity.x : 0.0f;
+			velocity.LinearVelocity.y = glm::abs(linearVelocity.y) > 0.0001f ? linearVelocity.y : 0.0f;
 			velocity.AngularVelocity = body->GetAngularVelocity();
 		}
 	}

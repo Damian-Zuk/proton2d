@@ -1,5 +1,8 @@
 #include "ptpch.h"
 #include "Proton/Network/NetSyncSystem.h"
+#include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/Client.h"
+#include "Proton/Network/Server.h"
 #include "Proton/Physics/PhysicsWorld.h"
 
 #include <box2d/b2_world.h>
@@ -12,6 +15,10 @@ namespace proton {
 		PROFILE_FUNCTION();
 
 		bool isPhysicsTick = scene->m_PhysicsTick;
+
+		NetworkManager* netManager = scene->GetNetworkManager();
+		if (netManager->IsNetModeClient() && !netManager->GetClient()->m_GameStateInitialized)
+			return;
 
 		auto view = scene->m_Registry.view<NetworkComponent, TransformComponent, VelocityComponent>();
 		for (auto e : view)
@@ -27,18 +34,8 @@ namespace proton {
 			if (syncParams.SyncMethod == NetSyncMethod::None)
 				continue;
 
-			//if (!net.TransformInitialized)
-			//{
-			//	transform.LocalPosition = current.Position;
-			//	velocity.LinearVelocity = current.LinearVelocity;
-			//	velocity.AngularVelocity = current.AngularVelocity;
-			//	transform.Rotation = current.Rotation;
-			//	net.TransformInitialized = true;
+			//if (velocity.LinearVelocity == glm::vec2{ 0.0f } && current.LinearVelocity == glm::vec2{ 0.0f })
 			//	continue;
-			//}
-
-			if (velocity.LinearVelocity == glm::vec2{ 0.0f } && current.LinearVelocity == glm::vec2{ 0.0f })
-				continue;
 
 			bool rbSync = net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
 			//if (glm::distance(current.Position, rbSync ? transform.WorldPosition : transform.LocalPosition) < 0.0001f)
@@ -57,7 +54,7 @@ namespace proton {
 					// Interpolate
 					float alpha = glm::clamp(elapsed / syncState.PacketDelay, 0.0f, 1.0f);
 
-					entity.SetWorldPosition(glm::mix(previous.Position, current.Position, alpha));
+					entity.SetLocalPosition(glm::mix(previous.Position, current.Position, alpha));
 					velocity.LinearVelocity = glm::mix(previous.LinearVelocity, current.LinearVelocity, alpha);
 					transform.Rotation = glm::mix(previous.Rotation, current.Rotation, alpha);
 				}
@@ -96,35 +93,52 @@ namespace proton {
 					break;
 
 				auto& rb = entity.GetComponent<RigidbodyComponent>();
+
+				if (rb.Type == b2_staticBody)
+					break;
+
 				b2Body* body = rb.RuntimeBody;
 
 				if (!body || syncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
 					break;
 
 				glm::vec2 diff = current.LinearVelocity - previous.LinearVelocity;
-				glm::vec2 estimatedVel = {
-					current.LinearVelocity.x + (previous.LinearVelocity.x == 0.0f ? 0.0f : diff.x),
-					current.LinearVelocity.y + (previous.LinearVelocity.y == 0.0f ? 0.0f : diff.y)
-				};
-				float multiplier = glm::min(syncState.PacketDelay, 1.0f / 16.0f);
+				syncState.EstimatedVelocity = current.LinearVelocity;
 
-				if (syncState.NewPacket)
+				bool velIsZero = velocity.LinearVelocity.x == 0.0f && velocity.LinearVelocity.y == 0.0f;
+				bool velCurrIsZero = current.LinearVelocity.x == 0.0f && current.LinearVelocity.y == 0.0f;
+
+				//PT_CORE_TRACE("vel: {}, cur: {}", velIsZero, velCurrIsZero);
+
+				if (!velIsZero && !velCurrIsZero)
+				{
+					syncState.EstimatedVelocity = {
+						current.LinearVelocity.x + diff.x,
+						current.LinearVelocity.y + diff.y
+					};
+				}
+				float lastPacketElapsed = glm::min(syncState.PacketDelay, 1.0f / 16.0f);
+				float multiplier = lastPacketElapsed + Server::s_FakeServerLag / 1000.0f;
+
+				//if (syncState.NewPacket)
 				{
 					syncState.ExtrapolatedPoint = {
-						current.Position.x + current.LinearVelocity.x * multiplier,
-						current.Position.y + current.LinearVelocity.y * multiplier,
+						current.Position.x + syncState.EstimatedVelocity.x * multiplier,
+						current.Position.y + syncState.EstimatedVelocity.y * multiplier,
 						current.Position.z
 					};
 				}
 
 				if (!syncState.ReconcileStarted && syncState.ReconcileCooldownTimer.Elapsed() > syncParams.ReconcileCooldownTime)
 				{
-					syncState.Error = glm::length2(syncState.ExtrapolatedPoint - transform.WorldPosition);
+					//syncState.Error = glm::length2(syncState.ExtrapolatedPoint - transform.WorldPosition);
 
 					float distance = glm::distance(
 						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
 						glm::vec2{ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }
 					);
+
+					syncState.Error = distance;
 
 					if (syncState.Error >= syncParams.ReconcileThreshold)
 					{
@@ -134,7 +148,7 @@ namespace proton {
 						syncState.ReconcileStarted = true;
 						syncState.ReconcileTimer.Reset();
 						syncState.ReconcileCooldownTimer.Reset();
-						
+
 						body->SetGravityScale(0.0f);
 					}
 				}
@@ -142,7 +156,7 @@ namespace proton {
 				if (syncState.ReconcileStarted)
 				{
 					body->SetTransform({ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }, current.Rotation);
-					body->SetLinearVelocity({ estimatedVel.x, estimatedVel.y });
+					body->SetLinearVelocity({ syncState.EstimatedVelocity.x, syncState.EstimatedVelocity.y });
 
 					float distanceError = glm::distance(
 						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },

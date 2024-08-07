@@ -24,4 +24,6 @@ private:
 	Player* m_LocalPlayer;
 	uint32_t m_LocalPlayerID = 0;
 	uint32_t m_NewColorIndex = 1;
+
+	friend class Player;
 };

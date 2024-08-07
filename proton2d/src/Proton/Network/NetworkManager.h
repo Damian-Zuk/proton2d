@@ -50,7 +50,7 @@ namespace proton {
 		std::string m_IpAddress = "127.0.0.1";
 		int m_Port = 8192;
 
-		uint16_t m_ServerTickRate = 16;
+		uint16_t m_ServerTickRate = 32;
 		float m_ServerTickTime = 1.0f / m_ServerTickRate;
 		float m_ServerTickElapsed = 0.0f;
 

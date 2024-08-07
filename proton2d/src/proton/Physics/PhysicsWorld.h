@@ -12,7 +12,7 @@ namespace proton {
 
 	enum class JointType : uint8_t
 	{
-		Revolute = 0 // Currently only revolute joints supported
+		Revolute = 0
 	};
 
 	class PhysicsContactListener : public b2ContactListener
