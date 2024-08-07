@@ -33,6 +33,7 @@
 namespace proton {
 
 	EditorLayer* EditorLayer::s_Instance = nullptr;
+	static constexpr bool s_EnableViewports = false;
 
 	struct EditorPanels
 	{
@@ -42,7 +43,6 @@ namespace proton {
 		SceneHierarchyPanel SceneHiearchy;
 		ToolbarPanel Toolbar;
 		ContentBrowserPanel ContentBrowser;
-		SceneViewportPanel SceneViewport;
 
 	} static s_Panels;
 
@@ -52,11 +52,6 @@ namespace proton {
 		ImFont* SmallFont;
 
 	} static s_Fonts;
-
-	EditorLayer::EditorLayer(GameInstance* instance)
-		: m_MainGameInstance(instance), m_GameInstanceContext(instance)
-	{
-	}
 
 	EditorLayer* EditorLayer::Get()
 	{
@@ -81,6 +76,16 @@ namespace proton {
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
 
+		// Initialize main game instance
+ 		m_MainGameInstance.Instance = MakeUnique<GameInstance>();
+		m_MainGameInstance.Viewport = MakeUnique<SceneViewportPanel>();
+		m_MainGameInstance.ID = 0;
+		m_MainGameInstance.Instance->m_EditorGameInstance = &m_MainGameInstance;
+		m_MainGameInstance.Viewport->m_EditorGameInstance = &m_MainGameInstance;
+
+		m_GameInstanceContext = &m_MainGameInstance;
+		m_MainGameInstance.Instance->Init();
+
 		// Initialize editor panels
 		m_EditorPanels.push_back(&s_Panels.Settings);
 		m_EditorPanels.push_back(&s_Panels.Info);
@@ -88,12 +93,11 @@ namespace proton {
 		m_EditorPanels.push_back(&s_Panels.SceneHiearchy);
 		m_EditorPanels.push_back(&s_Panels.Toolbar);
 		m_EditorPanels.push_back(&s_Panels.ContentBrowser);
-		m_EditorPanels.push_back(&s_Panels.SceneViewport);
-
-		s_Panels.SceneViewport.m_GameInstance = m_MainGameInstance;
 
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
+
+		m_MainGameInstance.Viewport->OnCreate();
 	}
 
 	void EditorLayer::OnDestroy()
@@ -105,15 +109,15 @@ namespace proton {
 
 	void EditorLayer::OnUpdate(float ts)
 	{
-		m_BlockEvents = s_Panels.SceneViewport.m_IsViewportHovered;
-
 		for (auto& panel : m_EditorPanels)
 			panel->OnUpdate(ts);
+		
+		m_MainGameInstance.Viewport->OnUpdate(ts);
 
-		for (auto& client : m_ClientInstances)
-			client.Viewport->OnUpdate(ts);
+		for (auto& client : m_GameInstances)
+			client->Viewport->OnUpdate(ts);
 
-		HandleClientGameInstanceCloseEvent();
+		HandleGameInstanceCloseEvent();
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -148,8 +152,10 @@ namespace proton {
 		for (auto& panel : m_EditorPanels)
 			panel->OnImGuiRender();
 
-		for (auto& client : m_ClientInstances)
-			client.Viewport->OnImGuiRender();
+		m_MainGameInstance.Viewport->OnImGuiRender();
+
+		for (auto& client : m_GameInstances)
+			client->Viewport->OnImGuiRender();
 
 		ImGui::End();
 	}
@@ -157,7 +163,7 @@ namespace proton {
 	void EditorLayer::OnEvent(Event& event)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		auto viewport = GetSceneViewportPanel(m_GameInstanceContext);
+		auto viewport = m_GameInstanceContext->Viewport.get();
 
 		// Block keyboard events if typing in ImGui input fields
 		// Block mouse events if viewport is not hovered by mouse, user is not dragging camera and ImGui wants to capture mouse
@@ -171,108 +177,94 @@ namespace proton {
 		// Propagate event to other panels
 		for (auto& panel : m_EditorPanels)
 		{
-			if (panel == &s_Panels.SceneViewport)
-			{
-				viewport->OnEvent(event);
-				if (event.Handled)
-					return;
-
-				continue;
-			}
 			panel->OnEvent(event);
 			if (event.Handled)
 				return;
 		}
 
+		viewport->OnEvent(event);
+		if (event.Handled)
+			return;
+
 		// Propagate event to game mode
-		if (Scene* scene = m_GameInstanceContext->GetActiveScene())
+		if (Scene* scene = m_GameInstanceContext->Instance->GetActiveScene())
 		{
 			GameModeBase* gameMode = scene->GetGameMode();
 			gameMode->OnEvent(event);
 		}
 	}
 
-	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
+	GameInstance* EditorLayer::LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
 	{
-		if (gameInstance && gameInstance != s_Instance->m_MainGameInstance)
+		uint32_t id = ++m_CurrentInstanceID;
+		m_GameInstances.push_back(MakeShared<EditorGameInstance>());
+
+		auto client = m_GameInstances.back().get();
+		client->Instance = MakeUnique<GameInstance>();
+		client->Viewport = MakeUnique<SceneViewportPanel>();
+		client->ID = id;
+
+		auto instance = client->Instance.get();
+		auto viewport = client->Viewport.get();
+
+		instance->m_EditorGameInstance = client;
+		instance->m_IsMainInstance = false;
+		instance->SetNetMode(netMode);
+
+		viewport->m_EditorGameInstance = client;
+		viewport->m_IsMainViewport = false;
+		viewport->m_ImGuiWindowName = windowName;
+		viewport->OnCreate();
+
+		if (!loadStartupScene)
 		{
-			return s_Instance->m_ClientViewportMap.at(gameInstance);
+			instance->Init(false);
+
+			SceneManager* sceneManager = instance->GetSceneManager();
+			Scene* activeScene = GetActiveScene(true);
+			const std::string& filepath = activeScene->m_Filepath;
+
+			// Copy currently active scene to a new game instance
+			sceneManager->AddNewActiveScene(filepath, activeScene->IsSimulated() 
+				? m_SimulatedScenesBackup.at(filepath)->CreateSceneCopy(instance)
+				: activeScene->CreateSceneCopy(instance));
 		}
-		return &s_Panels.SceneViewport;
-	}
-
-	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(Scene* scene)
-	{
-		return GetSceneViewportPanel(scene->m_GameInstance);
-	}
-
-	SceneHierarchyPanel* EditorLayer::GetSceneHierarchyPanel()
-	{
-		return &s_Panels.SceneHiearchy;
-	}
-
-	InspectorPanel* EditorLayer::GetInspectorPanel()
-	{
-		return &s_Panels.Inspector;
-	}
-
-	void EditorLayer::SetActiveScene(Scene* scene)
-	{
-		auto viewport = GetSceneViewportPanel(scene->m_GameInstance);
-		viewport->SetActiveScene(scene);
-	}
-
-	void EditorLayer::SelectEntity(Entity entity)
-	{
-		if (!entity.IsValid()) // Handle unselect
+		else
 		{
-			Entity current = GetSelectedEntity();
-			if (!current.IsValid())
-				return;
+			instance->Init();
+		}
 
-			auto viewport = GetSceneViewportPanel(current.m_Scene->m_GameInstance);
-			viewport->SetSelectedEntity(Entity{});
+		return instance;
+	}
+
+	void EditorLayer::CloseGameInstance(uint32_t instanceID)
+	{
+		m_GameInstancesToClose.push_back(instanceID);
+
+		if (m_GameInstances.size() == 1)
+			m_CurrentInstanceID = 0;
+	}
+
+	void EditorLayer::HandleGameInstanceCloseEvent()
+	{
+		if (!m_GameInstancesToClose.size())
 			return;
-		}
 
-		auto viewport = GetSceneViewportPanel(entity.m_Scene->m_GameInstance);
-		viewport->SetSelectedEntity(entity);
-	}
-
-	Entity EditorLayer::GetSelectedEntity(bool mainInstanceOnly)
-	{
-		if (!mainInstanceOnly)
-		{
-			if (auto instance = GetFocusedGameInstance())
-			{
-				auto viewport = GetSceneViewportPanel(instance);
-				return viewport->GetSelectedEntity();
+		m_GameInstances.erase(std::remove_if(m_GameInstances.begin(), m_GameInstances.end(),
+			[this](const Shared<EditorGameInstance>& instance) {
+				for (uint32_t id : m_GameInstancesToClose)
+				{
+					if (instance->ID == id)
+						return true;
+				}
+				return false;
 			}
-		}
-		return s_Panels.SceneViewport.GetSelectedEntity();
-	}
+		));
+		m_GameInstancesToClose.clear();
 
-	Scene* EditorLayer::GetActiveScene(bool mainInstanceOnly)
-	{
-		if (!mainInstanceOnly)
-		{
-			if (auto instance = GetFocusedGameInstance())
-			{
-				return instance->GetActiveScene();
-			}
-		}
-		return s_Instance->m_MainGameInstance->GetActiveScene();
-	}
-
-	GameInstance* EditorLayer::GetFocusedGameInstance()
-	{
-		return s_Instance->m_GameInstanceContext;
-	}
-
-	SceneViewportPanel* EditorLayer::GetFocusedViewportPanel()
-	{
-		auto instance = GetFocusedGameInstance();
-		return GetSceneViewportPanel(instance);
+		m_GameInstanceContext = &m_MainGameInstance;
+		auto viewport = GetMainViewportPanel();
+		viewport->m_IsViewportFocused = true;
 	}
 
 	void EditorLayer::OnStartSimulationButton()
@@ -283,13 +275,12 @@ namespace proton {
 
 	void EditorLayer::OnStopSimulationButton()
 	{
-		auto viewport = GetFocusedViewportPanel();
-		if (viewport == &s_Panels.SceneViewport)
+		if (GetFocusedViewportPanel()->IsMainViewport())
 		{
 			Scene* scene = GetActiveScene(true);
-			if (m_MainGameInstance->GetNetMode() == NetMode::ListenServer)
+			if (GetMainGameInstance()->GetNetMode() == NetMode::ListenServer)
 			{
-				m_ClientInstances.clear();
+				m_GameInstances.clear();
 				m_CurrentInstanceID = 0;
 			}
 			scene->Stop();
@@ -297,7 +288,7 @@ namespace proton {
 		else
 		{
 			auto instance = GetFocusedGameInstance();
-			CloseClientGameInstance(instance->m_InstanceID);
+			CloseGameInstance(instance->m_EditorGameInstance->ID);
 		}
 	}
 
@@ -329,7 +320,7 @@ namespace proton {
 		std::string sceneFilepath = scene->m_Filepath;
 
 		// Restore scene state from backup
-		SceneManager* manager = m_MainGameInstance->GetSceneManager();
+		SceneManager* manager = GetMainGameInstance()->GetSceneManager();
 		manager->m_Scenes[sceneFilepath] = m_SimulatedScenesBackup.at(sceneFilepath);
 		m_SimulatedScenesBackup.erase(sceneFilepath);
 			
@@ -337,84 +328,97 @@ namespace proton {
 			manager->SetActiveScene(sceneFilepath);
 	}
 
-	GameInstance* EditorLayer::OpenNewClientGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
+	void EditorLayer::SetActiveScene(Scene* scene)
 	{
-		uint32_t id = ++m_CurrentInstanceID;
-
-		m_ClientInstances.push_back(EditorClientInstance{
-			MakeUnique<GameInstance>(),
-			MakeUnique<SceneViewportPanel>(), id
-		});
-
-		auto& client = m_ClientInstances.back();
-		auto instance = client.Instance.get();
-		auto viewport = client.Viewport.get();
-
-		m_ClientViewportMap[instance] = viewport;
-		
-		instance->m_IsMainInstance = false;
-		instance->m_InstanceID = id;
-		instance->SetNetMode(netMode);
-
-		viewport->m_ImGuiWindowName = windowName;
-		viewport->m_GameInstance = instance;
-		viewport->m_IsMainViewport = false;
-		viewport->OnCreate();
-
-		if (!loadStartupScene)
-		{
-			instance->Init(false);
-
-			SceneManager* sceneManager = instance->GetSceneManager();
-			Scene* activeScene = GetActiveScene(true);
-			const std::string& filepath = activeScene->m_Filepath;
-
-			// Copy currently active scene to a new game instance
-			sceneManager->AddNewActiveScene(filepath, activeScene->IsSimulated() ?
-				m_SimulatedScenesBackup.at(filepath)->CreateSceneCopy(instance)
-				: activeScene->CreateSceneCopy(instance));
-		}
-		else
-		{
-			instance->Init();
-		}
-
-		return instance;
+		auto viewport = GetSceneViewportPanel(scene->m_GameInstance);
+		viewport->SetActiveScene(scene);
 	}
 
-	void EditorLayer::CloseClientGameInstance(uint32_t instanceID)
+	void EditorLayer::SelectEntity(Entity entity)
 	{
-		m_ClientInstancesToClose.push_back(instanceID);
+		if (!entity.IsValid()) // Handle unselect
+		{
+			Entity current = GetSelectedEntity();
+			if (!current.IsValid())
+				return;
 
-		if (m_ClientInstances.size() == 1)
-			m_CurrentInstanceID = 0;
-	}
-
-	void EditorLayer::HandleClientGameInstanceCloseEvent()
-	{
-		if (!m_ClientInstancesToClose.size())
+			auto viewport = GetSceneViewportPanel(current.m_Scene->m_GameInstance);
+			viewport->SetSelectedEntity(Entity{});
 			return;
-
-		for (uint32_t id : m_ClientInstancesToClose)
-		{
-			// Destroy Client GameInstance and SceneViewportPanel
-			m_ClientInstances.erase(std::remove_if(m_ClientInstances.begin(), m_ClientInstances.end(),
-				[id](const EditorClientInstance& instance) {
-					return instance.ID == id;
-				}
-			));
 		}
 
-		m_ClientInstancesToClose.clear();
-		m_GameInstanceContext = m_MainGameInstance;
-		
-		auto viewport = GetSceneViewportPanel();
-		viewport->m_IsViewportFocused = true;
+		auto viewport = GetSceneViewportPanel(entity.m_Scene->m_GameInstance);
+		viewport->SetSelectedEntity(entity);
+	}
+
+	Entity EditorLayer::GetSelectedEntity(bool targetMainInstance)
+	{
+		if (!targetMainInstance)
+		{
+			if (auto instance = GetFocusedGameInstance())
+			{
+				auto viewport = GetSceneViewportPanel(instance);
+				return viewport->GetSelectedEntity();
+			}
+		}
+		return s_Instance->m_MainGameInstance.Viewport->GetSelectedEntity();
+	}
+
+	Scene* EditorLayer::GetActiveScene(bool targetMainInstance)
+	{
+		if (!targetMainInstance)
+		{
+			if (auto instance = GetFocusedGameInstance())
+			{
+				return instance->GetActiveScene();
+			}
+		}
+		return s_Instance->GetMainGameInstance()->GetActiveScene();
+	}
+
+	GameInstance* EditorLayer::GetMainGameInstance()
+	{
+		return s_Instance->m_MainGameInstance.Instance.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetMainViewportPanel()
+	{
+		return s_Instance->m_MainGameInstance.Viewport.get();
+	}
+
+	GameInstance* EditorLayer::GetFocusedGameInstance()
+	{
+		return s_Instance->m_GameInstanceContext->Instance.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetFocusedViewportPanel()
+	{
+		return s_Instance->m_GameInstanceContext->Viewport.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
+	{
+		return gameInstance->m_EditorGameInstance->Viewport.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(Scene* scene)
+	{
+		return GetSceneViewportPanel(scene->m_GameInstance);
+	}
+
+	SceneHierarchyPanel* EditorLayer::GetSceneHierarchyPanel()
+	{
+		return &s_Panels.SceneHiearchy;
+	}
+
+	InspectorPanel* EditorLayer::GetInspectorPanel()
+	{
+		return &s_Panels.Inspector;
 	}
 
 	EditorCamera* EditorLayer::GetCamera()
 	{
-		return s_Panels.SceneViewport.m_Camera.get();
+		return s_Instance->m_MainGameInstance.Viewport->m_Camera.get();
 	}
 
 	ImFont* EditorLayer::GetFontAwesome()
@@ -491,10 +495,10 @@ namespace proton {
 		ImGuiIO& io = ImGui::GetIO();
 
 		// Enable viewports (ImGui windows can be detached from main application window)
-		if (m_EnableViewports)
+		if (s_EnableViewports)
 			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (s_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -518,7 +522,7 @@ namespace proton {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	#ifdef PROTON_PLATFORM_WINDOWS
-		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (s_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();

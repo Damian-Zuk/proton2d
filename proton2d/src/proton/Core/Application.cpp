@@ -41,7 +41,9 @@ namespace proton {
 		m_Window->SetFullscreen(m_AppConfig.Fullscreen);
 		m_Window->SetVSync(m_AppConfig.VSync);
 
+	#ifdef PROTON_DISTRIBUTION
 		m_GameInstance = MakeUnique<GameInstance>();
+	#endif
 	}
 
 	Application::~Application()
@@ -67,8 +69,8 @@ namespace proton {
 		PrefabManager::Init();
 
 	#ifdef PT_EDITOR
-		EditorLayer::s_Instance = new EditorLayer(m_GameInstance.get());
-		PushOverlay(EditorLayer::s_Instance);
+		EditorLayer::s_Instance = new EditorLayer();
+		PushOverlay(EditorLayer::s_Instance); // EditorLayer::OnCreate()
 	#endif
 
 		if (!OnCreate())
@@ -78,9 +80,9 @@ namespace proton {
 		}
 
 		m_IsRunning = true;
-		m_GameInstance->Init();
 
 	#ifdef PROTON_DISTRIBUTION
+		m_GameInstance->Init();
 		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 	#endif
 
@@ -125,6 +127,15 @@ namespace proton {
 		}
 
 		PROFILE_END_SESSION();
+	}
+
+	GameInstance* Application::GetGameInstance()
+	{
+#ifdef PT_EDITOR
+		return EditorLayer::GetMainGameInstance();
+#else // PROTON_DISTRIBUTION
+		return s_Instance->m_GameInstance.get();
+#endif
 	}
 
 	void Application::PushLayer(AppLayer* layer)

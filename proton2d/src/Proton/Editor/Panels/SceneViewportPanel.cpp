@@ -28,9 +28,9 @@ namespace proton {
 			return;
 	
 		EditorLayer* editorLayer = EditorLayer::Get();
-		if (editorLayer->GetFocusedGameInstance() == m_GameInstance)
+		if (editorLayer->GetFocusedViewportPanel() == this)
 		{
-			editorLayer->m_GameInstanceContext = editorLayer->m_MainGameInstance;
+			editorLayer->m_GameInstanceContext = &editorLayer->m_MainGameInstance;
 		}
 	}
 
@@ -43,6 +43,7 @@ namespace proton {
 
 		m_Framebuffer = MakeUnique<Framebuffer>(fbSpec);
 		m_Camera = MakeUnique<EditorCamera>(this);
+		m_GameInstance = m_EditorGameInstance->Instance.get();
 	}
 
 	void SceneViewportPanel::SetActiveScene(Scene* scene, bool sceneManagerCall) const
@@ -90,7 +91,7 @@ namespace proton {
 			ImGui::Begin(m_ImGuiWindowName.c_str(), &open);
 			if (!open)
 			{
-				editorLayer->CloseClientGameInstance(m_GameInstance->m_InstanceID);
+				editorLayer->CloseGameInstance(m_EditorGameInstance->ID);
 			}
 		}
 
@@ -113,15 +114,17 @@ namespace proton {
 			ImGui::Dummy({ m_ViewportSize.x, m_ViewportSize.y });
 		}
 
+		// Handle viewport focus change (game instance context)
 		bool focused = ImGui::IsWindowFocused();
 		if (focused != m_IsViewportFocused)
 		{
-			if (focused && editorLayer->m_GameInstanceContext != m_GameInstance)
+			if (focused)
 			{
-				editorLayer->m_GameInstanceContext = m_GameInstance;
+				editorLayer->m_GameInstanceContext = m_GameInstance->m_EditorGameInstance;
 			}
 			m_IsViewportFocused = focused;
 		}
+
 		m_IsViewportHovered = ImGui::IsWindowHovered();
 
 		HandleImGuiDragAndDrop();

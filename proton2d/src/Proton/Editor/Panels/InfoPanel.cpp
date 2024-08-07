@@ -100,7 +100,7 @@ namespace proton {
 	void InfoPanel::DrawNetworkStats()
 	{
 		static HSteamNetConnection selectedConn = 0;
-		NetworkManager* networkManager = Application::GetGameInstance()->GetNetworkManager();
+		NetworkManager* networkManager = EditorLayer::GetMainGameInstance()->GetNetworkManager();
 		Server* server = networkManager->GetServer();
 
 		ImGui::Checkbox("Log To File", &networkManager->m_SaveNetworkStatsToLogFile);

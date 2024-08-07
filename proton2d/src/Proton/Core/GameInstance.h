@@ -7,7 +7,7 @@ namespace proton {
 	class Scene;
 	class SceneManager;
 	class NetworkManager;
-	class SceneViewportPanel;
+	struct EditorGameInstance;
 
 	class GameInstance
 	{
@@ -32,13 +32,17 @@ namespace proton {
 		bool HasSimulationStarted() const { return m_SimulatedScenesCount > 0; }
 
 	private:
-		bool m_IsMainInstance = true;
-		uint32_t m_SimulatedScenesCount = 0;
-		uint32_t m_InstanceID = 0;
+	#ifdef PT_EDITOR
+		EditorGameInstance* m_EditorGameInstance = nullptr;
+	#endif
 
 		Unique<SceneManager> m_SceneManager;
 		Unique<NetworkManager> m_NetworkManager;
+
 		ProjectSettings m_ProjectSettings;
+		uint32_t m_SimulatedScenesCount = 0;
+
+		bool m_IsMainInstance = true;
 
 		friend class Application;
 		friend class SceneManager;

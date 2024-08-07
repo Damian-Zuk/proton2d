@@ -2,6 +2,7 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/Tools/EditorCamera.h"
 #include "Proton/Editor/Menu/EditorMenuBar.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Core/AppLayer.h"
 #include "Proton/Core/Config.h"
 #include "Proton/Scene/Entity.h"
@@ -15,10 +16,17 @@ namespace proton {
 	class SceneHierarchyPanel;
 	class InspectorPanel;
 
+	struct EditorGameInstance
+	{
+		Unique<GameInstance> Instance;
+		Unique<SceneViewportPanel> Viewport;
+		uint32_t ID;
+	};
+
 	class EditorLayer : AppLayer
 	{
 	public:
-		EditorLayer(GameInstance* instance);
+		EditorLayer() = default;
 		virtual ~EditorLayer() = default;
 
 		static EditorLayer* Get();
@@ -32,20 +40,25 @@ namespace proton {
 		static ImFont* GetFontAwesome();
 		static ImFont* GetSmallFont();
 
-		static EditorCamera* GetCamera();
-		static SceneViewportPanel* GetSceneViewportPanel(GameInstance* gameInstance = nullptr);
+		static GameInstance* GetMainGameInstance();
+		static SceneViewportPanel* GetMainViewportPanel();
+
+		static GameInstance* GetFocusedGameInstance();
+		static SceneViewportPanel* GetFocusedViewportPanel();
+
+		static SceneViewportPanel* GetSceneViewportPanel(GameInstance* gameInstance);
 		static SceneViewportPanel* GetSceneViewportPanel(Scene* scene);
+		
 		static SceneHierarchyPanel* GetSceneHierarchyPanel();
 		static InspectorPanel* GetInspectorPanel();
+
+		static EditorCamera* GetCamera();
 
 		static void SetActiveScene(Scene* scene);
 		static void SelectEntity(Entity entity);
 
-		static Entity GetSelectedEntity(bool mainInstanceOnly = false);
-		static Scene* GetActiveScene(bool mainInstanceOnly = false);
-
-		static GameInstance* GetFocusedGameInstance();
-		static SceneViewportPanel* GetFocusedViewportPanel();
+		static Entity GetSelectedEntity(bool targetMainInstance = false);
+		static Scene* GetActiveScene(bool targetMainInstance = false);
 
 	private:
 		// ImGui setup
@@ -57,6 +70,11 @@ namespace proton {
 		void BeginImGuiRender();
 		void EndImGuiRender();
 
+		// Running additional game instances
+		GameInstance* LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName);
+		void CloseGameInstance(uint32_t id);
+		void HandleGameInstanceCloseEvent();
+
 		// Callbacks
 		void OnStartSimulationButton();
 		void OnStopSimulationButton();
@@ -65,35 +83,22 @@ namespace proton {
 		void OnBeginSceneSimulation(Scene* scene);
 		void OnStopSceneSimulation(Scene* scene);
 
-		GameInstance* OpenNewClientGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName);
-		void CloseClientGameInstance(uint32_t id);
-		void HandleClientGameInstanceCloseEvent();
-
 	private:
 		static EditorLayer* s_Instance;
-
-		bool m_EnableViewports = false; // true: ImGui windows can be detached from main GLFW window
-		bool m_BlockEvents = false;
-
-		std::vector<EditorPanel*> m_EditorPanels;
-		GameInstance* m_MainGameInstance; // owned by Application
-		GameInstance* m_GameInstanceContext;
 
 		EditorConfig m_Config;
 		EditorMenuBar m_MenuBar;
 
-		std::unordered_map<std::string, Shared<Scene>> m_SimulatedScenesBackup;
+		std::vector<EditorPanel*> m_EditorPanels; // pointers to all panels except scene viewport
 
-		struct EditorClientInstance
-		{
-			Unique<GameInstance> Instance;
-			Unique<SceneViewportPanel> Viewport;
-			uint32_t ID;
-		};
-		std::vector<EditorClientInstance> m_ClientInstances;
-		std::unordered_map<GameInstance*, SceneViewportPanel*> m_ClientViewportMap;	
-		std::vector<uint32_t> m_ClientInstancesToClose;
+		EditorGameInstance m_MainGameInstance; // main viewport (cannot be closed)
+		EditorGameInstance* m_GameInstanceContext; // pointer to focused game instance viewport
+		std::vector<Shared<EditorGameInstance>> m_GameInstances;
+		
 		uint32_t m_CurrentInstanceID = 0;
+		std::vector<uint32_t> m_GameInstancesToClose;
+
+		std::unordered_map<std::string, Shared<Scene>> m_SimulatedScenesBackup;
 
 		friend class Application;
 		friend class Scene;

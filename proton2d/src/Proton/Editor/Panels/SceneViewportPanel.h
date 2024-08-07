@@ -7,6 +7,7 @@ namespace proton {
 
 	class GameInstance;
 	class EditorCamera;
+	struct EditorGameInstance;
 
 	class SceneViewportPanel : public EditorPanel
 	{
@@ -18,6 +19,8 @@ namespace proton {
 		virtual void OnImGuiRender() override;
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
+
+		bool IsMainViewport() const { return m_IsMainViewport; }
 
 		EditorCamera* GetCamera() const { return m_Camera.get(); }
 		float GetAspectRatio() const { return m_ViewportAspectRatio; }
@@ -35,6 +38,7 @@ namespace proton {
 		void HandleImGuiDragAndDrop();
 
 	private:
+		EditorGameInstance* m_EditorGameInstance = nullptr;
 		std::string m_ImGuiWindowName = "Viewport";
 
 		bool m_IsMainViewport = true;

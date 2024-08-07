@@ -26,8 +26,7 @@ namespace proton {
 
 		Window& GetWindow() { return *m_Window; }
 		static Application& Get() { return *s_Instance; }
-
-		static GameInstance* GetGameInstance() { return s_Instance->m_GameInstance.get(); }
+		static GameInstance* GetGameInstance();
 
 	protected:
 		virtual bool OnCreate() = 0; // To be defined by client
@@ -37,7 +36,9 @@ namespace proton {
 	private:
 		static Application* s_Instance;
 
+	#ifdef PROTON_DISTRIBUTION
 		Unique<GameInstance> m_GameInstance;
+	#endif
 
 		ApplicationConfig m_AppConfig;
 		std::vector<AppLayer*> m_AppLayers;

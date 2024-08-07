@@ -8,7 +8,7 @@ namespace proton {
 
 	GameInstance::GameInstance() : 
 		m_SceneManager(MakeUnique<SceneManager>(this)),
-		m_NetworkManager(MakeUnique<NetworkManager>(this, m_SceneManager.get()))
+		m_NetworkManager(MakeUnique<NetworkManager>(this))
 	{
 	}
 

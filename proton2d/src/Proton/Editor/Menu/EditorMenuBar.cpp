@@ -12,6 +12,11 @@
 
 namespace proton {
 
+	void EditorMenuBar::OnCreate()
+	{
+		m_SceneManager = EditorLayer::GetMainGameInstance()->GetSceneManager();
+	}
+
 	void EditorMenuBar::OnImGuiRender()
 	{
 		static bool openNewInstancePopupModal = false;
@@ -80,34 +85,31 @@ namespace proton {
 
 	void EditorMenuBar::NewScene()
 	{
-		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
-		Scene* scene = manager->CreateEmptyScene();
-		manager->m_ActiveScene = scene;
+		Scene* scene = m_SceneManager->CreateEmptyScene();
+		m_SceneManager->m_ActiveScene = scene;
 		EditorLayer::SetActiveScene(scene);
 	}
 
 	void EditorMenuBar::OpenScene()
 	{
-		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
 		std::string sceneFile = GetSceneFilename(FileDialogs::OpenFile("scene"));
 		if (sceneFile.size())
 		{
-			manager->Load(sceneFile);
-			manager->SetActiveScene(sceneFile);
+			m_SceneManager->Load(sceneFile);
+			m_SceneManager->SetActiveScene(sceneFile);
 		}
 	}
 
 	void EditorMenuBar::SaveScene()
 	{
-		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
-		Scene* scene = manager->GetActiveScene();
+		Scene* scene = m_SceneManager->GetActiveScene();
 		if (!scene)
 			return;
 
 		if (scene->m_Filepath != "<Unsaved scene>")
 		{
 			const std::string filepath = scene->m_Filepath;
-			manager->SaveSceneAs(filepath, filepath);
+			m_SceneManager->SaveSceneAs(filepath, filepath);
 		}
 		else
 			SaveSceneAs();
@@ -115,21 +117,20 @@ namespace proton {
 
 	void EditorMenuBar::SaveSceneAs()
 	{
-		SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
-		Scene* scene = manager->GetActiveScene();
+		Scene* scene = m_SceneManager->GetActiveScene();
 		if (!scene)
 			return;
 
 		std::string filepath = GetSceneFilename(FileDialogs::SaveFile(".scene.json"));
 		if (filepath.size())
 		{
-			manager->SaveSceneAs(scene->m_Filepath, filepath);
+			m_SceneManager->SaveSceneAs(scene->m_Filepath, filepath);
 			if (scene->m_Filepath == "<Unsaved scene>")
 			{
-				manager->Unload("<Unsaved scene>");
+				m_SceneManager->Unload("<Unsaved scene>");
 			}
-			manager->Load(filepath);
-			manager->SetActiveScene(filepath);
+			m_SceneManager->Load(filepath);
+			m_SceneManager->SetActiveScene(filepath);
 		}
 	}
 
@@ -140,7 +141,7 @@ namespace proton {
 
 		if (ImGui::BeginPopupModal("Project Proporties", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			ProjectSettings& project = Application::Get().GetGameInstance()->m_ProjectSettings;
+			ProjectSettings& project = EditorLayer::GetMainGameInstance()->m_ProjectSettings;
 
 			char buffer[256];
 			strcpy_s(buffer, project.m_StartScene.c_str());

@@ -17,8 +17,8 @@ namespace proton {
 		virtual void OnUpdate(float ts) {};
 		virtual void OnEvent(Event& event) {};
 
-		virtual Entity GetSelectedEntity(bool mainInstanceOnly = false);
-		virtual Scene* GetActiveScene(bool mainInstanceOnly = false);
+		virtual Entity GetSelectedEntity(bool targetMainInstance = false);
+		virtual Scene* GetActiveScene(bool targetMainInstance = false);
 
 		friend class EditorLayer;
 	};

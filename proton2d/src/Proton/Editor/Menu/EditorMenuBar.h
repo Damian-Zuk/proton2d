@@ -3,9 +3,12 @@
 
 namespace proton {
 
+	class SceneManager;
+
 	class EditorMenuBar
 	{
 	public:
+		void OnCreate();
 		void OnImGuiRender();
 
 		void NewScene();
@@ -17,7 +20,10 @@ namespace proton {
 		void HandleProjectProportiesPopup();
 
 	private:
+		SceneManager* m_SceneManager;
+		
 		bool m_OpenProjectProporties = false;
+
 	};
 
 }

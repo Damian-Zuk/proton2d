@@ -110,7 +110,7 @@ namespace proton {
 		ImGui::SetCursorPosX(30.0f);
 		if (ImGui::BeginTabBar("SceneTabBar", ImGuiTabBarFlags_AutoSelectNewTabs)) 
 		{
-			SceneManager* manager = Application::GetGameInstance()->GetSceneManager();
+			SceneManager* manager = EditorLayer::GetMainGameInstance()->GetSceneManager();
 			const std::string& activeSceneName = manager->GetActiveScene()->GetFilepath();
 
 			for (auto& [name, scene] : manager->m_Scenes)
@@ -240,7 +240,7 @@ namespace proton {
 			ImGui::Dummy({ 0, 5 });
 			if (ImGui::Button("Launch", { 150, 0 }))
 			{
-				auto instance = EditorLayer::Get()->OpenNewClientGameInstance(netMode, props.LoadStartupScene, props.WindowName);
+				auto instance = EditorLayer::Get()->LaunchNewGameInstance(netMode, props.LoadStartupScene, props.WindowName);
 				auto netManager = instance->GetNetworkManager();
 
 				if (netMode == NetMode::Client)

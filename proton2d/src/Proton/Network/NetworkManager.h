@@ -13,7 +13,7 @@ namespace proton {
 	class NetworkManager
 	{
 	public:
-		NetworkManager(GameInstance* instance, SceneManager* manager);
+		NetworkManager(GameInstance* instance);
 		virtual ~NetworkManager();
 
 		void OnUpdate(float ts);
@@ -45,7 +45,11 @@ namespace proton {
 		void CheckNetworkResourcesRelease();
 		
 	private:
+		GameInstance* m_GameInstance;
 		NetMode m_NetMode = NetMode::ListenServer;
+
+		Unique<Client> m_Client;
+		Unique<Server> m_Server;
 
 		std::string m_IpAddress = "127.0.0.1";
 		int m_Port = 8192;
@@ -55,12 +59,6 @@ namespace proton {
 		float m_ServerTickElapsed = 0.0f;
 
 		bool m_ClientGameStateInitialized = false;
-
-		GameInstance* m_GameInstance;
-		SceneManager* m_SceneManager;
-
-		Unique<Client> m_Client;
-		Unique<Server> m_Server;
 
 		bool m_IsNetworkServiceRunning = false;
 		uint32_t m_NetworkedSceneCount = 0;

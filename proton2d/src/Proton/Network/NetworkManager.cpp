@@ -20,8 +20,8 @@ namespace proton {
 	uint32_t NetworkManager::s_EditorClientInstances = 0;
 	bool NetworkManager::s_NetworkResourcesFreed = false;
 
-	NetworkManager::NetworkManager(GameInstance* instance, SceneManager* manager)
-		: m_GameInstance(instance), m_SceneManager(manager)
+	NetworkManager::NetworkManager(GameInstance* instance)
+		: m_GameInstance(instance)
 	{
 	}
 
