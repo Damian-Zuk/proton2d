@@ -25,7 +25,6 @@
 
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scripting/GameModeBase.h"
-#include "Proton/Scripting/GameModeFactory.h"
 
 #include "Proton/Network/NetworkManager.h"
 

@@ -2,6 +2,7 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/Menu/EditorMenuBar.h"
 #include "Proton/Editor/EditorLayer.h"
+#include "Proton/Editor/Tools/EditorCamera.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"

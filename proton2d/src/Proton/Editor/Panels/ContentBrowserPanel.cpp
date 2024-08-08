@@ -2,6 +2,7 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/ContentBrowserPanel.h"
 #include "Proton/Editor/EditorLayer.h"
+
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Core/Timer.h"
 

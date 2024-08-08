@@ -3,21 +3,21 @@
 #include "Proton/Editor/Panels/InspectorPanel.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/EditorLayer.h"
+
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
-#include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Graphics/Renderer/Framebuffer.h"
-#include "Proton/Utils/Utils.h"
 #include "Proton/Core/AssetManager.h"
-#include "Proton/Scripting/ScriptFactory.h"
-#include "Proton/Scripting/GameModeFactory.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scene/SceneManager.h"
-#include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scene/PrefabManager.h"
+#include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/EntityScript.h"
 #include "Proton/Physics/PhysicsWorld.h"
-#include "Proton/Network/NetworkManager.h"
+#include "Proton/Utils/Utils.h"
 #include "Proton/UI/UIText.h"
+
+#include "Proton/Network/NetworkManager.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -727,7 +727,7 @@ namespace proton {
 			ImGui::PushItemWidth(210.0f);
 			if (ImGui::BeginCombo("GameMode Class", selectedGameMode.c_str()))
 			{
-				for (auto& [className, instanciateFunc] : GameModeFactory::Get().m_GameModeRegistry)
+				for (auto& [className, instanciateFunc] : ScriptFactory::Get().m_GameModeRegistry)
 				{
 					bool selected = selectedGameMode == className;
 					if (ImGui::Selectable(className.c_str(), selected))

@@ -4,7 +4,6 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scripting/GameModeBase.h"
-#include "Proton/Scripting/GameModeFactory.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Input.h"
@@ -20,6 +19,8 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Tools/EditorCamera.h"
+
 #include <imgui.h>
 #endif
 
@@ -31,7 +32,7 @@ namespace proton {
 		if (gameModeClass.size() && gameModeClass != "GameModeBase")
 		{
 			m_GameModeClassName = gameModeClass;
-			GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
+			ScriptFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
 		}
 		else
 		{
@@ -252,7 +253,7 @@ namespace proton {
 			m_PhysicsWorld->DestroyWorld();
 
 		m_GameMode->OnDestroy();
-		m_GameMode = GameModeFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
+		m_GameMode = ScriptFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
 
 		m_State = SceneState::Stop;
 		m_GameInstance->OnSceneSimulationStop(this);
@@ -521,7 +522,7 @@ namespace proton {
 
 	void Scene::SetGameModeByClassName(const std::string& gameModeClassName)
 	{
-		GameModeFactory::Get().InstantiateGameMode(this, gameModeClassName);
+		ScriptFactory::Get().InstantiateGameMode(this, gameModeClassName);
 	}
 
 	void Scene::OnUpdate(float ts)

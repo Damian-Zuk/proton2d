@@ -5,7 +5,6 @@
 
 #include <imgui.h>
 
-
 namespace proton {
 
 	void SceneHierarchyPanel::OnImGuiRender()

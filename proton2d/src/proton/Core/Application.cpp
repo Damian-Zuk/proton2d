@@ -1,27 +1,27 @@
 #include "ptpch.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Timer.h"
 #include "Proton/Core/Input.h"
-#include "Proton/Core/GameInstance.h"
+#include "Proton/Core/AssetManager.h"
 
 #include "Proton/Events/WindowEvents.h" 
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"
 
 #include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Core/AssetManager.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Scripting/GameModeBase.h"
 
-#include "Proton/Network/NetworkManager.h"
-
 #ifdef PROTON_PLATFORM_WINDOWS
-	#include "Proton/Platform/Windows/WindowsWindow.h"
+#include "Proton/Platform/Windows/WindowsWindow.h"
 #endif
 
 #ifdef PT_EDITOR
-	#include "Proton/Editor/EditorLayer.h"
+#include "Proton/Editor/EditorLayer.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Menu/EditorMenuBar.h"
 #endif
 
 namespace proton {

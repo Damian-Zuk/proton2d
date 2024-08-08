@@ -8,18 +8,21 @@
 #include "Proton/Editor/Panels/ContentBrowserPanel.h"
 #include "Proton/Editor/Panels/SettingsPanel.h"
 #include "Proton/Editor/Panels/InfoPanel.h"
+#include "Proton/Editor/Tools/EditorCamera.h"
+#include "Proton/Editor/Menu/EditorMenuBar.h"
 
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Window.h"
+#include "Proton/Core/Config.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Graphics/Renderer/Framebuffer.h"
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"
-#include "Proton/Utils/Utils.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Utils/Utils.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -33,6 +36,7 @@
 namespace proton {
 
 	EditorLayer* EditorLayer::s_Instance = nullptr;
+
 	static constexpr bool s_EnableViewports = false;
 
 	struct EditorPanels
@@ -67,14 +71,13 @@ namespace proton {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 
+		m_Config = MakeUnique<EditorConfig>();
+		m_MenuBar = MakeUnique<EditorMenuBar>();
+
 		SetupFonts();
 		SetupImGuiViewports();
 		SetupThemeStyle();
-
-		// Initialize ImGui implementation for GLFW
-		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		InitImGuiForGLFW();
 
 		// Initialize main game instance
  		m_MainGameInstance.Instance = MakeUnique<GameInstance>();
@@ -114,8 +117,8 @@ namespace proton {
 		
 		m_MainGameInstance.Viewport->OnUpdate(ts);
 
-		for (auto& client : m_GameInstances)
-			client->Viewport->OnUpdate(ts);
+		for (auto& game : m_GameInstances)
+			game->Viewport->OnUpdate(ts);
 
 		HandleGameInstanceCloseEvent();
 	}
@@ -147,15 +150,15 @@ namespace proton {
 		}
 
 		// Draw menu bar and editor panels
-		m_MenuBar.OnImGuiRender();
+		m_MenuBar->OnImGuiRender();
 
 		for (auto& panel : m_EditorPanels)
 			panel->OnImGuiRender();
 
 		m_MainGameInstance.Viewport->OnImGuiRender();
 
-		for (auto& client : m_GameInstances)
-			client->Viewport->OnImGuiRender();
+		for (auto& game : m_GameInstances)
+			game->Viewport->OnImGuiRender();
 
 		ImGui::End();
 	}
@@ -199,40 +202,38 @@ namespace proton {
 		uint32_t id = ++m_CurrentInstanceID;
 		m_GameInstances.push_back(MakeShared<EditorGameInstance>());
 
-		auto client = m_GameInstances.back().get();
-		client->Instance = MakeUnique<GameInstance>();
-		client->Viewport = MakeUnique<SceneViewportPanel>();
-		client->ID = id;
+		auto game = m_GameInstances.back().get();
+		game->Instance = MakeUnique<GameInstance>();
+		game->Viewport = MakeUnique<SceneViewportPanel>();
+		game->ID = id;
 
-		auto instance = client->Instance.get();
-		auto viewport = client->Viewport.get();
+		auto instance = game->Instance.get();
+		auto viewport = game->Viewport.get();
 
-		instance->m_EditorGameInstance = client;
+		instance->m_EditorGameInstance = game;
 		instance->m_IsMainInstance = false;
 		instance->SetNetMode(netMode);
 
-		viewport->m_EditorGameInstance = client;
+		viewport->m_EditorGameInstance = game;
 		viewport->m_IsMainViewport = false;
 		viewport->m_ImGuiWindowName = windowName;
 		viewport->OnCreate();
 
-		if (!loadStartupScene)
-		{
-			instance->Init(false);
-
-			SceneManager* sceneManager = instance->GetSceneManager();
-			Scene* activeScene = GetActiveScene(true);
-			const std::string& filepath = activeScene->m_Filepath;
-
-			// Copy currently active scene to a new game instance
-			sceneManager->AddNewActiveScene(filepath, activeScene->IsSimulated() 
-				? m_SimulatedScenesBackup.at(filepath)->CreateSceneCopy(instance)
-				: activeScene->CreateSceneCopy(instance));
-		}
-		else
+		if (loadStartupScene)
 		{
 			instance->Init();
+			return instance;
 		}
+
+		instance->Init(false);
+		SceneManager* sceneManager = instance->GetSceneManager();
+		Scene* activeScene = GetActiveScene(true);
+		const std::string& filepath = activeScene->m_Filepath;
+
+		// Copy currently active scene to a new game instance
+		sceneManager->AddNewActiveScene(filepath, activeScene->IsSimulated() 
+			? m_SceneSimulationBackup.at(filepath)->CreateSceneCopy(instance)
+			: activeScene->CreateSceneCopy(instance));
 
 		return instance;
 	}
@@ -261,10 +262,7 @@ namespace proton {
 			}
 		));
 		m_GameInstancesToClose.clear();
-
 		m_GameInstanceContext = &m_MainGameInstance;
-		auto viewport = GetMainViewportPanel();
-		viewport->m_IsViewportFocused = true;
 	}
 
 	void EditorLayer::OnStartSimulationButton()
@@ -275,21 +273,19 @@ namespace proton {
 
 	void EditorLayer::OnStopSimulationButton()
 	{
-		if (GetFocusedViewportPanel()->IsMainViewport())
+		if (!m_GameInstanceContext->Viewport->IsMainViewport())
 		{
-			Scene* scene = GetActiveScene(true);
-			if (GetMainGameInstance()->GetNetMode() == NetMode::ListenServer)
-			{
-				m_GameInstances.clear();
-				m_CurrentInstanceID = 0;
-			}
-			scene->Stop();
+			CloseGameInstance(m_GameInstanceContext->ID);
+			return;
 		}
-		else
+
+		if (m_MainGameInstance.Instance->GetNetMode() == NetMode::ListenServer)
 		{
-			auto instance = GetFocusedGameInstance();
-			CloseGameInstance(instance->m_EditorGameInstance->ID);
+			m_GameInstances.clear();
+			m_CurrentInstanceID = 0;
 		}
+		Scene* scene = GetActiveScene(true);
+		scene->Stop();
 	}
 
 	void EditorLayer::OnPauseSimulationButton()
@@ -303,7 +299,7 @@ namespace proton {
 		if (!scene->m_GameInstance->IsMainInstance())
 			return;
 
-		m_SimulatedScenesBackup[scene->m_Filepath] = scene->CreateSceneCopy();
+		m_SceneSimulationBackup[scene->m_Filepath] = scene->CreateSceneCopy();
 
 		SelectEntity(Entity{});
 	}
@@ -321,8 +317,8 @@ namespace proton {
 
 		// Restore scene state from backup
 		SceneManager* manager = GetMainGameInstance()->GetSceneManager();
-		manager->m_Scenes[sceneFilepath] = m_SimulatedScenesBackup.at(sceneFilepath);
-		m_SimulatedScenesBackup.erase(sceneFilepath);
+		manager->m_Scenes[sceneFilepath] = m_SceneSimulationBackup.at(sceneFilepath);
+		m_SceneSimulationBackup.erase(sceneFilepath);
 			
 		if (isActiveScene)
 			manager->SetActiveScene(sceneFilepath);
@@ -355,11 +351,7 @@ namespace proton {
 	{
 		if (!targetMainInstance)
 		{
-			if (auto instance = GetFocusedGameInstance())
-			{
-				auto viewport = GetSceneViewportPanel(instance);
-				return viewport->GetSelectedEntity();
-			}
+			return s_Instance->m_GameInstanceContext->Viewport->GetSelectedEntity();
 		}
 		return s_Instance->m_MainGameInstance.Viewport->GetSelectedEntity();
 	}
@@ -368,12 +360,9 @@ namespace proton {
 	{
 		if (!targetMainInstance)
 		{
-			if (auto instance = GetFocusedGameInstance())
-			{
-				return instance->GetActiveScene();
-			}
+			return s_Instance->m_GameInstanceContext->Instance->GetActiveScene();
 		}
-		return s_Instance->GetMainGameInstance()->GetActiveScene();
+		return s_Instance->m_MainGameInstance.Instance->GetActiveScene();
 	}
 
 	GameInstance* EditorLayer::GetMainGameInstance()
@@ -381,14 +370,14 @@ namespace proton {
 		return s_Instance->m_MainGameInstance.Instance.get();
 	}
 
-	SceneViewportPanel* EditorLayer::GetMainViewportPanel()
-	{
-		return s_Instance->m_MainGameInstance.Viewport.get();
-	}
-
 	GameInstance* EditorLayer::GetFocusedGameInstance()
 	{
 		return s_Instance->m_GameInstanceContext->Instance.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetMainViewportPanel()
+	{
+		return s_Instance->m_MainGameInstance.Viewport.get();
 	}
 
 	SceneViewportPanel* EditorLayer::GetFocusedViewportPanel()
@@ -416,11 +405,6 @@ namespace proton {
 		return &s_Panels.Inspector;
 	}
 
-	EditorCamera* EditorLayer::GetCamera()
-	{
-		return s_Instance->m_MainGameInstance.Viewport->m_Camera.get();
-	}
-
 	ImFont* EditorLayer::GetFontAwesome()
 	{
 		return s_Fonts.FontAwesome;
@@ -437,7 +421,7 @@ namespace proton {
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		// Main font
-		const auto& font = m_Config.EditorFonts["FiraCode"];
+		const auto& font = m_Config->EditorFonts["FiraCode"];
 		io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), font.FontSize);
 
 		// Small font
@@ -503,6 +487,13 @@ namespace proton {
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
+	}
+
+	void EditorLayer::InitImGuiForGLFW()
+	{
+		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
 	void EditorLayer::BeginImGuiRender()

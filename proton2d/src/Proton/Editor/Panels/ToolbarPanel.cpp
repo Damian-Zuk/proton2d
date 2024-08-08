@@ -3,14 +3,14 @@
 #include "Proton/Editor/Panels/ToolbarPanel.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/EditorLayer.h"
+
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
-#include "Proton/Scene/SceneSerializer.h"
-#include "Proton/Physics/PhysicsWorld.h"
-#include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Utils/Random.h"
+
+#include "Proton/Network/NetworkManager.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>

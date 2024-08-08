@@ -2,10 +2,12 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/InfoPanel.h"
 #include "Proton/Editor/EditorLayer.h"
-#include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Core/AssetManager.h"
+
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
+#include "Proton/Core/AssetManager.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
+
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/Server.h"
 #include "Proton/Network/NetStatsManager.h"

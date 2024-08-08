@@ -1,12 +1,12 @@
 #pragma once
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/EditorPanel.h"
-#include "Proton/Graphics/Renderer/Framebuffer.h"
 
 namespace proton {
 
 	class GameInstance;
 	class EditorCamera;
+	class Framebuffer;
 	struct EditorGameInstance;
 
 	class SceneViewportPanel : public EditorPanel
@@ -21,10 +21,8 @@ namespace proton {
 		virtual void OnEvent(Event& event) override;
 
 		bool IsMainViewport() const { return m_IsMainViewport; }
-
 		EditorCamera* GetCamera() const { return m_Camera.get(); }
 		float GetAspectRatio() const { return m_ViewportAspectRatio; }
-
 		const std::string& GetWindowName() const { return m_ImGuiWindowName; }
 
 		void SetActiveScene(Scene* scene, bool sceneManagerCall = false) const;

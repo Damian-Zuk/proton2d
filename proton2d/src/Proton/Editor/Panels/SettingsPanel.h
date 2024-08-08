@@ -4,8 +4,6 @@
 
 namespace proton {
 
-	class SceneViewportPanel;
-
 	class SettingsPanel : public EditorPanel
 	{
 	public:

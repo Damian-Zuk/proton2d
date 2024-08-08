@@ -1,9 +1,6 @@
 #pragma once
 #ifdef PT_EDITOR
-
 #include "Proton/Editor/Panels/EditorPanel.h"
-#include "Proton/Core/Base.h"
-#include "Proton/Scene/Entity.h"
 
 namespace proton {
 
