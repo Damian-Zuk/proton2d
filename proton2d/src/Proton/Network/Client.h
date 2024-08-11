@@ -22,11 +22,6 @@ namespace proton {
 	class Client
 	{
 	public:
-		enum class ConnectionStatus
-		{
-			Disconnected = 0, Connected, Connecting, FailedToConnect
-		};
-
 		Client(GameInstance* gameInstance);
 		~Client();
 	
@@ -38,7 +33,9 @@ namespace proton {
 		void MainThread_OnUpdate(float ts);
 		
 		// Game client functionality
-		void SendVerifyGameState();
+		
+		void SendHandshake();
+
 		void SendPlayerAction(StreamWriterDelegate sendFunction);
 
 		void ProcessMessages();
@@ -73,35 +70,31 @@ namespace proton {
 		const std::string& GetConnectionDebugMessage() const { return m_ConnectionDebugMessage; }
 
 	private:
+		GameInstance* m_GameInstance;
+		NetworkManager* m_NetworkManager;
+
 		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;
 		HSteamNetConnection m_Connection = 0;
 		std::string m_ServerAddress;
 
+		// Connection info
 		ConnectionStatus m_ConnectionStatus = ConnectionStatus::Disconnected;
 		std::string m_ConnectionDebugMessage;
+		uint32_t m_LocalClientID = 0;
 
 		// Network thread
 		std::thread m_NetworkThread;
 		std::atomic<bool> m_NetworkThreadFinished = false;
 		bool m_Running = false;
 
-		// Buffer for writting messages using BufferStreamWriter
+		// Preallocated buffer for writting network messages
 		Buffer m_ScratchBuffer;
 
-		// Queues
+		// Message queue
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_QueueMutex;
 		
-		// Connection info
-		uint32_t m_ServerClientID = 0;
-		bool m_JustConnected = false;
-
-		// Other
-		bool m_GameStateInitialized = false;
-
-		GameInstance* m_GameInstance;
-		NetworkManager* m_NetworkManager;
 
 		friend class NetworkManager;
 		friend class GameModeBase;

@@ -17,7 +17,7 @@ namespace proton {
 		bool isPhysicsTick = scene->m_PhysicsTick;
 
 		NetworkManager* netManager = scene->GetNetworkManager();
-		if (netManager->IsNetModeClient() && !netManager->GetClient()->m_GameStateInitialized)
+		if (netManager->IsNetModeClient() && !netManager->m_ClientGameStateInitialized)
 			return;
 
 		auto view = scene->m_Registry.view<NetworkComponent, TransformComponent, VelocityComponent>();

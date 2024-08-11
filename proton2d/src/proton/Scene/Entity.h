@@ -170,6 +170,7 @@ namespace proton {
 		friend class PhysicsWorld;
 		friend class PhysicsContactListener;
 		friend struct PhysicsContact;
+		friend class Server;
 
 		friend class EditorLayer;
 		friend class InspectorPanel;

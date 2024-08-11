@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Network/Client.h"
-#include "Proton/Network/PacketType.h"
+#include "Proton/Network/Packets.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/NetSyncSystem.h"
 
@@ -73,22 +73,14 @@ namespace proton {
 		m_MessageQueue.push(incomingMessage);
 	}
 
-	void Client::SendVerifyGameState()
+	void Client::SendHandshake()
 	{
-		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
-		Scene* scene = sceneManager->GetActiveScene();
-
-		BufferStreamWriter writer(m_ScratchBuffer);
-		writer.WriteRaw(PacketType::VerifyGameState);
-
-		auto view = scene->GetAllEntitiesWith<IDComponent, NetworkComponent>();
-		for (entt::entity e : view)
-		{
-			auto& id = view.get<IDComponent>(e);
-			writer.WriteRaw(id.ID);
-		}
-
-		SendBuffer(Buffer(m_ScratchBuffer, writer.GetStreamPosition()));
+		NetMessageHandshake msg;
+		msg.EngineProtocolVersion = PT_NET_PROTOCOL_VERSION;
+		msg.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
+		BufferStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(msg);
+		SendBuffer(stream.GetBuffer());
 	}
 
 	void Client::SendPlayerAction(StreamWriterDelegate sendFunction)
@@ -115,96 +107,42 @@ namespace proton {
 
 			PacketType packetType;
 			stream.ReadRaw(packetType);
+			stream.SetStreamPosition(0);
 
 			switch (packetType)
 			{
 			////////////////////////////////////////////////////////////////////////////////////////////////////
-			
-			case PacketType::ConnectionAccepted:
+
+			case PacketType::HandshakeReply:
 			{
-				stream.ReadRaw(m_ServerClientID);
-				m_JustConnected = true;
-				SendVerifyGameState();
-				PT_CORE_TRACE("ConnectionAccepted: client_id={}", m_ServerClientID);
+				NetMessageHandshakeReply msg;
+				stream.ReadRaw(msg);
+
+				if (msg.ResultCode != 0)
+				{
+					PT_CORE_WARN("Failed to connect to server. Connection blocked with result={}", msg.ResultCode);
+					break;
+				}
+
+				m_LocalClientID = msg.ClientID;
+				m_NetworkManager->m_LocalClientID = m_LocalClientID;
+				m_ConnectionStatus = ConnectionStatus::Connected;
+				PT_CORE_INFO("Successfully connected to server");
+				// GameModeBase::Client_OnConnected called after first replication update
+
 				break;
 			}
-			
-			////////////////////////////////////////////////////////////////////////////////////////////////////
-			
-			case PacketType::GameStateUpdate:
-			{
-				PROFILE_SCOPE("PacketType::GameStateUpdate");
 
-				uint32_t created, destroyed;
-				stream.ReadRaw(created);
-				stream.ReadRaw(destroyed);
-
-				// Create missing entities
-				for (uint32_t i = 0; i < created; i++)
-				{
-					std::string jsonData;
-					stream.ReadString(jsonData);
-					json jsonParsed = json::parse(jsonData);
-
-					if (scene->FindByID((UUID)jsonParsed.at("UUID")))
-						continue;
-
-					SceneSerializer serializer(scene);
-					Entity entity = serializer.DeserializeEntity(jsonParsed);
-
-					auto& net = entity.GetComponent<NetworkComponent>();
-					auto& transform = entity.GetComponent<TransformComponent>();
-					auto& velocity = entity.GetComponent<VelocityComponent>();
-
-					if (net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody)
-						net.CurrentTransform.Position = transform.WorldPosition;
-					else
-						net.CurrentTransform.Position = transform.LocalPosition;
-
-					net.CurrentTransform.Rotation = transform.Rotation;
-					net.CurrentTransform.LinearVelocity = velocity.LinearVelocity;
-					net.CurrentTransform.AngularVelocity = velocity.AngularVelocity;
-
-					net.PreviousTransform = net.CurrentTransform;
-				}
-
-				// Destroy no longer existing entites
-				for (uint32_t i = 0; i < destroyed; i++)
-				{
-					UUID uuid;
-					stream.ReadRaw(uuid);
-					Entity entity = scene->FindByID(uuid);
-
-					if (!entity)
-						continue;
-					
-					entity.Destroy();
-				}
-				
-				UpdateReplicatedEntities(scene, stream, buffer.Size, true);
-
-				if (m_JustConnected)
-				{
-					scene->GetGameMode()->Client_OnConnected(m_ServerClientID);
-					m_NetworkManager->m_ClientGameStateInitialized = true;
-					m_JustConnected = false;
-				}
-
-				PT_CORE_INFO("GameStateUpdate: created={}, destroyed={}", created, destroyed);
-				m_GameStateInitialized = true;
-				break;
-			}
-			
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			
 			case PacketType::EntitySpawn:
 			{
 				PROFILE_SCOPE("PacketType::EntitySpawn");
 
-				if (!m_GameStateInitialized)
-					break;
+				NetMessageSpawn msgx;
+				stream.ReadRaw(msgx);
 
-				while (stream.GetStreamPosition() < buffer.Size)
+				for (uint32_t i = 0; i < msgx.EntityCount; i++)
 				{
 					std::string jsonData;
 					stream.ReadString(jsonData);
@@ -216,21 +154,20 @@ namespace proton {
 
 					SceneSerializer serializer(scene);
 					Entity entity = serializer.DeserializeEntity(jsonParsed);
-					PT_CORE_INFO("EntitySpawn: {} ({})", entity.GetTag(), entity.GetUUID());
 				}
 				break;
-			
 			}
+
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			
-			case PacketType::EntityDestroy:
+			case PacketType::EntityDespawn:
 			{
-				PROFILE_SCOPE("PacketType::EntityDestroy");
+				PROFILE_SCOPE("PacketType::EntityDespawn");
 
-				if (!m_GameStateInitialized)
-					break;
+				NetMessageDespawn msg;
+				stream.ReadRaw(msg);
 
-				while (stream.GetStreamPosition() < buffer.Size)
+				for (uint32_t i = 0; i < msg.EntityCount; i++)
 				{
 					UUID uuid;
 					stream.ReadRaw(uuid);
@@ -246,12 +183,9 @@ namespace proton {
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			
-			case PacketType::UpdateReplicated:
+			case PacketType::EntityReplicate:
 			{
-				PROFILE_SCOPE("PacketType::UpdateReplicated");
-
-				if (!m_GameStateInitialized)
-					break;
+				PROFILE_SCOPE("PacketType::EntityReplicate");
 
 				UpdateReplicatedEntities(scene, stream, buffer.Size);
 				
@@ -272,30 +206,31 @@ namespace proton {
 
 	void Client::UpdateReplicatedEntities(Scene* scene, BufferStreamReader& stream, uint64_t bufferSize, bool updateTransformNow)
 	{
-		while (stream.GetStreamPosition() < bufferSize - sizeof(uint64) * 2)
+		NetMessageReplicate header;
+		stream.ReadRaw(header);
+
+		//while (stream.GetStreamPosition() < bufferSize - sizeof(uint64) * 2)
+		for (uint32_t i = 0; i < header.EntityCount; i++)
 		{
 			uint64_t entityStreamStart = stream.GetStreamPosition();
 
-			uint64_t entityBufferSize;
-			std::bitset<MAX_COMPONENTS> componentBitset;
-			UUID entityUUID;
+			NetMessageReplicate_Entry entry;
+			stream.ReadRaw(entry);
 
-			stream.ReadRaw(entityBufferSize);
-			stream.ReadRaw(componentBitset);
-			stream.ReadRaw(entityUUID);
+			auto& componentBitset = entry.ComponentBitset;
 
 			// Find entity
-			Entity entity = scene->FindByID(entityUUID);
+			Entity entity = scene->FindByID(entry.EntityUUID);
 
 			if (!entity.IsValid())
 			{
-				stream.SetStreamPosition(entityStreamStart + entityBufferSize);
+				stream.SetStreamPosition(entityStreamStart + entry.PayloadSize);
 				continue;
 			}
 
 			if (!entity.HasComponent<NetworkComponent>())
 			{
-				stream.SetStreamPosition(entityStreamStart + entityBufferSize);
+				stream.SetStreamPosition(entityStreamStart + entry.PayloadSize);
 				continue;
 			}
 
@@ -374,6 +309,13 @@ namespace proton {
 					}
 				}
 			}
+		}
+
+		if (!m_NetworkManager->m_ClientGameStateInitialized)
+		{
+			// First replication update
+			m_GameInstance->GetActiveScene()->GetGameMode()->Client_OnConnected(m_LocalClientID);
+			m_NetworkManager->m_ClientGameStateInitialized = true;
 		}
 	}
 
@@ -532,7 +474,7 @@ namespace proton {
 			break;
 
 		case k_ESteamNetworkingConnectionState_Connected:
-			m_ConnectionStatus = ConnectionStatus::Connected;
+			SendHandshake();
 			break;
 
 		default:

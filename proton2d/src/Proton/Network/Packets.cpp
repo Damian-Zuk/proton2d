@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Network/PacketType.h"
+#include "Proton/Network/Packets.h"
 
 namespace proton {
 
@@ -9,14 +9,16 @@ namespace proton {
 		{
 		case PacketType::None:
 			return "PacketType::None";
-		case PacketType::ConnectionAccepted:
-			return "PacketType::ConnectionAccepted";
+		case PacketType::Handshake:
+			return "PacketType::Handshake";
+		case PacketType::HandshakeReply:
+			return "PacketType::HandshakeReply";
 		case PacketType::EntitySpawn:
 			return "PacketType::EntitySpawn";
-		case PacketType::EntityDestroy:
-			return "PacketType::EntityDestroy";
-		case PacketType::UpdateReplicated:
-			return "PacketType::EntityDestroy";
+		case PacketType::EntityDespawn:
+			return "PacketType::EntityDespawn";
+		case PacketType::EntityReplicate:
+			return "PacketType::EntityReplicate";
 		case PacketType::PlayerAction:
 			return "PacketType::PlayerAction";
 		}

@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Network/Server.h"
-#include "Proton/Network/PacketType.h"
+#include "Proton/Network/Packets.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/ReplicationManager.h"
 #include "Proton/Network/NetStatsManager.h"
@@ -75,15 +75,17 @@ namespace proton {
 
 	void Server::MainThread_OnTick()
 	{
+		Scene* scene = m_GameInstance->GetActiveScene();
+
 		ProcessConnectionStatusQueue();
 		ProcessClientMessagesQueue();
-		ProcessCreatedEntityQueue();
-		ProcessDestroyedEntityQueue();
+		ProcessSpawnedEntityQueue(scene);
+		ProcessDespawnedEntityQueue(scene);
 
 	#ifdef _DEBUG_NO_COMPONENT_CHECKSUM_VERIFY
-		SendReplicationUpdate(m_GameInstance->GetActiveScene(), 0, false);
+		SendReplicationUpdate(scene, 0, false);
 	#else
-		SendReplicationUpdate(m_GameInstance->GetActiveScene());
+		SendReplicationUpdate(scene);
 	#endif
 		
 		m_NetStatsManager->UpdateNetworkStatistics();
@@ -96,18 +98,11 @@ namespace proton {
 		{
 			ClientConnectionStatusChangeInfo& info = m_ClientConnStatusChangeQueue.front();
 
-			// Client has been connected
-			if (info.Status == ConnectionStatus::Connected)
+			if (info.Status == ConnectionStatus::Connecting)
 			{
-				BufferStreamWriter stream(m_ScratchBuffer);
-				stream.WriteRaw(PacketType::ConnectionAccepted);
-				stream.WriteRaw(info.ClientInfo.ID);
-				SendBufferToClient(info.ClientInfo.ID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-
-				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
-				gameMode->Server_OnClientConnected(info.ClientInfo.ID);
-
 				m_NetStatsManager->AllocateNetworkStatsBuffer(info.ClientInfo.ID);
+				// Wait for PacketType::Handshake from client 
+				// to change status to ConnectionStatus::Connected
 			}
 
 			// Client has been disconnected
@@ -128,82 +123,79 @@ namespace proton {
 		PROFILE_FUNCTION();
 
 		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
-		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
-		Scene* scene = sceneManager->GetActiveScene();
+		//SceneManager* sceneManager = m_GameInstance->GetSceneManager();
+		Scene* scene = m_GameInstance->GetActiveScene();
+
+		// Kick clients which failed handshake verification
+		for (auto& kv : m_ConnectedClients)
+		{
+			auto& clientInfo = kv.second;
+			if (clientInfo.Status == ConnectionStatus::FailedToConnect)
+				KickClient(clientInfo.ID);
+		}
 
 		while (!m_MessageQueue.empty())
 		{
 			ISteamNetworkingMessage* message = m_MessageQueue.front();
+			uint32_t clientID = message->GetConnection();
+
 			Buffer buffer(message->m_pData, message->m_cbSize);
 			BufferStreamReader stream(buffer);
+
+			BufferStreamWriter writer(m_ScratchBuffer);
+			
 			PacketType packetType;
 			stream.ReadRaw(packetType);
+			stream.SetStreamPosition(0);
 
 			switch (packetType)
 			{
 			////////////////////////////////////////////////////////////////////////////////////////////////////
-
-			case PacketType::VerifyGameState:
+			case PacketType::Handshake:
 			{
-				PROFILE_SCOPE("PacketType::VerifyGameState");
+				NetMessageHandshake handshake;
+				stream.ReadRaw(handshake);
 
-				std::vector<UUID> clientState;
-				std::vector<UUID> serverState;
+				NetMessageHandshakeReply reply;
+				reply.ResultCode = 0;
+				reply.ClientID = clientID;
 
-				while (stream.GetStreamPosition() < buffer.Size)
+				if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION
+					&& handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
-					uint64_t id = 0;
-					stream.ReadRaw(id);
-					clientState.push_back(id);
+					reply.ResultCode = 3;
 				}
-
-				auto view = scene->GetAllEntitiesWith<IDComponent, NetworkComponent>();
-				for (entt::entity e : view)
+				else if (handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
-					auto& id = view.get<IDComponent>(e);
-					serverState.push_back(id.ID);
+					reply.ResultCode = 2;
 				}
-
-				uint32_t created = 0, destroyed = 0;
-
-				BufferStreamWriter writer(m_ScratchBuffer);
-				writer.WriteRaw(PacketType::GameStateUpdate);
-				writer.WriteZero(sizeof(uint32_t) * 2);
-
-				for (const auto& uuid : serverState)
+				else if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION)
 				{
-					if (std::find(clientState.begin(), clientState.end(), uuid) != clientState.end())
-						continue;
-
-					Entity entity = scene->FindByID(uuid);
-					SceneSerializer serializer(entity.GetScene(), true);
-					std::string jsonData = serializer.SerializeEntityToString(entity);
-					writer.WriteString(jsonData);
-					created++;
+					reply.ResultCode = 1;
 				}
-
-				for (const auto& uuid : clientState)
-				{
-					if (std::find(serverState.begin(), serverState.end(), uuid) != serverState.end())
-						continue;
-
-					writer.WriteRaw(uuid);
-					destroyed++;
-				}
-
-				uint64_t streamPos = writer.GetStreamPosition();
-				writer.SetStreamPosition(sizeof(PacketType));
-				writer.WriteRaw(created);
-				writer.WriteRaw(destroyed);
-				writer.SetStreamPosition(streamPos);
-
-				m_ReplicationManager->StreamWriteReplicationData(writer, scene, false);
-				uint64_t streamEnd = writer.GetStreamPosition();
-				PT_CORE_TRACE("SendRepSync: end={}, size={}", streamPos, streamEnd);
 				
-				SendBufferToClient(message->GetConnection(), Buffer(m_ScratchBuffer, streamEnd));
+				writer.WriteRaw(reply);
+				SendBufferToClient(clientID, writer.GetBuffer());
 
-				PT_CORE_TRACE("VerifyGameState: client_id={}, created={}, destroyed={}", message->GetConnection(), created, destroyed);
+				auto& clientInfo = m_ConnectedClients[clientID];
+				if (reply.ResultCode == 0)
+				{
+					PT_CORE_INFO("Client id={} connected", clientID);
+					clientInfo.Status = ConnectionStatus::Connected;
+
+					SendAllSpawnedEntities(scene, clientID);
+					SendAllDespawnedEntities(scene, clientID);
+					SendReplicationUpdate(scene, clientID, false);
+
+					GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+					gameMode->Server_OnClientConnected(message->m_conn);
+				}
+				else
+				{
+					PT_CORE_WARN("Blocked connection id={} with result={}", clientID, reply.ResultCode);
+					clientInfo.Status = ConnectionStatus::FailedToConnect;
+				}
+
 				break;
 			}
 
@@ -213,13 +205,14 @@ namespace proton {
 			{
 				PROFILE_SCOPE("PacketType::PlayerAction");
 
-				if (m_PlayerActionCallbacks.find(message->m_conn) != m_PlayerActionCallbacks.end())
+				stream.SkipBytes(sizeof(NetMassagePlayerAction));
+				if (m_PlayerActionCallbacks.find(clientID) != m_PlayerActionCallbacks.end())
 				{
-					StreamReaderDelegate& callback = m_PlayerActionCallbacks.at(message->m_conn);
+					StreamReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
 					callback(stream);
 				}
 				else
-					PT_CORE_ERROR("PlayerActionCallback was not defined! client_id={}", (uint32_t)message->m_conn);
+					PT_CORE_ERROR("PlayerActionCallback was not defined! client_id={}", clientID);
 				
 				break;
 			}
@@ -236,98 +229,148 @@ namespace proton {
 		}
 	}
 
-	void Server::ProcessCreatedEntityQueue()
+	void Server::AddSpawnedEntity(Scene* scene, UUID entityUUID)
+	{
+		SceneData& sceneData = m_SceneData[scene];
+		sceneData.SpawnedEntityQueue.push(entityUUID);
+	}
+
+	void Server::AddDespawnedEntity(Scene* scene, UUID entityUUID)
+	{
+		SceneData& sceneData = m_SceneData[scene];
+		sceneData.DespawnedEntityQueue.push(entityUUID);
+	}
+
+	void Server::ProcessSpawnedEntityQueue(Scene* scene)
 	{
 		PROFILE_FUNCTION();
 
+		SceneData& sceneData = m_SceneData[scene];
+
+		if (sceneData.SpawnedEntityQueue.empty())
+			return;
+
+		NetMessageSpawn msg;
 		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::EntitySpawn);
+		stream.SkipBytes(sizeof(NetMessageSpawn));
 
-		std::unordered_map<ClientID, std::vector<Entity>> specificClients;
-		bool anyCreated = false;
+		uint32_t spawned = 0;
 
-		while (!m_CreatedEntityQueue.empty())
+		while (!sceneData.SpawnedEntityQueue.empty())
 		{
-			EntityLifetimeQueueEntry& entry = m_CreatedEntityQueue.front();
+			UUID uuid = sceneData.SpawnedEntityQueue.front();
+			Entity entity = scene->FindByID(uuid);
 
-			Entity entity = entry.Scene->FindByID(entry.EntityUUID);
 			if (!entity.HasComponent<NetworkComponent>())
 			{
-				m_CreatedEntityQueue.pop();
+				sceneData.SpawnedEntityQueue.pop();
 				continue;
 			}
 
-			if (entry.Client != 0)
-			{
-				specificClients[entry.Client].push_back(entity);
-				m_CreatedEntityQueue.pop();
-				continue;
-			}
-
-			SceneSerializer serializer(entry.Scene, true);
+			SceneSerializer serializer(entity.m_Scene, true);
 			stream.WriteString(serializer.SerializeEntityToString(entity));
-			anyCreated = true;
-			
-			m_CreatedEntityQueue.pop();
+			spawned++;
+
+			sceneData.SpawnedEntityQueue.pop();
+			sceneData.SpawnedAll.push_back(uuid);
 		}
 
-		if (anyCreated)
-			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition())); 
-
-		for (auto& [clientID, entityVector] : specificClients)
+		if (spawned > 0)
 		{
+			msg.EntityCount = spawned;
+			uint64_t streamPos = stream.GetStreamPosition();
 			stream.SetStreamPosition(0);
-			stream.WriteRaw(PacketType::EntitySpawn);
-
-			for (auto entity : entityVector)
-			{
-				SceneSerializer serializer(entity.GetScene(), true);
-				stream.WriteString(serializer.SerializeEntityToString(entity));
-			}
-
-			SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+			stream.WriteRaw(msg);
+			stream.SetStreamPosition(streamPos);
+			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition())); 
 		}
 	}
 
-	void Server::ProcessDestroyedEntityQueue()
+	void Server::ProcessDespawnedEntityQueue(Scene* scene)
 	{
 		PROFILE_FUNCTION();
 
+		SceneData& sceneData = m_SceneData[scene];
+
+		if (sceneData.DespawnedEntityQueue.empty())
+			return;
+
+		NetMessageDespawn msg;
 		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::EntityDestroy);
+		stream.SkipBytes(sizeof(NetMessageDespawn));
 
-		std::unordered_map<ClientID, std::vector<UUID>> specificClients;
-		bool anyDestroyed = false;
+		uint32_t despawned = 0;
 
-		while (!m_DestroyedEntityQueue.empty())
+		while (!sceneData.DespawnedEntityQueue.empty())
 		{
-			EntityLifetimeQueueEntry& entry = m_DestroyedEntityQueue.front();
+			UUID uuid = sceneData.DespawnedEntityQueue.front();
 
-			if (entry.Client != 0)
-			{
-				specificClients[entry.Client].push_back(entry.EntityUUID);
-				m_DestroyedEntityQueue.pop();
-				continue;
-			}
+			stream.WriteRaw(uuid);
+			despawned++;
 
-			stream.WriteRaw(entry.EntityUUID);
-			anyDestroyed = true;
+			sceneData.DespawnedEntityQueue.pop();
 
-			m_DestroyedEntityQueue.pop();
+			auto& spawnedAll = sceneData.SpawnedAll;
+			auto spawnedIt = std::find(spawnedAll.begin(), spawnedAll.end(), uuid);
+			
+			if (spawnedIt != spawnedAll.end())
+				spawnedAll.erase(spawnedIt);
+			else
+				sceneData.DespawnedAll.push_back(uuid);
 		}
 
-		if (anyDestroyed)
-			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-
-		for (auto& [clientID, uuidVector] : specificClients)
+		if (despawned > 0)
 		{
+			msg.EntityCount = despawned;
+			uint64_t streamPos = stream.GetStreamPosition();
 			stream.SetStreamPosition(0);
-			stream.WriteRaw(PacketType::EntityDestroy);
+			stream.WriteRaw(msg);
+			stream.SetStreamPosition(streamPos);
+			SendBufferToAllClients(stream.GetBuffer());
+		}
+	}
 
-			for (auto uuid : uuidVector)
+	void Server::SendAllSpawnedEntities(Scene* scene, ClientID clientID)
+	{
+		SceneData& sceneData = m_SceneData[scene];
+		auto& spawnedAll = sceneData.SpawnedAll;
+		if (spawnedAll.size() > 0)
+		{
+			BufferStreamWriter stream(m_ScratchBuffer);
+
+			NetMessageSpawn msg;
+			msg.EntityCount = (uint32_t)spawnedAll.size();
+			stream.WriteRaw(msg);
+
+			for (UUID uuid : spawnedAll)
+			{
+				Entity entity = scene->FindByID(uuid);
+				SceneSerializer serializer(scene, true);
+				stream.WriteString(serializer.SerializeEntityToString(entity));
+			}
+
+			SendBufferToClient(clientID, stream.GetBuffer());
+		}
+	}
+
+	void Server::SendAllDespawnedEntities(Scene* scene, ClientID clientID)
+	{
+		SceneData& sceneData = m_SceneData[scene];
+		auto& despawnedAll = sceneData.DespawnedAll;
+		if (despawnedAll.size() > 0)
+		{
+			BufferStreamWriter stream(m_ScratchBuffer);
+
+			NetMessageDespawn msg;
+			msg.EntityCount = (uint32_t)despawnedAll.size();
+			stream.WriteRaw(msg);
+
+			for (UUID uuid : despawnedAll)
+			{
 				stream.WriteRaw(uuid);
+			}
 
-			SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+			SendBufferToClient(clientID, stream.GetBuffer());
 		}
 	}
 
@@ -337,13 +380,12 @@ namespace proton {
 		
 		// Create buffer stream writer
 		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::UpdateReplicated);
-
 		uint64_t packetStreamStart = stream.GetStreamPosition();
+
 		m_ReplicationManager->StreamWriteReplicationData(stream, scene, verifyComponentChecksum);
 
 		// If anything was written, send buffer to clients
-		if (stream.GetStreamPosition() > packetStreamStart)
+		if (stream.GetStreamPosition() >= packetStreamStart + sizeof(NetMessageReplicate))
 		{
 			if (clientID == 0)
 				SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
@@ -357,7 +399,7 @@ namespace proton {
 	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
 	{
 		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
-		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connected });
+		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connecting });
 	}
 
 	void Server::OnClientDisconnected(const ClientInfo& clientInfo) // Called from Network Thread
@@ -370,16 +412,6 @@ namespace proton {
 	{
 		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
 		m_MessageQueue.push(incomingMessage);
-	}
-
-	void Server::PushCreatedEntity(UUID entityUUID, Scene* scene, ClientID specificClient)
-	{
-		m_CreatedEntityQueue.push({ entityUUID, scene, specificClient });
-	}
-
-	void Server::PushDestroyedEntity(UUID entityUUID, Scene* scene, ClientID specificClient)
-	{
-		m_DestroyedEntityQueue.push({ entityUUID, scene, specificClient });
 	}
 
 	void Server::SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function)
@@ -558,6 +590,7 @@ namespace proton {
 			auto& client = m_ConnectedClients[status->m_hConn];
 			client.ID = (ClientID)status->m_hConn;
 			client.ConnectionDesc = connectionInfo.m_szConnectionDescription;
+			client.Status = ConnectionStatus::Connecting;
 
 			PT_CORE_INFO("New connection from client {}", client.ConnectionDesc);
 			OnClientConnected(client);
@@ -626,7 +659,7 @@ namespace proton {
 	{
 		for (const auto& [clientID, clientInfo] : m_ConnectedClients)
 		{
-			if (clientID != excludeClientID)
+			if (clientInfo.Status == ConnectionStatus::Connected && clientID != excludeClientID)
 				SendBufferToClient(clientID, buffer, reliable);
 		}
 	}

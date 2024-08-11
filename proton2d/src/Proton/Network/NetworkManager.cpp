@@ -20,6 +20,8 @@ namespace proton {
 	uint32_t NetworkManager::s_EditorClientInstances = 0;
 	bool NetworkManager::s_NetworkResourcesFreed = false;
 
+	uint32_t NetworkManager::s_GameProtocolVersion = 1;
+
 	NetworkManager::NetworkManager(GameInstance* instance)
 		: m_GameInstance(instance)
 	{
@@ -175,6 +177,11 @@ namespace proton {
 	Server* NetworkManager::GetServer()
 	{
 		return m_Server.get();
+	}
+
+	void NetworkManager::SetGameProtocolVersion(uint32_t version)
+	{
+		NetworkManager::s_GameProtocolVersion = version;
 	}
 
 	void NetworkManager::CheckNetworkResourcesRelease()

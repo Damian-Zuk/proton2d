@@ -20,6 +20,7 @@ namespace proton {
 	{
 		ClientID ID;
 		std::string ConnectionDesc;
+		ConnectionStatus Status;
 	};
 
 	// Forward declarations
@@ -46,17 +47,20 @@ namespace proton {
 		void MainThread_OnTick();
 
 		void SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function);
-		void PushCreatedEntity(UUID entityUUID, Scene* scene, ClientID specificClient = 0);
-		void PushDestroyedEntity(UUID entityUUID, Scene* scene, ClientID specificClient = 0);
 
-		void OnClientConnected(const ClientInfo& clientInfo);
-		void OnClientDisconnected(const ClientInfo& clientInfo);
-		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
+		void OnClientConnected(const ClientInfo& clientInfo); // called from network thread
+		void OnClientDisconnected(const ClientInfo& clientInfo); // called from network thread
+		void OnDataReceived(ISteamNetworkingMessage* incomingMessage); // called from network thread
 
 		void ProcessConnectionStatusQueue();
 		void ProcessClientMessagesQueue();
-		void ProcessCreatedEntityQueue();
-		void ProcessDestroyedEntityQueue();
+
+		void AddSpawnedEntity(Scene* scene, UUID entityUUID);
+		void AddDespawnedEntity(Scene* scene, UUID entityUUID);
+		void ProcessSpawnedEntityQueue(Scene* scene);
+		void ProcessDespawnedEntityQueue(Scene* scene);
+		void SendAllSpawnedEntities(Scene* scene, ClientID clientID); // for late joining clients
+		void SendAllDespawnedEntities(Scene* scene, ClientID clientID); // for late joining clients
 
 		void SendReplicationUpdate(Scene* scene, ClientID clientID = 0, bool verifyComponentChecksum = true);
 
@@ -117,7 +121,7 @@ namespace proton {
 
 		float m_FakePacketLag = 0.0f;
 
-		// Queues
+		// Queue for processing connected or disconnected clients
 		struct ClientConnectionStatusChangeInfo
 		{
 			ClientInfo ClientInfo;
@@ -126,17 +130,21 @@ namespace proton {
 		std::queue<ClientConnectionStatusChangeInfo> m_ClientConnStatusChangeQueue;
 		std::mutex m_ClientConnStatusQueueMutex;
 
+		// Queue for messages processing
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_MessageQueueMutex;
 
-		struct EntityLifetimeQueueEntry
+		// Spawned and despawned entities
+		struct SceneData
 		{
-			UUID EntityUUID;
-			Scene* Scene;
-			ClientID Client; // 0 - send to all clients
+			std::queue<UUID> SpawnedEntityQueue;
+			std::queue<UUID> DespawnedEntityQueue;
+
+			// Keep track of all spawned and despawned entities for late joining clients
+			std::vector<UUID> SpawnedAll;
+			std::vector<UUID> DespawnedAll;
 		};
-		std::queue<EntityLifetimeQueueEntry> m_CreatedEntityQueue;
-		std::queue<EntityLifetimeQueueEntry> m_DestroyedEntityQueue;
+		std::unordered_map<Scene*, SceneData> m_SceneData;
 
 		// Player action callbacks
 		std::unordered_map<uint32_t, StreamReaderDelegate> m_PlayerActionCallbacks;

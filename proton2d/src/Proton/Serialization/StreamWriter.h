@@ -116,6 +116,12 @@ namespace proton {
 			for (const auto& element : array)
 				WriteString(element);
 		}
+
+		void SkipBytes(uint64_t bytes)
+		{
+			uint64_t pos = GetStreamPosition();
+			SetStreamPosition(pos + bytes);
+		}
 	};
 
 }

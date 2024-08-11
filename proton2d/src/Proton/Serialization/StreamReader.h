@@ -122,6 +122,12 @@ namespace proton {
 			for (uint32_t i = 0; i < size; i++)
 				ReadString(array[i]);
 		}
+
+		void SkipBytes(uint64_t bytes)
+		{
+			uint64_t pos = GetStreamPosition();
+			SetStreamPosition(pos + bytes);
+		}
 	};
 
 }

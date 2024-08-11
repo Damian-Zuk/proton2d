@@ -1,20 +1,24 @@
 #pragma once
 #include "Proton/Serialization/BufferStream.h"
 
+#define PT_NET_PROTOCOL_VERSION 1
+
 namespace proton {
 
 	enum class NetMode : uint8_t
 	{
 		Standalone = 0,
-		ListenServer = 1,
-		DedicatedServer = 2,
-		Client = 3,
+		ListenServer,
+		DedicatedServer,
+		Client,
 	};
 
 	enum class ConnectionStatus : uint8_t
 	{
-		Connected = 0,
-		Disconnected = 1
+		Disconnected,
+		Connecting,
+		Connected,
+		FailedToConnect
 	};
 
 	using StreamReaderDelegate = std::function<void(BufferStreamReader& stream)>;

@@ -283,7 +283,7 @@ namespace proton {
 		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
 		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer())
 		{
-			networkManager->GetServer()->PushCreatedEntity(id, this);
+			networkManager->GetServer()->AddSpawnedEntity(this, id);
 		}
 
 		return entity;
@@ -355,7 +355,7 @@ namespace proton {
 		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer()
 			&& entity.HasComponent<NetworkComponent>())
 		{
-			networkManager->GetServer()->PushDestroyedEntity(entity.GetUUID(), this);
+			networkManager->GetServer()->AddDespawnedEntity(this, entity.GetUUID());
 		}
 
 		if (entity.HasComponent<ScriptComponent>())

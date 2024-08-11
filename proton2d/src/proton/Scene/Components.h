@@ -22,25 +22,26 @@ namespace proton {
 
 	enum EComponentType : size_t
 	{
-		ComponentType_ID =              1,
-		ComponentType_Tag =             2,
-		ComponentType_Transform =       3,
-		ComponentType_Relationship =    4,
-		ComponentType_Metadata =        5,
-		ComponentType_Script =          6,
-		ComponentType_Camera =          7,
-		ComponentType_Velocity =        8,
-		ComponentType_Sprite =          32,
-		ComponentType_ResizableSprite = 33,
-	 	ComponentType_SpriteAnimation = 34,
-		ComponentType_CircleRenderer =  35,
-		ComponentType_Text =            36,
-		ComponentType_UI =              48,
-		ComponentType_UIText =          49,
-		ComponentType_Rigidbody =       64,
-		ComponentType_BoxCollider =     65,
-		ComponentType_CircleCollider =  66,
-		ComponentType_Network =         128
+		ComponentType_ID =                1,
+		ComponentType_Tag =               2,
+		ComponentType_Transform =         3,
+		ComponentType_Relationship =      4,
+		ComponentType_Metadata =          5,
+		ComponentType_Script =            6,
+		ComponentType_Camera =            7,
+		ComponentType_Velocity =          8,
+		ComponentType_Sprite =            32,
+		ComponentType_ResizableSprite =   33,
+	 	ComponentType_SpriteAnimation =   34,
+		ComponentType_CircleRenderer =    35,
+		ComponentType_Text =              36,
+		ComponentType_UI =                48,
+		ComponentType_UIText =            49,
+		ComponentType_Rigidbody =         64,
+		ComponentType_BoxCollider =       65,
+		ComponentType_CircleCollider =    66,
+		ComponentType_NetworkTransform =  127,
+		ComponentType_Network =           128
 	};
 
 #define PROTON_COMPONENT_TYPE_ID(component_type) \
@@ -220,7 +221,11 @@ namespace proton {
 	{
 		PROTON_COMPONENT_TYPE_ID(ComponentType_Network)
 
-		float UpdateRate = 1.0f; 
+		float UpdateRate = 1.0f;
+		float CullDistance = 10.0f;
+
+		uint32_t OwnerClientId = 0;
+
 		std::bitset<MAX_COMPONENTS> ComponentsToReplicate;
 		std::unordered_map<EComponentType, uint32_t> ComponentChecksum;
 
@@ -242,6 +247,13 @@ namespace proton {
 			std::vector<ReplicatedField> ReplicatedFields;
 		};
 		std::vector<ReplicatedScript> ReplicatedScripts;
+	};
+
+	struct NetworkTransformComponent
+	{
+		PROTON_COMPONENT_TYPE_ID(ComponentType_NetworkTransform)
+
+
 	};
 
 }

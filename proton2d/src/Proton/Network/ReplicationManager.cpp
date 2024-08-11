@@ -2,6 +2,7 @@
 #include "Proton/Network/ReplicationManager.h"
 #include "Proton/Network/Server.h"
 #include "Proton/Network/NetStatsManager.h"
+#include "Proton/Network/Packets.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
 
@@ -39,8 +40,14 @@ namespace proton {
 		PROFILE_FUNCTION();
 		// Replicate entitites with NetworkComponent
 		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
-		if (view.empty())
+		if (view.empty() || m_Server->m_ConnectedClients.size() == 0)
 			return;
+
+		NetMessageReplicate msg;
+		msg.EntityCount = 0;
+
+		uint64_t streamStart = stream.GetStreamPosition();
+		stream.SkipBytes(sizeof(NetMessageReplicate));
 
 		// Iterate over entities with NetworkComponent
 		for (entt::entity _entity : view)
@@ -49,14 +56,14 @@ namespace proton {
 			Entity entity(_entity, scene);
 			auto& net = view.get<NetworkComponent>(_entity);
 
-			// Entity buffer header
-			uint64_t entityHeaderPos = stream.GetStreamPosition();
-			uint64_t entityBufferSize = 0;
-			std::bitset<MAX_COMPONENTS> replicatedComponentsBitset = net.ComponentsToReplicate;
+			// Entity entry header
+			NetMessageReplicate_Entry msgEntry;
+			msgEntry.EntityUUID = entity.GetUUID();
+			auto& replicatedComponentsBitset = msgEntry.ComponentBitset;
+			replicatedComponentsBitset = net.ComponentsToReplicate;
 
-			stream.WriteZero(sizeof(entityBufferSize));
-			stream.WriteZero(sizeof(replicatedComponentsBitset));
-			stream.WriteRaw(entity.GetUUID());
+			uint64_t entityHeaderPos = stream.GetStreamPosition();
+			stream.SkipBytes(sizeof(NetMessageReplicate_Entry));
 
 			// ------------ Component binary serialization ------------
 			uint64_t componentsBegin = stream.GetStreamPosition();
@@ -159,16 +166,20 @@ namespace proton {
 
 			// Calculate buffer size
 			uint64_t entityStreamEnd = stream.GetStreamPosition();
-			entityBufferSize = entityStreamEnd - entityHeaderPos;
+			msgEntry.PayloadSize = entityStreamEnd - entityHeaderPos;
 
 			// Write entity header
 			stream.SetStreamPosition(entityHeaderPos);
-			stream.WriteRaw(entityBufferSize);
-			stream.WriteRaw(replicatedComponentsBitset);
+			stream.WriteRaw(msgEntry);
 			stream.SetStreamPosition(entityStreamEnd);
 
 			m_Server->m_NetStatsManager->m_ReplicationStats.RepEntitiesCount++;
+			msg.EntityCount++;
 		}
-	}
 
+		uint64_t bufferPos = stream.GetStreamPosition();
+		stream.SetStreamPosition(streamStart);
+		stream.WriteRaw(msg); 
+		stream.SetStreamPosition(bufferPos);
+	}
 }
