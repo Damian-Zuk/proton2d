@@ -209,7 +209,6 @@ namespace proton {
 		NetMessageReplicate header;
 		stream.ReadRaw(header);
 
-		//while (stream.GetStreamPosition() < bufferSize - sizeof(uint64) * 2)
 		for (uint32_t i = 0; i < header.EntityCount; i++)
 		{
 			uint64_t entityStreamStart = stream.GetStreamPosition();
@@ -444,16 +443,16 @@ namespace proton {
 			{
 				// Note: we could distinguish between a timeout, a rejected connection,
 				// or some other transport problem.
-				PT_CORE_ERROR("Could not connect to remote host. {}", info->m_info.m_szEndDebug);
+				PT_CORE_ERROR("Could not connect to remote host. {}", m_ConnectionDebugMessage);
 			}
 			else if (info->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
 			{
-				PT_CORE_ERROR("Lost connection with remote host. {}", info->m_info.m_szEndDebug);
+				PT_CORE_ERROR("Lost connection with remote host. {}", m_ConnectionDebugMessage);
 			}
 			else
 			{
 				// NOTE: We could check the reason code for a normal disconnection
-				PT_CORE_ERROR("Disconnected from host. {}", info->m_info.m_szEndDebug);
+				PT_CORE_ERROR("Disconnected from host. {}", m_ConnectionDebugMessage);
 			}
 
 			// Clean up the connection.  This is important!

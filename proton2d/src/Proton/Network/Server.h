@@ -101,11 +101,16 @@ namespace proton {
 	private:
 		static Server* s_Instance;
 
+		GameInstance* m_GameInstance;
+		NetworkManager* m_NetworkManager;
+
+		Unique<ReplicationManager> m_ReplicationManager;
+		Unique<NetStatsManager> m_NetStatsManager;
+
 		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;
 		HSteamListenSocket m_ListenSocket = 0u;
 		HSteamNetPollGroup m_PollGroup = 0u;
-		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
 
 		// Network Thread
 		std::thread m_NetworkThread;
@@ -113,13 +118,11 @@ namespace proton {
 		bool m_Running = false;
 		int m_Port = 0;
 
+		// Connections
+		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
+
 		// Buffer for writting messages using BufferStreamWriter
 		Buffer m_ScratchBuffer;
-
-		Unique<ReplicationManager> m_ReplicationManager;
-		Unique<NetStatsManager> m_NetStatsManager;
-
-		float m_FakePacketLag = 0.0f;
 
 		// Queue for processing connected or disconnected clients
 		struct ClientConnectionStatusChangeInfo
@@ -149,10 +152,7 @@ namespace proton {
 		// Player action callbacks
 		std::unordered_map<uint32_t, StreamReaderDelegate> m_PlayerActionCallbacks;
 
-		// Other
-		GameInstance* m_GameInstance;
-		NetworkManager* m_NetworkManager;
-
+		// Debug
 		static float s_FakeServerLag;
 
 		friend class NetworkManager;

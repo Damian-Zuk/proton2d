@@ -281,7 +281,7 @@ namespace proton {
 			m_Root.push_back(entity);
 
 		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
-		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer())
+		if (networkManager->IsNetworkActive() && networkManager->IsNetModeServer())
 		{
 			networkManager->GetServer()->AddSpawnedEntity(this, id);
 		}
@@ -352,7 +352,7 @@ namespace proton {
 		// If server is running and entity has NetworkComponent
 		// inform clients that entity has been destroyed.
 		NetworkManager* networkManager = m_GameInstance->GetNetworkManager();
-		if (networkManager->IsNetServiceRunning() && networkManager->IsNetModeServer()
+		if (networkManager->IsNetworkActive() && networkManager->IsNetModeServer()
 			&& entity.HasComponent<NetworkComponent>())
 		{
 			networkManager->GetServer()->AddDespawnedEntity(this, entity.GetUUID());

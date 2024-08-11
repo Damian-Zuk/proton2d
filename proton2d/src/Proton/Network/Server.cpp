@@ -432,9 +432,9 @@ namespace proton {
 
 	void Server::SetPacketFakeLag(float latencyMs)
 	{
-		m_FakePacketLag = glm::max(latencyMs, 0.0f);
+		s_FakeServerLag = glm::max(latencyMs, 0.0f);
 
-		float simulatedLatency = m_FakePacketLag / 4.0f;
+		float simulatedLatency = s_FakeServerLag / 4.0f;
 
 		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Send, simulatedLatency);
 		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Recv, simulatedLatency);
@@ -461,7 +461,7 @@ namespace proton {
 		// Start listening
 		SteamNetworkingIPAddr serverLocalAddress;
 		serverLocalAddress.Clear();
-		serverLocalAddress.m_port = m_Port;
+		serverLocalAddress.m_port = m_NetworkManager->m_Port;
 
 		SteamNetworkingConfigValue_t options;
 		options.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)Server::ConnectionStatusChangedCallback);

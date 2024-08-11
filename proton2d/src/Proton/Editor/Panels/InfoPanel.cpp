@@ -113,7 +113,7 @@ namespace proton {
 		}
 		ImGui::Dummy({ 0, 5 });
 
-		if (!networkManager->IsNetModeServer() || !networkManager->IsNetServiceRunning())
+		if (!networkManager->IsNetModeServer() || !networkManager->IsNetworkActive())
 		{
 			ImGui::Text("Stats not available: Server is not running.");
 			return;

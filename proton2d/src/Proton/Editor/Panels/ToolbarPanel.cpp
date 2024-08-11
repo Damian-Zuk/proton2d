@@ -245,13 +245,13 @@ namespace proton {
 
 				if (netMode == NetMode::Client)
 				{
-					netManager->SetServerIpAddress(props.ServerIp);
-					netManager->SetServerPort(props.Port);
+					netManager->SetIpAddress(props.ServerIp);
+					netManager->SetNetworkPort(props.Port);
 				}
 				else if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 				{
 					netManager->SetServerTickRate(props.ServerTickrate);
-					netManager->SetServerPort(props.Port);
+					netManager->SetNetworkPort(props.Port);
 				}
 
 				instance->GetActiveScene()->BeginPlay();

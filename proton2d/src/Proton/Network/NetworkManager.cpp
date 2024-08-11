@@ -12,15 +12,11 @@
 #include <steam/steam_api.h>
 #endif
 
-#define ENABLE_NET_INTERPOLATION
-
 namespace proton {
 
-	uint32_t NetworkManager::s_NetworkServicesRunning = 0;
-	uint32_t NetworkManager::s_EditorClientInstances = 0;
-	bool NetworkManager::s_NetworkResourcesFreed = false;
-
 	uint32_t NetworkManager::s_GameProtocolVersion = 1;
+	uint32_t NetworkManager::s_NetworkServicesRunning = 0;
+	bool NetworkManager::s_NetworkDriverInitialized = false;
 
 	NetworkManager::NetworkManager(GameInstance* instance)
 		: m_GameInstance(instance)
@@ -29,7 +25,7 @@ namespace proton {
 
 	NetworkManager::~NetworkManager()
 	{
-		if (!m_IsNetworkServiceRunning)
+		if (!m_IsNetworkActive)
 			return;
 
 		if (IsNetModeServer())
@@ -40,7 +36,7 @@ namespace proton {
 
 	void NetworkManager::OnUpdate(float ts)
 	{
-		if (!m_IsNetworkServiceRunning)
+		if (!m_IsNetworkActive)
 			return;
 
 		if (IsNetModeServer())
@@ -66,7 +62,7 @@ namespace proton {
 
 		m_NetworkedSceneCount++;
 
-		if (m_IsNetworkServiceRunning)
+		if (m_IsNetworkActive)
 			return;
 
 		if (IsNetModeServer())
@@ -82,7 +78,7 @@ namespace proton {
 
 		m_NetworkedSceneCount--;
 
-		if (m_IsNetworkServiceRunning && m_NetworkedSceneCount == 0)
+		if (m_IsNetworkActive && m_NetworkedSceneCount == 0)
 		{
 			if (IsNetModeServer())
 				StopServer();
@@ -96,9 +92,9 @@ namespace proton {
 		m_Server = MakeUnique<Server>(m_GameInstance);
 		m_Server->Start(m_Port);
 
-		m_IsNetworkServiceRunning = true;
+		m_IsNetworkActive = true;
 		s_NetworkServicesRunning++;
-		s_NetworkResourcesFreed = false;
+		s_NetworkDriverInitialized = true;
 	}
 
 	void NetworkManager::StartClient()
@@ -106,24 +102,22 @@ namespace proton {
 		m_Client = MakeUnique<Client>(m_GameInstance);
 		m_Client->ConnectToServer(m_IpAddress + ":" + std::to_string(m_Port));
 
-		m_IsNetworkServiceRunning = true;
+		m_IsNetworkActive = true;
 		s_NetworkServicesRunning++;
-		s_EditorClientInstances++;
-		s_NetworkResourcesFreed = false;
+		s_NetworkDriverInitialized = true;
 	}
 
 	void NetworkManager::StopServer()
 	{
 		m_Server->Stop();
 
-		// Wait for network thread to finish
+		// Wait for network thread to finish running
 		while (!m_Server->m_NetworkThreadFinished)
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 		m_Server.reset();
 		s_NetworkServicesRunning--;
-		s_EditorClientInstances--;
-		m_IsNetworkServiceRunning = false;
+		m_IsNetworkActive = false;
 
 		CheckNetworkResourcesRelease();
 	}
@@ -132,35 +126,40 @@ namespace proton {
 	{
 		m_Client->Disconnect();
 
-		// Wait for network thread to finish
+		// Wait for network thread to finish running
 		while (!m_Client->m_NetworkThreadFinished)
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 		m_Client.reset();
 		s_NetworkServicesRunning--;
-		m_IsNetworkServiceRunning = false;
+		m_IsNetworkActive = false;
 
 		CheckNetworkResourcesRelease();
 	}
 
-	void NetworkManager::SetServerIpAddress(const std::string& ip)
+	void NetworkManager::SetIpAddress(const std::string& ip)
 	{
 		m_IpAddress = ip;
 	}
 
-	void NetworkManager::SetServerPort(int port)
+	void NetworkManager::SetNetworkPort(uint16_t port)
 	{
 		m_Port = port;
 	}
 
 	void NetworkManager::SetNetMode(NetMode mode)
 	{
-		if (m_IsNetworkServiceRunning)
+		if (m_IsNetworkActive)
 		{
-			PT_CORE_ERROR("Cannot change NetMode: Network service is already running!");
+			PT_CORE_ERROR("Cannot set NetMode: Network service is already running!");
 			return;
 		}
 		m_NetMode = mode;
+	}
+
+	void NetworkManager::SetMaxServerConnections(uint32_t value)
+	{
+		m_MaxServerConnections = value;
 	}
 
 	void NetworkManager::SetServerTickRate(uint16_t tickRate)
@@ -169,14 +168,12 @@ namespace proton {
 		m_ServerTickTime = 1.0f / tickRate;
 	}
 
-	Client* NetworkManager::GetClient()
+	ConnectionStatus NetworkManager::GetClientConnectionStatus() const
 	{
-		return m_Client.get();
-	}
+		if (m_Client)
+			return m_Client->m_ConnectionStatus;
 
-	Server* NetworkManager::GetServer()
-	{
-		return m_Server.get();
+		return ConnectionStatus::Disconnected;
 	}
 
 	void NetworkManager::SetGameProtocolVersion(uint32_t version)
@@ -186,11 +183,11 @@ namespace proton {
 
 	void NetworkManager::CheckNetworkResourcesRelease()
 	{
-		if (!s_NetworkResourcesFreed && !s_NetworkServicesRunning)
+		if (!s_NetworkDriverInitialized && !s_NetworkServicesRunning)
 		{
 			_PT_CORE_INFO("Network resources have been released");
 			GameNetworkingSockets_Kill();
-			s_NetworkResourcesFreed = true;
+			s_NetworkDriverInitialized = false;
 		}
 	}
 
