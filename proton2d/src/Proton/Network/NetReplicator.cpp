@@ -59,6 +59,7 @@ namespace proton {
 
 			auto& netTransform = net.NetTransform;
 			auto& flags = item.TransformReplicationFlags;
+			net.NetTransform.RepFlags = flags;
 			using ReplicationFlags = NetTransform::ReplicationFlags;
 
 			if (EnumHasAnyFlags(flags, ReplicationFlags::All))
@@ -66,7 +67,7 @@ namespace proton {
 				netTransform.PreviousTransform = netTransform.CurrentTransform;
 				netTransform.SyncState.PacketDelay = netTransform.SyncState.PacketTimer.Elapsed();
 				netTransform.SyncState.PacketTimer.Reset();
-				netTransform.SyncState.NewPacket = true;
+				netTransform.SyncState.NewUpdate = true;
 			}
 
 			if (EnumHasAllFlags(flags, ReplicationFlags::All))
@@ -445,6 +446,7 @@ namespace proton {
 				stream.WriteRaw(angularVelocity); prevAngularVelocity = angularVelocity;
 				flags = EnumAddFlags(flags, ReplicationFlags::All);
 			}
+			net.NetTransform.RepFlags = flags;
 
 			////////////////////////////// ScriptComponent Serialization //////////////////////////////
 			uint64_t scriptsPayloadStart = stream.GetStreamPosition();

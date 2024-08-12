@@ -32,7 +32,7 @@ namespace proton {
 		float Error = 0.0f;
 
 		bool ReconcileStarted = false;
-		bool NewPacket = true;
+		bool NewUpdate = true;
 		float PacketDelay = 0.0f;
 	};
 
@@ -75,6 +75,8 @@ namespace proton {
 
 		Transform PreviousTransform;
 		Transform CurrentTransform;
+
+		ReplicationFlags RepFlags;
 	};
 
 	std::string NetSyncMethodToString(NetSyncMethod method);

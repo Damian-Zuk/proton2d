@@ -84,6 +84,7 @@ namespace proton {
 	void Server::ProcessConnectionStatusQueue()
 	{
 		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
+
 		while (!m_ClientConnStatusChangeQueue.empty())
 		{
 			ClientConnectionStatusChangeInfo& info = m_ClientConnStatusChangeQueue.front();
@@ -112,10 +113,7 @@ namespace proton {
 	void Server::ProcessClientMessagesQueue()
 	{
 		PROFILE_FUNCTION();
-
 		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
-		//SceneManager* sceneManager = m_GameInstance->GetSceneManager();
-		Scene* scene = m_GameInstance->GetActiveScene();
 
 		while (!m_MessageQueue.empty())
 		{
@@ -139,7 +137,7 @@ namespace proton {
 				NetMessageHandshake handshake;
 				stream.ReadRaw(handshake);
 
-				if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
+				if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
 					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongGameAndEngineProtocol);
 					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongGameAndEngineProtocol, "Failed to handshake", false);
@@ -151,7 +149,7 @@ namespace proton {
 					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongGameProtocol, "Failed to handshake", false);
 					break;
 				}
-				else if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION)
+				else if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION)
 				{
 					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongEngineProtocol);
 					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongEngineProtocol, "Failed to handshake", false);

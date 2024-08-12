@@ -77,7 +77,7 @@ namespace proton {
 	void Client::SendHandshake()
 	{
 		NetMessageHandshake msg;
-		msg.EngineProtocolVersion = PT_NET_PROTOCOL_VERSION;
+		msg.EngineProtocolVersion = PROTON_NET_PROTOCOL_VERSION;
 		msg.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(msg);
@@ -299,9 +299,9 @@ namespace proton {
 				PT_CORE_ERROR("Disconnected from host. {}", m_ConnectionDebugMessage);
 			}
 
-			// Clean up the connection.  This is important!
+			// Clean up the connection. This is important!
 			// The connection is "closed" in the network sense, but
-			// it has not been destroyed.  We must close it on our end, too
+			// it has not been destroyed. We must close it on our end, too
 			// to finish up.  The reason information do not matter in this case,
 			// and we cannot linger because it's already closed on the other end,
 			// so we just pass 0s.

@@ -1,7 +1,7 @@
 #pragma once
 #include "Proton/Serialization/BufferStream.h"
 
-#define PT_NET_PROTOCOL_VERSION 1
+#define PROTON_NET_PROTOCOL_VERSION 1
 
 namespace proton {
 

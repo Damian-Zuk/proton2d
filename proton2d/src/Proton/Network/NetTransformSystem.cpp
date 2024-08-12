@@ -26,13 +26,11 @@ namespace proton {
 			Entity entity(e, scene);
 			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(e);
 			
-			auto& previous = net.NetTransform.PreviousTransform;
-			auto& current = net.NetTransform.CurrentTransform;
-			auto& syncState = net.NetTransform.SyncState;
-			auto& syncParams = net.NetTransform.SyncParams;
-
-			if (syncParams.SyncMethod == NetSyncMethod::None)
-				continue;
+			auto& netTransform = net.NetTransform;
+			auto& previous = netTransform.PreviousTransform;
+			auto& current = netTransform.CurrentTransform;
+			auto& syncState = netTransform.SyncState;
+			auto& syncParams = netTransform.SyncParams;
 
 			//if (velocity.LinearVelocity == glm::vec2{ 0.0f } && current.LinearVelocity == glm::vec2{ 0.0f })
 			//	continue;
@@ -47,6 +45,22 @@ namespace proton {
 			// Synchronize with Server State
 			switch (syncParams.SyncMethod)
 			{
+			case NetSyncMethod::None:
+			{
+				if (syncState.NewUpdate)
+				{
+					// Immediate set
+					if (EnumHasAnyFlags(net.NetTransform.RepFlags, NetTransform::ReplicationFlags::Position))
+					{
+						entity.SetLocalPosition({ current.Position.x, current.Position.y, transform.LocalPosition.z });
+					}
+					if (EnumHasAnyFlags(net.NetTransform.RepFlags, NetTransform::ReplicationFlags::Rotation))
+					{
+						transform.Rotation = current.Rotation;
+					}
+				}
+				break;
+			}
 			case NetSyncMethod::Interpolate:
 			{
 				if (elapsed < syncState.PacketDelay)
@@ -176,7 +190,7 @@ namespace proton {
 			}
 			}
 
-			syncState.NewPacket = false;
+			syncState.NewUpdate = false;
 		}
 	}
 
