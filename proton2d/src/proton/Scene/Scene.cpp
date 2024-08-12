@@ -13,7 +13,7 @@
 #include "Proton/UI/UIElement.h"
 
 #include "Proton/Network/NetworkManager.h"
-#include "Proton/Network/NetSyncSystem.h"
+#include "Proton/Network/NetTransformSystem.h"
 #include "Proton/Network/Server.h"
 
 #ifdef PT_EDITOR
@@ -538,7 +538,7 @@ namespace proton {
 			if (m_PhysicsTick)
 			{
 				if (m_GameInstance->m_NetworkManager->IsNetModeClient())
-					NetSyncSystem::UpdatePhysics(this, m_PhysicsTimer);
+					NetTransformSystem::UpdatePhysics(this, m_PhysicsTimer);
 
 				m_PhysicsWorld->Update(m_PhysicsTimer);
 			}

@@ -23,8 +23,6 @@
 #include <time.h>
 #include <spdlog/spdlog.h>
 
-//#define _DEBUG_NO_COMPONENT_CHECKSUM_VERIFY
-
 namespace proton {
 
 	// 1 MB scratch buffer for writting messages
@@ -79,14 +77,7 @@ namespace proton {
 
 		ProcessConnectionStatusQueue();
 		ProcessClientMessagesQueue();
-		m_NetReplicator->Server_OnUpdate();
-
-	#ifdef _DEBUG_NO_COMPONENT_CHECKSUM_VERIFY
-		m_NetReplicator->Server_SendReplicationMessage(0, true);
-	#else
-		m_NetReplicator->Server_SendReplicationMessage();
-	#endif
-		
+		m_NetReplicator->Server_OnUpdate();	
 		m_NetStatistics->UpdateNetworkStatistics();
 	}
 

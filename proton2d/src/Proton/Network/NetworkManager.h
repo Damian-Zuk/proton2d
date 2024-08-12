@@ -94,7 +94,7 @@ namespace proton {
 		friend class Server;
 		friend class NetReplicator;
 		friend class NetStatistics;
-		friend class NetSyncSystem;
+		friend class NetTransformSystem;
 
 		friend class SettingsPanel;
 		friend class InspectorPanel;

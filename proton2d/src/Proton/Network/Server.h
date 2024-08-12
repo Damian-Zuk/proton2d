@@ -141,7 +141,7 @@ namespace proton {
 		friend class NetworkManager;
 		friend class NetReplicator;
 		friend class NetStatistics;
-		friend class NetSyncSystem; // TODO: remove
+		friend class NetTransformSystem; // TODO: remove
 		friend class GameModeBase;
 		friend class Scene;
 	

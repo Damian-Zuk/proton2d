@@ -2,7 +2,7 @@
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/Client.h"
 #include "Proton/Network/Server.h"
-#include "Proton/Network/NetSyncSystem.h"
+#include "Proton/Network/NetTransformSystem.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"
 

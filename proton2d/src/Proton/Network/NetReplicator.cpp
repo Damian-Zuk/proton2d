@@ -201,6 +201,7 @@ namespace proton {
 		Scene* scene = m_Server->m_GameInstance->GetActiveScene();
 		Server_ProcessSpawnedEntityQueue(scene);
 		Server_ProcessDespawnedEntityQueue(scene);
+		Server_SendReplicationMessage();
 	}
 
 	void NetReplicator::Server_OnClientConnected(ClientID clientID)

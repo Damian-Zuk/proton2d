@@ -4,7 +4,7 @@ namespace proton {
 
 	class Scene;
 
-	class NetSyncSystem
+	class NetTransformSystem
 	{
 	public:
 		static void Update(Scene* scene, float ts);

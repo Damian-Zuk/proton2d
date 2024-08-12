@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Network/NetSyncSystem.h"
+#include "Proton/Network/NetTransformSystem.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/Client.h"
 #include "Proton/Network/Server.h"
@@ -10,7 +10,7 @@
 
 namespace proton {
 
-	void NetSyncSystem::Update(Scene* scene, float ts)
+	void NetTransformSystem::Update(Scene* scene, float ts)
 	{
 		PROFILE_FUNCTION();
 
@@ -180,7 +180,7 @@ namespace proton {
 		}
 	}
 
-	void NetSyncSystem::UpdatePhysics(Scene* scene, float ts)
+	void NetTransformSystem::UpdatePhysics(Scene* scene, float ts)
 	{
 		//	PROFILE_FUNCTION();
 #if 0

@@ -18,7 +18,7 @@ namespace proton {
 	class Scene;
 	class NetworkManager;
 	class NetReplicator;
-	class NetSyncSystem;
+	class NetTransformSystem;
 
 	class Client
 	{
@@ -94,7 +94,7 @@ namespace proton {
 
 		friend class NetworkManager;
 		friend class NetReplicator;
-		friend class NetSyncSystem;
+		friend class NetTransformSystem;
 		friend class GameModeBase;
 	};
 

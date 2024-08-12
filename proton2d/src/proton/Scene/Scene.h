@@ -165,7 +165,7 @@ namespace proton {
 		friend class GameInstance;
 		friend class GameModeBase;
 		friend class NetworkManager;
-		friend class NetSyncSystem;
+		friend class NetTransformSystem;
 		friend class Server;
 		friend class Client;
 		

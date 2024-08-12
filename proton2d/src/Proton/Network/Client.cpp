@@ -3,7 +3,7 @@
 #include "Proton/Network/Packets.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/NetReplicator.h"
-#include "Proton/Network/NetSyncSystem.h"
+#include "Proton/Network/NetTransformSystem.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneSerializer.h"
@@ -65,7 +65,7 @@ namespace proton {
 
 		Scene* scene = m_GameInstance->GetActiveScene();
 		scene->CalculateWorldPositions(true);
-		NetSyncSystem::Update(scene, ts);
+		NetTransformSystem::Update(scene, ts);
 	}
 
 	void Client::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
