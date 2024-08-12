@@ -35,4 +35,28 @@ namespace proton
 	{
 		return std::make_unique<T>(std::forward<Types>(args)...);
 	}
+
+	template<typename T>
+	constexpr bool EnumHasAnyFlags(T value, T flags)
+	{
+		return ((__underlying_type(T))value & (__underlying_type(T))flags) != 0;
+	}
+
+	template<typename T>
+	constexpr bool EnumHasAllFlags(T value, T flags)
+	{
+		return ((__underlying_type(T))value & (__underlying_type(T))flags) == (__underlying_type(T))flags;
+	}
+
+	template<typename T>
+	constexpr bool EnumHasNoneFlags(T value, T flags)
+	{
+		return ((__underlying_type(T))value & (__underlying_type(T))flags) == 0;
+	}
+
+	template<typename T>
+	constexpr T EnumAddFlags(T value, T flags)
+	{
+		return (T)((__underlying_type(T))value | (__underlying_type(T))flags);
+	}
 }

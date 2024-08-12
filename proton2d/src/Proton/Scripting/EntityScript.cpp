@@ -80,8 +80,6 @@ namespace proton {
 		auto& net = GetComponent<NetworkComponent>();
 		auto& repScripts = net.ReplicatedScripts;
 
-		net.ComponentsToReplicate.set(ComponentType_Script);
-
 		auto scriptRepInfo = std::find_if(repScripts.begin(), repScripts.end(),
 			[this](const auto& repInfo) { return repInfo.Script == this; });
 
@@ -103,7 +101,7 @@ namespace proton {
 	{
 		Scene* scene = GetScene();
 		auto& net = GetComponent<NetworkComponent>();
-		return scene->IsPhysicsSimulated() && net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
+		return scene->IsPhysicsSimulated() && net.NetTransform.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
 	}
 
 	bool EntityScript::IsRunningServer() const

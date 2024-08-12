@@ -17,6 +17,7 @@ namespace proton {
 	class GameInstance;
 	class Scene;
 	class NetworkManager;
+	class NetReplicator;
 	class NetSyncSystem;
 
 	class Client
@@ -30,17 +31,11 @@ namespace proton {
 		void Disconnect();
 		void Shutdown();
 
-		void MainThread_OnUpdate(float ts);
-		
 		// Game client functionality
-		
-		void SendHandshake();
-
-		void SendPlayerAction(StreamWriterDelegate sendFunction);
-
+		void MainThread_OnUpdate(float ts);
 		void ProcessMessages();
-		void UpdateReplicatedEntities(Scene* scene, BufferStreamReader& stream, uint64_t bufferSize, bool updateTransformNow = false);
-
+		void SendHandshake();
+		void SendPlayerAction(StreamWriterDelegate sendFunction);
 		void OnDataReceived(ISteamNetworkingMessage* incomingMessage);
 		
 		// Client lower-level functionality
@@ -73,6 +68,8 @@ namespace proton {
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 
+		Unique<NetReplicator> m_NetReplicator;
+
 		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;
 		HSteamNetConnection m_Connection = 0;
@@ -94,11 +91,11 @@ namespace proton {
 		// Message queue
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_QueueMutex;
-		
 
 		friend class NetworkManager;
-		friend class GameModeBase;
+		friend class NetReplicator;
 		friend class NetSyncSystem;
+		friend class GameModeBase;
 	};
 
 }

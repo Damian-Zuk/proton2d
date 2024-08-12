@@ -30,6 +30,15 @@ namespace proton {
 		}
 
 		template<typename T>
+		void WriteRawAt(uint64_t position, const T& type)
+		{
+			uint64_t current = GetStreamPosition();
+			SetStreamPosition(position);
+			WriteRaw(type);
+			SetStreamPosition(current);
+		}
+
+		template<typename T>
 		void WriteObject(const T& obj)
 		{
 			T::Serialize(this, obj);

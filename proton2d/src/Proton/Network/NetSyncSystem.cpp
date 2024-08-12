@@ -26,10 +26,10 @@ namespace proton {
 			Entity entity(e, scene);
 			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(e);
 			
-			auto& previous = net.PreviousTransform;
-			auto& current = net.CurrentTransform;
-			auto& syncState = net.SyncState;
-			auto& syncParams = net.SyncParams;
+			auto& previous = net.NetTransform.PreviousTransform;
+			auto& current = net.NetTransform.CurrentTransform;
+			auto& syncState = net.NetTransform.SyncState;
+			auto& syncParams = net.NetTransform.SyncParams;
 
 			if (syncParams.SyncMethod == NetSyncMethod::None)
 				continue;
@@ -37,7 +37,7 @@ namespace proton {
 			//if (velocity.LinearVelocity == glm::vec2{ 0.0f } && current.LinearVelocity == glm::vec2{ 0.0f })
 			//	continue;
 
-			bool rbSync = net.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
+			bool rbSync = syncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
 			//if (glm::distance(current.Position, rbSync ? transform.WorldPosition : transform.LocalPosition) < 0.0001f)
 			//	continue;
 
@@ -54,7 +54,8 @@ namespace proton {
 					// Interpolate
 					float alpha = glm::clamp(elapsed / syncState.PacketDelay, 0.0f, 1.0f);
 
-					entity.SetLocalPosition(glm::mix(previous.Position, current.Position, alpha));
+					glm::vec2 interpolated = glm::mix(previous.Position, current.Position, alpha);
+					entity.SetLocalPosition({interpolated.x, interpolated.y, transform.LocalPosition.z});
 					velocity.LinearVelocity = glm::mix(previous.LinearVelocity, current.LinearVelocity, alpha);
 					transform.Rotation = glm::mix(previous.Rotation, current.Rotation, alpha);
 				}
@@ -69,9 +70,10 @@ namespace proton {
 			}
 			case NetSyncMethod::Extrapolate:
 			{
+#if 0 
 				if (elapsed < syncParams.ExtrapolationLimit)
 				{
-					if (net.SyncState.NewPacket)
+					if (syncState.NewPacket)
 						transform.WorldPosition = current.Position;
 
 					glm::vec3 newPosition = {
@@ -82,6 +84,7 @@ namespace proton {
 					entity.SetWorldPosition(newPosition);
 					transform.Rotation += velocity.AngularVelocity * ts;
 				}
+#endif
 				break;
 			}
 			case NetSyncMethod::NetworkRigidbody:
@@ -124,8 +127,7 @@ namespace proton {
 				{
 					syncState.ExtrapolatedPoint = {
 						current.Position.x + syncState.EstimatedVelocity.x * multiplier,
-						current.Position.y + syncState.EstimatedVelocity.y * multiplier,
-						current.Position.z
+						current.Position.y + syncState.EstimatedVelocity.y * multiplier
 					};
 				}
 
@@ -155,7 +157,7 @@ namespace proton {
 
 				if (syncState.ReconcileStarted)
 				{
-					body->SetTransform({ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }, current.Rotation);
+					body->SetTransform({ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }, 0);
 					body->SetLinearVelocity({ syncState.EstimatedVelocity.x, syncState.EstimatedVelocity.y });
 
 					float distanceError = glm::distance(
@@ -174,14 +176,14 @@ namespace proton {
 			}
 			}
 
-			net.SyncState.NewPacket = false;
+			syncState.NewPacket = false;
 		}
 	}
 
 	void NetSyncSystem::UpdatePhysics(Scene* scene, float ts)
 	{
 		//	PROFILE_FUNCTION();
-
+#if 0
 		auto view = scene->m_Registry.view<NetworkComponent, TransformComponent, VelocityComponent, RigidbodyComponent>();
 		for (auto e : view)
 		{
@@ -200,5 +202,6 @@ namespace proton {
 			//body->SetTransform({ current.Position.x, current.Position.y }, current.Rotation);
 
 		}
+#endif
 	}
 }

@@ -52,7 +52,7 @@ namespace proton {
 		bool m_StatsLogsHeaderWritten = false;
 
 		friend class Server;
-		friend class ReplicationManager;
+		friend class NetReplicator;
 
 		friend class InfoPanel;
 	};

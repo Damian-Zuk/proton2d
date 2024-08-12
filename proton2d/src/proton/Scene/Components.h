@@ -8,7 +8,7 @@
 #include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Physics/PhysicsCommon.h"
 #include "Proton/Network/Common.h"
-#include "Proton/Network/NetSyncData.h"
+#include "Proton/Network/NetTransform.h"
 
 #include "Proton/UI/UIText.h"
 #include <entt/entity/entity.hpp>
@@ -223,14 +223,8 @@ namespace proton {
 		float UpdateRate = 1.0f;
 		float CullDistance = 10.0f;
 
-		std::bitset<MAX_COMPONENTS> ComponentsToReplicate;
-		std::unordered_map<EComponentType, uint32_t> ComponentChecksum;
-
-		NetSyncParams SyncParams;
-		NetSyncState SyncState;
-		NetTransform PreviousTransform;
-		NetTransform CurrentTransform;
-
+		NetTransform NetTransform;
+			
 		struct ReplicatedScript
 		{
 			struct ReplicatedField

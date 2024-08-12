@@ -143,13 +143,14 @@ namespace proton {
 		if (entity.HasComponent<NetworkComponent>())
 		{
 			auto& net = entity.GetComponent<NetworkComponent>();
+			auto& netTransform = net.NetTransform;
 			
 			jsonObj["Network"] = {
-				{ "SyncMethod", NetSyncMethodToString(net.SyncParams.SyncMethod) },
-				{ "ExtrapolationLimit", net.SyncParams.ExtrapolationLimit },
-				{ "ReconcileThreshold", net.SyncParams.ReconcileThreshold },
-				{ "ReconcileTime", net.SyncParams.ReconcileTime },
-				{ "ReconcileCooldownTime", net.SyncParams.ReconcileCooldownTime },
+				{ "SyncMethod", NetSyncMethodToString(netTransform.SyncParams.SyncMethod) },
+				{ "ExtrapolationLimit", netTransform.SyncParams.ExtrapolationLimit },
+				{ "ReconcileThreshold", netTransform.SyncParams.ReconcileThreshold },
+				{ "ReconcileTime", netTransform.SyncParams.ReconcileTime },
+				{ "ReconcileCooldownTime", netTransform.SyncParams.ReconcileCooldownTime },
 			};
 		}
 
@@ -399,22 +400,23 @@ namespace proton {
 		if (jsonObj.contains("Network"))
 		{
 			auto& net = entity.AddComponent<NetworkComponent>();
+			auto& netTransform = net.NetTransform;
 			auto& netJson = jsonObj.at("Network");
 
 			if (netJson.contains("SyncMethod"))
-				net.SyncParams.SyncMethod = StringToNetSyncMethod(netJson["SyncMethod"]);
+				netTransform.SyncParams.SyncMethod = StringToNetSyncMethod(netJson["SyncMethod"]);
 
 			if (netJson.contains("ExtrapolationLimit"))
-				net.SyncParams.ExtrapolationLimit = netJson["ExtrapolationLimit"];
+				netTransform.SyncParams.ExtrapolationLimit = netJson["ExtrapolationLimit"];
 
 			if (netJson.contains("ReconcileThreshold"))
-				net.SyncParams.ReconcileThreshold = netJson["ReconcileThreshold"];
+				netTransform.SyncParams.ReconcileThreshold = netJson["ReconcileThreshold"];
 
 			if (netJson.contains("ReconcileTime"))
-				net.SyncParams.ReconcileTime = netJson["ReconcileTime"];
+				netTransform.SyncParams.ReconcileTime = netJson["ReconcileTime"];
 
 			if (netJson.contains("ReconcileCooldownTime"))
-				net.SyncParams.ReconcileCooldownTime = netJson["ReconcileCooldownTime"];
+				netTransform.SyncParams.ReconcileCooldownTime = netJson["ReconcileCooldownTime"];
 		}
 
 		// Deserialize SpriteComponent

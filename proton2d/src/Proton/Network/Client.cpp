@@ -2,6 +2,7 @@
 #include "Proton/Network/Client.h"
 #include "Proton/Network/Packets.h"
 #include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/NetReplicator.h"
 #include "Proton/Network/NetSyncSystem.h"
 
 #include "Proton/Core/GameInstance.h"
@@ -10,7 +11,6 @@
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scripting/GameModeBase.h"
-#include "Proton/Scripting/EntityScript.h"
 
 namespace proton {
 
@@ -18,7 +18,8 @@ namespace proton {
 	static std::mutex s_InstanceMapMutex;
 
 	Client::Client(GameInstance* gameInstance)
-		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get())
+		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
+		m_NetReplicator(MakeUnique<NetReplicator>(this))
 	{
 		// 1 MB scratch buffer
 		m_ScratchBuffer.Allocate(1048576);
@@ -111,8 +112,6 @@ namespace proton {
 
 			switch (packetType)
 			{
-			////////////////////////////////////////////////////////////////////////////////////////////////////
-
 			case PacketType::HandshakeReply:
 			{
 				NetMessageHandshakeReply msg;
@@ -122,71 +121,36 @@ namespace proton {
 				m_NetworkManager->m_LocalClientID = m_LocalClientID;
 				m_ConnectionStatus = ConnectionStatus::Connected;
 				PT_CORE_INFO("Successfully connected to server");
-				// GameModeBase::Client_OnConnected called after first replication update
-
+				// GameModeBase::Client_OnConnected is called after first replication update
 				break;
 			}
 
-			////////////////////////////////////////////////////////////////////////////////////////////////////
-			
 			case PacketType::EntitySpawn:
 			{
-				PROFILE_SCOPE("PacketType::EntitySpawn");
-
-				NetMessageSpawn msgx;
-				stream.ReadRaw(msgx);
-
-				for (uint32_t i = 0; i < msgx.EntityCount; i++)
-				{
-					NetMessageSpawn::PayloadItem item;
-					stream.ReadString(item.EntityJsonData);
-
-					json jsonParsed = json::parse(item.EntityJsonData);
-
-					if (scene->FindByID((UUID)jsonParsed.at("UUID")))
-						break;
-
-					SceneSerializer serializer(scene);
-					Entity entity = serializer.DeserializeEntity(jsonParsed);
-				}
+				m_NetReplicator->Client_OnEntitySpawnMessage(stream);
 				break;
 			}
-
-			////////////////////////////////////////////////////////////////////////////////////////////////////
 			
 			case PacketType::EntityDespawn:
 			{
-				PROFILE_SCOPE("PacketType::EntityDespawn");
+				m_NetReplicator->Client_OnEntityDespawnMessage(stream);
+				break;
+			}
 
-				NetMessageDespawn msg;
-				stream.ReadRaw(msg);
+			case PacketType::EntityReplicate:
+			{
+				m_NetReplicator->Client_ProcessReplicationMessage(stream);
 
-				for (uint32_t i = 0; i < msg.EntityCount; i++)
+				if (!m_NetworkManager->m_ClientGameStateInitialized)
 				{
-					NetMessageDespawn::PayloadItem item;
-					stream.ReadRaw(item);
-
-					Entity entity = scene->FindByID(item.EntityUUID);
-					if (!entity)
-						continue;
-
-					entity.Destroy();
+					// First replication update
+					GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+					gameMode->Client_OnConnected(m_LocalClientID);
+					m_NetworkManager->m_ClientGameStateInitialized = true;
 				}
 				break;
 			}
 
-			////////////////////////////////////////////////////////////////////////////////////////////////////
-			
-			case PacketType::EntityReplicate:
-			{
-				PROFILE_SCOPE("PacketType::EntityReplicate");
-
-				UpdateReplicatedEntities(scene, stream, buffer.Size);
-				
-				break;
-			}
-
-			////////////////////////////////////////////////////////////////////////////////////////////////////
 			default:
 				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
 				break;
@@ -195,120 +159,6 @@ namespace proton {
 			// Free message buffer
 			message->Release();
 			m_MessageQueue.pop();
-		}
-	}
-
-	void Client::UpdateReplicatedEntities(Scene* scene, BufferStreamReader& stream, uint64_t bufferSize, bool updateTransformNow)
-	{
-		NetMessageReplicate header;
-		stream.ReadRaw(header);
-
-		for (uint32_t i = 0; i < header.EntityCount; i++)
-		{
-			uint64_t entityStreamStart = stream.GetStreamPosition();
-
-			NetMessageReplicate::PayloadItem item;
-			stream.ReadRaw(item);
-
-			auto& componentBitset = item.ComponentBitset;
-
-			// Find entity
-			Entity entity = scene->FindByID(item.EntityUUID);
-
-			if (!entity.IsValid())
-			{
-				stream.SetStreamPosition(entityStreamStart + item.PayloadSize);
-				continue;
-			}
-
-			if (!entity.HasComponent<NetworkComponent>())
-			{
-				stream.SetStreamPosition(entityStreamStart + item.PayloadSize);
-				continue;
-			}
-
-			auto& net = entity.GetComponent<NetworkComponent>();
-			auto& transform = entity.GetTransform();
-			auto& velocity = entity.GetComponent<VelocityComponent>();
-
-			// TransformComponent
-			if (componentBitset.test(ComponentType_Transform))
-			{
-				net.PreviousTransform.Position = net.CurrentTransform.Position;
-				net.PreviousTransform.Rotation = net.CurrentTransform.Rotation;
-
-				stream.ReadRaw(net.CurrentTransform.Position);
-				stream.ReadRaw(net.CurrentTransform.Rotation);
-
-				if (net.SyncParams.SyncMethod == NetSyncMethod::None)
-				{
-					transform.LocalPosition.x = net.CurrentTransform.Position.x;
-					transform.LocalPosition.y = net.CurrentTransform.Position.y;
-					transform.Rotation = net.CurrentTransform.Rotation;
-				}
-
-				// Update packet timer
-				net.SyncState.PacketDelay = net.SyncState.PacketTimer.Elapsed();
-				net.SyncState.PacketTimer.Reset();
-				net.SyncState.NewPacket = true;
-			}
-
-			// VelocityComponent
-			if (componentBitset.test(ComponentType_Velocity))
-			{
-				net.PreviousTransform.LinearVelocity = net.CurrentTransform.LinearVelocity;
-				net.PreviousTransform.AngularVelocity = net.CurrentTransform.AngularVelocity;
-
-				stream.ReadRaw(net.CurrentTransform.LinearVelocity);
-				stream.ReadRaw(net.CurrentTransform.AngularVelocity);
-
-				if (net.SyncParams.SyncMethod == NetSyncMethod::None)
-				{
-					velocity.LinearVelocity = net.CurrentTransform.LinearVelocity;
-					velocity.AngularVelocity = net.CurrentTransform.AngularVelocity;
-				}
-			}
-
-			// ScriptComponent
-			if (componentBitset.test(ComponentType_Script))
-			{
-				auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-				uint32_t scriptCount;
-				stream.ReadRaw(scriptCount);
-
-				// For each script
-				for (uint32_t i = 0; i < scriptCount; i++)
-				{
-					uint32_t fieldCount;
-					uint32_t scriptIndex;
-
-					stream.ReadRaw(fieldCount);
-					stream.ReadRaw(scriptIndex);
-
-					auto& script = net.ReplicatedScripts.at(scriptIndex);
-
-					// For each script field
-					for (uint32_t j = 0; j < fieldCount; j++)
-					{
-						uint32_t fieldIndex;
-						stream.ReadRaw(fieldIndex);
-
-						auto& field = script.ReplicatedFields.at(fieldIndex);
-						stream.ReadData((char*)field.Data, field.Size);
-
-						// Call notify function
-						if (field.NotifyFunction)
-							field.NotifyFunction(&entity);
-					}
-				}
-			}
-		}
-
-		if (!m_NetworkManager->m_ClientGameStateInitialized)
-		{
-			// First replication update
-			m_GameInstance->GetActiveScene()->GetGameMode()->Client_OnConnected(m_LocalClientID);
-			m_NetworkManager->m_ClientGameStateInitialized = true;
 		}
 	}
 

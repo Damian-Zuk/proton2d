@@ -26,7 +26,7 @@ namespace proton {
 	// Forward declarations
 	class NetworkManager;
 	class GameInstance;
-	class ReplicationManager;
+	class NetReplicator;
 	class NetStatistics;
 
 	class Server
@@ -40,7 +40,7 @@ namespace proton {
 		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
 
 	private:
-		void Start(int port);
+		void Start(uint16_t port);
 		void Stop();
 
 		// Game server functionality
@@ -57,13 +57,8 @@ namespace proton {
 
 		void AddSpawnedEntity(Scene* scene, UUID entityUUID);
 		void AddDespawnedEntity(Scene* scene, UUID entityUUID);
-		void ProcessSpawnedEntityQueue(Scene* scene);
-		void ProcessDespawnedEntityQueue(Scene* scene);
-		void SendAllSpawnedEntities(Scene* scene, ClientID clientID); // for late joining clients
-		void SendAllDespawnedEntities(Scene* scene, ClientID clientID); // for late joining clients
 
-		void SendReplicationUpdate(Scene* scene, ClientID clientID = 0, bool verifyComponentChecksum = true);
-
+		uint32_t GetConnectedClientsCount() const;
 		void SetClientNick(HSteamNetConnection hConn, const char* nick);
 		void KickClient(ClientID clientID);
 
@@ -104,7 +99,7 @@ namespace proton {
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
 
-		Unique<ReplicationManager> m_ReplicationManager;
+		Unique<NetReplicator> m_NetReplicator;
 		Unique<NetStatistics> m_NetStatistics;
 
 		// GameNetworkingSockets API
@@ -116,7 +111,7 @@ namespace proton {
 		std::thread m_NetworkThread;
 		std::atomic<bool> m_NetworkThreadFinished = false;
 		bool m_Running = false;
-		int m_Port = 0;
+		uint16_t m_Port;
 
 		// Connections
 		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
@@ -137,18 +132,6 @@ namespace proton {
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_MessageQueueMutex;
 
-		// Spawned and despawned entities
-		struct SceneData
-		{
-			std::queue<UUID> SpawnedEntityQueue;
-			std::queue<UUID> DespawnedEntityQueue;
-
-			// Keep track of all spawned and despawned entities for late joining clients
-			std::vector<UUID> SpawnedAll;
-			std::vector<UUID> DespawnedAll;
-		};
-		std::unordered_map<Scene*, SceneData> m_SceneData;
-
 		// Player action callbacks
 		std::unordered_map<uint32_t, StreamReaderDelegate> m_PlayerActionCallbacks;
 
@@ -156,7 +139,7 @@ namespace proton {
 		static float s_FakeServerLag;
 
 		friend class NetworkManager;
-		friend class ReplicationManager;
+		friend class NetReplicator;
 		friend class NetStatistics;
 		friend class NetSyncSystem; // TODO: remove
 		friend class GameModeBase;

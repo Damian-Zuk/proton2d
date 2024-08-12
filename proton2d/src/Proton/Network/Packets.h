@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Proton/Core/UUID.h"
+#include "Proton/Network/NetTransform.h"
 
 namespace proton {
 
@@ -71,7 +72,8 @@ namespace proton {
 		struct PayloadItem
 		{
 			UUID EntityUUID;
-			std::bitset<128> ComponentBitset;
+			NetTransform::ReplicationFlags TransformReplicationFlags;
+			uint32_t ScriptCount;
 			uint64_t PayloadSize;
 		};
 	};

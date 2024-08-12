@@ -52,7 +52,7 @@ void MyGameMode::OnEvent(Event& event)
 		{
 			b2Body* body = m_LocalPlayer->GetRuntimeBody();
 			auto& net = m_LocalPlayer->GetComponent<NetworkComponent>();
-			auto& t = net.CurrentTransform;
+			auto& t = net.NetTransform.CurrentTransform;
 			body->SetTransform({ t.Position.x, t.Position.y }, 0.0f);
 		}
 		return false;

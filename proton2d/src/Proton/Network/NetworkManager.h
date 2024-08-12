@@ -92,6 +92,7 @@ namespace proton {
 		friend class Scene;
 		friend class Client;
 		friend class Server;
+		friend class NetReplicator;
 		friend class NetStatistics;
 		friend class NetSyncSystem;
 

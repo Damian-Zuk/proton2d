@@ -2,7 +2,7 @@
 #include "Proton/Network/Server.h"
 #include "Proton/Network/Packets.h"
 #include "Proton/Network/NetworkManager.h"
-#include "Proton/Network/ReplicationManager.h"
+#include "Proton/Network/NetReplicator.h"
 #include "Proton/Network/NetStatistics.h"
 
 #include "Proton/Core/GameInstance.h"
@@ -36,7 +36,7 @@ namespace proton {
 
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
-		m_ReplicationManager(MakeUnique<ReplicationManager>(this)),
+		m_NetReplicator(MakeUnique<NetReplicator>(this)),
 		m_NetStatistics(MakeUnique<NetStatistics>(this))
 	{
 		m_ScratchBuffer.Allocate(s_ScratchBufferSize);
@@ -52,7 +52,7 @@ namespace proton {
 		Server::s_Instance = nullptr;
 	}
 
-	void Server::Start(int port)
+	void Server::Start(uint16_t port)
 	{
 		if (m_Running)
 		{
@@ -79,13 +79,12 @@ namespace proton {
 
 		ProcessConnectionStatusQueue();
 		ProcessClientMessagesQueue();
-		ProcessSpawnedEntityQueue(scene);
-		ProcessDespawnedEntityQueue(scene);
+		m_NetReplicator->Server_OnUpdate();
 
 	#ifdef _DEBUG_NO_COMPONENT_CHECKSUM_VERIFY
-		SendReplicationUpdate(scene, 0, false);
+		m_NetReplicator->Server_SendReplicationMessage(0, true);
 	#else
-		SendReplicationUpdate(scene);
+		m_NetReplicator->Server_SendReplicationMessage();
 	#endif
 		
 		m_NetStatistics->UpdateNetworkStatistics();
@@ -148,9 +147,6 @@ namespace proton {
 				NetMessageHandshake handshake;
 				stream.ReadRaw(handshake);
 
-				NetMessageHandshakeReply reply;
-				reply.ClientID = clientID;
-
 				if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
 					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongGameAndEngineProtocol);
@@ -170,15 +166,15 @@ namespace proton {
 					break;
 				}
 				
+				NetMessageHandshakeReply reply;
+				reply.ClientID = clientID;
 				writer.WriteRaw(reply);
 				SendBufferToClient(clientID, writer.GetBuffer());
 
 				auto& clientInfo = m_ConnectedClients[clientID];
 				clientInfo.Status = ConnectionStatus::Connected;
 
-				SendAllSpawnedEntities(scene, clientID);
-				SendAllDespawnedEntities(scene, clientID);
-				SendReplicationUpdate(scene, clientID, false);
+				m_NetReplicator->Server_OnClientConnected(clientID);
 
 				PT_CORE_INFO("Client id={} connected", clientID);
 				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
@@ -219,173 +215,12 @@ namespace proton {
 
 	void Server::AddSpawnedEntity(Scene* scene, UUID entityUUID)
 	{
-		SceneData& sceneData = m_SceneData[scene];
-		sceneData.SpawnedEntityQueue.push(entityUUID);
+		m_NetReplicator->Server_AddSpawnedEntity(scene, entityUUID);
 	}
 
 	void Server::AddDespawnedEntity(Scene* scene, UUID entityUUID)
 	{
-		SceneData& sceneData = m_SceneData[scene];
-		sceneData.DespawnedEntityQueue.push(entityUUID);
-	}
-
-	void Server::ProcessSpawnedEntityQueue(Scene* scene)
-	{
-		PROFILE_FUNCTION();
-
-		SceneData& sceneData = m_SceneData[scene];
-
-		if (sceneData.SpawnedEntityQueue.empty())
-			return;
-
-		NetMessageSpawn msg;
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.SkipBytes(sizeof(NetMessageSpawn));
-
-		uint32_t spawned = 0;
-
-		while (!sceneData.SpawnedEntityQueue.empty())
-		{
-			UUID uuid = sceneData.SpawnedEntityQueue.front();
-			Entity entity = scene->FindByID(uuid);
-
-			if (!entity.HasComponent<NetworkComponent>())
-			{
-				sceneData.SpawnedEntityQueue.pop();
-				continue;
-			}
-
-			SceneSerializer serializer(entity.m_Scene, true);
-			stream.WriteString(serializer.SerializeEntityToString(entity));
-			spawned++;
-
-			sceneData.SpawnedEntityQueue.pop();
-			sceneData.SpawnedAll.push_back(uuid);
-		}
-
-		if (spawned > 0)
-		{
-			msg.EntityCount = spawned;
-			uint64_t streamPos = stream.GetStreamPosition();
-			stream.SetStreamPosition(0);
-			stream.WriteRaw(msg);
-			stream.SetStreamPosition(streamPos);
-			SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition())); 
-		}
-	}
-
-	void Server::ProcessDespawnedEntityQueue(Scene* scene)
-	{
-		PROFILE_FUNCTION();
-
-		SceneData& sceneData = m_SceneData[scene];
-
-		if (sceneData.DespawnedEntityQueue.empty())
-			return;
-
-		NetMessageDespawn msg;
-		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.SkipBytes(sizeof(NetMessageDespawn));
-
-		uint32_t despawned = 0;
-
-		while (!sceneData.DespawnedEntityQueue.empty())
-		{
-			UUID uuid = sceneData.DespawnedEntityQueue.front();
-
-			stream.WriteRaw(uuid);
-			despawned++;
-
-			sceneData.DespawnedEntityQueue.pop();
-
-			auto& spawnedAll = sceneData.SpawnedAll;
-			auto spawnedIt = std::find(spawnedAll.begin(), spawnedAll.end(), uuid);
-			
-			if (spawnedIt != spawnedAll.end())
-				spawnedAll.erase(spawnedIt);
-			else
-				sceneData.DespawnedAll.push_back(uuid);
-		}
-
-		if (despawned > 0)
-		{
-			msg.EntityCount = despawned;
-			uint64_t streamPos = stream.GetStreamPosition();
-			stream.SetStreamPosition(0);
-			stream.WriteRaw(msg);
-			stream.SetStreamPosition(streamPos);
-			SendBufferToAllClients(stream.GetBuffer());
-		}
-	}
-
-	void Server::SendAllSpawnedEntities(Scene* scene, ClientID clientID)
-	{
-		SceneData& sceneData = m_SceneData[scene];
-		auto& spawnedAll = sceneData.SpawnedAll;
-		if (spawnedAll.size() > 0)
-		{
-			BufferStreamWriter stream(m_ScratchBuffer);
-
-			NetMessageSpawn msg;
-			msg.EntityCount = (uint32_t)spawnedAll.size();
-			stream.WriteRaw(msg);
-
-			for (UUID uuid : spawnedAll)
-			{
-				NetMessageSpawn::PayloadItem item;
-				Entity entity = scene->FindByID(uuid);
-				SceneSerializer serializer(scene, true);
-				item.EntityJsonData = serializer.SerializeEntityToString(entity);
-				stream.WriteString(item.EntityJsonData);
-			}
-
-			SendBufferToClient(clientID, stream.GetBuffer());
-		}
-	}
-
-	void Server::SendAllDespawnedEntities(Scene* scene, ClientID clientID)
-	{
-		SceneData& sceneData = m_SceneData[scene];
-		auto& despawnedAll = sceneData.DespawnedAll;
-		if (despawnedAll.size() > 0)
-		{
-			BufferStreamWriter stream(m_ScratchBuffer);
-
-			NetMessageDespawn msg;
-			msg.EntityCount = (uint32_t)despawnedAll.size();
-			stream.WriteRaw(msg);
-
-			for (UUID uuid : despawnedAll)
-			{
-				NetMessageDespawn::PayloadItem item;
-				item.EntityUUID = uuid;
-				stream.WriteRaw(item);
-			}
-
-			SendBufferToClient(clientID, stream.GetBuffer());
-		}
-	}
-
-	void Server::SendReplicationUpdate(Scene* scene, ClientID clientID, bool verifyComponentChecksum)
-	{
-		PROFILE_FUNCTION();
-		
-		// Create buffer stream writer
-		BufferStreamWriter stream(m_ScratchBuffer);
-		uint64_t packetStreamStart = stream.GetStreamPosition();
-
-		m_ReplicationManager->StreamWriteReplicationData(stream, scene, verifyComponentChecksum);
-
-		// If anything was written, send buffer to clients
-		if (stream.GetStreamPosition() >= packetStreamStart + sizeof(NetMessageReplicate))
-		{
-			if (clientID == 0)
-				SendBufferToAllClients(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-			else
-				SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
-		}
-
-		m_NetStatistics->m_ReplicationStats.RepPacketCount++;
+		m_NetReplicator->Server_AddDespawnedEntity(scene, entityUUID);
 	}
 
 	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
@@ -409,6 +244,18 @@ namespace proton {
 	void Server::SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function)
 	{
 		m_PlayerActionCallbacks[clientID] = function;
+	}
+
+	uint32_t Server::GetConnectedClientsCount() const
+	{
+		uint32_t count = 0;
+		for (const auto& client : m_ConnectedClients)
+		{
+			const auto& clientInfo = client.second;
+			if (clientInfo.Status == ConnectionStatus::Connected)
+				count++;
+		}
+		return count;
 	}
 
 	void Server::SetClientNick(HSteamNetConnection hConn, const char* nick)

@@ -1038,11 +1038,6 @@ namespace proton {
 		if (!entity.HasComponent<VelocityComponent>())
 			entity.AddComponent<VelocityComponent>();
 
-		if (entity.HasComponent<NetworkComponent>())
-		{
-			auto& net = entity.GetComponent<NetworkComponent>();
-			net.ComponentsToReplicate.set(ComponentType_Velocity);
-		}
 	}
 
 	template<>
@@ -1062,14 +1057,11 @@ namespace proton {
 	template<>
 	void Scene::OnComponentAdded<NetworkComponent>(Entity entity, NetworkComponent& component)
 	{
-		component.ComponentsToReplicate.set(ComponentType_Transform);
-		if (entity.HasComponent<VelocityComponent>())
-			component.ComponentsToReplicate.set(ComponentType_Velocity);
-
 		auto& transform = entity.GetTransform();
+		auto& netTransform = component.NetTransform;
 		bool hasRb = entity.HasComponent<RigidbodyComponent>();
-		component.CurrentTransform.Position = hasRb ? transform.WorldPosition : transform.LocalPosition;
-		component.PreviousTransform.Position = component.CurrentTransform.Position;
+		netTransform.CurrentTransform.Position = hasRb ? transform.WorldPosition : transform.LocalPosition;
+		netTransform.PreviousTransform.Position = netTransform.CurrentTransform.Position;
 	}
 
 }

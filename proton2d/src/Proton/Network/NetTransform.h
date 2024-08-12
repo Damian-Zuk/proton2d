@@ -27,7 +27,7 @@ namespace proton {
 		Timer ReconcileCooldownTimer;
 		Timer PacketTimer;
 
-		glm::vec3 ExtrapolatedPoint;
+		glm::vec2 ExtrapolatedPoint;
 		glm::vec2 EstimatedVelocity;
 		float Error = 0.0f;
 
@@ -36,38 +36,45 @@ namespace proton {
 		float PacketDelay = 0.0f;
 	};
 
-	class NetTransform
+	struct NetTransform
 	{
-        enum class ReplicationFlags : uint16_t
+        enum class ReplicationFlags : uint8_t
         {
-            None = 0, // No sync
+            None = 0,
 
             PositionX = 1 << 0,
             PositionY = 1 << 1,
-            PositionZ = 1 << 2,
-            Position = PositionX | PositionY | PositionZ,
+            Position = PositionX | PositionY,
 
-            ScaleX = 1 << 3,
-            ScaleY = 1 << 4,
-            ScaleZ = 1 << 5,
-            Scale = ScaleX | ScaleY | ScaleZ,
+            ScaleX = 1 << 2,
+            ScaleY = 1 << 3,
+            Scale = ScaleX | ScaleY,
 
-            RotationX = 1 << 6,
-            RotationY = 1 << 7,
-            RotationZ = 1 << 8,
-            Rotation = RotationX | RotationY | RotationZ,
+            Rotation = 1 << 4,
 
-            All = Position | Scale | Rotation,
+			LinearVelocityX = 1 << 5,
+			LinearVelocityY = 1 << 6, 
+			LinearVelocity = LinearVelocityX | LinearVelocityY,
+
+			AngularVelocity = 1 << 7,
+
+            All = Position | Scale | Rotation | LinearVelocity | AngularVelocity,
         };
 
 		struct Transform
 		{
-			glm::vec3 Position{ 0.0f };
-			glm::vec2 LinearVelocity{ 0.0f };
+			glm::vec2 Position { 0.0f, 0.0f };
+			glm::vec2 Scale { 0.0f, 0.0f };
 			float Rotation = 0.0f;
+			glm::vec2 LinearVelocity { 0.0f, 0.0f };
 			float AngularVelocity = 0.0f;
-			bool Initialized = false;
 		};
+
+		NetSyncParams SyncParams;
+		NetSyncState SyncState;
+
+		Transform PreviousTransform;
+		Transform CurrentTransform;
 	};
 
 	std::string NetSyncMethodToString(NetSyncMethod method);
