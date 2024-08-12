@@ -35,7 +35,6 @@ namespace proton {
 	struct NetMessageHandshakeReply
 	{
 		PacketType PacketType = PacketType::HandshakeReply;
-		uint16_t ResultCode;
 		uint32_t ClientID;
 	};
 

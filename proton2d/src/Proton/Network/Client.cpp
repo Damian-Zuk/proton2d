@@ -118,12 +118,6 @@ namespace proton {
 				NetMessageHandshakeReply msg;
 				stream.ReadRaw(msg);
 
-				if (msg.ResultCode != 0)
-				{
-					PT_CORE_WARN("Failed to connect to server. Connection blocked with result={}", msg.ResultCode);
-					break;
-				}
-
 				m_LocalClientID = msg.ClientID;
 				m_NetworkManager->m_LocalClientID = m_LocalClientID;
 				m_ConnectionStatus = ConnectionStatus::Connected;
@@ -335,7 +329,6 @@ namespace proton {
 			return;
 		}
 
-		// Select instance to use. For now we'll always use the default.
 		m_Interface = SteamNetworkingSockets();
 
 		// Start connecting
@@ -435,15 +428,16 @@ namespace proton {
 		case k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
 		{
 			m_Running = false;
-			m_ConnectionStatus = ConnectionStatus::FailedToConnect;
+			m_ConnectionStatus = ConnectionStatus::Disconnected;
 			m_ConnectionDebugMessage = info->m_info.m_szEndDebug;
 
 			// Print an appropriate message
 			if (info->m_eOldState == k_ESteamNetworkingConnectionState_Connecting)
 			{
 				// Note: we could distinguish between a timeout, a rejected connection,
-				// or some other transport problem.
+				// or some other transport problem. (info->m_info.m_eEndReason)
 				PT_CORE_ERROR("Could not connect to remote host. {}", m_ConnectionDebugMessage);
+				m_ConnectionStatus = ConnectionStatus::FailedToConnect;
 			}
 			else if (info->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
 			{
@@ -463,7 +457,6 @@ namespace proton {
 			// so we just pass 0s.
 			m_Interface->CloseConnection(info->m_hConn, 0, nullptr, false);
 			m_Connection = k_HSteamNetConnection_Invalid;
-			m_ConnectionStatus = ConnectionStatus::Disconnected;
 			break;
 		}
 

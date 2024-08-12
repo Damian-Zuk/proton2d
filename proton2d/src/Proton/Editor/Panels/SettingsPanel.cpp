@@ -55,6 +55,10 @@ namespace proton {
 			{
 				ImGui::PushItemWidth(95.0f);
 
+				int maxConnections = networkManager->m_MaxServerConnections;
+				if (ImGui::DragInt("Max Connections", &maxConnections))
+					networkManager->m_MaxServerConnections = (uint32_t)glm::max(maxConnections, 0);
+
 				int tickRate = networkManager->m_ServerTickRate;
 				if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
 				{

@@ -21,6 +21,14 @@ namespace proton {
 		FailedToConnect
 	};
 
+	enum NetConnectionEndCode
+	{
+		NetConnectionEndCode_WrongGameAndEngineProtocol = 2001,
+		NetConnectionEndCode_WrongGameProtocol = 2002,
+		NetConnectionEndCode_WrongEngineProtocol = 2003,
+		NetConnectionEndCode_MaxConnections = 2004
+	};
+
 	using StreamReaderDelegate = std::function<void(BufferStreamReader& stream)>;
 	using StreamWriterDelegate = std::function<void(BufferStreamWriter& stream)>;
 

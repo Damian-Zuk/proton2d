@@ -40,7 +40,6 @@ namespace proton {
 		ComponentType_Rigidbody =         64,
 		ComponentType_BoxCollider =       65,
 		ComponentType_CircleCollider =    66,
-		ComponentType_NetworkTransform =  127,
 		ComponentType_Network =           128
 	};
 
@@ -224,8 +223,6 @@ namespace proton {
 		float UpdateRate = 1.0f;
 		float CullDistance = 10.0f;
 
-		uint32_t OwnerClientId = 0;
-
 		std::bitset<MAX_COMPONENTS> ComponentsToReplicate;
 		std::unordered_map<EComponentType, uint32_t> ComponentChecksum;
 
@@ -247,13 +244,6 @@ namespace proton {
 			std::vector<ReplicatedField> ReplicatedFields;
 		};
 		std::vector<ReplicatedScript> ReplicatedScripts;
-	};
-
-	struct NetworkTransformComponent
-	{
-		PROTON_COMPONENT_TYPE_ID(ComponentType_NetworkTransform)
-
-
 	};
 
 }

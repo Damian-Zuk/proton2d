@@ -126,14 +126,6 @@ namespace proton {
 		//SceneManager* sceneManager = m_GameInstance->GetSceneManager();
 		Scene* scene = m_GameInstance->GetActiveScene();
 
-		// Kick clients which failed handshake verification
-		for (auto& kv : m_ConnectedClients)
-		{
-			auto& clientInfo = kv.second;
-			if (clientInfo.Status == ConnectionStatus::FailedToConnect)
-				KickClient(clientInfo.ID);
-		}
-
 		while (!m_MessageQueue.empty())
 		{
 			ISteamNetworkingMessage* message = m_MessageQueue.front();
@@ -157,44 +149,40 @@ namespace proton {
 				stream.ReadRaw(handshake);
 
 				NetMessageHandshakeReply reply;
-				reply.ResultCode = 0;
 				reply.ClientID = clientID;
 
-				if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION
-					&& handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
+				if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
-					reply.ResultCode = 3;
+					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongGameAndEngineProtocol);
+					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongGameAndEngineProtocol, "Failed to handshake", false);
+					break;
 				}
 				else if (handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
-					reply.ResultCode = 2;
+					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongGameProtocol);
+					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongGameProtocol, "Failed to handshake", false);
+					break;
 				}
 				else if (handshake.EngineProtocolVersion != PT_NET_PROTOCOL_VERSION)
 				{
-					reply.ResultCode = 1;
+					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongEngineProtocol);
+					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongEngineProtocol, "Failed to handshake", false);
+					break;
 				}
 				
 				writer.WriteRaw(reply);
 				SendBufferToClient(clientID, writer.GetBuffer());
 
 				auto& clientInfo = m_ConnectedClients[clientID];
-				if (reply.ResultCode == 0)
-				{
-					PT_CORE_INFO("Client id={} connected", clientID);
-					clientInfo.Status = ConnectionStatus::Connected;
+				clientInfo.Status = ConnectionStatus::Connected;
 
-					SendAllSpawnedEntities(scene, clientID);
-					SendAllDespawnedEntities(scene, clientID);
-					SendReplicationUpdate(scene, clientID, false);
+				SendAllSpawnedEntities(scene, clientID);
+				SendAllDespawnedEntities(scene, clientID);
+				SendReplicationUpdate(scene, clientID, false);
 
-					GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
-					gameMode->Server_OnClientConnected(message->m_conn);
-				}
-				else
-				{
-					PT_CORE_WARN("Blocked connection id={} with result={}", clientID, reply.ResultCode);
-					clientInfo.Status = ConnectionStatus::FailedToConnect;
-				}
+				PT_CORE_INFO("Client id={} connected", clientID);
+				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+				gameMode->Server_OnClientConnected(message->m_conn);
 
 				break;
 			}
@@ -568,13 +556,21 @@ namespace proton {
 		case k_ESteamNetworkingConnectionState_Connecting:
 		{
 			// This must be a new connection
-			// assert(m_mapClients.find(info->m_hConn) == m_mapClients.end());
+			PT_CORE_ASSERT(m_ConnectedClients.find(info->m_hConn) == m_ConnectedClients.end());
+
+			// Check if connections limit exceeded
+			if (m_ConnectedClients.size() >= m_NetworkManager->m_MaxServerConnections)
+			{
+				m_Interface->CloseConnection(status->m_hConn, NetConnectionEndCode_MaxConnections, "Connections limit reached", false);
+				PT_CORE_WARN("Blocked connection from client {}: Connections limit ({}) reached", status->m_hConn, m_NetworkManager->m_MaxServerConnections);
+				break;
+			}
 
 			// Try to accept incoming connection
 			if (m_Interface->AcceptConnection(status->m_hConn) != k_EResultOK)
 			{
 				m_Interface->CloseConnection(status->m_hConn, 0, nullptr, false);
-				PT_CORE_ERROR("Couldn't accept connection (it was already closed?)");
+				PT_CORE_ERROR("Couldn't accept connection");
 				break;
 			}
 

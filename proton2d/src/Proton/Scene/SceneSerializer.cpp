@@ -145,7 +145,6 @@ namespace proton {
 			auto& net = entity.GetComponent<NetworkComponent>();
 			
 			jsonObj["Network"] = {
-				{ "ReplicatedComponentsBitset", net.ComponentsToReplicate.to_string() }, // TODO: Serialize to hex
 				{ "SyncMethod", NetSyncMethodToString(net.SyncParams.SyncMethod) },
 				{ "ExtrapolationLimit", net.SyncParams.ExtrapolationLimit },
 				{ "ReconcileThreshold", net.SyncParams.ReconcileThreshold },
@@ -401,17 +400,7 @@ namespace proton {
 		{
 			auto& net = entity.AddComponent<NetworkComponent>();
 			auto& netJson = jsonObj.at("Network");
-			if (netJson.contains("ReplicatedComponentsBitset"))
-			{
-				std::string bitsetStr = netJson.at("ReplicatedComponentsBitset");
-				net.ComponentsToReplicate = std::bitset<MAX_COMPONENTS>(bitsetStr);
 
-				for (size_t i = 0; i < MAX_COMPONENTS; i++)
-				{
-					if (net.ComponentsToReplicate.test(i))
-						net.ComponentChecksum[(EComponentType)i] = 0;
-				}
-			}
 			if (netJson.contains("SyncMethod"))
 				net.SyncParams.SyncMethod = StringToNetSyncMethod(netJson["SyncMethod"]);
 
