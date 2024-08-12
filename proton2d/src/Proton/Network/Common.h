@@ -15,7 +15,7 @@ namespace proton {
 
 	enum class ConnectionStatus : uint8_t
 	{
-		Disconnected,
+		Disconnected = 0,
 		Connecting,
 		Connected,
 		FailedToConnect
@@ -25,6 +25,5 @@ namespace proton {
 	using StreamWriterDelegate = std::function<void(BufferStreamWriter& stream)>;
 
 	std::string NetModeToString(NetMode netMode);
-
 	NetMode StringToNetMode(const std::string& netModeStr);
 }

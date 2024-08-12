@@ -43,25 +43,38 @@ namespace proton {
 	{
 		PacketType PacketType = PacketType::EntitySpawn;
 		uint32_t EntityCount;
+
+		struct PayloadItem
+		{
+			std::string EntityJsonData;
+			// TODO: change to:
+			// uint64_t PrefabUUID;
+			// uint64_t EntityUUID;
+		};
 	};
 
 	struct NetMessageDespawn
 	{
 		PacketType PacketType = PacketType::EntityDespawn;
 		uint32_t EntityCount;
+
+		struct PayloadItem
+		{
+			UUID EntityUUID;
+		};
 	};
 
 	struct NetMessageReplicate
 	{
 		PacketType PacketType = PacketType::EntityReplicate;
 		uint32_t EntityCount;
-	};
 
-	struct NetMessageReplicate_Entry
-	{
-		UUID EntityUUID;
-		std::bitset<128> ComponentBitset;
-		uint64_t PayloadSize;
+		struct PayloadItem
+		{
+			UUID EntityUUID;
+			std::bitset<128> ComponentBitset;
+			uint64_t PayloadSize;
+		};
 	};
 
 	struct NetMassagePlayerAction

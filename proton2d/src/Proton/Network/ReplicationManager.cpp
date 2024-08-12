@@ -57,13 +57,13 @@ namespace proton {
 			auto& net = view.get<NetworkComponent>(_entity);
 
 			// Entity entry header
-			NetMessageReplicate_Entry msgEntry;
-			msgEntry.EntityUUID = entity.GetUUID();
-			auto& replicatedComponentsBitset = msgEntry.ComponentBitset;
+			NetMessageReplicate::PayloadItem item;
+			item.EntityUUID = entity.GetUUID();
+			auto& replicatedComponentsBitset = item.ComponentBitset;
 			replicatedComponentsBitset = net.ComponentsToReplicate;
 
 			uint64_t entityHeaderPos = stream.GetStreamPosition();
-			stream.SkipBytes(sizeof(NetMessageReplicate_Entry));
+			stream.SkipBytes(sizeof(NetMessageReplicate::PayloadItem));
 
 			// ------------ Component binary serialization ------------
 			uint64_t componentsBegin = stream.GetStreamPosition();
@@ -166,11 +166,11 @@ namespace proton {
 
 			// Calculate buffer size
 			uint64_t entityStreamEnd = stream.GetStreamPosition();
-			msgEntry.PayloadSize = entityStreamEnd - entityHeaderPos;
+			item.PayloadSize = entityStreamEnd - entityHeaderPos;
 
 			// Write entity header
 			stream.SetStreamPosition(entityHeaderPos);
-			stream.WriteRaw(msgEntry);
+			stream.WriteRaw(item);
 			stream.SetStreamPosition(entityStreamEnd);
 
 			m_Server->m_NetStatistics->m_ReplicationStats.RepEntitiesCount++;

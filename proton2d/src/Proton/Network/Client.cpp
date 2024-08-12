@@ -144,10 +144,10 @@ namespace proton {
 
 				for (uint32_t i = 0; i < msgx.EntityCount; i++)
 				{
-					std::string jsonData;
-					stream.ReadString(jsonData);
+					NetMessageSpawn::PayloadItem item;
+					stream.ReadString(item.EntityJsonData);
 
-					json jsonParsed = json::parse(jsonData);
+					json jsonParsed = json::parse(item.EntityJsonData);
 
 					if (scene->FindByID((UUID)jsonParsed.at("UUID")))
 						break;
@@ -169,10 +169,10 @@ namespace proton {
 
 				for (uint32_t i = 0; i < msg.EntityCount; i++)
 				{
-					UUID uuid;
-					stream.ReadRaw(uuid);
-					Entity entity = scene->FindByID(uuid);
+					NetMessageDespawn::PayloadItem item;
+					stream.ReadRaw(item);
 
+					Entity entity = scene->FindByID(item.EntityUUID);
 					if (!entity)
 						continue;
 
@@ -213,23 +213,23 @@ namespace proton {
 		{
 			uint64_t entityStreamStart = stream.GetStreamPosition();
 
-			NetMessageReplicate_Entry entry;
-			stream.ReadRaw(entry);
+			NetMessageReplicate::PayloadItem item;
+			stream.ReadRaw(item);
 
-			auto& componentBitset = entry.ComponentBitset;
+			auto& componentBitset = item.ComponentBitset;
 
 			// Find entity
-			Entity entity = scene->FindByID(entry.EntityUUID);
+			Entity entity = scene->FindByID(item.EntityUUID);
 
 			if (!entity.IsValid())
 			{
-				stream.SetStreamPosition(entityStreamStart + entry.PayloadSize);
+				stream.SetStreamPosition(entityStreamStart + item.PayloadSize);
 				continue;
 			}
 
 			if (!entity.HasComponent<NetworkComponent>())
 			{
-				stream.SetStreamPosition(entityStreamStart + entry.PayloadSize);
+				stream.SetStreamPosition(entityStreamStart + item.PayloadSize);
 				continue;
 			}
 

@@ -344,9 +344,11 @@ namespace proton {
 
 			for (UUID uuid : spawnedAll)
 			{
+				NetMessageSpawn::PayloadItem item;
 				Entity entity = scene->FindByID(uuid);
 				SceneSerializer serializer(scene, true);
-				stream.WriteString(serializer.SerializeEntityToString(entity));
+				item.EntityJsonData = serializer.SerializeEntityToString(entity);
+				stream.WriteString(item.EntityJsonData);
 			}
 
 			SendBufferToClient(clientID, stream.GetBuffer());
@@ -367,7 +369,9 @@ namespace proton {
 
 			for (UUID uuid : despawnedAll)
 			{
-				stream.WriteRaw(uuid);
+				NetMessageDespawn::PayloadItem item;
+				item.EntityUUID = uuid;
+				stream.WriteRaw(item);
 			}
 
 			SendBufferToClient(clientID, stream.GetBuffer());
