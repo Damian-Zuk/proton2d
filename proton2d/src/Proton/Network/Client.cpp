@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Network/Client.h"
-#include "Proton/Network/Packets.h"
+#include "Proton/Network/Messages.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/NetReplicator.h"
 #include "Proton/Network/NetTransformSystem.h"
@@ -87,7 +87,7 @@ namespace proton {
 	void Client::SendPlayerAction(StreamWriterDelegate sendFunction)
 	{
 		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(PacketType::PlayerAction);
+		stream.WriteRaw(MessageType::PlayerAction);
 		sendFunction(stream);
 		SendBuffer(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 	}
@@ -106,13 +106,13 @@ namespace proton {
 			Buffer buffer(message->m_pData, message->m_cbSize);
 			BufferStreamReader stream(buffer);
 
-			PacketType packetType;
+			MessageType packetType;
 			stream.ReadRaw(packetType);
 			stream.SetStreamPosition(0);
 
 			switch (packetType)
 			{
-			case PacketType::HandshakeReply:
+			case MessageType::HandshakeReply:
 			{
 				NetMessageHandshakeReply msg;
 				stream.ReadRaw(msg);
@@ -125,19 +125,19 @@ namespace proton {
 				break;
 			}
 
-			case PacketType::EntitySpawn:
+			case MessageType::EntitySpawn:
 			{
 				m_NetReplicator->Client_OnEntitySpawnMessage(stream);
 				break;
 			}
 			
-			case PacketType::EntityDespawn:
+			case MessageType::EntityDespawn:
 			{
 				m_NetReplicator->Client_OnEntityDespawnMessage(stream);
 				break;
 			}
 
-			case PacketType::EntityReplicate:
+			case MessageType::EntityReplicate:
 			{
 				m_NetReplicator->Client_ProcessReplicationMessage(stream);
 

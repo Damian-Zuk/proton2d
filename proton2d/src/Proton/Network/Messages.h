@@ -5,9 +5,9 @@
 
 namespace proton {
 
-	enum class PacketType : uint16_t
+	enum class MessageType : uint16_t
 	{
-		None = 0, // Invalid packet
+		None = 0, // Invalid message
 
 		// [Client -> Server]
 		Handshake = 1,
@@ -28,20 +28,20 @@ namespace proton {
 
 	struct NetMessageHandshake
 	{
-		PacketType PacketType = PacketType::Handshake;
+		MessageType MessageType = MessageType::Handshake;
 		uint32_t EngineProtocolVersion;
 		uint32_t GameProtocolVersion;
 	};
 
 	struct NetMessageHandshakeReply
 	{
-		PacketType PacketType = PacketType::HandshakeReply;
+		MessageType MessageType = MessageType::HandshakeReply;
 		uint32_t ClientID;
 	};
 
 	struct NetMessageSpawn
 	{
-		PacketType PacketType = PacketType::EntitySpawn;
+		MessageType MessageType = MessageType::EntitySpawn;
 		uint32_t EntityCount;
 
 		struct PayloadItem
@@ -55,7 +55,7 @@ namespace proton {
 
 	struct NetMessageDespawn
 	{
-		PacketType PacketType = PacketType::EntityDespawn;
+		MessageType MessageType = MessageType::EntityDespawn;
 		uint32_t EntityCount;
 
 		struct PayloadItem
@@ -66,7 +66,7 @@ namespace proton {
 
 	struct NetMessageReplicate
 	{
-		PacketType PacketType = PacketType::EntityReplicate;
+		MessageType MessageType = MessageType::EntityReplicate;
 		uint32_t EntityCount;
 
 		struct PayloadItem
@@ -80,9 +80,9 @@ namespace proton {
 
 	struct NetMassagePlayerAction
 	{
-		PacketType PacketType = PacketType::PlayerAction;
+		MessageType MessageType = MessageType::PlayerAction;
 	};
 
 
-	std::string PacketTypeToString(PacketType packetType);
+	std::string MessageTypeToString(MessageType packetType);
 }

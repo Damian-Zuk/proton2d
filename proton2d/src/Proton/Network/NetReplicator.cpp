@@ -2,8 +2,8 @@
 #include "Proton/Network/NetReplicator.h"
 #include "Proton/Network/Server.h"
 #include "Proton/Network/Client.h"
+#include "Proton/Network/Messages.h"
 #include "Proton/Network/NetStatistics.h"
-#include "Proton/Network/Packets.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"

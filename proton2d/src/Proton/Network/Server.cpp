@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Network/Server.h"
-#include "Proton/Network/Packets.h"
+#include "Proton/Network/Messages.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/NetReplicator.h"
 #include "Proton/Network/NetStatistics.h"
@@ -88,11 +88,12 @@ namespace proton {
 		{
 			ClientConnectionStatusChangeInfo& info = m_ClientConnStatusChangeQueue.front();
 
+			// Client is connecting
 			if (info.Status == ConnectionStatus::Connecting)
 			{
 				m_NetStatistics->AllocateNetworkStatsBuffer(info.ClientInfo.ID);
-				// Wait for PacketType::Handshake from client 
-				// to change status to ConnectionStatus::Connected
+				// Wait for PacketType::Handshake from client before
+				// changing client status to ConnectionStatus::Connected
 			}
 
 			// Client has been disconnected
@@ -126,14 +127,14 @@ namespace proton {
 
 			BufferStreamWriter writer(m_ScratchBuffer);
 			
-			PacketType packetType;
+			MessageType packetType;
 			stream.ReadRaw(packetType);
 			stream.SetStreamPosition(0);
 
 			switch (packetType)
 			{
 			////////////////////////////////////////////////////////////////////////////////////////////////////
-			case PacketType::Handshake:
+			case MessageType::Handshake:
 			{
 				NetMessageHandshake handshake;
 				stream.ReadRaw(handshake);
@@ -176,7 +177,7 @@ namespace proton {
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			case PacketType::PlayerAction:
+			case MessageType::PlayerAction:
 			{
 				PROFILE_SCOPE("PacketType::PlayerAction");
 
