@@ -10,7 +10,7 @@
 
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/Server.h"
-#include "Proton/Network/NetStatsManager.h"
+#include "Proton/Network/NetStatistics.h"
 
 #include "imgui.h"
 
@@ -119,7 +119,7 @@ namespace proton {
 			return;
 		}
 
-		const auto& statsAll = server->m_NetStatsManager->GetNetworkStats();
+		const auto& statsAll = server->m_NetStatistics->GetNetworkStats();
 
 		if (statsAll.empty())
 		{

@@ -27,7 +27,7 @@ namespace proton {
 	class NetworkManager;
 	class GameInstance;
 	class ReplicationManager;
-	class NetStatsManager;
+	class NetStatistics;
 
 	class Server
 	{
@@ -105,7 +105,7 @@ namespace proton {
 		NetworkManager* m_NetworkManager;
 
 		Unique<ReplicationManager> m_ReplicationManager;
-		Unique<NetStatsManager> m_NetStatsManager;
+		Unique<NetStatistics> m_NetStatistics;
 
 		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;
@@ -157,7 +157,7 @@ namespace proton {
 
 		friend class NetworkManager;
 		friend class ReplicationManager;
-		friend class NetStatsManager;
+		friend class NetStatistics;
 		friend class NetSyncSystem; // TODO: remove
 		friend class GameModeBase;
 		friend class Scene;

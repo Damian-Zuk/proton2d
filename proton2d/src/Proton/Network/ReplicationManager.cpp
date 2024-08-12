@@ -1,7 +1,7 @@
 #include "ptpch.h"
 #include "Proton/Network/ReplicationManager.h"
 #include "Proton/Network/Server.h"
-#include "Proton/Network/NetStatsManager.h"
+#include "Proton/Network/NetStatistics.h"
 #include "Proton/Network/Packets.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
@@ -173,7 +173,7 @@ namespace proton {
 			stream.WriteRaw(msgEntry);
 			stream.SetStreamPosition(entityStreamEnd);
 
-			m_Server->m_NetStatsManager->m_ReplicationStats.RepEntitiesCount++;
+			m_Server->m_NetStatistics->m_ReplicationStats.RepEntitiesCount++;
 			msg.EntityCount++;
 		}
 

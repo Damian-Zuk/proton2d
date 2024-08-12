@@ -16,23 +16,23 @@ namespace proton {
 
 	using ClientID = HSteamNetConnection;
 
-	struct NetworkStats
-	{
-		SteamNetConnectionRealTimeStatus_t RealTime;
-		Buffer Detailed;
-	};
-
-	struct ReplicationStats
-	{
-		uint32_t RepEntitiesCount = 0;
-		uint32_t RepPacketCount = 0;
-	};
-
-	class NetStatsManager
+	class NetStatistics
 	{
 	public:
-		NetStatsManager(Server* server);
-		virtual ~NetStatsManager();
+		struct NetworkStats
+		{
+			SteamNetConnectionRealTimeStatus_t RealTime;
+			Buffer Detailed;
+		};
+
+		struct ReplicationStats
+		{
+			uint32_t RepEntitiesCount = 0;
+			uint32_t RepPacketCount = 0;
+		};
+
+		NetStatistics(Server* server);
+		virtual ~NetStatistics();
 
 		void AllocateNetworkStatsBuffer(ClientID clientID);
 		void ReleaseNetworkStatsBuffer(ClientID clientID);

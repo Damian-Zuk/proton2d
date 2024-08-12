@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Network/NetStatsManager.h"
+#include "Proton/Network/NetStatistics.h"
 #include "Proton/Network/Server.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Core/GameInstance.h"
@@ -9,19 +9,19 @@ namespace proton {
 
 	constexpr static size_t s_DetailedStatusBufferSize = 2048;
 
-	NetStatsManager::NetStatsManager(Server* server)
+	NetStatistics::NetStatistics(Server* server)
 		: m_Server(server)
 	{
 		GenerateStatsLogFilename();
 	}
 
-	NetStatsManager::~NetStatsManager()
+	NetStatistics::~NetStatistics()
 	{
 		for (auto& it : m_NetworkStats)
 			it.second.Detailed.Release();
 	}
 
-	void NetStatsManager::AllocateNetworkStatsBuffer(ClientID clientID)
+	void NetStatistics::AllocateNetworkStatsBuffer(ClientID clientID)
 	{
 		Buffer detailedConnStatusBuffer;
 		detailedConnStatusBuffer.Allocate(s_DetailedStatusBufferSize);
@@ -35,7 +35,7 @@ namespace proton {
 		}
 	}
 
-	void NetStatsManager::ReleaseNetworkStatsBuffer(ClientID clientID)
+	void NetStatistics::ReleaseNetworkStatsBuffer(ClientID clientID)
 	{
 		m_NetworkStats.at(clientID).Detailed.Release();
 		m_NetworkStats.erase(clientID);
@@ -49,7 +49,7 @@ namespace proton {
 		}
 	}
 
-	void NetStatsManager::UpdateNetworkStatistics()
+	void NetStatistics::UpdateNetworkStatistics()
 	{
 		static Timer timer;
 		if (timer.Elapsed() >= m_StatsUpdateInterval)
@@ -74,7 +74,7 @@ namespace proton {
 		return std::round((double)f * 100000) / 100000;
 	}
 
-	void NetStatsManager::LogStatsToFile(ClientID clientID, const NetworkStats& stats)
+	void NetStatistics::LogStatsToFile(ClientID clientID, const NetworkStats& stats)
 	{
 		const SteamNetConnectionRealTimeStatus_t& status = stats.RealTime;
 		int in = (int)status.m_flInBytesPerSec;
@@ -109,7 +109,7 @@ namespace proton {
 		logFile.close();
 	}
 
-	void NetStatsManager::GenerateStatsLogFilename()
+	void NetStatistics::GenerateStatsLogFilename()
 	{
 		auto now = std::chrono::system_clock::now();
 		auto in_time_t = std::chrono::system_clock::to_time_t(now);

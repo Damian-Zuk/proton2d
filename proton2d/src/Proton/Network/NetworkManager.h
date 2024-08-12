@@ -92,7 +92,7 @@ namespace proton {
 		friend class Scene;
 		friend class Client;
 		friend class Server;
-		friend class NetStatsManager;
+		friend class NetStatistics;
 		friend class NetSyncSystem;
 
 		friend class SettingsPanel;

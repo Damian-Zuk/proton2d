@@ -3,7 +3,7 @@
 #include "Proton/Network/Packets.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/ReplicationManager.h"
-#include "Proton/Network/NetStatsManager.h"
+#include "Proton/Network/NetStatistics.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Timer.h"
@@ -37,7 +37,7 @@ namespace proton {
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
 		m_ReplicationManager(MakeUnique<ReplicationManager>(this)),
-		m_NetStatsManager(MakeUnique<NetStatsManager>(this))
+		m_NetStatistics(MakeUnique<NetStatistics>(this))
 	{
 		m_ScratchBuffer.Allocate(s_ScratchBufferSize);
 		SetPacketFakeLag(s_FakeServerLag);
@@ -88,7 +88,7 @@ namespace proton {
 		SendReplicationUpdate(scene);
 	#endif
 		
-		m_NetStatsManager->UpdateNetworkStatistics();
+		m_NetStatistics->UpdateNetworkStatistics();
 	}
 
 	void Server::ProcessConnectionStatusQueue()
@@ -100,7 +100,7 @@ namespace proton {
 
 			if (info.Status == ConnectionStatus::Connecting)
 			{
-				m_NetStatsManager->AllocateNetworkStatsBuffer(info.ClientInfo.ID);
+				m_NetStatistics->AllocateNetworkStatsBuffer(info.ClientInfo.ID);
 				// Wait for PacketType::Handshake from client 
 				// to change status to ConnectionStatus::Connected
 			}
@@ -111,7 +111,7 @@ namespace proton {
 				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
 				gameMode->Server_OnClientDisconnected(info.ClientInfo.ID);
 
-				m_NetStatsManager->ReleaseNetworkStatsBuffer(info.ClientInfo.ID);
+				m_NetStatistics->ReleaseNetworkStatsBuffer(info.ClientInfo.ID);
 			}
 
 			m_ClientConnStatusChangeQueue.pop();
@@ -393,7 +393,7 @@ namespace proton {
 				SendBufferToClient(clientID, Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
 		}
 
-		m_NetStatsManager->m_ReplicationStats.RepPacketCount++;
+		m_NetStatistics->m_ReplicationStats.RepPacketCount++;
 	}
 
 	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
