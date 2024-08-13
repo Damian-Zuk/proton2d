@@ -56,10 +56,13 @@ namespace proton {
 		glm::vec2 m_SelectionMouseOffset = { 0.0f, 0.0f };
 		bool m_MoveSelectedEntity = false;
 
+		// Debug tracing
+		bool m_TraceEntitySync = false;
+		bool m_ShowCullDistance = false;
+
 		bool m_ShowSelectionOutline = true;
 		bool m_ShowSelectionCollider = true;
 		bool m_ShowAllColliders = false;
-		bool m_ShowNetPosition = false;
 	
 		friend class Scene;
 		friend class SceneManager;

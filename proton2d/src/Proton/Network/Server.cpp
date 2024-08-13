@@ -81,35 +81,6 @@ namespace proton {
 		m_NetStatistics->UpdateNetworkStatistics();
 	}
 
-	void Server::ProcessConnectionStatusQueue()
-	{
-		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
-
-		while (!m_ClientConnStatusChangeQueue.empty())
-		{
-			ClientConnectionStatusChangeInfo& info = m_ClientConnStatusChangeQueue.front();
-
-			// Client is connecting
-			if (info.Status == ConnectionStatus::Connecting)
-			{
-				m_NetStatistics->AllocateNetworkStatsBuffer(info.ClientInfo.ID);
-				// Wait for PacketType::Handshake from client before
-				// changing client status to ConnectionStatus::Connected
-			}
-
-			// Client has been disconnected
-			else if (info.Status == ConnectionStatus::Disconnected)
-			{
-				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
-				gameMode->Server_OnClientDisconnected(info.ClientInfo.ID);
-
-				m_NetStatistics->ReleaseNetworkStatsBuffer(info.ClientInfo.ID);
-			}
-
-			m_ClientConnStatusChangeQueue.pop();
-		}
-	}
-
 	void Server::ProcessClientMessagesQueue()
 	{
 		PROFILE_FUNCTION();
@@ -139,20 +110,20 @@ namespace proton {
 
 				if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
-					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongGameAndEngineProtocol);
-					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongGameAndEngineProtocol, "Failed to handshake", false);
+					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch);
+					m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch, "Failed to handshake", false);
 					break;
 				}
 				else if (handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 				{
-					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongGameProtocol);
-					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongGameProtocol, "Failed to handshake", false);
+					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameProtocolMismatch);
+					m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameProtocolMismatch, "Failed to handshake", false);
 					break;
 				}
 				else if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION)
 				{
-					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_WrongEngineProtocol);
-					m_Interface->CloseConnection(clientID, NetConnectionEndCode_WrongEngineProtocol, "Failed to handshake", false);
+					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_EngineProtocolMismatch);
+					m_Interface->CloseConnection(clientID, NetConnectionEndCode_EngineProtocolMismatch, "Failed to handshake", false);
 					break;
 				}
 				
@@ -163,12 +134,7 @@ namespace proton {
 
 				auto& clientInfo = m_ConnectedClients[clientID];
 				clientInfo.Status = ConnectionStatus::Connected;
-
-				m_NetReplicator->Server_OnClientConnected(clientID);
-
-				PT_CORE_INFO("Client id={} connected", clientID);
-				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
-				gameMode->Server_OnClientConnected(message->m_conn);
+				OnClientConnected(clientID);
 
 				break;
 			}
@@ -203,37 +169,58 @@ namespace proton {
 		}
 	}
 
-	void Server::AddSpawnedEntity(Scene* scene, UUID entityUUID)
-	{
-		m_NetReplicator->Server_AddSpawnedEntity(scene, entityUUID);
-	}
-
-	void Server::AddDespawnedEntity(Scene* scene, UUID entityUUID)
-	{
-		m_NetReplicator->Server_AddDespawnedEntity(scene, entityUUID);
-	}
-
-	void Server::OnClientConnected(const ClientInfo& clientInfo) // Called from Network Thread
-	{
-		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
-		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Connecting });
-	}
-
-	void Server::OnClientDisconnected(const ClientInfo& clientInfo) // Called from Network Thread
-	{
-		std::lock_guard<std::mutex> lock(m_ClientConnStatusQueueMutex);
-		m_ClientConnStatusChangeQueue.push({ clientInfo, ConnectionStatus::Disconnected });
-	}
-
-	void Server::OnDataReceived(ISteamNetworkingMessage* incomingMessage) // Called from Network Thread
-	{
-		std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
-		m_MessageQueue.push(incomingMessage);
-	}
-
 	void Server::SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function)
 	{
 		m_PlayerActionCallbacks[clientID] = function;
+	}
+
+	void Server::ProcessConnectionStatusQueue()
+	{
+		std::lock_guard<std::mutex> lock(m_ConnectionStatusChangeQueueMutex);
+
+		while (!m_ConnectionStatusChangeQueue.empty())
+		{
+			const auto& connectionInfo = m_ConnectionStatusChangeQueue.front();
+			const auto& clientID = connectionInfo.first;
+			const auto& status = connectionInfo.second;
+
+			// Client is connecting (waiting for MessageType::Handshake)
+			if (status == ConnectionStatus::Connecting)
+			{
+				OnClientConnecting(clientID);
+			}
+
+			// Client has been disconnected
+			else if (status == ConnectionStatus::Disconnected)
+			{
+				OnClientDisconnected(clientID);
+			}
+
+			m_ConnectionStatusChangeQueue.pop();
+		}
+	}
+
+	void Server::OnClientConnecting(ClientID clientID)
+	{
+	}
+
+	void Server::OnClientConnected(ClientID clientID)
+	{
+		PT_CORE_INFO("Client id={} connected", clientID);
+		m_NetStatistics->AllocateNetworkStatsBuffer(clientID);
+		m_NetReplicator->Server_OnClientConnected(clientID);
+
+		GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+		gameMode->Server_OnClientConnected(clientID);
+	}
+
+	void Server::OnClientDisconnected(ClientID clientID)
+	{
+		PT_CORE_INFO("Client id={} disconnected", clientID);
+		m_NetStatistics->ReleaseNetworkStatsBuffer(clientID);
+
+		GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+		gameMode->Server_OnClientDisconnected(clientID);
 	}
 
 	uint32_t Server::GetConnectedClientsCount() const
@@ -248,10 +235,24 @@ namespace proton {
 		return count;
 	}
 
-	void Server::SetClientNick(HSteamNetConnection hConn, const char* nick)
+	void Server::SetClientEntity(ClientID clientID, Entity entity)
 	{
-		// Set the connection name, too, which is useful for debugging
-		m_Interface->SetConnectionName(hConn, nick);
+		m_ClientToEntityMap[clientID] = entity;
+	}
+
+	Entity Server::GetClientEntity(ClientID clientID)
+	{
+		auto entityIt = m_ClientToEntityMap.find(clientID);
+		if (entityIt != m_ClientToEntityMap.end())
+			return entityIt->second;
+		return Entity{};
+	}
+
+	void Server::SetClientName(ClientID clientID, const char* name)
+	{
+		auto& clientInfo = m_ConnectedClients.at(clientID);
+		clientInfo.ClientName = name;
+		m_Interface->SetConnectionName((HSteamNetConnection)clientID, name);
 	}
 
 	void Server::KickClient(ClientID clientID)
@@ -259,10 +260,19 @@ namespace proton {
 		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
 	}
 
+	void Server::OnEntitySpawned(Scene* scene, UUID entityUUID)
+	{
+		m_NetReplicator->Server_AddSpawnedEntity(scene, entityUUID);
+	}
+
+	void Server::OnEntityDespawned(Scene* scene, UUID entityUUID)
+	{
+		m_NetReplicator->Server_AddDespawnedEntity(scene, entityUUID);
+	}
+
 	void Server::SetPacketFakeLag(float latencyMs)
 	{
 		s_FakeServerLag = glm::max(latencyMs, 0.0f);
-
 		float simulatedLatency = s_FakeServerLag / 4.0f;
 
 		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Send, simulatedLatency);
@@ -370,20 +380,26 @@ namespace proton {
 				// User callback
 				//m_ClientDisconnectedCallback(itClient->second);
 
-				PT_CORE_INFO("Client {} disconnected", itClient->second.ID);
-				OnClientDisconnected(itClient->second);
-
-				m_ConnectedClients.erase(itClient);
+				if (itClient != m_ConnectedClients.end())
+				{
+					if (itClient->second.Status == ConnectionStatus::Connected)
+					{
+						// Ignore disconnected connections if they ere not previously connected (failed to handshake).
+						std::lock_guard<std::mutex> lock(m_ConnectionStatusChangeQueueMutex);
+						m_ConnectionStatusChangeQueue.push(std::make_pair(itClient->second.ID, ConnectionStatus::Disconnected));
+					}
+					m_ConnectedClients.erase(itClient);
+				}
 			}
 			else
 			{
 				//assert(info->m_eOldState == k_ESteamNetworkingConnectionState_Connecting);
 			}
 
-			// Clean up the connection.  This is important!
+			// Clean up the connection. This is important!
 			// The connection is "closed" in the network sense, but
-			// it has not been destroyed.  We must close it on our end, too
-			// to finish up.  The reason information do not matter in this case,
+			// it has not been destroyed. We must close it on our end, too
+			// to finish up. The reason information do not matter in this case,
 			// and we cannot linger because it's already closed on the other end,
 			// so we just pass 0s.
 			m_Interface->CloseConnection(status->m_hConn, 0, nullptr, false);
@@ -424,13 +440,16 @@ namespace proton {
 			m_Interface->GetConnectionInfo(status->m_hConn, &connectionInfo);
 
 			// Register connected client
-			auto& client = m_ConnectedClients[status->m_hConn];
-			client.ID = (ClientID)status->m_hConn;
-			client.ConnectionDesc = connectionInfo.m_szConnectionDescription;
-			client.Status = ConnectionStatus::Connecting;
+			auto& clientInfo = m_ConnectedClients[status->m_hConn];
+			clientInfo.ID = (ClientID)status->m_hConn;
+			clientInfo.ConnectionDesc = connectionInfo.m_szConnectionDescription;
+			clientInfo.Status = ConnectionStatus::Connecting;
 
-			PT_CORE_INFO("New connection from client {}", client.ConnectionDesc);
-			OnClientConnected(client);
+			PT_CORE_INFO("New connection from client {}", clientInfo.ConnectionDesc);
+			{
+				std::lock_guard<std::mutex> lock(m_ConnectionStatusChangeQueueMutex);
+				m_ConnectionStatusChangeQueue.push(std::make_pair(clientInfo.ID, clientInfo.Status));
+			}
 
 			break;
 		}
@@ -472,7 +491,10 @@ namespace proton {
 			}
 
 			if (incomingMessage->m_cbSize)
-				OnDataReceived(incomingMessage);
+			{
+				std::lock_guard<std::mutex> lock(m_MessageQueueMutex);
+				m_MessageQueue.push(incomingMessage);
+			}
 		}
 	}
 

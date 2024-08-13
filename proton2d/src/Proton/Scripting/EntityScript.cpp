@@ -57,15 +57,10 @@ namespace proton {
 		return GetScene()->GetGameInstance()->GetSceneManager();
 	}
 
-	void EntityScript::SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction)
-	{
-		PT_CORE_ASSERT(m_ScriptFields.find(name) != m_ScriptFields.end(), "Script field not found");
+	using ReplicatedScript = NetworkComponent::ReplicatedScript;
+	using ReplicatedField = ReplicatedScript::ReplicatedField;
 
-		ScriptField* scriptField = &m_ScriptFields.at(name);
-		SetReplicatedData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
-	}
-
-	static bool CompareByTag(const NetworkComponent::ReplicatedScript& a, const  NetworkComponent::ReplicatedScript& b) {
+	static bool CompareByTag(const ReplicatedScript& a, const  ReplicatedScript& b) {
 		return a.Script->GetTag() < b.Script->GetTag();
 	}
 
@@ -85,16 +80,24 @@ namespace proton {
 
 		if (scriptRepInfo == repScripts.end())
 		{
-			NetworkComponent::ReplicatedScript newEntry;
+			ReplicatedScript newEntry;
 			newEntry.Script = this;
-			newEntry.ReplicatedFields.push_back({ data, size, 0, notifyFunction });
+			newEntry.ReplicatedFields.push_back(ReplicatedField{ data, size, notifyFunction });
 			
 			auto insertPosition = std::lower_bound(repScripts.begin(), repScripts.end(), newEntry, CompareByTag);
 			repScripts.insert(insertPosition, newEntry);
 			return;
 		}
 
-		scriptRepInfo->ReplicatedFields.push_back({ data, size, 0, notifyFunction });
+		scriptRepInfo->ReplicatedFields.push_back(ReplicatedField{ data, size, notifyFunction });
+	}
+
+	void EntityScript::SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction)
+	{
+		PT_CORE_ASSERT(m_ScriptFields.find(name) != m_ScriptFields.end(), "Script field not found");
+
+		ScriptField* scriptField = &m_ScriptFields.at(name);
+		SetReplicatedData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
 	}
 
 	bool EntityScript::IsNetworkPhysicsSyncEnabled() const

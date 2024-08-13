@@ -10,10 +10,10 @@ public:
 	virtual bool OnCreate() override;
 	virtual void OnEvent(Event& event) override;
 
-	virtual void Server_OnClientConnected(uint32_t clientID) override;
-	virtual void Server_OnClientDisconnected(uint32_t clientID) override;
+	virtual void Server_OnClientConnected(ClientID clientID) override;
+	virtual void Server_OnClientDisconnected(ClientID clientID) override;
 
-	virtual void Client_OnConnected(uint32_t clientID) override;
+	virtual void Client_OnConnected(ClientID clientID) override;
 
 	uint32_t GetLocalPlayerID() const;
 
@@ -22,7 +22,7 @@ public:
 private:
 	std::map<uint32_t, Player*> m_RemotePlayers;
 	Player* m_LocalPlayer;
-	uint32_t m_LocalPlayerID = 0;
+	ClientID m_LocalClientID = 0;
 	uint32_t m_NewColorIndex = 1;
 
 	friend class Player;

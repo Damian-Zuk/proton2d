@@ -629,7 +629,6 @@ namespace proton {
 			});
 		}
 
-
 		// ******************************************************
 		// NetworkComponent UI
 		// ******************************************************
@@ -638,8 +637,13 @@ namespace proton {
 			DrawComponentUI<NetworkComponent>("Network", [](NetworkComponent& component)
 			{
 				ImGui::PushItemWidth(125.0f);
-				if (ImGui::InputFloat("Update Rate", &component.UpdateRate))
-					component.UpdateRate = glm::clamp(component.UpdateRate, 0.0f, 1.0f);
+				float updateRate = component.UpdateRate;
+				if (ImGui::DragFloat("Update Rate", &updateRate, 0.01f))
+					component.UpdateRate = glm::clamp(updateRate, 0.0f, 1.0f);
+
+				float cullDistance = component.CullDistance;
+				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
+					component.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
 				ImGui::PopItemWidth();
 
 				ImGui::PushItemWidth(200.0f);

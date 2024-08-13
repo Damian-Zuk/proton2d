@@ -249,6 +249,11 @@ namespace proton
 			body->ApplyLinearImpulse({impulse.x, impulse.y }, {point.x, point.y}, true);
 	}
 
+	bool Entity::IsNetworked() const
+	{
+		return HasComponent<NetworkComponent>();
+	}
+
 	void Entity::SetWorldPosition(const glm::vec3& position) const
 	{
 		m_Scene->SetEntityWorldPosition(*this, position);

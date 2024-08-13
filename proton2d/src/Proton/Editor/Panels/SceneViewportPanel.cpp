@@ -252,7 +252,7 @@ namespace proton {
 		// ------------------------ Dispatch mouse event ------------------------
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& e)
 		{
-			if (scene->IsSimulated() || !m_IsViewportFocused)
+			if ((scene->IsSimulated() && !Input::IsKeyPressed(Key::LeftControl) && !Input::IsKeyPressed(Key::LeftShift)) || !m_IsViewportFocused)
 				return false;
 
 			// Mouse Button 0 (Left): Select / Move Entity
@@ -344,6 +344,7 @@ namespace proton {
 	static constexpr glm::vec4 COLOR_WHITE = glm::vec4{ 1.0f };
 	static constexpr glm::vec4 COLOR_YELLOW = { 0.8f, 0.8f, 0.2f, 1.0f };
 	static constexpr glm::vec4 COLOR_LIGHT_RED = { 0.9f, 0.38f, 0.3f, 1.0f };
+	static constexpr glm::vec4 COLOR_MAGENTA = { 1.0f, 0.0f, 1.0f, 1.0f };
 	static constexpr glm::vec4 COLOR_CYAN = { 0.0f, 0.987f, 1.0f, 1.0f };
 	static constexpr glm::vec4 COLOR_ORANGE = { 0.9f, 0.6f, 0.3f, 0.2f };
 	static constexpr glm::vec4 COLOR_RED = { 0.95f, 0.25f, 0.18f, 0.75f}; 
@@ -459,24 +460,34 @@ namespace proton {
 		}
 
 		NetworkManager* netManager = scene->GetGameInstance()->GetNetworkManager();
-		if (m_ShowNetPosition && netManager->IsNetModeClient() && m_SelectedEntity.IsValid())
+		if (m_SelectedEntity.IsValid() && m_SelectedEntity.IsNetworked())
 		{
-			if (m_SelectedEntity.HasComponent<NetworkComponent>())
+			auto& transform = m_SelectedEntity.GetTransform();
+			auto& net = m_SelectedEntity.GetComponent<NetworkComponent>();
+			auto& netTransform = net.NetTransform;
+			
+			if (m_TraceEntitySync && netManager->IsNetModeClient())
 			{
-				auto& net = m_SelectedEntity.GetComponent<NetworkComponent>().NetTransform;
-				auto& transform = m_SelectedEntity.GetTransform();
-
-				glm::mat4 quadTransform = glm::translate(glm::mat4{ 1.0f }, { net.CurrentTransform.Position.x, net.CurrentTransform.Position.y, 0.201f })
-					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(net.CurrentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
+				glm::mat4 quadTransform = glm::translate(glm::mat4{ 1.0f }, { netTransform.CurrentTransform.Position.x, netTransform.CurrentTransform.Position.y, 0.201f })
+					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(netTransform.CurrentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
 					* glm::scale(glm::mat4{ 1.0f }, { transform.Scale.x,transform.Scale.y, 1.0f });
 
-				Renderer::DrawRect(quadTransform, net.SyncState.ReconcileStarted ? COLOR_LIGHT_RED : COLOR_CYAN);
+				Renderer::DrawRect(quadTransform, netTransform.SyncState.ReconcileStarted ? COLOR_LIGHT_RED : COLOR_CYAN);
 
-				quadTransform = glm::translate(glm::mat4{ 1.0f }, { net.SyncState.ExtrapolatedPoint.x, net.SyncState.ExtrapolatedPoint.y, 0.201f })
-					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(net.CurrentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
+				quadTransform = glm::translate(glm::mat4{ 1.0f }, { netTransform.SyncState.ExtrapolatedPoint.x, netTransform.SyncState.ExtrapolatedPoint.y, 0.201f })
+					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(netTransform.CurrentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
 					* glm::scale(glm::mat4{ 1.0f }, { transform.Scale.x,transform.Scale.y, 1.0f });
 
 				Renderer::DrawRect(quadTransform, COLOR_GREEN);
+			}
+			
+			if (m_ShowCullDistance)
+			{
+				glm::vec3 position = { transform.WorldPosition.x, transform.WorldPosition.y, 0.2f };
+				glm::vec3 scale = { net.CullDistance * 2.0f, net.CullDistance * 2.0f, 1.0f };
+				glm::mat4 circleTransform = Math::GetTransform(position, scale, transform.Rotation);
+				Renderer::DrawCircle(circleTransform, COLOR_MAGENTA, 0.01f);
+
 			}
 		}
 

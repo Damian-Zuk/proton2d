@@ -77,7 +77,8 @@ namespace proton {
 			ImGui::PopItemWidth();
 
 			if ((netMode == NetMode::ListenServer || netMode == NetMode::Client))
-			ImGui::Checkbox("Trace Entity Sync", &viewportPanel->m_ShowNetPosition);
+			ImGui::Checkbox("Trace Entity Sync", &viewportPanel->m_TraceEntitySync);
+			ImGui::Checkbox("Show Cull Distance", &viewportPanel->m_ShowCullDistance);
 
 			ImGui::TreePop();
 		}

@@ -89,6 +89,8 @@ namespace proton {
 		m_GameInstanceContext = &m_MainGameInstance;
 		m_MainGameInstance.Instance->Init();
 
+		m_MenuBar->OnCreate();
+
 		// Initialize editor panels
 		m_EditorPanels.push_back(&s_Panels.Settings);
 		m_EditorPanels.push_back(&s_Panels.Info);

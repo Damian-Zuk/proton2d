@@ -59,12 +59,13 @@ void MyGameMode::OnEvent(Event& event)
 	});
 }
 
-void MyGameMode::Server_OnClientConnected(uint32_t clientID)
+void MyGameMode::Server_OnClientConnected(ClientID clientID)
 {
 	PT_TRACE("client_id={}", clientID);
 		
 	// Spawn Player object for connected client
 	Player* player = SpawnPrefab("Player").As<Player>();
+	Server_SetClientEntity(clientID, *player);
 
 	// Get spawn point position
 	uint32_t spawnPoint = (m_RemotePlayers.size() + 1) % 4;
@@ -80,7 +81,7 @@ void MyGameMode::Server_OnClientConnected(uint32_t clientID)
 	m_RemotePlayers[clientID] = player;
 }
 
-void MyGameMode::Server_OnClientDisconnected(uint32_t clientID)
+void MyGameMode::Server_OnClientDisconnected(ClientID clientID)
 {
 	PT_TRACE("client_id={}", clientID);
 	
@@ -89,14 +90,14 @@ void MyGameMode::Server_OnClientDisconnected(uint32_t clientID)
 	m_RemotePlayers.erase(clientID);
 }
 
-void MyGameMode::Client_OnConnected(uint32_t clientID)
+void MyGameMode::Client_OnConnected(ClientID clientID)
 {
-	m_LocalPlayerID = clientID;
+	m_LocalClientID = clientID;
 }
 
 uint32_t MyGameMode::GetLocalPlayerID() const
 {
-	return m_LocalPlayerID;
+	return m_LocalClientID;
 }
 
 void MyGameMode::SpawnRandomBox(const glm::vec2& position)

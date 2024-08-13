@@ -114,10 +114,10 @@ namespace proton {
 			{
 			case MessageType::HandshakeReply:
 			{
-				NetMessageHandshakeReply msg;
-				stream.ReadRaw(msg);
+				NetMessageHandshakeReply reply;
+				stream.ReadRaw(reply);
 
-				m_LocalClientID = msg.ClientID;
+				m_LocalClientID = reply.ClientID;
 				m_NetworkManager->m_LocalClientID = m_LocalClientID;
 				m_ConnectionStatus = ConnectionStatus::Connected;
 				PT_CORE_INFO("Successfully connected to server");
@@ -302,7 +302,7 @@ namespace proton {
 			// Clean up the connection. This is important!
 			// The connection is "closed" in the network sense, but
 			// it has not been destroyed. We must close it on our end, too
-			// to finish up.  The reason information do not matter in this case,
+			// to finish up. The reason information do not matter in this case,
 			// and we cannot linger because it's already closed on the other end,
 			// so we just pass 0s.
 			m_Interface->CloseConnection(info->m_hConn, 0, nullptr, false);

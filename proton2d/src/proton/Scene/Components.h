@@ -221,7 +221,7 @@ namespace proton {
 		PROTON_COMPONENT_TYPE_ID(ComponentType_Network)
 
 		float UpdateRate = 1.0f;
-		float CullDistance = 10.0f;
+		float CullDistance = 20.0f;
 
 		NetTransform NetTransform;
 			
@@ -231,8 +231,8 @@ namespace proton {
 			{
 				void* Data = nullptr;
 				uint64_t Size = 0;
-				uint32_t Checksum = 0;
 				std::function<void(Entity*)> NotifyFunction;
+				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
 			};
 			EntityScript* Script = nullptr;
 			std::vector<ReplicatedField> ReplicatedFields;

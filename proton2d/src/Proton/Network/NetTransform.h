@@ -3,6 +3,8 @@
 
 namespace proton {
 
+	using ClientID = uint32_t;
+
 	enum class NetSyncMethod : uint8_t
 	{
 		None = 0,
@@ -70,13 +72,15 @@ namespace proton {
 			float AngularVelocity = 0.0f;
 		};
 
+		ReplicationFlags RepFlags;
+
 		NetSyncParams SyncParams;
 		NetSyncState SyncState;
 
 		Transform PreviousTransform;
 		Transform CurrentTransform;
-
-		ReplicationFlags RepFlags;
+		
+		std::unordered_map<ClientID, Transform> ClientToTransformMap; // server-only
 	};
 
 	std::string NetSyncMethodToString(NetSyncMethod method);

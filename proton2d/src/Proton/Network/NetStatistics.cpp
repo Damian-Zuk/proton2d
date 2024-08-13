@@ -37,11 +37,14 @@ namespace proton {
 
 	void NetStatistics::ReleaseNetworkStatsBuffer(ClientID clientID)
 	{
-		m_NetworkStats.at(clientID).Detailed.Release();
-		m_NetworkStats.erase(clientID);
+		auto statsIt = m_NetworkStats.find(clientID);
+		if (statsIt != m_NetworkStats.end())
+		{
+			statsIt->second.Detailed.Release();
+			m_NetworkStats.erase(statsIt);
+		}
 
 		NetworkManager* networkManager = m_Server->m_NetworkManager;
-
 		if (networkManager->m_SaveStatsForClientID == clientID)
 		{
 			networkManager->m_SaveStatsForClientID =

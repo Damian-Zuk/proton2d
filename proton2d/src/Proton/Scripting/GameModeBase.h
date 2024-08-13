@@ -39,14 +39,15 @@ namespace proton {
 
 		// Networking methods
 
-		virtual void Server_OnClientConnected(uint32_t clientID) {}
-		virtual void Server_OnClientDisconnected(uint32_t clientID) {}
+		virtual void Server_OnClientConnected(ClientID clientID) {}
+		virtual void Server_OnClientDisconnected(ClientID clientID) {}
+		void Server_SetClientEntity(ClientID clientID, Entity entity) const;
+		void Server_SetPlayerActionCallback(ClientID clientID, StreamReaderDelegate function);
 
-		virtual void Client_OnConnected(uint32_t clientID) {}
+		virtual void Client_OnConnected(ClientID clientID) {}
 		virtual void Client_OnDisconnected() {}
-		
-		void Server_SetPlayerActionCallback(uint32_t clientID, StreamReaderDelegate function);
 		void Client_SendPlayerAction(StreamWriterDelegate function);
+		
 	
 		bool HasAuthority() const;
 		bool IsRunningServer() const;

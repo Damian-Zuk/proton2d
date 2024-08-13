@@ -23,6 +23,10 @@ namespace proton {
 	{
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////                                       Client Replicator                                       ////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	void NetReplicator::Client_ProcessReplicationMessage(BufferStreamReader& stream)
 	{
 		PROFILE_FUNCTION();
@@ -196,13 +200,25 @@ namespace proton {
 		}
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////                                       Server Replicator                                       ////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	void NetReplicator::Server_OnUpdate()
 	{
 		PROFILE_FUNCTION();
 		Scene* scene = m_Server->m_GameInstance->GetActiveScene();
 		Server_ProcessSpawnedEntityQueue(scene);
 		Server_ProcessDespawnedEntityQueue(scene);
-		Server_SendReplicationMessage();
+		//Server_SendReplicationMessage();
+
+		for (auto [clientID, clientInfo] : m_Server->m_ConnectedClients)
+		{
+			if (clientInfo.Status == ConnectionStatus::Connected)
+			{
+				Server_SendReplicationMessage(clientID);
+			}
+		}
 	}
 
 	void NetReplicator::Server_OnClientConnected(ClientID clientID)
@@ -238,7 +254,6 @@ namespace proton {
 		stream.SkipBytes(sizeof(NetMessageSpawn));
 
 		uint32_t spawned = 0;
-
 		while (!sceneData.SpawnedEntityQueue.empty())
 		{
 			UUID uuid = sceneData.SpawnedEntityQueue.front();
@@ -279,7 +294,6 @@ namespace proton {
 		stream.SkipBytes(sizeof(NetMessageDespawn));
 
 		uint32_t despawned = 0;
-
 		while (!sceneData.DespawnedEntityQueue.empty())
 		{
 			UUID uuid = sceneData.DespawnedEntityQueue.front();
@@ -382,9 +396,22 @@ namespace proton {
 		// Iterate over entities with NetworkComponent
 		for (entt::entity _entity : view)
 		{
-			PROFILE_SCOPE("replicate_entity");
 			Entity entity(_entity, scene);
 			auto& net = view.get<NetworkComponent>(_entity);
+			auto& transform = entity.GetComponent<TransformComponent>();
+			auto& velocity = entity.GetComponent<VelocityComponent>();
+
+			if (Entity clientEntity = m_Server->GetClientEntity(clientID))
+			{
+				auto& clientTransform = clientEntity.GetComponent<TransformComponent>();
+				float distance = glm::distance(
+					glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
+					glm::vec2{ clientTransform.WorldPosition.x, clientTransform.WorldPosition.y}
+				);
+
+				if (distance > net.CullDistance)
+					continue;
+			}
 
 			// Entity payload header
 			NetMessageReplicate::PayloadItem itemHeader;
@@ -397,31 +424,30 @@ namespace proton {
 			stream.SkipBytes(sizeof(NetMessageReplicate::PayloadItem));
 
 			////////////////////////////// NetTransform Serialization //////////////////////////////
-			auto& transform = entity.GetComponent<TransformComponent>();
-			auto& velocity = entity.GetComponent<VelocityComponent>();
+
 			auto& netTransform = net.NetTransform;
 			bool rbSync = netTransform.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
 
 			// Current values are stored in TransformComponent and VelocityComponent
-			auto& position = rbSync ? transform.WorldPosition : transform.LocalPosition;
-			auto& scale = transform.Scale;
-			auto& rotation = transform.Rotation;
-			auto& linearVelocity = velocity.LinearVelocity;
-			auto& angularVelocity = velocity.AngularVelocity;
+			const auto& position = rbSync ? transform.WorldPosition : transform.LocalPosition;
+			const auto& scale = transform.Scale;
+			const auto& rotation = transform.Rotation;
+			const auto& linearVelocity = velocity.LinearVelocity;
+			const auto& angularVelocity = velocity.AngularVelocity;
 
 			// Previous server tick NetTransform values 
-			auto& prevPosition = netTransform.CurrentTransform.Position;
-			auto& prevScale = netTransform.CurrentTransform.Scale;
-			auto& prevRotation = netTransform.CurrentTransform.Rotation;
-			auto& prevLinearVelocity = netTransform.CurrentTransform.LinearVelocity;
-			auto& prevAngularVelocity = netTransform.CurrentTransform.AngularVelocity;
+			auto& prevTransform = netTransform.ClientToTransformMap[clientID];
+			auto& prevPosition = prevTransform.Position;
+			auto& prevScale = prevTransform.Scale;
+			auto& prevRotation = prevTransform.Rotation;
+			auto& prevLinearVelocity = prevTransform.LinearVelocity;
+			auto& prevAngularVelocity = prevTransform.AngularVelocity;
 
 			if (!forceReplication)
 			{
-				static constexpr float s_Epsilon = 0.00001f;
-
+				constexpr float epsilon = 0.00001f;
 				#define REPLICATE_COMPONENT(current, previous, flag) \
-				if (glm::epsilonNotEqual(current, previous, s_Epsilon)) { \
+				if (glm::epsilonNotEqual(current, previous, epsilon)) { \
 					stream.WriteRaw(current); \
 					previous = current; \
 					flags = EnumAddFlags(flags, ReplicationFlags::flag); \
@@ -474,9 +500,10 @@ namespace proton {
 					if (!forceReplication)
 					{
 						uint32_t checksum = crc32_bitwise(field.Data, field.Size);
-						if (checksum == field.Checksum)
+						auto& lastChecksum = field.ClientToChecksumMap[clientID];
+						if (checksum == lastChecksum)
 							continue; // Field value not changed, skip replication
-						field.Checksum = checksum;
+						lastChecksum = checksum;
 					}
 
 					// Write field index
@@ -506,7 +533,7 @@ namespace proton {
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////
 
-			if (itemHeader.TransformReplicationFlags == NetTransform::ReplicationFlags::None && itemHeader.ScriptCount == 0)
+			if (itemHeader.TransformReplicationFlags == ReplicationFlags::None && itemHeader.ScriptCount == 0)
 			{
 				// Nothing was replicated, skip entity replication
 				stream.SetStreamPosition(entityPayloadStart);

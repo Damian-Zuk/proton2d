@@ -19,8 +19,9 @@ namespace proton {
 	struct ClientInfo
 	{
 		ClientID ID;
-		std::string ConnectionDesc;
 		ConnectionStatus Status;
+		std::string ClientName;
+		std::string ConnectionDesc;
 	};
 
 	// Forward declarations
@@ -37,6 +38,9 @@ namespace proton {
 
 		bool IsRunning() const { return m_Running; }
 
+		void SetClientEntity(ClientID clientID, Entity entity);
+		Entity GetClientEntity(ClientID clientID);
+
 		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
 
 	private:
@@ -48,23 +52,23 @@ namespace proton {
 
 		void SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function);
 
-		void OnClientConnected(const ClientInfo& clientInfo); // called from network thread
-		void OnClientDisconnected(const ClientInfo& clientInfo); // called from network thread
-		void OnDataReceived(ISteamNetworkingMessage* incomingMessage); // called from network thread
-
 		void ProcessConnectionStatusQueue();
 		void ProcessClientMessagesQueue();
 
-		void AddSpawnedEntity(Scene* scene, UUID entityUUID);
-		void AddDespawnedEntity(Scene* scene, UUID entityUUID);
+		void OnClientConnecting(ClientID clientID);
+		void OnClientConnected(ClientID clientID);
+		void OnClientDisconnected(ClientID clientID);
 
 		uint32_t GetConnectedClientsCount() const;
-		void SetClientNick(HSteamNetConnection hConn, const char* nick);
+		void SetClientName(ClientID clientID, const char* name);
 		void KickClient(ClientID clientID);
+
+		void OnEntitySpawned(Scene* scene, UUID entityUUID);
+		void OnEntityDespawned(Scene* scene, UUID entityUUID);
 
 		void SetPacketFakeLag(float latencyMs);
 
-		// Server lower-level functionality
+		// Network thread and lower-level server functionality
 		void NetworkThreadFunction(); 
 
 		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
@@ -113,24 +117,19 @@ namespace proton {
 		bool m_Running = false;
 		uint16_t m_Port;
 
-		// Connections
-		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
-
 		// Buffer for writting messages using BufferStreamWriter
 		Buffer m_ScratchBuffer;
 
-		// Queue for processing connected or disconnected clients
-		struct ClientConnectionStatusChangeInfo
-		{
-			ClientInfo ClientInfo;
-			ConnectionStatus Status;
-		};
-		std::queue<ClientConnectionStatusChangeInfo> m_ClientConnStatusChangeQueue;
-		std::mutex m_ClientConnStatusQueueMutex;
+		// Connections
+		std::map<HSteamNetConnection, ClientInfo> m_ConnectedClients;
+		std::queue<std::pair<ClientID, ConnectionStatus>> m_ConnectionStatusChangeQueue;
+		std::mutex m_ConnectionStatusChangeQueueMutex;
 
 		// Queue for messages processing
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_MessageQueueMutex;
+
+		std::unordered_map<ClientID, Entity> m_ClientToEntityMap;
 
 		// Player action callbacks
 		std::unordered_map<uint32_t, StreamReaderDelegate> m_PlayerActionCallbacks;

@@ -5,6 +5,8 @@
 
 namespace proton {
 
+	using ClientID = uint32_t;
+
 	enum class NetMode : uint8_t
 	{
 		Standalone = 0,
@@ -23,9 +25,9 @@ namespace proton {
 
 	enum NetConnectionEndCode
 	{
-		NetConnectionEndCode_WrongGameAndEngineProtocol = 2001,
-		NetConnectionEndCode_WrongGameProtocol = 2002,
-		NetConnectionEndCode_WrongEngineProtocol = 2003,
+		NetConnectionEndCode_GameAndEngineProtocolMismatch = 2001,
+		NetConnectionEndCode_GameProtocolMismatch = 2002,
+		NetConnectionEndCode_EngineProtocolMismatch = 2003,
 		NetConnectionEndCode_MaxConnections = 2004
 	};
 
