@@ -49,8 +49,7 @@ namespace proton {
 
 		// Game server functionality
 		void MainThread_OnTick();
-
-		void SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function);
+		void OnNetworkMessage(ISteamNetworkingMessage* message);
 
 		void ProcessConnectionStatusQueue();
 		void ProcessClientMessagesQueue();
@@ -61,6 +60,7 @@ namespace proton {
 
 		uint32_t GetConnectedClientsCount() const;
 		void SetClientName(ClientID clientID, const char* name);
+		void SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function);
 		void KickClient(ClientID clientID);
 
 		void OnEntitySpawned(Scene* scene, UUID entityUUID);

@@ -66,7 +66,7 @@ namespace proton {
 			net.NetTransform.RepFlags = flags;
 			using ReplicationFlags = NetTransform::ReplicationFlags;
 
-			if (EnumHasAnyFlags(flags, ReplicationFlags::All))
+			if (flags != ReplicationFlags::None)
 			{
 				netTransform.PreviousTransform = netTransform.CurrentTransform;
 				netTransform.SyncState.PacketDelay = netTransform.SyncState.PacketTimer.Elapsed();
@@ -249,9 +249,9 @@ namespace proton {
 		if (sceneData.SpawnedEntityQueue.empty())
 			return;
 
-		NetMessageSpawn msgHeader;
+		NetMessageSpawn header;
 		BufferStreamWriter stream(m_Server->m_ScratchBuffer);
-		stream.SkipBytes(sizeof(NetMessageSpawn));
+		stream.SkipBytes(sizeof(header));
 
 		uint32_t spawned = 0;
 		while (!sceneData.SpawnedEntityQueue.empty())
@@ -276,8 +276,8 @@ namespace proton {
 
 		if (spawned > 0)
 		{
-			msgHeader.EntityCount = spawned;
-			stream.WriteRawAt(0, msgHeader);
+			header.EntityCount = spawned;
+			stream.WriteRawAt(0, header);
 			m_Server->SendBufferToAllClients(stream.GetBuffer());
 		}
 	}
@@ -289,9 +289,9 @@ namespace proton {
 		if (sceneData.DespawnedEntityQueue.empty())
 			return;
 
-		NetMessageDespawn msg;
+		NetMessageDespawn header;
 		BufferStreamWriter stream(m_Server->m_ScratchBuffer);
-		stream.SkipBytes(sizeof(NetMessageDespawn));
+		stream.SkipBytes(sizeof(header));
 
 		uint32_t despawned = 0;
 		while (!sceneData.DespawnedEntityQueue.empty())
@@ -314,11 +314,8 @@ namespace proton {
 
 		if (despawned > 0)
 		{
-			msg.EntityCount = despawned;
-			uint64_t streamPos = stream.GetStreamPosition();
-			stream.SetStreamPosition(0);
-			stream.WriteRaw(msg);
-			stream.SetStreamPosition(streamPos);
+			header.EntityCount = despawned;
+			stream.WriteRawAt(0, header);
 			m_Server->SendBufferToAllClients(stream.GetBuffer());
 		}
 	}
@@ -388,8 +385,7 @@ namespace proton {
 		msgHeader.EntityCount = 0;
 
 		BufferStreamWriter stream(m_Server->m_ScratchBuffer);
-		uint64_t streamStart = stream.GetStreamPosition();
-		stream.SkipBytes(sizeof(NetMessageReplicate));
+		stream.SkipBytes(sizeof(msgHeader));
 
 		using ReplicationFlags = NetTransform::ReplicationFlags;
 
@@ -421,7 +417,7 @@ namespace proton {
 			flags = ReplicationFlags::None;
 
 			uint64_t entityPayloadStart = stream.GetStreamPosition();
-			stream.SkipBytes(sizeof(NetMessageReplicate::PayloadItem));
+			stream.SkipBytes(sizeof(itemHeader));
 
 			////////////////////////////// NetTransform Serialization //////////////////////////////
 
@@ -551,7 +547,7 @@ namespace proton {
 		}
 
 		// Write replication message header
-		stream.WriteRawAt(streamStart, msgHeader);
+		stream.WriteRawAt(0, msgHeader);
 
 		if (clientID == 0)
 			m_Server->SendBufferToAllClients(stream.GetBuffer());

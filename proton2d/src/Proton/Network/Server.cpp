@@ -67,18 +67,88 @@ namespace proton {
 		m_Running = false;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	////                                   Game Server Functionality                                   ////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	void Server::MainThread_OnTick()
 	{
+		PROFILE_FUNCTION();
 		Scene* scene = m_GameInstance->GetActiveScene();
 
 		ProcessConnectionStatusQueue();
 		ProcessClientMessagesQueue();
 		m_NetReplicator->Server_OnUpdate();	
 		m_NetStatistics->UpdateNetworkStatistics();
+	}
+
+	void Server::OnNetworkMessage(ISteamNetworkingMessage* message)
+	{
+		uint32_t clientID = message->m_conn;
+		Buffer buffer(message->m_pData, message->m_cbSize);
+		BufferStreamReader reader(buffer);
+		BufferStreamWriter writer(m_ScratchBuffer);
+
+		MessageType packetType;
+		reader.ReadRaw(packetType);
+		reader.SetStreamPosition(0);
+
+		switch (packetType)
+		{
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::Handshake:
+		{
+			NetMessageHandshake handshake;
+			reader.ReadRaw(handshake);
+
+			if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
+			{
+				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch);
+				m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch, "Failed to handshake", false);
+				break;
+			}
+			else if (handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
+			{
+				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameProtocolMismatch);
+				m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameProtocolMismatch, "Failed to handshake", false);
+				break;
+			}
+			else if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION)
+			{
+				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_EngineProtocolMismatch);
+				m_Interface->CloseConnection(clientID, NetConnectionEndCode_EngineProtocolMismatch, "Failed to handshake", false);
+				break;
+			}
+
+			NetMessageHandshakeReply reply;
+			reply.ClientID = clientID;
+			writer.WriteRaw(reply);
+			SendBufferToClient(clientID, writer.GetBuffer());
+
+			auto& clientInfo = m_ConnectedClients[clientID];
+			clientInfo.Status = ConnectionStatus::Connected;
+			OnClientConnected(clientID);
+
+			break;
+		}
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::PlayerAction:
+		{
+			PROFILE_SCOPE("PacketType::PlayerAction");
+
+			reader.SkipBytes(sizeof(NetMassagePlayerAction));
+			if (m_PlayerActionCallbacks.find(clientID) != m_PlayerActionCallbacks.end())
+			{
+				StreamReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
+				callback(reader);
+			}
+			else
+				PT_CORE_ERROR("PlayerActionCallback was not defined! client_id={}", clientID);
+
+			break;
+		}
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		default:
+			PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
+			KickClient(message->GetConnection());
+			break;
+		}
 	}
 
 	void Server::ProcessClientMessagesQueue()
@@ -89,89 +159,10 @@ namespace proton {
 		while (!m_MessageQueue.empty())
 		{
 			ISteamNetworkingMessage* message = m_MessageQueue.front();
-			uint32_t clientID = message->GetConnection();
-
-			Buffer buffer(message->m_pData, message->m_cbSize);
-			BufferStreamReader stream(buffer);
-
-			BufferStreamWriter writer(m_ScratchBuffer);
-			
-			MessageType packetType;
-			stream.ReadRaw(packetType);
-			stream.SetStreamPosition(0);
-
-			switch (packetType)
-			{
-			////////////////////////////////////////////////////////////////////////////////////////////////////
-			case MessageType::Handshake:
-			{
-				NetMessageHandshake handshake;
-				stream.ReadRaw(handshake);
-
-				if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
-				{
-					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch);
-					m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch, "Failed to handshake", false);
-					break;
-				}
-				else if (handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
-				{
-					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameProtocolMismatch);
-					m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameProtocolMismatch, "Failed to handshake", false);
-					break;
-				}
-				else if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION)
-				{
-					PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_EngineProtocolMismatch);
-					m_Interface->CloseConnection(clientID, NetConnectionEndCode_EngineProtocolMismatch, "Failed to handshake", false);
-					break;
-				}
-				
-				NetMessageHandshakeReply reply;
-				reply.ClientID = clientID;
-				writer.WriteRaw(reply);
-				SendBufferToClient(clientID, writer.GetBuffer());
-
-				auto& clientInfo = m_ConnectedClients[clientID];
-				clientInfo.Status = ConnectionStatus::Connected;
-				OnClientConnected(clientID);
-
-				break;
-			}
-
-			////////////////////////////////////////////////////////////////////////////////////////////////////
-
-			case MessageType::PlayerAction:
-			{
-				PROFILE_SCOPE("PacketType::PlayerAction");
-
-				stream.SkipBytes(sizeof(NetMassagePlayerAction));
-				if (m_PlayerActionCallbacks.find(clientID) != m_PlayerActionCallbacks.end())
-				{
-					StreamReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
-					callback(stream);
-				}
-				else
-					PT_CORE_ERROR("PlayerActionCallback was not defined! client_id={}", clientID);
-				
-				break;
-			}
-
-			////////////////////////////////////////////////////////////////////////////////////////////////////
-			default:
-				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
-				KickClient(message->GetConnection());
-				break;
-			}
-
+			OnNetworkMessage(message);
 			message->Release();
 			m_MessageQueue.pop();
 		}
-	}
-
-	void Server::SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function)
-	{
-		m_PlayerActionCallbacks[clientID] = function;
 	}
 
 	void Server::ProcessConnectionStatusQueue()
@@ -184,13 +175,10 @@ namespace proton {
 			const auto& clientID = connectionInfo.first;
 			const auto& status = connectionInfo.second;
 
-			// Client is connecting (waiting for MessageType::Handshake)
 			if (status == ConnectionStatus::Connecting)
 			{
 				OnClientConnecting(clientID);
 			}
-
-			// Client has been disconnected
 			else if (status == ConnectionStatus::Disconnected)
 			{
 				OnClientDisconnected(clientID);
@@ -255,6 +243,11 @@ namespace proton {
 		m_Interface->SetConnectionName((HSteamNetConnection)clientID, name);
 	}
 
+	void Server::SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function)
+	{
+		m_PlayerActionCallbacks[clientID] = function;
+	}
+
 	void Server::KickClient(ClientID clientID)
 	{
 		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
@@ -278,10 +271,6 @@ namespace proton {
 		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Send, simulatedLatency);
 		SteamNetworkingUtils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLag_Recv, simulatedLatency);
 	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	////               Network Thread and GameNetworkingSockets Interface Implementation               ////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void Server::NetworkThreadFunction()
 	{
@@ -307,7 +296,6 @@ namespace proton {
 
 		// Try to start listen socket on port
 		m_ListenSocket = m_Interface->CreateListenSocketIP(serverLocalAddress, 1, &options);
-
 		if (m_ListenSocket == k_HSteamListenSocket_Invalid)
 		{
 			OnFatalError(fmt::format("Fatal error: Failed to listen on port {}", m_Port));
@@ -323,7 +311,6 @@ namespace proton {
 		}
 
 		PT_CORE_INFO("Server listening on port {}", m_Port);
-
 		while (m_Running)
 		{
 			PollIncomingMessages();

@@ -61,26 +61,30 @@ namespace proton {
 
 	void Client::MainThread_OnUpdate(float ts)
 	{
-		ProcessMessages();
+		PROFILE_FUNCTION();
 
+		std::lock_guard<std::mutex> lock(m_QueueMutex);
 		Scene* scene = m_GameInstance->GetActiveScene();
+
+		while (!m_MessageQueue.empty())
+		{
+			ISteamNetworkingMessage* message = m_MessageQueue.front();
+			OnNetworkMessage(message);
+			message->Release();
+			m_MessageQueue.pop();
+		}
+		
 		scene->CalculateWorldPositions(true);
 		NetTransformSystem::Update(scene, ts);
 	}
 
-	void Client::OnDataReceived(ISteamNetworkingMessage* incomingMessage)
-	{
-		std::lock_guard<std::mutex> lock(m_QueueMutex);
-		m_MessageQueue.push(incomingMessage);
-	}
-
 	void Client::SendHandshake()
 	{
-		NetMessageHandshake msg;
-		msg.EngineProtocolVersion = PROTON_NET_PROTOCOL_VERSION;
-		msg.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
+		NetMessageHandshake header;
+		header.EngineProtocolVersion = PROTON_NET_PROTOCOL_VERSION;
+		header.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
 		BufferStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(msg);
+		stream.WriteRaw(header);
 		SendBuffer(stream.GetBuffer());
 	}
 
@@ -89,82 +93,65 @@ namespace proton {
 		BufferStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(MessageType::PlayerAction);
 		sendFunction(stream);
-		SendBuffer(Buffer(m_ScratchBuffer, stream.GetStreamPosition()));
+		SendBuffer(stream.GetBuffer());
 	}
 
-	void Client::ProcessMessages()
+	void Client::OnNetworkMessage(ISteamNetworkingMessage* message)
 	{
-		PROFILE_FUNCTION();
+		Buffer buffer(message->m_pData, message->m_cbSize);
+		BufferStreamReader stream(buffer);
 
-		std::lock_guard<std::mutex> lock(m_QueueMutex);
-		SceneManager* sceneManager = m_GameInstance->GetSceneManager();
-		Scene* scene = sceneManager->GetActiveScene();
+		MessageType packetType;
+		stream.ReadRaw(packetType);
+		stream.SetStreamPosition(0);
 
-		while (!m_MessageQueue.empty())
+		switch (packetType)
 		{
-			ISteamNetworkingMessage* message = m_MessageQueue.front();
-			Buffer buffer(message->m_pData, message->m_cbSize);
-			BufferStreamReader stream(buffer);
+			///////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::HandshakeReply:
+		{
+			NetMessageHandshakeReply reply;
+			stream.ReadRaw(reply);
 
-			MessageType packetType;
-			stream.ReadRaw(packetType);
-			stream.SetStreamPosition(0);
+			m_LocalClientID = reply.ClientID;
+			m_NetworkManager->m_LocalClientID = m_LocalClientID;
+			m_ConnectionStatus = ConnectionStatus::Connected;
+			PT_CORE_INFO("Connected to server");
+			// GameModeBase::Client_OnConnected is called after first replication update
+			break;
+		}
+		///////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::EntityReplicate:
+		{
+			m_NetReplicator->Client_ProcessReplicationMessage(stream);
 
-			switch (packetType)
+			if (!m_NetworkManager->m_ClientGameStateInitialized)
 			{
-			case MessageType::HandshakeReply:
-			{
-				NetMessageHandshakeReply reply;
-				stream.ReadRaw(reply);
-
-				m_LocalClientID = reply.ClientID;
-				m_NetworkManager->m_LocalClientID = m_LocalClientID;
-				m_ConnectionStatus = ConnectionStatus::Connected;
-				PT_CORE_INFO("Successfully connected to server");
-				// GameModeBase::Client_OnConnected is called after first replication update
-				break;
+				// First replication update
+				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+				gameMode->Client_OnConnected(m_LocalClientID);
+				m_NetworkManager->m_ClientGameStateInitialized = true;
 			}
-
-			case MessageType::EntitySpawn:
-			{
-				m_NetReplicator->Client_OnEntitySpawnMessage(stream);
-				break;
-			}
-			
-			case MessageType::EntityDespawn:
-			{
-				m_NetReplicator->Client_OnEntityDespawnMessage(stream);
-				break;
-			}
-
-			case MessageType::EntityReplicate:
-			{
-				m_NetReplicator->Client_ProcessReplicationMessage(stream);
-
-				if (!m_NetworkManager->m_ClientGameStateInitialized)
-				{
-					// First replication update
-					GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
-					gameMode->Client_OnConnected(m_LocalClientID);
-					m_NetworkManager->m_ClientGameStateInitialized = true;
-				}
-				break;
-			}
-
-			default:
-				PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
-				break;
-			}
-
-			// Free message buffer
-			message->Release();
-			m_MessageQueue.pop();
+			break;
+		}
+		///////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::EntitySpawn:
+		{
+			m_NetReplicator->Client_OnEntitySpawnMessage(stream);
+			break;
+		}
+		///////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::EntityDespawn:
+		{
+			m_NetReplicator->Client_OnEntityDespawnMessage(stream);
+			break;
+		}
+		///////////////////////////////////////////////////////////////////////////////////////
+		default:
+			PT_CORE_ERROR("Invalid packet type ({}).", (uint16_t)packetType);
+			break;
 		}
 	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	////               Network Thread and GameNetworkingSockets Interface Implementation               ////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void Client::NetworkThreadFunction()
 	{
@@ -248,7 +235,8 @@ namespace proton {
 				return;
 			}
 
-			OnDataReceived(incomingMessage);
+			std::lock_guard<std::mutex> lock(m_QueueMutex);
+			m_MessageQueue.push(incomingMessage);
 		}
 	}
 
