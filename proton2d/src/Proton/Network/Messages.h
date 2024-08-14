@@ -7,13 +7,13 @@ namespace proton {
 
 	enum class MessageType : uint16_t
 	{
-		None = 0, // Invalid message
+		None = 0, // Invalid message type
 
 		// [Client -> Server]
-		Handshake = 1,
+		Handshake,
 
 		// [Server -> Client]
-		HandshakeReply = 2,
+		HandshakeReply,
 
 		// [Server -> Client]
 		EntitySpawn,
@@ -42,7 +42,7 @@ namespace proton {
 	struct NetMessageSpawn
 	{
 		MessageType MessageType = MessageType::EntitySpawn;
-		uint32_t EntityCount;
+		uint32_t EntityCount = 0;
 
 		struct PayloadItem
 		{
@@ -56,7 +56,7 @@ namespace proton {
 	struct NetMessageDespawn
 	{
 		MessageType MessageType = MessageType::EntityDespawn;
-		uint32_t EntityCount;
+		uint32_t EntityCount = 0;
 
 		struct PayloadItem
 		{
@@ -67,12 +67,12 @@ namespace proton {
 	struct NetMessageReplicate
 	{
 		MessageType MessageType = MessageType::EntityReplicate;
-		uint32_t EntityCount;
+		uint32_t EntityCount = 0;
 
 		struct PayloadItem
 		{
 			UUID EntityUUID;
-			NetTransform::ReplicationFlags TransformReplicationFlags;
+			NetTransform::ReplicationFlags TransformFlags;
 			uint32_t ScriptCount;
 			uint64_t PayloadSize;
 		};

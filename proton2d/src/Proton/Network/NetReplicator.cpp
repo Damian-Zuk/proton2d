@@ -12,6 +12,28 @@
 
 #include <Crc32.h>
 
+#ifdef _MSC_VER
+	#include <intrin.h>
+	static inline int CountSetBits(int n) {
+		return __popcnt(n);
+	}
+#elif defined(__GNUC__)
+	static inline int CountSetBits(int n) {
+		return __builtin_popcount(n);
+	}
+#else
+	// Fallback implementation (Hamming weights: Parallel reduction)
+	// https://hpc.ac.upc.edu/PDFs/dir19/file004398.pdf (Fig. 5)
+	static inline uint32_t CountSetBits(uint32_t n) {
+		n = (n & 0x55555555u) + ((n >> 1) & 0x55555555u);
+		n = (n & 0x33333333u) + ((n >> 2) & 0x33333333u);
+		n = (n & 0x0f0f0f0fu) + ((n >> 4) & 0x0f0f0f0fu);
+		n = (n & 0x00ff00ffu) + ((n >> 8) & 0x00ff00ffu);
+		n = (n & 0x0000ffffu) + ((n >> 16) & 0x0000ffffu);
+		return n;
+	}
+#endif
+
 namespace proton {
 
 	NetReplicator::NetReplicator(Client* client)
@@ -33,47 +55,93 @@ namespace proton {
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
 
 		NetMessageReplicate header;
-		stream.ReadRaw(header);
+		stream.ReadRaw(header); // If fails, then header.EntityCount is 0
 
-		for (uint32_t i = 0; i < header.EntityCount; i++)
+		// Loop for each entity stored in message payload
+		for (uint32_t entityIndex = 0; entityIndex < header.EntityCount; entityIndex++)
 		{
-			uint64_t entityPayloadStart = stream.GetStreamPosition();
-
+			// Entity replication header
 			NetMessageReplicate::PayloadItem item;
-			stream.ReadRaw(item);
 
-			// Find entity
+			// Try to read payload item header from message buffer
+			if (!stream.ReadRaw(item))
+			{
+				PT_CORE_ERROR("Failed to read payload item header: Out of memory. (entity_index={}, entity_count={})", entityIndex, header.EntityCount);
+				return;
+			}
+
+			uint64_t entityPayloadStart = stream.GetStreamPosition();
+			uint64_t remainingMessageBufferSize = stream.GetTargetBuffer().Size - entityPayloadStart;
+
+			// Macro for logging payload item header
+			#define DUMP_PAYLOAD_ITEM_HEADER() \
+				_PT_CORE_ERROR("Payload item header: (entity_index={}, entity_count={}, entity_uuid={}, transform_flags={}, script_count={}, payload_size={}", \
+				entityIndex, header.EntityCount, item.EntityUUID, (int)item.TransformFlags, item.ScriptCount, item.PayloadSize)
+
+			// Skip to the next entity stored in message payload
+			#define STREAM_SKIP_PAYLOAD_ITEM() \
+				stream.SetStreamPosition(entityPayloadStart + item.PayloadSize);
+
+			// Validate if payload size stored in item header does not exceed message buffer size
+			if (item.PayloadSize > remainingMessageBufferSize)
+			{
+				PT_CORE_ERROR("Failed to read payload: item.PayloadSize exceeds remaining message buffer size ({} bytes)", remainingMessageBufferSize);
+				DUMP_PAYLOAD_ITEM_HEADER();
+				return;
+			}
+
+			// Transform components replication flags (each set bit corresponds to one float value in payload)
+			auto& flags = item.TransformFlags; 
+			// Calculate NetTransform payload size that will be read from stream based on the flags from item header
+			uint64_t netTransformPayloadSize = CountSetBits((int)flags) * sizeof(float);
+
+			// Validate if transform values does not exceed remaining message buffer size
+			if (netTransformPayloadSize > remainingMessageBufferSize)
+			{
+				PT_CORE_ERROR("Failed to read payload: item.TransformFlags does not match remaining message buffer size ({} bytes)", remainingMessageBufferSize);
+				DUMP_PAYLOAD_ITEM_HEADER();
+			}
+
+			// Find entity by UUID
 			Entity entity = scene->FindByID(item.EntityUUID);
 
 			if (!entity.IsValid())
 			{
-				stream.SetStreamPosition(entityPayloadStart + item.PayloadSize);
+				PT_CORE_ERROR("Failed to find Entity {} (entity_index={}, entity_count={})", item.EntityUUID, entityIndex, header.EntityCount);
+				STREAM_SKIP_PAYLOAD_ITEM();
 				continue;
 			}
 
+			// Check if entity has NetworkComponent
 			if (!entity.HasComponent<NetworkComponent>())
 			{
-				stream.SetStreamPosition(entityPayloadStart + item.PayloadSize);
+				PT_CORE_ERROR("Entity {} is missing NetworkComponent (entity_index={}, entity_count={})", item.EntityUUID, entityIndex, header.EntityCount);
+				STREAM_SKIP_PAYLOAD_ITEM();
 				continue;
 			}
 
+			// Get entity NetworkComponent
 			auto& net = entity.GetComponent<NetworkComponent>();
+
+			////////////////////////////////////////////// TransformComponent Replication //////////////////////////////////////////////
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& velocity = entity.GetComponent<VelocityComponent>();
 
 			auto& netTransform = net.NetTransform;
-			auto& flags = item.TransformReplicationFlags;
 			net.NetTransform.RepFlags = flags;
 			using ReplicationFlags = NetTransform::ReplicationFlags;
-
+			
+			// If any transform components is replicated, reset NetTransform::SyncState
 			if (flags != ReplicationFlags::None)
 			{
+				auto& syncState = netTransform.SyncState;
 				netTransform.PreviousTransform = netTransform.CurrentTransform;
-				netTransform.SyncState.PacketDelay = netTransform.SyncState.PacketTimer.Elapsed();
-				netTransform.SyncState.PacketTimer.Reset();
-				netTransform.SyncState.NewUpdate = true;
+				syncState.PacketDelay = syncState.PacketTimer.Elapsed();
+				syncState.PacketTimer.Reset();
+				syncState.NewUpdate = true;
 			}
-
+			
+			// Read transform values from message buffer
 			if (EnumHasAllFlags(flags, ReplicationFlags::All))
 			{
 				stream.ReadRaw(netTransform.CurrentTransform);
@@ -128,30 +196,71 @@ namespace proton {
 					stream.ReadRaw(angularVelocity);
 			}
 
-			// For each script
+			////////////////////////////////////////////// ScriptComponent Replication //////////////////////////////////////////////
+			// Loop for each script in payload
 			for (uint32_t i = 0; i < item.ScriptCount; i++)
 			{
 				uint32_t scriptIndex;
 				uint32_t fieldCount;
 
-				stream.ReadRaw(scriptIndex);
-				stream.ReadRaw(fieldCount);
+				if (!stream.ReadRaw(scriptIndex))
+				{
+					PT_CORE_ERROR("Failed to read script index: Out of memory (i={})", i);
+					DUMP_PAYLOAD_ITEM_HEADER();
+					return;
+				}
 
-				auto& script = net.ReplicatedScripts.at(scriptIndex);
+				if (!stream.ReadRaw(fieldCount))
+				{
+					PT_CORE_ERROR("Failed to read script field count: Out of memory (i={})", i);
+					DUMP_PAYLOAD_ITEM_HEADER();
+					return;
+				}
 
-				// For each script field
+				if (scriptIndex >= net.ReplicatedScripts.size())
+				{
+					PT_CORE_ERROR("Script index out of bounds (net.ReplicatedScripts[{}])", scriptIndex);
+					DUMP_PAYLOAD_ITEM_HEADER(); STREAM_SKIP_PAYLOAD_ITEM();
+					break;
+				}
+				auto& script = net.ReplicatedScripts[scriptIndex];
+
+				// Loop for each script field in payload
+				bool success = true;
 				for (uint32_t j = 0; j < fieldCount; j++)
 				{
 					uint32_t fieldIndex;
-					stream.ReadRaw(fieldIndex);
+					if (!stream.ReadRaw(fieldIndex))
+					{
+						PT_CORE_ERROR("Failed to read script field index: Out of memory (i={}, j={})", i, j);
+						DUMP_PAYLOAD_ITEM_HEADER();
+						return;
+					}
 
-					auto& field = script.ReplicatedFields.at(fieldIndex);
-					stream.ReadData((char*)field.Data, field.Size);
+					if (fieldIndex >= script.ReplicatedFields.size())
+					{
+						PT_CORE_ERROR("Script field index out of bounds (net.ReplicatedScripts[{}], script.ReplicatedFields[{}])", scriptIndex, fieldIndex);
+						DUMP_PAYLOAD_ITEM_HEADER(); STREAM_SKIP_PAYLOAD_ITEM();
+						success = false;
+						break;
+					}
+
+					auto& field = script.ReplicatedFields[fieldIndex];
+					
+					if (!stream.ReadData((char*)field.Data, field.Size))
+					{
+						PT_CORE_ERROR("Failed to read script field data: Out of memory (i={}, j={})", i, j);
+						DUMP_PAYLOAD_ITEM_HEADER();
+						return;
+					}
 
 					// Call notify function
 					if (field.NotifyFunction)
 						field.NotifyFunction(&entity);
 				}
+
+				if (!success)
+					break;
 			}
 		}
 	}
@@ -215,9 +324,7 @@ namespace proton {
 		for (auto [clientID, clientInfo] : m_Server->m_ConnectedClients)
 		{
 			if (clientInfo.Status == ConnectionStatus::Connected)
-			{
 				Server_SendReplicationMessage(clientID);
-			}
 		}
 	}
 
@@ -413,7 +520,7 @@ namespace proton {
 			NetMessageReplicate::PayloadItem itemHeader;
 			itemHeader.EntityUUID = entity.GetUUID();
 			itemHeader.ScriptCount = 0;
-			auto& flags = itemHeader.TransformReplicationFlags;
+			auto& flags = itemHeader.TransformFlags;
 			flags = ReplicationFlags::None;
 
 			uint64_t entityPayloadStart = stream.GetStreamPosition();
@@ -529,7 +636,7 @@ namespace proton {
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////
 
-			if (itemHeader.TransformReplicationFlags == ReplicationFlags::None && itemHeader.ScriptCount == 0)
+			if (itemHeader.TransformFlags == ReplicationFlags::None && itemHeader.ScriptCount == 0)
 			{
 				// Nothing was replicated, skip entity replication
 				stream.SetStreamPosition(entityPayloadStart);
@@ -537,7 +644,7 @@ namespace proton {
 			}
 
 			// Calculate entity buffer size
-			itemHeader.PayloadSize = stream.GetStreamPosition() - entityPayloadStart;
+			itemHeader.PayloadSize = stream.GetStreamPosition() - entityPayloadStart - sizeof(itemHeader);
 
 			// Write entity payload header
 			stream.WriteRawAt(entityPayloadStart, itemHeader);

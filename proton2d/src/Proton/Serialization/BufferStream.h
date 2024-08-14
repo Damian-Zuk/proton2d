@@ -20,6 +20,7 @@ namespace proton {
 
 		// Returns Buffer with currently written size
 		Buffer GetBuffer() const { return Buffer(m_TargetBuffer, m_BufferPosition); }
+		const Buffer& GetTargetBuffer() const { return m_TargetBuffer; }
 	private:
 		Buffer m_TargetBuffer;
 		uint64_t m_BufferPosition = 0;
@@ -39,6 +40,7 @@ namespace proton {
 
 		// Returns Buffer with currently read size
 		Buffer GetBuffer() const { return Buffer(m_TargetBuffer, m_BufferPosition); }
+		const Buffer& GetTargetBuffer() const { return m_TargetBuffer; }
 	private:
 		Buffer m_TargetBuffer;
 		uint64_t m_BufferPosition = 0;

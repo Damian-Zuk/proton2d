@@ -33,14 +33,14 @@ namespace proton {
 		void Server_SendAllDespawnedEntities(Scene* scene, ClientID clientID); // for late joining clients
 
 		// If `clientID` is 0, then send update to all clients otherwise to specific client
-		// If `forceReplication` is true, then replicate all networked entities despite no components changes
+		// If `forceReplication` is true, then replicate all components despite no changes
 		void Server_SendReplicationMessage(ClientID clientID = 0, bool forceReplication = false);
 
 	private:
 		Client* m_Client = nullptr;
 		Server* m_Server = nullptr;
 
-		// Spawned and despawned entities (server-only)
+		// Spawned and despawned entities tracking (server-only)
 		struct SceneData
 		{
 			std::queue<UUID> SpawnedEntityQueue;

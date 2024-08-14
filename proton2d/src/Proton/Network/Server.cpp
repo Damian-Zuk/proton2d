@@ -433,10 +433,10 @@ namespace proton {
 			clientInfo.Status = ConnectionStatus::Connecting;
 
 			PT_CORE_INFO("New connection from client {}", clientInfo.ConnectionDesc);
-			{
-				std::lock_guard<std::mutex> lock(m_ConnectionStatusChangeQueueMutex);
-				m_ConnectionStatusChangeQueue.push(std::make_pair(clientInfo.ID, clientInfo.Status));
-			}
+			
+			// Add entry to queue to process on main thread
+			std::lock_guard<std::mutex> lock(m_ConnectionStatusChangeQueueMutex);
+			m_ConnectionStatusChangeQueue.push(std::make_pair(clientInfo.ID, clientInfo.Status));
 
 			break;
 		}
