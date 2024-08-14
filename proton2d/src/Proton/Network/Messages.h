@@ -71,8 +71,10 @@ namespace proton {
 
 		struct PayloadItem
 		{
+			using ReplicationFlags = NetTransform::ReplicationFlags;
+
 			UUID EntityUUID;
-			NetTransform::ReplicationFlags TransformFlags;
+			ReplicationFlags TransformFlags = ReplicationFlags::None;
 			uint32_t ScriptCount;
 			uint64_t PayloadSize;
 		};

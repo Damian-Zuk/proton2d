@@ -72,9 +72,9 @@ namespace proton {
 		}
 	}
 
-	static inline double round(float f)
+	static inline float round(float f)
 	{
-		return std::round((double)f * 100000) / 100000;
+		return (float)(std::round((double)f * 100000.0) / 100000.0);
 	}
 
 	void NetStatistics::LogStatsToFile(ClientID clientID, const NetworkStats& stats)

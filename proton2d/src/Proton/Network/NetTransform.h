@@ -30,7 +30,6 @@ namespace proton {
 		Timer PacketTimer;
 
 		glm::vec2 ExtrapolatedPoint;
-		glm::vec2 EstimatedVelocity;
 		float Error = 0.0f;
 
 		bool ReconcileStarted = false;
@@ -54,13 +53,7 @@ namespace proton {
 
             Rotation = 1 << 4,
 
-			LinearVelocityX = 1 << 5,
-			LinearVelocityY = 1 << 6, 
-			LinearVelocity = LinearVelocityX | LinearVelocityY,
-
-			AngularVelocity = 1 << 7,
-
-            All = Position | Scale | Rotation | LinearVelocity | AngularVelocity,
+            All = Position | Scale | Rotation,
         };
 
 		struct Transform
@@ -68,15 +61,12 @@ namespace proton {
 			glm::vec2 Position { 0.0f, 0.0f };
 			glm::vec2 Scale { 0.0f, 0.0f };
 			float Rotation = 0.0f;
-			glm::vec2 LinearVelocity { 0.0f, 0.0f };
-			float AngularVelocity = 0.0f;
 		};
 
 		ReplicationFlags RepFlags;
 
 		NetSyncParams SyncParams;
 		NetSyncState SyncState;
-
 		Transform PreviousTransform;
 		Transform CurrentTransform;
 		

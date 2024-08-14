@@ -680,14 +680,6 @@ namespace proton {
 					ImGui::DragFloat2("Previous Pos", prev);
 					ImGui::DragFloat2("Current Pos", curr);
 					ImGui::DragFloat2("Extrapolated Pos", extr);
-					
-					ImGui::Dummy({ 0, 5 });
-					float prevVel[] = { netTransform.PreviousTransform.LinearVelocity.x, netTransform.PreviousTransform.LinearVelocity.y };
-					float currVel[] = { netTransform.CurrentTransform.LinearVelocity.x, netTransform.CurrentTransform.LinearVelocity.y };
-					float estmVel[] = { netTransform.SyncState.EstimatedVelocity.x, netTransform.SyncState.EstimatedVelocity.y };
-					ImGui::DragFloat2("Previous Vel", prevVel);
-					ImGui::DragFloat2("Current Vel", currVel);
-					ImGui::DragFloat2("Estimated Vel", estmVel);
 
 					float prevRot = netTransform.PreviousTransform.Rotation;
 					float currRot = netTransform.CurrentTransform.Rotation;
