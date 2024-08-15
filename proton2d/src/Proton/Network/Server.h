@@ -60,7 +60,7 @@ namespace proton {
 
 		uint32_t GetConnectedClientsCount() const;
 		void SetClientName(ClientID clientID, const char* name);
-		void SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function);
+		void SetClientActionCallback(uint32_t clientID, NetworkReaderDelegate function);
 		void KickClient(ClientID clientID);
 
 		void OnEntitySpawned(Scene* scene, UUID entityUUID);
@@ -132,7 +132,7 @@ namespace proton {
 		std::unordered_map<ClientID, Entity> m_ClientToEntityMap;
 
 		// Player action callbacks
-		std::unordered_map<uint32_t, StreamReaderDelegate> m_PlayerActionCallbacks;
+		std::unordered_map<uint32_t, NetworkReaderDelegate> m_PlayerActionCallbacks;
 
 		// Debug
 		static float s_FakeServerLag;

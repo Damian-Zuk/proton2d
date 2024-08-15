@@ -40,7 +40,7 @@ namespace proton {
 			//	continue;
 
 			// Elapsed time from previous state to current (last packet update)
-			float elapsed = syncState.PacketTimer.Elapsed();
+			float elapsed = syncState.ReplicationTimer.Elapsed();
 
 			// Synchronize with Server State
 			switch (syncParams.SyncMethod)
@@ -142,7 +142,7 @@ namespace proton {
 						syncState.ReconcileTimer.Reset();
 						syncState.ReconcileCooldownTimer.Reset();
 
-						body->SetGravityScale(0.0f);
+						//body->SetGravityScale(0.0f);
 					}
 				}
 
@@ -159,7 +159,7 @@ namespace proton {
 					if (distanceError < 0.005f)
 					{
 						syncState.ReconcileStarted = false;
-						body->SetGravityScale(1.0f);
+						//body->SetGravityScale(1.0f);
 					}	
 				}
 				break;

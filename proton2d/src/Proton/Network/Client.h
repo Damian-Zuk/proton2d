@@ -35,7 +35,7 @@ namespace proton {
 		void MainThread_OnUpdate(float ts);
 		void SendHandshake();
 		void OnNetworkMessage(ISteamNetworkingMessage* message);
-		void SendPlayerAction(StreamWriterDelegate sendFunction);
+		void SendPlayerAction(NetworkWriterDelegate sendFunction);
 		
 		// Client lower-level functionality
 		void NetworkThreadFunction();

@@ -1,5 +1,5 @@
 #pragma once
-#include "Proton/Serialization/BufferStream.h"
+#include "Proton/Network/NetworkStream.h"
 
 #define PROTON_NET_PROTOCOL_VERSION 1
 
@@ -30,9 +30,6 @@ namespace proton {
 		NetConnectionEndCode_EngineProtocolMismatch = 2003,
 		NetConnectionEndCode_MaxConnections = 2004
 	};
-
-	using StreamReaderDelegate = std::function<void(BufferStreamReader& stream)>;
-	using StreamWriterDelegate = std::function<void(BufferStreamWriter& stream)>;
 
 	std::string NetModeToString(NetMode netMode);
 	NetMode StringToNetMode(const std::string& netModeStr);

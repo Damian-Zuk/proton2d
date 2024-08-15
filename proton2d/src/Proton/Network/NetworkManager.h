@@ -62,7 +62,7 @@ namespace proton {
 
 		// Server properties
 		uint32_t m_MaxServerConnections = 100;
-		uint16_t m_ServerTickRate = 32;
+		uint16_t m_ServerTickRate = 64;
 
 		// Tickrate timer
 		float m_ServerTickTime = 1.0f / m_ServerTickRate;

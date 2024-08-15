@@ -20,6 +20,9 @@ namespace proton {
 		EntityDespawn,
 		EntityReplicate,
 
+		// [Client -> Server]
+		SequenceIndex,
+
 		PlayerAction, // Delete me
 
 		// [Client <-> Server]

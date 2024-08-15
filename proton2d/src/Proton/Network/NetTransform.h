@@ -24,17 +24,16 @@ namespace proton {
 
 	struct NetSyncState
 	{
-		Timer ExtrapolationTimer;
+		Timer ReplicationTimer;
 		Timer ReconcileTimer;
 		Timer ReconcileCooldownTimer;
-		Timer PacketTimer;
-
-		glm::vec2 ExtrapolatedPoint;
-		float Error = 0.0f;
 
 		bool ReconcileStarted = false;
 		bool NewUpdate = true;
 		float PacketDelay = 0.0f;
+
+		glm::vec2 ExtrapolatedPoint;
+		float Error = 0.0f;
 	};
 
 	struct NetTransform

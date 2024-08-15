@@ -21,8 +21,9 @@ namespace proton {
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
 		m_NetReplicator(MakeUnique<NetReplicator>(this))
 	{
-		// 1 MB scratch buffer
-		m_ScratchBuffer.Allocate(1048576);
+		// 128KB preallocated buffer for writting network messages
+		// Will be automaticly reallocated by NetworkStreamWriter when needed
+		m_ScratchBuffer.Allocate(131072);
 	}
 
 	Client::~Client()
@@ -83,14 +84,14 @@ namespace proton {
 		NetMessageHandshake header;
 		header.EngineProtocolVersion = PROTON_NET_PROTOCOL_VERSION;
 		header.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
-		BufferStreamWriter stream(m_ScratchBuffer);
+		NetworkStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(header);
 		SendBuffer(stream.GetBuffer());
 	}
 
-	void Client::SendPlayerAction(StreamWriterDelegate sendFunction)
+	void Client::SendPlayerAction(NetworkWriterDelegate sendFunction)
 	{
-		BufferStreamWriter stream(m_ScratchBuffer);
+		NetworkStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(MessageType::PlayerAction);
 		sendFunction(stream);
 		SendBuffer(stream.GetBuffer());
@@ -99,7 +100,7 @@ namespace proton {
 	void Client::OnNetworkMessage(ISteamNetworkingMessage* message)
 	{
 		Buffer buffer(message->m_pData, message->m_cbSize);
-		BufferStreamReader stream(buffer);
+		NetworkStreamReader stream(buffer);
 
 		MessageType packetType;
 		stream.ReadRaw(packetType);

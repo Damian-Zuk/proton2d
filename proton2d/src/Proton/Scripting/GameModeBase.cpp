@@ -40,7 +40,7 @@ namespace proton {
         GetNetworkManager()->GetServer()->SetClientEntity(clientID, entity);
     }
 
-    void GameModeBase::Server_SetPlayerActionCallback(ClientID clientID, StreamReaderDelegate function)
+    void GameModeBase::Server_SetPlayerActionCallback(ClientID clientID, NetworkReaderDelegate function)
     {
         Server* server = m_Scene->m_GameInstance->GetNetworkManager()->GetServer();
         if (!server)
@@ -51,7 +51,7 @@ namespace proton {
         server->SetClientActionCallback(clientID, function);
     }
 
-    void GameModeBase::Client_SendPlayerAction(StreamWriterDelegate function)
+    void GameModeBase::Client_SendPlayerAction(NetworkWriterDelegate function)
     {
         Client* client = m_Scene->m_GameInstance->GetNetworkManager()->GetClient();
         if (!client)

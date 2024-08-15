@@ -19,9 +19,9 @@ namespace proton {
 		NetReplicator(Client* client);
 		NetReplicator(Server* server);
 
-		void Client_ProcessReplicationMessage(BufferStreamReader& stream);
-		void Client_OnEntitySpawnMessage(BufferStreamReader& stream);
-		void Client_OnEntityDespawnMessage(BufferStreamReader& stream);
+		void Client_ProcessReplicationMessage(NetworkStreamReader& stream);
+		void Client_OnEntitySpawnMessage(NetworkStreamReader& stream);
+		void Client_OnEntityDespawnMessage(NetworkStreamReader& stream);
 
 		void Server_OnUpdate();
 		void Server_OnClientConnected(ClientID clientID);

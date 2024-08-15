@@ -51,6 +51,31 @@ namespace proton {
 			Data = new uint8_t[size];
 		}
 
+		void Reallocate(uint64_t newSize)
+		{
+			if (newSize <= Size)
+				return;
+
+			if (newSize == 0) 
+			{
+				Release();
+				return;
+			}
+
+			if (Data == nullptr)
+			{
+				Allocate(newSize);
+				return;
+			}
+
+			void* newBuffer = new uint8_t[newSize];
+			memcpy(newBuffer, Data, Size);
+
+			Release();
+			Data = newBuffer;
+			Size = newSize;
+		}
+
 		void Release()
 		{
 			delete[](uint8_t*)Data;

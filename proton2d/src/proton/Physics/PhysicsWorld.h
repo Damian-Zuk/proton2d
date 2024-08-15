@@ -69,8 +69,8 @@ namespace proton {
 		};
 		std::queue<JointInfo> m_JointsCreateQueue;
 
-		int m_PhysicsVelocityIterations = 5;
-		int m_PhysicsPositionIterations = 5;
+		int m_PhysicsVelocityIterations = 2;
+		int m_PhysicsPositionIterations = 6;
 		float m_Gravity = 9.8f;
 		
 		PhysicsContactListener m_ContactListener;

@@ -49,7 +49,7 @@ namespace proton {
 	////                                       Client Replicator                                       ////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void NetReplicator::Client_ProcessReplicationMessage(BufferStreamReader& stream)
+	void NetReplicator::Client_ProcessReplicationMessage(NetworkStreamReader& stream)
 	{
 		PROFILE_FUNCTION();
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
@@ -65,7 +65,7 @@ namespace proton {
 
 			if (!stream.ReadRaw(item))
 			{
-				PT_CORE_ERROR("Failed to read payload item header: Stream buffer out of memory. (entity_index={}, entity_count={})", entityIndex, header.EntityCount);
+				PT_CORE_ERROR("Failed to read payload item header: Stream out of memory. (entity_index={}, entity_count={})", entityIndex, header.EntityCount);
 				return;
 			}
 
@@ -135,8 +135,8 @@ namespace proton {
 			{
 				auto& syncState = netTransform.SyncState;
 				netTransform.PreviousTransform = netTransform.CurrentTransform;
-				syncState.PacketDelay = syncState.PacketTimer.Elapsed();
-				syncState.PacketTimer.Reset();
+				syncState.PacketDelay = syncState.ReplicationTimer.Elapsed();
+				syncState.ReplicationTimer.Reset();
 				syncState.NewUpdate = true;
 			}
 			
@@ -186,14 +186,14 @@ namespace proton {
 
 				if (!stream.ReadRaw(scriptIndex))
 				{
-					PT_THROW_ERROR("Failed to read script index: Stream buffer out of memory (i={})", i);
+					PT_THROW_ERROR("Failed to read script index: Stream out of memory (i={})", i);
 					DUMP_PAYLOAD_ITEM_HEADER();
 					return;
 				}
 
 				if (!stream.ReadRaw(fieldCount))
 				{
-					PT_THROW_ERROR("Failed to read script field count: Stream buffer out of memory (i={})", i);
+					PT_THROW_ERROR("Failed to read script field count: Stream out of memory (i={})", i);
 					DUMP_PAYLOAD_ITEM_HEADER();
 					return;
 				}
@@ -213,7 +213,7 @@ namespace proton {
 					uint32_t fieldIndex;
 					if (!stream.ReadRaw(fieldIndex))
 					{
-						PT_THROW_ERROR("Failed to read script field index: Stream buffer out of memory (i={}, j={})", i, j);
+						PT_THROW_ERROR("Failed to read script field index: Stream out of memory (i={}, j={})", i, j);
 						DUMP_PAYLOAD_ITEM_HEADER();
 						return;
 					}
@@ -247,7 +247,7 @@ namespace proton {
 		}
 	}
 
-	void NetReplicator::Client_OnEntitySpawnMessage(BufferStreamReader& stream)
+	void NetReplicator::Client_OnEntitySpawnMessage(NetworkStreamReader& stream)
 	{
 		PROFILE_FUNCTION();
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
@@ -270,7 +270,7 @@ namespace proton {
 		}
 	}
 
-	void NetReplicator::Client_OnEntityDespawnMessage(BufferStreamReader& stream)
+	void NetReplicator::Client_OnEntityDespawnMessage(NetworkStreamReader& stream)
 	{
 		PROFILE_FUNCTION();
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
@@ -339,7 +339,7 @@ namespace proton {
 			return;
 
 		NetMessageSpawn header;
-		BufferStreamWriter stream(m_Server->m_ScratchBuffer);
+		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(header));
 
 		uint32_t spawned = 0;
@@ -379,7 +379,7 @@ namespace proton {
 			return;
 
 		NetMessageDespawn header;
-		BufferStreamWriter stream(m_Server->m_ScratchBuffer);
+		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(header));
 
 		uint32_t despawned = 0;
@@ -416,7 +416,7 @@ namespace proton {
 		auto& spawnedAll = sceneData.SpawnedAll;
 		if (spawnedAll.size() > 0)
 		{
-			BufferStreamWriter stream(m_Server->m_ScratchBuffer);
+			NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 
 			NetMessageSpawn msg;
 			msg.EntityCount = (uint32_t)spawnedAll.size();
@@ -442,7 +442,7 @@ namespace proton {
 		auto& despawnedAll = sceneData.DespawnedAll;
 		if (despawnedAll.size() > 0)
 		{
-			BufferStreamWriter stream(m_Server->m_ScratchBuffer);
+			NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 
 			NetMessageDespawn msg;
 			msg.EntityCount = (uint32_t)despawnedAll.size();
@@ -471,7 +471,7 @@ namespace proton {
 			return;
 
 		NetMessageReplicate msgHeader;
-		BufferStreamWriter stream(m_Server->m_ScratchBuffer);
+		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(msgHeader));
 
 		using ReplicationFlags = NetTransform::ReplicationFlags;

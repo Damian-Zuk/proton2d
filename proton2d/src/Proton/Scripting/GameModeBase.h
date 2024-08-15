@@ -42,11 +42,11 @@ namespace proton {
 		virtual void Server_OnClientConnected(ClientID clientID) {}
 		virtual void Server_OnClientDisconnected(ClientID clientID) {}
 		void Server_SetClientEntity(ClientID clientID, Entity entity) const;
-		void Server_SetPlayerActionCallback(ClientID clientID, StreamReaderDelegate function);
+		void Server_SetPlayerActionCallback(ClientID clientID, NetworkReaderDelegate function);
 
 		virtual void Client_OnConnected(ClientID clientID) {}
 		virtual void Client_OnDisconnected() {}
-		void Client_SendPlayerAction(StreamWriterDelegate function);
+		void Client_SendPlayerAction(NetworkWriterDelegate function);
 		
 	
 		bool HasAuthority() const;

@@ -25,9 +25,6 @@
 
 namespace proton {
 
-	// 1 MB scratch buffer for writting messages
-	constexpr static size_t s_ScratchBufferSize = 1048576;
-
 	// Can only have one server instance per-process
 	Server* Server::s_Instance = nullptr;
 	float Server::s_FakeServerLag = 0.0f;
@@ -37,7 +34,9 @@ namespace proton {
 		m_NetReplicator(MakeUnique<NetReplicator>(this)),
 		m_NetStatistics(MakeUnique<NetStatistics>(this))
 	{
-		m_ScratchBuffer.Allocate(s_ScratchBufferSize);
+		// Preallocated 128 KB buffer for writting network messages
+		// Will be automaticly reallocated by NetworkStreamWriter when needed
+		m_ScratchBuffer.Allocate(131072);
 		SetPacketFakeLag(s_FakeServerLag);
 	}
 
@@ -82,8 +81,8 @@ namespace proton {
 	{
 		uint32_t clientID = message->m_conn;
 		Buffer buffer(message->m_pData, message->m_cbSize);
-		BufferStreamReader reader(buffer);
-		BufferStreamWriter writer(m_ScratchBuffer);
+		NetworkStreamReader reader(buffer);
+		NetworkStreamWriter writer(m_ScratchBuffer);
 
 		MessageType packetType;
 		reader.ReadRaw(packetType);
@@ -135,7 +134,7 @@ namespace proton {
 			reader.SkipBytes(sizeof(NetMassagePlayerAction));
 			if (m_PlayerActionCallbacks.find(clientID) != m_PlayerActionCallbacks.end())
 			{
-				StreamReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
+				NetworkReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
 				callback(reader);
 			}
 			else
@@ -243,7 +242,7 @@ namespace proton {
 		m_Interface->SetConnectionName((HSteamNetConnection)clientID, name);
 	}
 
-	void Server::SetClientActionCallback(uint32_t clientID, StreamReaderDelegate function)
+	void Server::SetClientActionCallback(uint32_t clientID, NetworkReaderDelegate function)
 	{
 		m_PlayerActionCallbacks[clientID] = function;
 	}
