@@ -17,8 +17,6 @@ public:
 
 	uint32_t GetLocalPlayerID() const;
 
-	void SpawnRandomBox(const glm::vec2& position);
-
 private:
 	std::map<uint32_t, Player*> m_RemotePlayers;
 	Player* m_LocalPlayer;

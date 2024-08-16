@@ -28,6 +28,7 @@ namespace proton {
 	class NetworkManager;
 	class GameInstance;
 	class NetReplicator;
+	class NetTransformSystem;
 	class NetStatistics;
 
 	class Server
@@ -104,6 +105,7 @@ namespace proton {
 		NetworkManager* m_NetworkManager;
 
 		Unique<NetReplicator> m_NetReplicator;
+		Unique<NetTransformSystem> m_NetTransformSystem;
 		Unique<NetStatistics> m_NetStatistics;
 
 		// GameNetworkingSockets API

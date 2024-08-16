@@ -59,8 +59,6 @@ namespace proton {
 		void SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction = nullptr);
 		void SetReplicatedData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction = nullptr);
 
-		bool IsNetworkPhysicsSyncEnabled() const;
-
 		bool HasAuthority() const;
 		bool IsRunningServer() const;
 		bool IsRunningClient() const;

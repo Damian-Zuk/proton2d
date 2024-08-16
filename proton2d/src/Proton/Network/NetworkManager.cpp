@@ -3,6 +3,7 @@
 #include "Proton/Network/Client.h"
 #include "Proton/Network/Server.h"
 #include "Proton/Network/NetTransformSystem.h"
+
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"
 
@@ -39,15 +40,19 @@ namespace proton {
 		if (!m_IsNetworkActive)
 			return;
 
+		m_IsNetworkTick = false;
+		if (m_TickElapsed <= 0)
+		{
+			m_IsNetworkTick = true;
+			m_TickElapsed = m_TickTime;
+		}
+		else
+			m_TickElapsed -= ts;
+
 		if (IsNetModeServer())
 		{
-			if (m_ServerTickElapsed <= 0)
-			{
+			if (m_IsNetworkTick)
 				m_Server->MainThread_OnTick();
-				m_ServerTickElapsed = m_ServerTickTime;
-			}
-			else
-				m_ServerTickElapsed -= ts;
 		}
 		else
 		{
@@ -162,10 +167,10 @@ namespace proton {
 		m_MaxServerConnections = value;
 	}
 
-	void NetworkManager::SetServerTickRate(uint16_t tickRate)
+	void NetworkManager::SetTickRate(uint16_t tickRate)
 	{
-		m_ServerTickRate = tickRate;
-		m_ServerTickTime = 1.0f / tickRate;
+		m_TickRate = tickRate;
+		m_TickTime = 1.0f / tickRate;
 	}
 
 	ConnectionStatus NetworkManager::GetClientConnectionStatus() const

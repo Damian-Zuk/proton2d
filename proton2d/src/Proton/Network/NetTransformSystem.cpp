@@ -1,8 +1,12 @@
 #include "ptpch.h"
 #include "Proton/Network/NetTransformSystem.h"
-#include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/Client.h"
 #include "Proton/Network/Server.h"
+#include "Proton/Network/Messages.h"
+#include "Proton/Network/NetworkManager.h"
+
+#include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Physics/PhysicsWorld.h"
 
 #include <box2d/b2_world.h>
@@ -10,71 +14,145 @@
 
 namespace proton {
 
-	void NetTransformSystem::Update(Scene* scene, float ts)
+	NetTransformSystem::NetTransformSystem(Client* client)
+		: m_Client(client), m_NetworkManager(client->m_NetworkManager)
+	{
+	}
+
+	NetTransformSystem::NetTransformSystem(Server* server)
+		: m_Server(server), m_NetworkManager(server->m_NetworkManager)
+	{
+	}
+
+	void NetTransformSystem::Client_SendSequenceNumberMessage()
 	{
 		PROFILE_FUNCTION();
-
-		bool isPhysicsTick = scene->m_PhysicsTick;
-
-		NetworkManager* netManager = scene->GetNetworkManager();
-		if (netManager->IsNetModeClient() && !netManager->m_ClientGameStateInitialized)
+		
+		if (m_SequenceNumbersToSend.empty())
 			return;
 
-		auto view = scene->m_Registry.view<NetworkComponent, TransformComponent, VelocityComponent>();
-		for (auto e : view)
+		NetworkStreamWriter stream(m_Client->m_ScratchBuffer);
+		NetMessageTransformSequenceNumber header;
+		stream.SkipBytes(sizeof(header));
+
+		for (const auto& item : m_SequenceNumbersToSend)
 		{
-			Entity entity(e, scene);
-			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(e);
+			stream.WriteRaw(item);
+			header.EntityCount++;
+		}
+		
+		stream.WriteRawAt(0, header);
+		m_Client->SendBuffer(stream.GetBuffer());
+		m_SequenceNumbersToSend.clear();
+	}
+
+	void NetTransformSystem::Server_OnSequenceNumberMessage(ClientID clientID, NetworkStreamReader& stream)
+	{
+		PROFILE_FUNCTION();
+		
+		NetMessageTransformSequenceNumber header;
+		stream.ReadRaw(header);
+
+		// Get active scene based on client entity
+		auto clientEntityIt = m_Server->m_ClientToEntityMap.find(clientID);
+		Scene* scene = clientEntityIt != m_Server->m_ClientToEntityMap.end() 
+			? clientEntityIt->second.GetScene() : m_Server->m_GameInstance->GetActiveScene();
+		
+		for (uint32_t i = 0; i < header.EntityCount; i++)
+		{
+			NetMessageTransformSequenceNumber::PayloadItem item;
+			if (!stream.ReadRaw(item))
+			{
+				PT_THROW_ERROR("Failed to read sequence number: Stream out of memory (client_id={}, entity_count={}, buffer_size={})",
+					clientID, header.EntityCount, stream.GetTargetBuffer().Size);
+
+				m_Server->KickClient(clientID);
+				return;
+			}
+
+			if (Entity entity = scene->FindByID(item.EnittyUUID))
+			{
+				if (!entity.HasComponent<NetworkComponent>())
+				{
+					PT_THROW_ERROR("Entity {} does not have NetworkComponent (client_id={})", item.EnittyUUID, clientID);
+					continue;
+				}
+
+				auto& net = entity.GetComponent<NetworkComponent>();
+				auto& data = net.NetTransform.ClientDataMap[clientID];
+				data.SequenceNumber = item.SequenceNumber;
+			}
+		}
+	}
+
+	static inline bool IsWithinPrecision(const glm::vec2& currentDelta, const glm::vec2& predictedDelta)
+	{
+		constexpr float precision = 8.0f;
+		const float predictedDeltaMax = glm::compMax(glm::abs(predictedDelta));
+		const float currentDeltaMax = glm::compMax(glm::abs(currentDelta));
+		return predictedDeltaMax > 1e-6f && currentDeltaMax < predictedDeltaMax * precision;
+	}
+
+	void NetTransformSystem::OnUpdate(Scene* scene, float ts)
+	{
+		PROFILE_FUNCTION();
+		
+		using Transform = NetTransform::Transform;
+		using ReconcileState = NetTransform::ReconcileState;
+
+		Timer testTimer;
+		
+		auto view = scene->GetAllEntitiesWith<NetworkComponent, TransformComponent, VelocityComponent>();
+		for (auto _entity : view)
+		{
+			Entity entity(_entity, scene);
+			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(_entity);
 			
 			auto& netTransform = net.NetTransform;
-			auto& previous = netTransform.PreviousTransform;
-			auto& current = netTransform.CurrentTransform;
-			auto& syncState = netTransform.SyncState;
-			auto& syncParams = netTransform.SyncParams;
+			auto& lastAuth = netTransform.LastAuthoritativeTransform;
+			auto& prevAuth = netTransform.PrevAuthoritativeTransform;
+			auto& predictedTransform = netTransform.PredictedTransform;
 
-			//if (velocity.LinearVelocity == glm::vec2{ 0.0f } && current.LinearVelocity == glm::vec2{ 0.0f })
-			//	continue;
+			bool isReconciling = EnumHasAnyFlags(netTransform.State, ReconcileState::All);
 
-			bool rbSync = syncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
-			//if (glm::distance(current.Position, rbSync ? transform.WorldPosition : transform.LocalPosition) < 0.0001f)
-			//	continue;
-
-			// Elapsed time from previous state to current (last packet update)
-			float elapsed = syncState.ReplicationTimer.Elapsed();
-
-			// Synchronize with Server State
-			switch (syncParams.SyncMethod)
+			switch (netTransform.Method)
 			{
-			case NetSyncMethod::None:
+			case NetTransform::SyncMethod::None:
 			{
-				if (syncState.NewUpdate)
+				if (!netTransform.ReplicatedThisFrame)
+					break;
+
+				// Immediately set authoritative transform values
+				if (EnumHasAnyFlags(net.NetTransform.Flags, NetTransform::ReplicationFlags::Position))
 				{
-					// Immediate set
-					if (EnumHasAnyFlags(net.NetTransform.RepFlags, NetTransform::ReplicationFlags::Position))
-					{
-						entity.SetLocalPosition({ current.Position.x, current.Position.y, transform.LocalPosition.z });
-					}
-					if (EnumHasAnyFlags(net.NetTransform.RepFlags, NetTransform::ReplicationFlags::Rotation))
-					{
-						transform.Rotation = current.Rotation;
-					}
+					entity.SetLocalPosition({ lastAuth.Position.x, lastAuth.Position.y, transform.LocalPosition.z });
+				}
+				if (EnumHasAnyFlags(net.NetTransform.Flags, NetTransform::ReplicationFlags::Scale))
+				{
+					transform.Scale = { lastAuth.Scale.x, lastAuth.Scale.y };
+				}
+				if (EnumHasAnyFlags(net.NetTransform.Flags, NetTransform::ReplicationFlags::Rotation))
+				{
+					transform.Rotation = lastAuth.Rotation;
 				}
 				break;
 			}
-			case NetSyncMethod::Interpolate:
+			case NetTransform::SyncMethod::Interpolation:
 			{
-				if (elapsed < syncState.PacketDelay)
-				{
-					// Interpolate
-					float alpha = glm::clamp(elapsed / syncState.PacketDelay, 0.0f, 1.0f);
+				// Elapsed time from last authorative state update
+				float elapsed = netTransform.ReplicationTimer.Elapsed();
 
-					glm::vec2 interpolated = glm::mix(previous.Position, current.Position, alpha);
+				if (elapsed < netTransform.LastReplicationInterval)
+				{
+					// Interpolate between last two authoritative transforms
+					float alpha = glm::clamp(elapsed / netTransform.LastReplicationInterval, 0.0f, 1.0f);
+
+					glm::vec2 interpolated = glm::mix(prevAuth.Position, lastAuth.Position, alpha);
 					entity.SetLocalPosition({interpolated.x, interpolated.y, transform.LocalPosition.z});
-					//velocity.LinearVelocity = glm::mix(previous.LinearVelocity, current.LinearVelocity, alpha);
-					transform.Rotation = glm::mix(previous.Rotation, current.Rotation, alpha);
+					transform.Rotation = glm::mix(prevAuth.Rotation, lastAuth.Rotation, alpha);
 				}
-				// Extrapolate for some time if packet did not arrive at time
-				else if (elapsed < syncParams.ExtrapolationLimit)
+				// If next replication message did not arrive at time, extrapolate for a maximum time of 0.5s. 
+				else if (elapsed < 0.5f)
 				{
 					transform.LocalPosition.x += velocity.LinearVelocity.x * ts;
 					transform.LocalPosition.y += velocity.LinearVelocity.y * ts;
@@ -82,27 +160,87 @@ namespace proton {
 				}
 				break;
 			}
-			case NetSyncMethod::Extrapolate:
+			case NetTransform::SyncMethod::Extrapolation:
 			{
-#if 0 
-				if (elapsed < syncParams.ExtrapolationLimit)
-				{
-					if (syncState.NewPacket)
-						transform.WorldPosition = current.Position;
-
-					glm::vec3 newPosition = {
-						transform.WorldPosition.x + velocity.LinearVelocity.x * ts,
-						transform.WorldPosition.y + velocity.LinearVelocity.y * ts,
-						transform.WorldPosition.z
-					};
-					entity.SetWorldPosition(newPosition);
-					transform.Rotation += velocity.AngularVelocity * ts;
-				}
-#endif
 				break;
 			}
-			case NetSyncMethod::NetworkRigidbody:
+			case NetTransform::SyncMethod::Prediction:
 			{
+				if (!entity.HasComponent<RigidbodyComponent>())
+					break;
+
+				b2Body* body = entity.GetRuntimeBody();
+				if (!body)
+					break;
+
+				// Get current transform values and calculate last tick delta
+				const Transform currentTransform = Transform::Get(&transform);
+				const Transform tickDelta = currentTransform - netTransform.LastTickTransform;
+				auto& deltaBuffer = netTransform.DeltaBuffer;
+
+				if (m_NetworkManager->IsNetworkTick())
+				{
+					netTransform.LastTickTransform = currentTransform;
+
+					// Push current delta and sequence number to the buffer
+					if (!tickDelta.IsZero())
+					{
+						// Increment sequence number
+						netTransform.CurrentSequenceNumber++;
+						deltaBuffer.push_back({ netTransform.CurrentSequenceNumber, tickDelta });
+
+						// Send current sequence number to server (subtract 1 to lead before server data)
+						m_SequenceNumbersToSend.push_back({ entity.GetUUID(), (uint16_t)(netTransform.CurrentSequenceNumber - 1) });
+					}
+				}
+
+				// When authoritative transform is received from server
+				if (netTransform.ReplicatedThisFrame)
+				{
+					// Remove deltas that happened before last authoritative transform 
+					while (!deltaBuffer.empty() && deltaBuffer.front().SequenceNumber < netTransform.ServerSequenceNumber)
+						deltaBuffer.erase(deltaBuffer.begin());
+						//deltaBuffer.pop_front();
+
+					// Apply deltas not processed by server yet
+					predictedTransform = lastAuth;
+					for (const auto& delta : deltaBuffer)
+					{
+						predictedTransform.Position += delta.Value.Position;
+						predictedTransform.Scale += delta.Value.Scale;
+						predictedTransform.Rotation += delta.Value.Rotation;
+					}
+					
+					// Calculate deltas to the last authoritative transform
+					// If current delta is small enough, do not reconcile.
+					Transform deltaCurrent = lastAuth - currentTransform;
+					Transform deltaPredicted = lastAuth - predictedTransform;
+
+					if (!IsWithinPrecision(deltaCurrent.Position, deltaPredicted.Position))
+					{
+						//netTransform.LastTickTransform = predictedTransform;
+						netTransform.State = EnumAddFlags(netTransform.State, ReconcileState::Position);
+					}
+				}
+
+				// Perform reconcilation to the predicted transform
+				if (EnumHasAnyFlags(netTransform.State, ReconcileState::Position))
+				{
+					body->SetTransform({ predictedTransform.Position.x, predictedTransform.Position.y }, 0);
+
+					float distanceError = glm::distance(
+						glm::vec2{ currentTransform.Position.x, currentTransform.Position.y },
+						glm::vec2{ predictedTransform.Position.x, predictedTransform.Position.y }
+					);
+
+					if (distanceError < 0.005f)
+					{
+						netTransform.State = EnumRemoveFlags(netTransform.State, ReconcileState::Position);
+					}
+				}
+
+				break;
+#if 0
 				if (!scene->m_PhysicsTick)
 					break;
 
@@ -139,7 +277,6 @@ namespace proton {
 							_PT_CORE_TRACE("Reconcile: len2={:.3f}, dist={:.3}, mul={:.3f}", syncState.Error, distance, multiplier);
 
 						syncState.ReconcileStarted = true;
-						syncState.ReconcileTimer.Reset();
 						syncState.ReconcileCooldownTimer.Reset();
 
 						//body->SetGravityScale(0.0f);
@@ -163,35 +300,19 @@ namespace proton {
 					}	
 				}
 				break;
-			}
-			}
-
-			syncState.NewUpdate = false;
-		}
-	}
-
-	void NetTransformSystem::UpdatePhysics(Scene* scene, float ts)
-	{
-		//	PROFILE_FUNCTION();
-#if 0
-		auto view = scene->m_Registry.view<NetworkComponent, TransformComponent, VelocityComponent, RigidbodyComponent>();
-		for (auto e : view)
-		{
-			Entity entity(e, scene);
-			auto [net, transform, velocity, rb] = view.get<NetworkComponent, TransformComponent, VelocityComponent, RigidbodyComponent>(e);
-				
-			auto& previous = net.PreviousTransform;
-			auto& current = net.CurrentTransform;
-			auto& syncState = net.SyncState;
-			auto& syncParams = net.SyncParams;	
-
-			b2Body* body = rb.RuntimeBody;
-			if (!body)
-				continue;
-
-			//body->SetTransform({ current.Position.x, current.Position.y }, current.Rotation);
-
-		}
 #endif
+			}
+			}
+
+			// Reset replication state
+			netTransform.ReplicatedThisFrame = false;
+		}
+
+		//_PT_CORE_TRACE("{:.9f}", testTimer.ElapsedMillis());
+
+		if (m_Client && m_NetworkManager->IsNetworkTick())
+		{
+			Client_SendSequenceNumberMessage();
+		}
 	}
 }

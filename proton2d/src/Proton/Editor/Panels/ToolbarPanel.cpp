@@ -250,7 +250,7 @@ namespace proton {
 				}
 				else if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 				{
-					netManager->SetServerTickRate(props.ServerTickrate);
+					netManager->SetTickRate(props.ServerTickrate);
 					netManager->SetNetworkPort(props.Port);
 				}
 

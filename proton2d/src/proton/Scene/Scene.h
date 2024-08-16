@@ -56,6 +56,8 @@ namespace proton {
 		Entity FindByTag(const std::string& tag);
 		std::vector<Entity> FindAllByTag(const std::string& tag);
 
+		Entity SpawnPrefab(const std::string& prefabPath);
+
 		void SetPrimaryCameraEntity(Entity entity);
 		Entity GetPrimaryCameraEntity();
 		Camera& GetPrimaryCamera();

@@ -23,6 +23,7 @@ namespace proton {
 
 		float GetTimeScale() const { return m_TimeScale; };
 		static float GetLastFrameTime() { return s_Instance->m_FrameTime; }
+		static float GetTotalTimeElapsed();
 
 		Window& GetWindow() { return *m_Window; }
 		static Application& Get() { return *s_Instance; }

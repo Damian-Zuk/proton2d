@@ -50,7 +50,7 @@ namespace proton {
 
 	void SceneViewportPanel::SetActiveScene(Scene* scene, bool sceneManagerCall) const
 	{
-		PT_CORE_ASSERT(!scene || scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
+		//PT_CORE_ASSERT(!scene || scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
 		
 		if (!sceneManagerCall)
 		{
@@ -60,8 +60,8 @@ namespace proton {
 
 	void SceneViewportPanel::SetSelectedEntity(Entity entity, bool sceneManagerCall)
 	{
-		PT_CORE_ASSERT(!entity || entity.m_Scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
-		PT_CORE_ASSERT(!entity || entity.m_Scene == GetActiveScene(), "Scene mismatch");
+		//PT_CORE_ASSERT(!entity || entity.m_Scene->m_GameInstance == m_GameInstance, "GameInstance mismatch");
+		//PT_CORE_ASSERT(!entity || entity.m_Scene == GetActiveScene(), "Scene mismatch");
 		
 		m_SelectedEntity = entity;
 	}
@@ -468,17 +468,18 @@ namespace proton {
 			
 			if (m_TraceEntitySync && netManager->IsNetModeClient())
 			{
-				glm::mat4 quadTransform = glm::translate(glm::mat4{ 1.0f }, { netTransform.CurrentTransform.Position.x, netTransform.CurrentTransform.Position.y, 0.201f })
-					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(netTransform.CurrentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
-					* glm::scale(glm::mat4{ 1.0f }, { transform.Scale.x,transform.Scale.y, 1.0f });
+				auto& last = netTransform.LastAuthoritativeTransform;
+				auto& pred = netTransform.PredictedTransform;
 
-				Renderer::DrawRect(quadTransform, netTransform.SyncState.ReconcileStarted ? COLOR_LIGHT_RED : COLOR_CYAN);
+				// Last server transform state
+				Renderer::DrawRect(Math::GetTransform({ last.Position.x, last.Position.y, 0.201f },
+					{ transform.Scale.x,transform.Scale.y }, last.Rotation), COLOR_CYAN);
 
-				quadTransform = glm::translate(glm::mat4{ 1.0f }, { netTransform.SyncState.ExtrapolatedPoint.x, netTransform.SyncState.ExtrapolatedPoint.y, 0.201f })
-					* glm::rotate(glm::mat4{ 1.0f }, glm::radians(netTransform.CurrentTransform.Rotation), { 0.0f, 0.0f, 1.0f })
-					* glm::scale(glm::mat4{ 1.0f }, { transform.Scale.x,transform.Scale.y, 1.0f });
-
-				Renderer::DrawRect(quadTransform, COLOR_GREEN);
+				// Predicted transform state
+				bool reconcileStarted = EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Position);
+				Renderer::DrawRect(Math::GetTransform({ pred.Position.x, pred.Position.y, 0.201f },
+					{ transform.Scale.x,transform.Scale.y }, last.Rotation),
+					reconcileStarted ? COLOR_LIGHT_RED : COLOR_GREEN);
 			}
 			
 			if (m_ShowCullDistance)

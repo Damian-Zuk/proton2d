@@ -51,23 +51,20 @@ namespace proton {
 			}
 			ImGui::PopItemWidth();
 
+			ImGui::PushItemWidth(95.0f);
 			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 			{
-				ImGui::PushItemWidth(95.0f);
-
 				int maxConnections = networkManager->m_MaxServerConnections;
 				if (ImGui::DragInt("Max Connections", &maxConnections))
 					networkManager->m_MaxServerConnections = (uint32_t)glm::max(maxConnections, 0);
-
-				int tickRate = networkManager->m_ServerTickRate;
-				if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
-				{
-					networkManager->SetServerTickRate(glm::max(tickRate, 1));
-				}
-				ImGui::PopItemWidth();
 			}
 
-			ImGui::PushItemWidth(95.0f);
+			int tickRate = networkManager->m_TickRate;
+			if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
+			{
+				networkManager->SetTickRate(glm::max(tickRate, 1));
+			}
+
 			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer) &&
 				ImGui::DragFloat("Fake Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
 			{

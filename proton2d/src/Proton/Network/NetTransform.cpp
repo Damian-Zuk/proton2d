@@ -1,33 +1,67 @@
 #include "ptpch.h"
 #include "Proton/Network/NetTransform.h"
+#include "Proton/Scene/Components.h"
+
+#include <glm/gtx/norm.hpp>
 
 namespace proton {
+
+	using Transform = NetTransform::Transform;
 
 	std::string NetSyncMethodToString(NetSyncMethod method)
 	{
 		switch (method)
 		{
-		case NetSyncMethod::Interpolate:
-			return "Interpolate";
-		case NetSyncMethod::Extrapolate:
-			return "Extrapolate";
-		case NetSyncMethod::NetworkRigidbody:
-			return "NetworkRigidbody";
+		case NetSyncMethod::Interpolation:
+			return "Interpolation";
+		case NetSyncMethod::Extrapolation:
+			return "Extrapolation";
+		case NetSyncMethod::Prediction:
+			return "Prediction";
 		}
-		
 		return "None";
 	}
 
 	NetSyncMethod StringToNetSyncMethod(const std::string& syncMethod)
 	{
-		if (syncMethod == "Interpolate")
-			return NetSyncMethod::Interpolate;
-		else if (syncMethod == "Extrapolate")
-			return NetSyncMethod::Extrapolate;
-		else if (syncMethod == "NetworkRigidbody")
-			return NetSyncMethod::NetworkRigidbody;
-		
+		if (syncMethod == "Interpolation")
+			return NetSyncMethod::Interpolation;
+		else if (syncMethod == "Extrapolation")
+			return NetSyncMethod::Extrapolation;
+		else if (syncMethod == "Prediction")
+			return NetSyncMethod::Prediction;
 		return NetSyncMethod::None;
+	}
+
+	bool Transform::IsZero() const
+	{
+		constexpr float epsilon = 1e-6f;
+		return glm::compMax(glm::abs(Position)) < epsilon
+			&& glm::compMax(glm::abs(Scale)) < epsilon
+			&& glm::abs(Rotation) < epsilon;
+	}
+
+	Transform Transform::Get(TransformComponent* component, bool localSpace)
+	{
+		Transform transform;
+		transform.Position = {
+			localSpace ? component->LocalPosition.x : component->WorldPosition.x,
+			localSpace ? component->LocalPosition.y : component->WorldPosition.y
+		};
+		transform.Scale = {
+			component->Scale.x, component->Scale.y
+		};
+		transform.Rotation = component->Rotation;
+		return transform;
+	}
+
+	Transform Transform::operator-(const Transform& other) const
+	{
+		Transform delta;
+		delta.Position = this->Position - other.Position;
+		delta.Scale = this->Scale - other.Scale;
+		delta.Rotation = this->Rotation - other.Rotation;
+		return delta;
 	}
 
 }

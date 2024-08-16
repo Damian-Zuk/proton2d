@@ -158,7 +158,7 @@ namespace proton {
 			if (networkManager->IsNetModeClient() && entity.HasComponent<NetworkComponent>())
 			{
 				auto& net = entity.GetComponent<NetworkComponent>();
-				if (net.NetTransform.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+				if (net.NetTransform.Method != NetSyncMethod::Prediction)
 					continue;
 			}
 
@@ -311,7 +311,7 @@ namespace proton {
 						if (entity.HasComponent<NetworkComponent>())
 						{
 							auto& net = entity.GetComponent<NetworkComponent>();
-							if (net.NetTransform.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+							if (net.NetTransform.Method != NetSyncMethod::Prediction)
 								continue;
 						}
 
@@ -323,7 +323,7 @@ namespace proton {
 							if (parent.HasComponent<NetworkComponent>())
 							{
 								auto& net = parent.GetComponent<NetworkComponent>();
-								if (net.NetTransform.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+								if (net.NetTransform.Method != NetSyncMethod::Prediction)
 									continue;
 							}
 						}
@@ -356,7 +356,7 @@ namespace proton {
 					if (networkManager->IsNetModeClient() && parent.HasComponent<NetworkComponent>())
 					{
 						auto& net = parent.GetComponent<NetworkComponent>();
-						if (net.NetTransform.SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
+						if (net.NetTransform.Method != NetSyncMethod::Prediction)
 							continue;
 					}
 

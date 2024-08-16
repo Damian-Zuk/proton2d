@@ -1,10 +1,10 @@
 {
-    "UUID": 10574764577880483566,
+    "UUID": 12214356858645653410,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            8.57654,
-            4.9451,
+            13.20506,
+            5.11123,
             0.1
         ],
         "Rotation": 0.0,
@@ -14,11 +14,8 @@
         ]
     },
     "Network": {
-        "ReplicatedComponentsBitset": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000101001000",
-        "SyncMethod": "NetworkRigidbody",
-        "ExtrapolationLimit": 0.5,
+        "SyncMethod": "Prediction",
         "ReconcileThreshold": 0.5,
-        "ReconcileTime": 0.10000000149011612,
         "ReconcileCooldownTime": 1.0
     },
     "Sprite": {
@@ -84,7 +81,7 @@
     ],
     "Entities": [
         {
-            "UUID": 8016290619213931581,
+            "UUID": 2737546776673742999,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -116,7 +113,7 @@
             }
         },
         {
-            "UUID": 2306925143701874178,
+            "UUID": 12808355867865525474,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -150,7 +147,7 @@
             }
         },
         {
-            "UUID": 12994079571184151862,
+            "UUID": 15328432273525757208,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -182,7 +179,7 @@
             }
         },
         {
-            "UUID": 368638774721546870,
+            "UUID": 16061344644787425162,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -214,7 +211,7 @@
             }
         },
         {
-            "UUID": 10446539210947816382,
+            "UUID": 7456788243799679853,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [

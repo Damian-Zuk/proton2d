@@ -4,6 +4,7 @@
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/NetReplicator.h"
 #include "Proton/Network/NetStatistics.h"
+#include "Proton/Network/NetTransformSystem.h"
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Timer.h"
@@ -32,7 +33,8 @@ namespace proton {
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
 		m_NetReplicator(MakeUnique<NetReplicator>(this)),
-		m_NetStatistics(MakeUnique<NetStatistics>(this))
+		m_NetStatistics(MakeUnique<NetStatistics>(this)),
+		m_NetTransformSystem(MakeUnique<NetTransformSystem>(this))
 	{
 		// Preallocated 128 KB buffer for writting network messages
 		// Will be automaticly reallocated by NetworkStreamWriter when needed
@@ -81,12 +83,12 @@ namespace proton {
 	{
 		uint32_t clientID = message->m_conn;
 		Buffer buffer(message->m_pData, message->m_cbSize);
-		NetworkStreamReader reader(buffer);
+		NetworkStreamReader stream(buffer);
 		NetworkStreamWriter writer(m_ScratchBuffer);
 
 		MessageType packetType;
-		reader.ReadRaw(packetType);
-		reader.SetStreamPosition(0);
+		stream.ReadRaw(packetType);
+		stream.SetStreamPosition(0);
 
 		switch (packetType)
 		{
@@ -94,7 +96,7 @@ namespace proton {
 		case MessageType::Handshake:
 		{
 			NetMessageHandshake handshake;
-			reader.ReadRaw(handshake);
+			stream.ReadRaw(handshake);
 
 			if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 			{
@@ -127,15 +129,21 @@ namespace proton {
 			break;
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::TransformSequenceNumber:
+		{
+			m_NetTransformSystem->Server_OnSequenceNumberMessage(clientID, stream);
+			break;
+		}
+		////////////////////////////////////////////////////////////////////////////////////////////////////
 		case MessageType::PlayerAction:
 		{
 			PROFILE_SCOPE("PacketType::PlayerAction");
 
-			reader.SkipBytes(sizeof(NetMassagePlayerAction));
+			stream.SkipBytes(sizeof(NetMassagePlayerAction));
 			if (m_PlayerActionCallbacks.find(clientID) != m_PlayerActionCallbacks.end())
 			{
 				NetworkReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
-				callback(reader);
+				callback(stream);
 			}
 			else
 				PT_CORE_ERROR("PlayerActionCallback was not defined! client_id={}", clientID);
@@ -395,7 +403,7 @@ namespace proton {
 		case k_ESteamNetworkingConnectionState_Connecting:
 		{
 			// This must be a new connection
-			PT_CORE_ASSERT(m_ConnectedClients.find(info->m_hConn) == m_ConnectedClients.end());
+			PT_CORE_ASSERT(m_ConnectedClients.find(status->m_hConn) == m_ConnectedClients.end());
 
 			// Check if connections limit exceeded
 			if (m_ConnectedClients.size() >= m_NetworkManager->m_MaxServerConnections)

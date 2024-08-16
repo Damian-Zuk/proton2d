@@ -138,7 +138,9 @@ namespace proton {
 
 		// Transform modifiers
 		void SetWorldPosition(const glm::vec3& position) const;
+		void SetWorldPosition(const glm::vec2& position) const;
 		void SetLocalPosition(const glm::vec3& position) const;
+		void SetLocalPosition(const glm::vec2& position) const;
 		void SetRotationCenter(float angle) const;
 		void RotateCenter(float angle) const;
 

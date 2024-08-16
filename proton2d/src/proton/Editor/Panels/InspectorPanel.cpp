@@ -636,25 +636,15 @@ namespace proton {
 		{
 			DrawComponentUI<NetworkComponent>("Network", [](NetworkComponent& component)
 			{
-				ImGui::PushItemWidth(125.0f);
-				float updateRate = component.UpdateRate;
-				if (ImGui::DragFloat("Update Rate", &updateRate, 0.01f))
-					component.UpdateRate = glm::clamp(updateRate, 0.0f, 1.0f);
-
-				float cullDistance = component.CullDistance;
-				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
-					component.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
-				ImGui::PopItemWidth();
-
 				ImGui::PushItemWidth(200.0f);
 				auto& netTransform = component.NetTransform;
-				auto& selectedMethod = netTransform.SyncParams.SyncMethod;
+				auto& selectedMethod = netTransform.Method;
 				if (ImGui::BeginCombo("Sync Method", NetSyncMethodToString(selectedMethod).c_str()))
 				{
 					for (uint8_t i = 0; i < 4; i++)
 					{
 						auto current = (NetSyncMethod)i;
-						
+
 						if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), selectedMethod == current))
 							selectedMethod = current;
 					}
@@ -664,31 +654,49 @@ namespace proton {
 
 				ImGui::Dummy({ 0, 5 });
 				ImGui::PushItemWidth(125.0f);
-				ImGui::DragFloat("Extrapolation Limit", &netTransform.SyncParams.ExtrapolationLimit, 0.01f);
-				ImGui::DragFloat("Reconcile Time", &netTransform.SyncParams.ReconcileTime, 0.001f);
-				ImGui::DragFloat("Reconcile Threshold", &netTransform.SyncParams.ReconcileThreshold, 0.001f);
-				ImGui::DragFloat("Reconcile Cooldown", &netTransform.SyncParams.ReconcileCooldownTime, 0.001f);
+				float cullDistance = component.CullDistance;
+				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
+					component.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
+				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
+				ImGui::DragFloat("Reconcile Cooldown", &netTransform.ReconcileCooldownTime, 0.001f);
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });
 				if (ImGui::TreeNode("Debug"))
 				{
+					float lastPos[] = { netTransform.LastAuthoritativeTransform.Position.x, netTransform.LastAuthoritativeTransform.Position.y };
+					float prevPos[] = { netTransform.PrevAuthoritativeTransform.Position.x, netTransform.PrevAuthoritativeTransform.Position.y };
+					float predPos[] = { netTransform.PredictedTransform.Position.x, netTransform.PredictedTransform.Position.x };
 					ImGui::Dummy({ 0, 2 });
-					float prev[] = { netTransform.PreviousTransform.Position.x, netTransform.PreviousTransform.Position.y };
-					float curr[] = { netTransform.CurrentTransform.Position.x, netTransform.CurrentTransform.Position.y };
-					float extr[] = { netTransform.SyncState.ExtrapolatedPoint.x, netTransform.SyncState.ExtrapolatedPoint.y };
-					ImGui::DragFloat2("Previous Pos", prev);
-					ImGui::DragFloat2("Current Pos", curr);
-					ImGui::DragFloat2("Extrapolated Pos", extr);
+					ImGui::DragFloat2("Last Pos", lastPos);
+					ImGui::DragFloat2("Previous Pos", prevPos);
+					ImGui::DragFloat2("Predicted Pos", predPos);
 
-					float prevRot = netTransform.PreviousTransform.Rotation;
-					float currRot = netTransform.CurrentTransform.Rotation;
+					float lastScale[] = { netTransform.LastAuthoritativeTransform.Scale.x, netTransform.LastAuthoritativeTransform.Scale.y };
+					float prevScale[] = { netTransform.PrevAuthoritativeTransform.Scale.x, netTransform.PrevAuthoritativeTransform.Scale.y };
+					float predScale[] = { netTransform.PredictedTransform.Scale.x, netTransform.PredictedTransform.Scale.x };
+					ImGui::Dummy({ 0, 2 });
+					ImGui::DragFloat2("Last Scale", lastScale);
+					ImGui::DragFloat2("Previous Scale", prevScale);
+					ImGui::DragFloat2("Predicted Scale", predScale);
+
+					float prevRot = netTransform.PrevAuthoritativeTransform.Rotation;
+					float lastRot = netTransform.LastAuthoritativeTransform.Rotation;
+					float predRot = netTransform.PredictedTransform.Rotation;
 					ImGui::Dummy({ 0, 5 });
-					ImGui::DragFloat("Previous Rotation", &prevRot);
-					ImGui::DragFloat("Current Rotation", &currRot);
+					ImGui::DragFloat("Last Rot", &lastRot);
+					ImGui::DragFloat("Prev Rot", &prevRot);
+					ImGui::DragFloat("Pred Rot", &predRot);
 
 					ImGui::Dummy({ 0, 5 });
-					ImGui::Text("Error: %.3f", netTransform.SyncState.Error);
+					ImGui::Text("Reconcile state: pos=%d, scale=%d, rot=%d",
+						EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Position),
+						EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Scale),
+						EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Rotation));
+					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
+					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
+					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());
+
 					ImGui::TreePop();
 				}
 			});

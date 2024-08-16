@@ -25,14 +25,15 @@ namespace proton {
 		void SetNetMode(NetMode mode);
 		void SetNetworkPort(uint16_t port);
 		void SetIpAddress(const std::string& ip);
+		void SetTickRate(uint16_t tickRate);
 		void SetMaxServerConnections(uint32_t value);
-		void SetServerTickRate(uint16_t tickRate);
 
 		NetMode GetNetMode() const { return m_NetMode; }
 		uint16_t GetPort() const { return m_Port; }
 		bool IsNetModeServer() const { return m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer; }
 		bool IsNetModeClient() const { return m_NetMode == NetMode::Client; }
 		bool IsNetworkActive() const { return m_IsNetworkActive; }
+		bool IsNetworkTick() const { return m_IsNetworkTick; }
 
 		ConnectionStatus GetClientConnectionStatus() const;
 		uint32_t GetLocalClientID() const { return m_LocalClientID; }
@@ -59,14 +60,15 @@ namespace proton {
 		NetMode m_NetMode = NetMode::ListenServer;
 		std::string m_IpAddress = "127.0.0.1";
 		uint16_t m_Port = 8192;
+		uint16_t m_TickRate = 64;
 
 		// Server properties
 		uint32_t m_MaxServerConnections = 100;
-		uint16_t m_ServerTickRate = 64;
 
 		// Tickrate timer
-		float m_ServerTickTime = 1.0f / m_ServerTickRate;
-		float m_ServerTickElapsed = 0.0f;
+		float m_TickTime = 1.0f / m_TickRate;
+		float m_TickElapsed = 0.0f;
+		bool m_IsNetworkTick = false;
 
 		// True if client has received any replication update from the server
 		bool m_ClientGameStateInitialized = false;

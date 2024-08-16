@@ -146,11 +146,9 @@ namespace proton {
 			auto& netTransform = net.NetTransform;
 			
 			jsonObj["Network"] = {
-				{ "SyncMethod", NetSyncMethodToString(netTransform.SyncParams.SyncMethod) },
-				{ "ExtrapolationLimit", netTransform.SyncParams.ExtrapolationLimit },
-				{ "ReconcileThreshold", netTransform.SyncParams.ReconcileThreshold },
-				{ "ReconcileTime", netTransform.SyncParams.ReconcileTime },
-				{ "ReconcileCooldownTime", netTransform.SyncParams.ReconcileCooldownTime },
+				{ "SyncMethod", NetSyncMethodToString(netTransform.Method) },
+				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
+				{ "ReconcileCooldownTime", netTransform.ReconcileCooldownTime },
 			};
 		}
 
@@ -404,19 +402,13 @@ namespace proton {
 			auto& netJson = jsonObj.at("Network");
 
 			if (netJson.contains("SyncMethod"))
-				netTransform.SyncParams.SyncMethod = StringToNetSyncMethod(netJson["SyncMethod"]);
-
-			if (netJson.contains("ExtrapolationLimit"))
-				netTransform.SyncParams.ExtrapolationLimit = netJson["ExtrapolationLimit"];
+				netTransform.Method = StringToNetSyncMethod(netJson["SyncMethod"]);
 
 			if (netJson.contains("ReconcileThreshold"))
-				netTransform.SyncParams.ReconcileThreshold = netJson["ReconcileThreshold"];
-
-			if (netJson.contains("ReconcileTime"))
-				netTransform.SyncParams.ReconcileTime = netJson["ReconcileTime"];
+				netTransform.ReconcileThreshold = netJson["ReconcileThreshold"];
 
 			if (netJson.contains("ReconcileCooldownTime"))
-				netTransform.SyncParams.ReconcileCooldownTime = netJson["ReconcileCooldownTime"];
+				netTransform.ReconcileCooldownTime = netJson["ReconcileCooldownTime"];
 		}
 
 		// Deserialize SpriteComponent

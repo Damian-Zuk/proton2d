@@ -1,10 +1,10 @@
 {
-    "UUID": 16818130937475458095,
+    "UUID": 11693002716470388635,
     "Tag": "Circle",
     "Transform": {
         "Position": [
-            53.55141,
-            -5.1545,
+            1.55357,
+            -5.13294,
             0.1
         ],
         "Rotation": 0.0,
@@ -14,10 +14,8 @@
         ]
     },
     "Network": {
-        "SyncMethod": "None",
-        "ExtrapolationLimit": 0.5,
+        "SyncMethod": "Prediction",
         "ReconcileThreshold": 0.10000000149011612,
-        "ReconcileTime": 0.10000000149011612,
         "ReconcileCooldownTime": 0.05000000074505806
     },
     "CircleRenderer": {

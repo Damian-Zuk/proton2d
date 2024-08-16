@@ -19,7 +19,8 @@ namespace proton {
 
 	Client::Client(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
-		m_NetReplicator(MakeUnique<NetReplicator>(this))
+		m_NetReplicator(MakeUnique<NetReplicator>(this)),
+		m_NetTransformSystem(MakeUnique<NetTransformSystem>(this))
 	{
 		// 128KB preallocated buffer for writting network messages
 		// Will be automaticly reallocated by NetworkStreamWriter when needed
@@ -76,7 +77,11 @@ namespace proton {
 		}
 		
 		scene->CalculateWorldPositions(true);
-		NetTransformSystem::Update(scene, ts);
+
+		if (m_NetworkManager->m_ClientGameStateInitialized)
+		{
+			m_NetTransformSystem->OnUpdate(scene, ts);
+		}
 	}
 
 	void Client::SendHandshake()

@@ -59,4 +59,10 @@ namespace proton
 	{
 		return (T)((__underlying_type(T))value | (__underlying_type(T))flags);
 	}
+
+	template<typename T>
+	constexpr T EnumRemoveFlags(T value, T flags)
+	{
+		return (T)((__underlying_type(T))value & ~(__underlying_type(T))flags);
+	}
 }

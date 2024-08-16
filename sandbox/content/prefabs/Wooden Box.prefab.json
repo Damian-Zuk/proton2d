@@ -1,10 +1,10 @@
 {
-    "UUID": 11490840878465901613,
+    "UUID": 1070333994132802741,
     "Tag": "Wooden Box",
     "Transform": {
         "Position": [
-            3.02585,
-            0.49486,
+            12.25443,
+            6.99311,
             0.0
         ],
         "Rotation": 0.0,
@@ -14,7 +14,9 @@
         ]
     },
     "Network": {
-        "Replicated": true
+        "SyncMethod": "Prediction",
+        "ReconcileThreshold": 0.5,
+        "ReconcileCooldownTime": 1.0
     },
     "Sprite": {
         "Texture": "box.png",
@@ -32,7 +34,8 @@
     },
     "Rigidbody": {
         "Type": 2,
-        "FixedRotation": false
+        "FixedRotation": false,
+        "AttachToParent": false
     },
     "BoxCollider": {
         "Size": [
@@ -47,6 +50,7 @@
         "Restitution": 0.0,
         "RestitutionThreshold": 0.5,
         "Density": 3.0,
-        "IsSensor": false
+        "IsSensor": false,
+        "AttachToParent": false
     }
 }

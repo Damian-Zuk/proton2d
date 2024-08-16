@@ -18,6 +18,7 @@ namespace proton {
 	public:
 		NetReplicator(Client* client);
 		NetReplicator(Server* server);
+		NetReplicator() = delete;
 
 		void Client_ProcessReplicationMessage(NetworkStreamReader& stream);
 		void Client_OnEntitySpawnMessage(NetworkStreamReader& stream);

@@ -8,6 +8,7 @@
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Input.h"
 #include "Proton/Scene/SceneSerializer.h"
+#include "Proton/Scene/PrefabManager.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/UI/UIElement.h"
@@ -537,9 +538,6 @@ namespace proton {
 				
 			if (m_PhysicsTick)
 			{
-				if (m_GameInstance->m_NetworkManager->IsNetModeClient())
-					NetTransformSystem::UpdatePhysics(this, m_PhysicsTimer);
-
 				m_PhysicsWorld->Update(m_PhysicsTimer);
 			}
 		}
@@ -644,6 +642,11 @@ namespace proton {
 				entities.emplace_back(Entity(entity, this));
 		}
 		return entities;
+	}
+
+	Entity Scene::SpawnPrefab(const std::string& prefabPath)
+	{
+		return PrefabManager::Spawn(this, prefabPath);
 	}
 
 	void Scene::RenderScene(const Camera& camera)
@@ -1037,7 +1040,6 @@ namespace proton {
 
 		if (!entity.HasComponent<VelocityComponent>())
 			entity.AddComponent<VelocityComponent>();
-
 	}
 
 	template<>
@@ -1059,9 +1061,15 @@ namespace proton {
 	{
 		auto& transform = entity.GetTransform();
 		auto& netTransform = component.NetTransform;
-		bool hasRb = entity.HasComponent<RigidbodyComponent>();
-		netTransform.CurrentTransform.Position = hasRb ? transform.WorldPosition : transform.LocalPosition;
-		netTransform.PreviousTransform.Position = netTransform.CurrentTransform.Position;
+		auto& last = netTransform.LastAuthoritativeTransform;
+		auto& prev = netTransform.PrevAuthoritativeTransform;
+
+		last.Position = entity.HasComponent<RigidbodyComponent>() ? transform.WorldPosition : transform.LocalPosition;
+		last.Scale = transform.Scale;
+		last.Rotation = transform.Rotation;
+
+		prev = last;
+		netTransform.LastTickTransform = last;
 	}
 
 }

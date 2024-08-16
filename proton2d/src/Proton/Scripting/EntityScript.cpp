@@ -100,13 +100,6 @@ namespace proton {
 		SetReplicatedData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
 	}
 
-	bool EntityScript::IsNetworkPhysicsSyncEnabled() const
-	{
-		Scene* scene = GetScene();
-		auto& net = GetComponent<NetworkComponent>();
-		return scene->IsPhysicsSimulated() && net.NetTransform.SyncParams.SyncMethod == NetSyncMethod::NetworkRigidbody;
-	}
-
 	bool EntityScript::IsRunningServer() const
 	{
 		NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();

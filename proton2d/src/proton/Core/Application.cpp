@@ -155,6 +155,13 @@ namespace proton {
 		m_IsRunning = false;
 	}
 
+	static Timer s_AppTimer;
+
+	float Application::GetTotalTimeElapsed()
+	{
+		return s_AppTimer.Elapsed();
+	}	
+
 	void Application::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);

@@ -21,7 +21,7 @@ namespace proton {
 		EntityReplicate,
 
 		// [Client -> Server]
-		SequenceIndex,
+		TransformSequenceNumber,
 
 		PlayerAction, // Delete me
 
@@ -78,8 +78,21 @@ namespace proton {
 
 			UUID EntityUUID;
 			ReplicationFlags TransformFlags = ReplicationFlags::None;
+			uint16_t TransformSequenceNumber = 0;
 			uint32_t ScriptCount;
 			uint64_t PayloadSize;
+		};
+	};
+
+	struct NetMessageTransformSequenceNumber
+	{
+		MessageType MessageType = MessageType::TransformSequenceNumber;
+		uint32_t EntityCount = 0;
+
+		struct PayloadItem
+		{
+			UUID EnittyUUID;
+			uint16_t SequenceNumber;
 		};
 	};
 
@@ -87,7 +100,6 @@ namespace proton {
 	{
 		MessageType MessageType = MessageType::PlayerAction;
 	};
-
 
 	std::string MessageTypeToString(MessageType packetType);
 }

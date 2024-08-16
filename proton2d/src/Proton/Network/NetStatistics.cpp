@@ -2,6 +2,7 @@
 #include "Proton/Network/NetStatistics.h"
 #include "Proton/Network/Server.h"
 #include "Proton/Network/NetworkManager.h"
+
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Timer.h"
 
@@ -96,7 +97,7 @@ namespace proton {
 		{
 			// Write header to log file
 			logFile << "# scene=" << m_Server->m_GameInstance->GetActiveScene()->GetFilepath() << "\r\n";
-			logFile << "# tick_rate=" << m_Server->m_NetworkManager->m_ServerTickRate << "\r\n";
+			logFile << "# tick_rate=" << m_Server->m_NetworkManager->m_TickRate << "\r\n";
 			logFile << "# client_id; time_point; in_bps; out_bps; ping_ms; rep_count\r\n";
 			m_StatsLogsHeaderWritten = true;
 			timer.Reset();

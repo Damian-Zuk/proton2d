@@ -41,18 +41,26 @@ bool MyGameMode::OnCreate()
 
 void MyGameMode::OnEvent(Event& event)
 {
-	EventDispatcher(event).Dispatch<KeyPressedEvent>( [&](auto& keyEvent)
+	EventDispatcher(event).Dispatch<KeyPressedEvent>([&](auto& keyEvent)
 	{
+		Scene* scene = GetScene();
+		const auto& cursor = scene->GetCursorWorldPosition();
+
 		if (keyEvent.GetKeyCode() == Key::E)
 		{
-			if (GetScene()->IsSimulated())
-				SpawnRandomBox(GetScene()->GetCursorWorldPosition());
+			Entity ball = scene->SpawnPrefab("Circle");
+			ball.SetWorldPosition(cursor);
+		}
+		else if (keyEvent.GetKeyCode() == Key::R)
+		{
+			Entity box = scene->SpawnPrefab("Wooden Box");
+			box.SetWorldPosition(cursor);
 		}
 		else if(keyEvent.GetKeyCode() == Key::F)
 		{
 			b2Body* body = m_LocalPlayer->GetRuntimeBody();
 			auto& net = m_LocalPlayer->GetComponent<NetworkComponent>();
-			auto& t = net.NetTransform.CurrentTransform;
+			auto& t = net.NetTransform.LastAuthoritativeTransform;
 			body->SetTransform({ t.Position.x, t.Position.y }, 0.0f);
 		}
 		return false;
@@ -100,19 +108,3 @@ uint32_t MyGameMode::GetLocalPlayerID() const
 	return m_LocalClientID;
 }
 
-void MyGameMode::SpawnRandomBox(const glm::vec2& position)
-{
-	Entity entity = GetScene()->CreateEntity("Random Box");
-
-	entity.SetWorldPosition({ position.x, position.y, 0 });
-	entity.SetRotationCenter(Random::Float(0.0f, 80.0f));
-
-	auto& sprite = entity.AddComponent<SpriteComponent>("box.png");
-	sprite.Color.r = Random::Float(0.0f, 1.0f);
-	sprite.Color.g = Random::Float(0.0f, 1.0f);
-	sprite.Color.b = Random::Float(0.0f, 1.0f);
-
-	entity.AddComponent<RigidbodyComponent>().Type = b2_dynamicBody;
-	entity.AddComponent<BoxColliderComponent>();
-	entity.AddComponent<NetworkComponent>();
-}

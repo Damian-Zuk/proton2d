@@ -259,9 +259,21 @@ namespace proton
 		m_Scene->SetEntityWorldPosition(*this, position);
 	}
 
+	void Entity::SetWorldPosition(const glm::vec2& position) const
+	{
+		auto& transform = GetTransform();
+		m_Scene->SetEntityWorldPosition(*this, {position.x, position.y, transform.WorldPosition.z});
+	}
+
 	void Entity::SetLocalPosition(const glm::vec3& position) const
 	{
 		m_Scene->SetEntityLocalPosition(*this, position);
+	}
+
+	void Entity::SetLocalPosition(const glm::vec2& position) const
+	{
+		auto& transform = GetTransform();
+		m_Scene->SetEntityLocalPosition(*this, {position.x, position.y, transform.LocalPosition.z});
 	}
 
 	void Entity::SetRotationCenter(float angle) const
