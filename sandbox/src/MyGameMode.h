@@ -8,6 +8,7 @@ public:
 	GAME_MODE_CLASS(MyGameMode)
 
 	virtual bool OnCreate() override;
+	virtual void OnUpdate(float ts) override;
 	virtual void OnEvent(Event& event) override;
 
 	virtual void Server_OnClientConnected(ClientID clientID) override;

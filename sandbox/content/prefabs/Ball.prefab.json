@@ -1,11 +1,11 @@
 {
-    "UUID": 11693002716470388635,
-    "Tag": "Circle",
+    "UUID": 17482189910306427367,
+    "Tag": "Ball",
     "Transform": {
         "Position": [
-            1.55357,
-            -5.13294,
-            0.1
+            -1.49475,
+            0.55944,
+            0.0
         ],
         "Rotation": 0.0,
         "Scale": [
@@ -15,17 +15,17 @@
     },
     "Network": {
         "SyncMethod": "Prediction",
-        "ReconcileThreshold": 0.10000000149011612,
-        "ReconcileCooldownTime": 0.05000000074505806
+        "ReconcileThreshold": 0.02500000037252903,
+        "ReconcileCooldownTime": 1.0
     },
     "CircleRenderer": {
         "Thickness": 1.0,
         "Fade": 0.004999999888241291,
         "Color": [
-            0.30980393290519714,
-            0.9058823585510254,
-            0.07450980693101883,
-            0.9254902005195618
+            0.40564945340156555,
+            0.8095238208770752,
+            0.19975265860557556,
+            1.0
         ]
     },
     "Rigidbody": {
@@ -40,7 +40,7 @@
         ],
         "Radius": 1.0,
         "Friction": 0.5,
-        "Restitution": 0.75,
+        "Restitution": 0.699999988079071,
         "RestitutionThreshold": 0.5,
         "Density": 0.5,
         "IsSensor": false,

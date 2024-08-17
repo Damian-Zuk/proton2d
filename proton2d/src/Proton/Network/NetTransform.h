@@ -6,35 +6,8 @@
 namespace proton {
 
 	struct TransformComponent; // forward declaration
-
+	
 	using ClientID = uint32_t;
-
-	//enum class NetSyncMethod : uint8_t
-	//{
-	//	None = 0,
-	//	Interpolate = 1,
-	//	Extrapolate = 2,
-	//	NetworkRigidbody = 3
-	//};
-
-	//struct NetSyncParams
-	//{
-	//	NetSyncMethod SyncMethod = NetSyncMethod::None;
-	//	float ExtrapolationLimit = 0.5f;
-	//	float ReconcileThreshold = 0.5f;
-	//	float ReconcileCooldownTime = 1.0f;
-	//	float ReconcileTime = 0.1f;
-	//};
-
-	//struct NetSyncState
-	//{
-	//	Timer ReplicationTimer;
-	//	Timer ReconcileCooldownTimer;
-
-	//	bool ReconcileStarted = false;
-	//	bool NewUpdate = true;
-	//	float PacketDelay = 0.0f;
-	//};
 
 	struct NetTransform
 	{
@@ -75,6 +48,7 @@ namespace proton {
 			float Rotation = 0.0f;
 
 			bool IsZero() const;
+			bool IsNotZero() const;
 			static Transform Get(TransformComponent* component, bool localSpace = false);
 			Transform operator-(const Transform& other) const;
 		};
@@ -86,9 +60,11 @@ namespace proton {
 		};
 
 		SyncMethod Method = SyncMethod::None;
-		float ReconcileThreshold = 0.5f;
+		float ReconcileThreshold = 0.3f;
+		float ReconcileMaxTime = 0.5f;
 		float ReconcileCooldownTime = 1.0f;
-		 
+
+		// Internal
 		std::vector<SequencedItem> DeltaBuffer;
 		uint16_t CurrentSequenceNumber = 0;
 		uint16_t ServerSequenceNumber = 0;
@@ -97,15 +73,22 @@ namespace proton {
 		Transform PredictedTransform;
 		Transform LastAuthoritativeTransform;
 		Transform PrevAuthoritativeTransform;
-		
+
 		ReplicationFlags Flags = ReplicationFlags::None;
 		ReconcileState State = ReconcileState::None;
 
-		bool ReplicatedThisFrame = false;
-		float LastReplicationInterval = 0.0f;
-		Timer ReplicationTimer;
+		float ReplicationInterval = 0.0f;
+		float ReplicationTimer = 0.0f;
+		float Error = 0.0f;
 
-		std::unordered_map<ClientID, SequencedItem> ClientDataMap; // server-only
+		bool IsReconciling(ReconcileState component) const;
+		// State mutating function
+		void StartReconcile(ReconcileState component);
+		// State mutating function
+		void StopReconcile(ReconcileState component);
+
+		// Server-only data (TODO: store as separate EnTT component)
+		std::unordered_map<ClientID, SequencedItem> ClientDataMap; 
 	};
 
 	using NetSyncMethod = NetTransform::SyncMethod;

@@ -39,6 +39,10 @@ bool MyGameMode::OnCreate()
 	return true;
 }
 
+void MyGameMode::OnUpdate(float ts)
+{
+}
+
 void MyGameMode::OnEvent(Event& event)
 {
 	EventDispatcher(event).Dispatch<KeyPressedEvent>([&](auto& keyEvent)
@@ -48,20 +52,23 @@ void MyGameMode::OnEvent(Event& event)
 
 		if (keyEvent.GetKeyCode() == Key::E)
 		{
-			Entity ball = scene->SpawnPrefab("Circle");
+			Entity balls = scene->FindByTag("Balls");
+			if (!balls)
+				balls = scene->CreateEntity("Balls");
+			
+			Entity ball = scene->SpawnPrefab("Ball");
 			ball.SetWorldPosition(cursor);
+			balls.AddChildEntity(ball);
 		}
 		else if (keyEvent.GetKeyCode() == Key::R)
 		{
+			Entity boxes = scene->FindByTag("Boxes");
+			if (!boxes)
+				boxes = scene->CreateEntity("Boxes");
+			
 			Entity box = scene->SpawnPrefab("Wooden Box");
 			box.SetWorldPosition(cursor);
-		}
-		else if(keyEvent.GetKeyCode() == Key::F)
-		{
-			b2Body* body = m_LocalPlayer->GetRuntimeBody();
-			auto& net = m_LocalPlayer->GetComponent<NetworkComponent>();
-			auto& t = net.NetTransform.LastAuthoritativeTransform;
-			body->SetTransform({ t.Position.x, t.Position.y }, 0.0f);
+			boxes.AddChildEntity(box);
 		}
 		return false;
 	});

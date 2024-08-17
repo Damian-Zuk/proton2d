@@ -209,6 +209,22 @@ namespace proton {
 
 			ImGui::SetMouseCursor(7);
 		}
+
+		if (m_IsViewportFocused && m_IsViewportHovered)
+		{
+			if (Input::IsKeyPressed(Key::F) && Input::IsKeyPressed(Key::LeftControl))
+			{
+				if (m_SelectedEntity.IsValid() && m_SelectedEntity.HasComponent<RigidbodyComponent>())
+				{
+					if (b2Body* body = m_SelectedEntity.GetRuntimeBody())
+					{
+						const auto& cursor = GetActiveScene()->GetCursorWorldPosition();
+						body->SetTransform({ cursor.x, cursor.y }, 0.0f);
+						body->SetLinearVelocity({ 0.0f, 0.0f });
+					}
+				}
+			}
+		}
 	}
 
 	void SceneViewportPanel::HandleImGuiDragAndDrop()

@@ -70,6 +70,9 @@ namespace proton {
 
 	void SceneHierarchyPanel::DrawEntityTreeNode(Entity entity)
 	{
+		if (!entity.IsValid())
+			return;
+
 		auto& relationship = entity.GetComponent<RelationshipComponent>();
 		Scene* activeScene = GetActiveScene();
 		Entity selectedEntity = GetSelectedEntity();

@@ -30,6 +30,12 @@ namespace proton {
 	{
 		return fullFilepath.substr(parentDir.size(), fullFilepath.size() - parentDir.size());;
 	}
+
+	static std::string UintToHex(uint64_t value) {
+		std::stringstream stream;
+		stream << std::hex << std::setw(16) << std::setfill('0') << value;
+		return stream.str();
+	}
 	
 	static bool DrawTreeNodeRemoveButton(const std::string& id)
 	{
@@ -144,6 +150,9 @@ namespace proton {
 			ImGui::EndPopup();
 		}
 		ImGui::Columns(1);
+
+		ImGui::Dummy({ 1, 0 }); ImGui::SameLine();
+		ImGui::Text("UUID: %s", UintToHex(selectedEntity.GetUUID()).c_str());
 
 		ImGui::Dummy({ 0, 5 });
 
@@ -482,10 +491,8 @@ namespace proton {
 					// Tint color control
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
 					
-					if (ImGui::Button("Regenerate"))
-					{
-						sprite.Generate(selectedEntity.GetTransform().Scale);
-					}
+					//if (ImGui::Button("Regenerate"))
+					//	sprite.Generate(selectedEntity.GetTransform().Scale);
 			});
 		}
 
@@ -668,34 +675,38 @@ namespace proton {
 					float prevPos[] = { netTransform.PrevAuthoritativeTransform.Position.x, netTransform.PrevAuthoritativeTransform.Position.y };
 					float predPos[] = { netTransform.PredictedTransform.Position.x, netTransform.PredictedTransform.Position.x };
 					ImGui::Dummy({ 0, 2 });
-					ImGui::DragFloat2("Last Pos", lastPos);
-					ImGui::DragFloat2("Previous Pos", prevPos);
-					ImGui::DragFloat2("Predicted Pos", predPos);
+					ImGui::Text("Position");
+					ImGui::DragFloat2("Last", lastPos);
+					ImGui::DragFloat2("Previous", prevPos);
+					ImGui::DragFloat2("Predicted", predPos);
 
 					float lastScale[] = { netTransform.LastAuthoritativeTransform.Scale.x, netTransform.LastAuthoritativeTransform.Scale.y };
 					float prevScale[] = { netTransform.PrevAuthoritativeTransform.Scale.x, netTransform.PrevAuthoritativeTransform.Scale.y };
 					float predScale[] = { netTransform.PredictedTransform.Scale.x, netTransform.PredictedTransform.Scale.x };
 					ImGui::Dummy({ 0, 2 });
-					ImGui::DragFloat2("Last Scale", lastScale);
-					ImGui::DragFloat2("Previous Scale", prevScale);
-					ImGui::DragFloat2("Predicted Scale", predScale);
+					ImGui::Text("Scale");
+					ImGui::DragFloat2("Last", lastScale);
+					ImGui::DragFloat2("Previous", prevScale);
+					ImGui::DragFloat2("Predicted", predScale);
 
 					float prevRot = netTransform.PrevAuthoritativeTransform.Rotation;
 					float lastRot = netTransform.LastAuthoritativeTransform.Rotation;
 					float predRot = netTransform.PredictedTransform.Rotation;
 					ImGui::Dummy({ 0, 5 });
-					ImGui::DragFloat("Last Rot", &lastRot);
-					ImGui::DragFloat("Prev Rot", &prevRot);
-					ImGui::DragFloat("Pred Rot", &predRot);
+					ImGui::Text("Rotation");
+					ImGui::DragFloat("Last", &lastRot);
+					ImGui::DragFloat("Previous", &prevRot);
+					ImGui::DragFloat("Predicted", &predRot);
 
 					ImGui::Dummy({ 0, 5 });
-					ImGui::Text("Reconcile state: pos=%d, scale=%d, rot=%d",
-						EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Position),
-						EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Scale),
-						EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Rotation));
+					ImGui::Text("Reconcile state: pos=%d, sca=%d, rot=%d",
+						netTransform.IsReconciling(NetTransform::ReconcileState::Position),
+						netTransform.IsReconciling(NetTransform::ReconcileState::Scale),
+						netTransform.IsReconciling(NetTransform::ReconcileState::Rotation));
 					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
 					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
 					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());
+					ImGui::Text("Error: %f", netTransform.Error);
 
 					ImGui::TreePop();
 				}

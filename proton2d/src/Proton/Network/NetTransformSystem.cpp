@@ -85,12 +85,11 @@ namespace proton {
 		}
 	}
 
-	static inline bool IsWithinPrecision(const glm::vec2& currentDelta, const glm::vec2& predictedDelta)
+	static inline bool IsWithinPrecision(const glm::vec2& currentDelta, const glm::vec2& predictedDelta, const float precision = 8.0f)
 	{
-		constexpr float precision = 8.0f;
 		const float predictedDeltaMax = glm::compMax(glm::abs(predictedDelta));
 		const float currentDeltaMax = glm::compMax(glm::abs(currentDelta));
-		return predictedDeltaMax > 1e-6f && currentDeltaMax < predictedDeltaMax * precision;
+		return currentDeltaMax < predictedDeltaMax * precision;
 	}
 
 	void NetTransformSystem::OnUpdate(Scene* scene, float ts)
@@ -100,7 +99,7 @@ namespace proton {
 		using Transform = NetTransform::Transform;
 		using ReconcileState = NetTransform::ReconcileState;
 
-		Timer testTimer;
+		// Timer testTimer;
 		
 		auto view = scene->GetAllEntitiesWith<NetworkComponent, TransformComponent, VelocityComponent>();
 		for (auto _entity : view)
@@ -109,50 +108,51 @@ namespace proton {
 			auto [net, transform, velocity] = view.get<NetworkComponent, TransformComponent, VelocityComponent>(_entity);
 			
 			auto& netTransform = net.NetTransform;
-			auto& lastAuth = netTransform.LastAuthoritativeTransform;
-			auto& prevAuth = netTransform.PrevAuthoritativeTransform;
+			auto& lastAuthorative = netTransform.LastAuthoritativeTransform;
+			auto& prevAuthorative = netTransform.PrevAuthoritativeTransform;
 			auto& predictedTransform = netTransform.PredictedTransform;
+			auto& replicationTimer = netTransform.ReplicationTimer;
 
-			bool isReconciling = EnumHasAnyFlags(netTransform.State, ReconcileState::All);
+			bool replicatedThisFrame = replicationTimer == 0.0f;
 
 			switch (netTransform.Method)
 			{
+			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::None:
 			{
-				if (!netTransform.ReplicatedThisFrame)
+				if (replicatedThisFrame)
 					break;
 
 				// Immediately set authoritative transform values
 				if (EnumHasAnyFlags(net.NetTransform.Flags, NetTransform::ReplicationFlags::Position))
 				{
-					entity.SetLocalPosition({ lastAuth.Position.x, lastAuth.Position.y, transform.LocalPosition.z });
+					entity.SetLocalPosition({ lastAuthorative.Position.x, lastAuthorative.Position.y, transform.LocalPosition.z });
 				}
 				if (EnumHasAnyFlags(net.NetTransform.Flags, NetTransform::ReplicationFlags::Scale))
 				{
-					transform.Scale = { lastAuth.Scale.x, lastAuth.Scale.y };
+					transform.Scale = { lastAuthorative.Scale.x, lastAuthorative.Scale.y };
 				}
 				if (EnumHasAnyFlags(net.NetTransform.Flags, NetTransform::ReplicationFlags::Rotation))
 				{
-					transform.Rotation = lastAuth.Rotation;
+					transform.Rotation = lastAuthorative.Rotation;
 				}
 				break;
 			}
+			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::Interpolation:
 			{
-				// Elapsed time from last authorative state update
-				float elapsed = netTransform.ReplicationTimer.Elapsed();
 
-				if (elapsed < netTransform.LastReplicationInterval)
+				if (replicationTimer < netTransform.ReplicationInterval)
 				{
 					// Interpolate between last two authoritative transforms
-					float alpha = glm::clamp(elapsed / netTransform.LastReplicationInterval, 0.0f, 1.0f);
+					float alpha = glm::clamp(replicationTimer / netTransform.ReplicationInterval, 0.0f, 1.0f);
 
-					glm::vec2 interpolated = glm::mix(prevAuth.Position, lastAuth.Position, alpha);
+					glm::vec2 interpolated = glm::mix(prevAuthorative.Position, lastAuthorative.Position, alpha);
 					entity.SetLocalPosition({interpolated.x, interpolated.y, transform.LocalPosition.z});
-					transform.Rotation = glm::mix(prevAuth.Rotation, lastAuth.Rotation, alpha);
+					transform.Rotation = glm::mix(prevAuthorative.Rotation, lastAuthorative.Rotation, alpha);
 				}
 				// If next replication message did not arrive at time, extrapolate for a maximum time of 0.5s. 
-				else if (elapsed < 0.5f)
+				else if (replicationTimer < 0.5f)
 				{
 					transform.LocalPosition.x += velocity.LinearVelocity.x * ts;
 					transform.LocalPosition.y += velocity.LinearVelocity.y * ts;
@@ -160,86 +160,9 @@ namespace proton {
 				}
 				break;
 			}
+			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::Extrapolation:
 			{
-				break;
-			}
-			case NetTransform::SyncMethod::Prediction:
-			{
-				if (!entity.HasComponent<RigidbodyComponent>())
-					break;
-
-				b2Body* body = entity.GetRuntimeBody();
-				if (!body)
-					break;
-
-				// Get current transform values and calculate last tick delta
-				const Transform currentTransform = Transform::Get(&transform);
-				const Transform tickDelta = currentTransform - netTransform.LastTickTransform;
-				auto& deltaBuffer = netTransform.DeltaBuffer;
-
-				if (m_NetworkManager->IsNetworkTick())
-				{
-					netTransform.LastTickTransform = currentTransform;
-
-					// Push current delta and sequence number to the buffer
-					if (!tickDelta.IsZero())
-					{
-						// Increment sequence number
-						netTransform.CurrentSequenceNumber++;
-						deltaBuffer.push_back({ netTransform.CurrentSequenceNumber, tickDelta });
-
-						// Send current sequence number to server (subtract 1 to lead before server data)
-						m_SequenceNumbersToSend.push_back({ entity.GetUUID(), (uint16_t)(netTransform.CurrentSequenceNumber - 1) });
-					}
-				}
-
-				// When authoritative transform is received from server
-				if (netTransform.ReplicatedThisFrame)
-				{
-					// Remove deltas that happened before last authoritative transform 
-					while (!deltaBuffer.empty() && deltaBuffer.front().SequenceNumber < netTransform.ServerSequenceNumber)
-						deltaBuffer.erase(deltaBuffer.begin());
-						//deltaBuffer.pop_front();
-
-					// Apply deltas not processed by server yet
-					predictedTransform = lastAuth;
-					for (const auto& delta : deltaBuffer)
-					{
-						predictedTransform.Position += delta.Value.Position;
-						predictedTransform.Scale += delta.Value.Scale;
-						predictedTransform.Rotation += delta.Value.Rotation;
-					}
-					
-					// Calculate deltas to the last authoritative transform
-					// If current delta is small enough, do not reconcile.
-					Transform deltaCurrent = lastAuth - currentTransform;
-					Transform deltaPredicted = lastAuth - predictedTransform;
-
-					if (!IsWithinPrecision(deltaCurrent.Position, deltaPredicted.Position))
-					{
-						//netTransform.LastTickTransform = predictedTransform;
-						netTransform.State = EnumAddFlags(netTransform.State, ReconcileState::Position);
-					}
-				}
-
-				// Perform reconcilation to the predicted transform
-				if (EnumHasAnyFlags(netTransform.State, ReconcileState::Position))
-				{
-					body->SetTransform({ predictedTransform.Position.x, predictedTransform.Position.y }, 0);
-
-					float distanceError = glm::distance(
-						glm::vec2{ currentTransform.Position.x, currentTransform.Position.y },
-						glm::vec2{ predictedTransform.Position.x, predictedTransform.Position.y }
-					);
-
-					if (distanceError < 0.005f)
-					{
-						netTransform.State = EnumRemoveFlags(netTransform.State, ReconcileState::Position);
-					}
-				}
-
-				break;
 #if 0
 				if (!scene->m_PhysicsTick)
 					break;
@@ -297,15 +220,110 @@ namespace proton {
 					{
 						syncState.ReconcileStarted = false;
 						//body->SetGravityScale(1.0f);
-					}	
+					}
 				}
 				break;
 #endif
+				break;
+			}
+			////////////////////////////////////////////////////////////////////////////////////////////////////
+			case NetTransform::SyncMethod::Prediction:
+			{
+				if (!entity.HasComponent<RigidbodyComponent>())
+					break;
+
+				b2Body* body = entity.GetRuntimeBody();
+				if (!body)
+					break;
+
+				// Get current transform values and calculate last tick delta
+				const Transform currentTransform = Transform::Get(&transform);
+				Transform thisTickDelta = currentTransform - netTransform.LastTickTransform;
+				auto& deltaBuffer = netTransform.DeltaBuffer;
+
+				// Push current delta and sequence number to the buffer
+				if (m_NetworkManager->IsNetworkTick())
+				{
+					// Update last tick transform
+					netTransform.LastTickTransform = currentTransform;
+
+					if (netTransform.IsReconciling(ReconcileState::Position))
+						thisTickDelta.Position = glm::vec2{ 0.0f, 0.0f };
+
+					if (netTransform.IsReconciling(ReconcileState::Scale))
+						thisTickDelta.Scale = glm::vec2{ 0.0f, 0.0f };
+
+					if (netTransform.IsReconciling(ReconcileState::Rotation))
+						thisTickDelta.Rotation = 0.0f;
+					
+					if (thisTickDelta.IsNotZero())
+					{
+						// Increment sequence number
+						netTransform.CurrentSequenceNumber++;
+						deltaBuffer.push_back({ netTransform.CurrentSequenceNumber, thisTickDelta });
+
+						// Send current sequence number to server
+						m_SequenceNumbersToSend.push_back({ entity.GetUUID(), netTransform.CurrentSequenceNumber });
+					}
+				}
+
+				// ------------------------------------ When authoritative transform is received from server ------------------------------------
+				if (replicatedThisFrame)
+				{
+					// Remove deltas that happened before last authoritative transform 
+					while (!deltaBuffer.empty() && deltaBuffer.front().SequenceNumber < netTransform.ServerSequenceNumber)
+						deltaBuffer.erase(deltaBuffer.begin());
+						//deltaBuffer.pop_front();
+
+					// Apply deltas not processed by server yet
+					predictedTransform = lastAuthorative;
+					for (const auto& delta : deltaBuffer)
+					{
+						predictedTransform.Position += delta.Value.Position;
+						predictedTransform.Scale += delta.Value.Scale;
+						predictedTransform.Rotation += delta.Value.Rotation;
+					}
+#if 1				
+					netTransform.Error = glm::distance(currentTransform.Position, predictedTransform.Position);
+					if (netTransform.Error > netTransform.ReconcileThreshold)
+					{
+						netTransform.StartReconcile(ReconcileState::Position);
+					}
+#endif
+#if 0
+					// Calculate deltas to the last authoritative transform
+					// If current delta is small enough, do not reconcile.
+					Transform deltaCurrent = lastAuthorative - currentTransform;
+					Transform deltaPredicted = lastAuthorative - predictedTransform;
+
+					if (!IsWithinPrecision(deltaCurrent.Position, deltaPredicted.Position))
+					{
+						//netTransform.LastTickTransform = predictedTransform;
+						netTransform.StartReconcile(ReconcileState::Position);
+					}
+#endif
+				}
+
+				// -------------------------------------------------- Transform reconcilation ----------------------------------------------------
+				if (netTransform.IsReconciling(ReconcileState::Position))
+				{
+
+					float distanceError = glm::distance(currentTransform.Position, predictedTransform.Position);
+
+					if (distanceError < 0.01f)
+					{
+						netTransform.StopReconcile(ReconcileState::Position);
+					}
+
+					body->SetTransform({ predictedTransform.Position.x, predictedTransform.Position.y }, 0);
+					//body->SetLinearVelocity({ 0.0f, 0.0f });
+				}
+
+				break;
 			}
 			}
 
-			// Reset replication state
-			netTransform.ReplicatedThisFrame = false;
+			netTransform.ReplicationTimer += ts;
 		}
 
 		//_PT_CORE_TRACE("{:.9f}", testTimer.ElapsedMillis());

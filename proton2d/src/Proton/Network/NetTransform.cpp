@@ -35,10 +35,15 @@ namespace proton {
 
 	bool Transform::IsZero() const
 	{
-		constexpr float epsilon = 1e-6f;
+		constexpr float epsilon = 1e-4f;
 		return glm::compMax(glm::abs(Position)) < epsilon
 			&& glm::compMax(glm::abs(Scale)) < epsilon
 			&& glm::abs(Rotation) < epsilon;
+	}
+
+	bool NetTransform::Transform::IsNotZero() const
+	{
+		return !IsZero();
 	}
 
 	Transform Transform::Get(TransformComponent* component, bool localSpace)
@@ -62,6 +67,21 @@ namespace proton {
 		delta.Scale = this->Scale - other.Scale;
 		delta.Rotation = this->Rotation - other.Rotation;
 		return delta;
+	}
+
+	bool NetTransform::IsReconciling(ReconcileState component) const
+	{
+		return EnumHasAnyFlags(State, component);
+	}
+
+	void NetTransform::StartReconcile(ReconcileState component)
+	{
+		State = EnumAddFlags(State, component);
+	}
+
+	void NetTransform::StopReconcile(ReconcileState component)
+	{
+		State = EnumRemoveFlags(State, component);
 	}
 
 }

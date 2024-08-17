@@ -140,9 +140,8 @@ namespace proton {
 			{
 				prevTransform = lastTransform;
 				netTransform.ServerSequenceNumber = item.TransformSequenceNumber;
-				netTransform.LastReplicationInterval = netTransform.ReplicationTimer.Elapsed();
-				netTransform.ReplicationTimer.Reset();
-				netTransform.ReplicatedThisFrame = true;
+				netTransform.ReplicationInterval = netTransform.ReplicationTimer;
+				netTransform.ReplicationTimer = 0.0f;
 			}
 			
 			// Read transform values from message payload
