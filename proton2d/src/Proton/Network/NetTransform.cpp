@@ -71,7 +71,7 @@ namespace proton {
 
 	bool NetTransform::IsReconciling(ReconcileState component) const
 	{
-		return EnumHasAnyFlags(State, component);
+		return EnumHasAllFlags(State, component);
 	}
 
 	void NetTransform::StartReconcile(ReconcileState component)

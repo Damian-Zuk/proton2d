@@ -105,13 +105,6 @@ namespace proton {
 		return true;
 	}
 
-	static std::filesystem::path StripFirstDir(std::filesystem::path p)
-	{
-		p = p.relative_path();
-		if (p.empty()) return {};
-		return p.lexically_relative(*p.begin());
-	}
-
 	void AssetManager::ReloadAssetsList()
 	{
 		auto& textureList = s_Instance->m_TexturesFilepathList;
@@ -135,7 +128,7 @@ namespace proton {
 				if (extension != ext)
 					continue;
 
-				std::string textureFilename = StripFirstDir(filepath).string();
+				std::string textureFilename = filepath.substr(sizeof("content/textures"), filepath.length());
 				textureList.push_back(textureFilename);
 				break;
 			}

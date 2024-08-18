@@ -27,8 +27,10 @@
 
 namespace proton {
 
+	constexpr glm::vec4 DEFAULT_SCENE_SCREEN_CLEAR_COLOR = { 0.24f, 0.37f, 0.67f, 1.0f };
+
 	Scene::Scene(const std::string& filepath, const std::string& gameModeClass)
-		:  m_Filepath(filepath)
+		:  m_Filepath(filepath), m_ClearColor(DEFAULT_SCENE_SCREEN_CLEAR_COLOR)
 	{
 		if (gameModeClass.size() && gameModeClass != "GameModeBase")
 		{
@@ -1064,6 +1066,7 @@ namespace proton {
 		auto& last = netTransform.LastAuthoritativeTransform;
 		auto& prev = netTransform.PrevAuthoritativeTransform;
 
+		bool rigidbodySimulated = component.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
 		last.Position = entity.HasComponent<RigidbodyComponent>() ? transform.WorldPosition : transform.LocalPosition;
 		last.Scale = transform.Scale;
 		last.Rotation = transform.Rotation;

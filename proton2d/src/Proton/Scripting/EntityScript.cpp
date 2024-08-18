@@ -57,6 +57,8 @@ namespace proton {
 		return GetScene()->GetGameInstance()->GetSceneManager();
 	}
 
+	// ------------------------------- Networking -------------------------------
+
 	using ReplicatedScript = NetworkComponent::ReplicatedScript;
 	using ReplicatedField = ReplicatedScript::ReplicatedField;
 
@@ -92,6 +94,11 @@ namespace proton {
 		scriptRepInfo->ReplicatedFields.push_back(ReplicatedField{ data, size, notifyFunction });
 	}
 
+	NetworkManager* EntityScript::GetNetworkManager() const
+	{
+		return GetScene()->GetGameInstance()->GetNetworkManager();
+	}
+
 	void EntityScript::SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction)
 	{
 		PT_CORE_ASSERT(m_ScriptFields.find(name) != m_ScriptFields.end(), "Script field not found");
@@ -102,20 +109,23 @@ namespace proton {
 
 	bool EntityScript::IsRunningServer() const
 	{
-		NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();
-		return netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer;
+		NetworkManager* netManager = GetNetworkManager();
+		return netManager->IsNetModeServer() && netManager->IsNetworkActive();
 	}
 
 	bool EntityScript::IsRunningClient() const
 	{
-		return !HasAuthority();
+		NetworkManager* netManager = GetNetworkManager();
+		return netManager->IsNetModeClient() && netManager->IsNetworkActive();
 	}
 
 	bool EntityScript::HasAuthority() const
 	{
-		NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();
+		NetMode netMode = GetNetworkManager()->GetNetMode();
 		return netMode != NetMode::Client;
 	}
+
+	// ------------------------------- Script Fields -------------------------------
 
 	const size_t EntityScript::GetFieldSize(ScriptFieldType type)
 	{

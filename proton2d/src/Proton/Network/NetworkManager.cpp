@@ -181,6 +181,11 @@ namespace proton {
 		return ConnectionStatus::Disconnected;
 	}
 
+	void NetworkManager::SetLocalPlayerEntity(Entity entity)
+	{
+		m_LocalPlayerEntity = entity;
+	}
+
 	void NetworkManager::SetGameProtocolVersion(uint32_t version)
 	{
 		NetworkManager::s_GameProtocolVersion = version;

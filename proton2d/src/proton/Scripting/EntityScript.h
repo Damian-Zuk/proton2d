@@ -56,6 +56,8 @@ namespace proton {
 		virtual const std::string& GetScriptClassName() = 0;
 		
 		// Networking
+		NetworkManager* GetNetworkManager() const;
+
 		void SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction = nullptr);
 		void SetReplicatedData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction = nullptr);
 

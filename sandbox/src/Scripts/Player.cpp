@@ -37,6 +37,7 @@ void Player::OnRegisterFields()
 
 bool Player::OnCreate()
 {
+
 	MyGameMode* gameMode = GetGameMode<MyGameMode>();
 	uint32_t localPlayerID = gameMode->GetLocalPlayerID();
 	m_IsLocalPlayer = m_ClientID == localPlayerID;
@@ -44,6 +45,11 @@ bool Player::OnCreate()
 	{
 		gameMode->m_LocalPlayer = this;
 		GetScene()->SetPrimaryCameraEntity(*this);
+		
+		if (IsRunningClient())
+		{
+			GetNetworkManager()->SetLocalPlayerEntity(*this);
+		}
 	}
 
 	// Set up sprite animations

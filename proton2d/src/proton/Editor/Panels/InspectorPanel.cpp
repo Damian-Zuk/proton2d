@@ -660,11 +660,13 @@ namespace proton {
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });
+				ImGui::Checkbox("Simulate on client", &component.SimulateOnClient);
 				ImGui::PushItemWidth(125.0f);
-				float cullDistance = component.CullDistance;
+				float cullDistance = netTransform.CullDistance;
 				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
-					component.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
+					netTransform.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
 				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
+				ImGui::DragFloat("Reconcile Max Time", &netTransform.ReconcileMaxTime, 0.001f);
 				ImGui::DragFloat("Reconcile Cooldown", &netTransform.ReconcileCooldownTime, 0.001f);
 				ImGui::PopItemWidth();
 
@@ -706,7 +708,6 @@ namespace proton {
 					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
 					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
 					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());
-					ImGui::Text("Error: %f", netTransform.Error);
 
 					ImGui::TreePop();
 				}

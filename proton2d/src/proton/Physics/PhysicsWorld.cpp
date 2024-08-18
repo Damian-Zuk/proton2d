@@ -158,7 +158,7 @@ namespace proton {
 			if (networkManager->IsNetModeClient() && entity.HasComponent<NetworkComponent>())
 			{
 				auto& net = entity.GetComponent<NetworkComponent>();
-				if (net.NetTransform.Method != NetSyncMethod::Prediction)
+				if (!net.SimulateOnClient)
 					continue;
 			}
 
@@ -311,7 +311,7 @@ namespace proton {
 						if (entity.HasComponent<NetworkComponent>())
 						{
 							auto& net = entity.GetComponent<NetworkComponent>();
-							if (net.NetTransform.Method != NetSyncMethod::Prediction)
+							if (!net.SimulateOnClient)
 								continue;
 						}
 
@@ -323,7 +323,7 @@ namespace proton {
 							if (parent.HasComponent<NetworkComponent>())
 							{
 								auto& net = parent.GetComponent<NetworkComponent>();
-								if (net.NetTransform.Method != NetSyncMethod::Prediction)
+								if (!net.SimulateOnClient)
 									continue;
 							}
 						}
@@ -356,7 +356,7 @@ namespace proton {
 					if (networkManager->IsNetModeClient() && parent.HasComponent<NetworkComponent>())
 					{
 						auto& net = parent.GetComponent<NetworkComponent>();
-						if (net.NetTransform.Method != NetSyncMethod::Prediction)
+						if (!net.SimulateOnClient)
 							continue;
 					}
 
@@ -384,7 +384,7 @@ namespace proton {
 			
 			b2Body* body = rb.RuntimeBody;
 			
-			// Retrive positions of entities
+			// Retrieve positions of entities
 			transform.WorldPosition.x = body->GetPosition().x;
 			transform.WorldPosition.y = body->GetPosition().y;
 			transform.Rotation = glm::degrees(body->GetAngle());

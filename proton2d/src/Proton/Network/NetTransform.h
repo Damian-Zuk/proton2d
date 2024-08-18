@@ -38,6 +38,7 @@ namespace proton {
 			Position = 1 << 0,
 			Scale = 1 << 1,
 			Rotation = 1 << 2,
+			PositionAndRotation = Position | Rotation,
 			All = Position | Scale | Rotation
 		};
 
@@ -59,12 +60,14 @@ namespace proton {
 			Transform Value;
 		};
 
+		// Parameters
 		SyncMethod Method = SyncMethod::None;
-		float ReconcileThreshold = 0.3f;
-		float ReconcileMaxTime = 0.5f;
+		float CullDistance = 20.0f;
+		float ReconcileThreshold = 0.5f;
+		float ReconcileMaxTime = 1.0f;
 		float ReconcileCooldownTime = 1.0f;
 
-		// Internal
+		// Internal state
 		std::vector<SequencedItem> DeltaBuffer;
 		uint16_t CurrentSequenceNumber = 0;
 		uint16_t ServerSequenceNumber = 0;
@@ -77,9 +80,9 @@ namespace proton {
 		ReplicationFlags Flags = ReplicationFlags::None;
 		ReconcileState State = ReconcileState::None;
 
-		float ReplicationInterval = 0.0f;
+		float ReplicationInterval = 1.0f / 64.0f;
 		float ReplicationTimer = 0.0f;
-		float Error = 0.0f;
+		float InterpolationTimer = 0.0f;
 
 		bool IsReconciling(ReconcileState component) const;
 		// State mutating function

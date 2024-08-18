@@ -281,7 +281,7 @@ namespace proton
 		b2Body* body = GetRuntimeBody();
 		if (body)
 		{
-			body->SetTransform(body->GetPosition(), angle * b2_pi);
+			body->SetTransform(body->GetPosition(), angle * (b2_pi / 180.0f));
 			return;
 		}
 		GetTransform().Rotation = angle;
@@ -292,7 +292,7 @@ namespace proton
 		b2Body* body = GetRuntimeBody();
 		if (body)
 		{
-			body->SetTransform(body->GetPosition(), body->GetAngle() + angle * b2_pi);
+			body->SetTransform(body->GetPosition(), body->GetAngle() + angle * (b2_pi / 180.0f));
 			return;
 		}
 		GetTransform().Rotation += angle;

@@ -468,6 +468,10 @@ namespace proton {
 
 		Entity clientEntity = m_Server->GetClientEntity(clientID);
 		Scene* scene = clientEntity ? clientEntity.m_Scene : m_Server->m_GameInstance->GetActiveScene();
+		
+		// Skip if scene is not simulated
+		if (scene->GetSceneState() == SceneState::Stop)
+			return;
 
 		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
 		if (view.empty() || m_Server->GetConnectedClientsCount() == 0)
@@ -486,6 +490,7 @@ namespace proton {
 			auto& net = view.get<NetworkComponent>(_entity);
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& velocity = entity.GetComponent<VelocityComponent>();
+			auto& netTransform = net.NetTransform;
 
 			if (clientEntity)
 			{
@@ -495,7 +500,7 @@ namespace proton {
 					glm::vec2{ clientTransform.WorldPosition.x, clientTransform.WorldPosition.y}
 				);
 
-				if (distance > net.CullDistance)
+				if (distance > netTransform.CullDistance)
 					continue;
 			}
 
@@ -510,11 +515,10 @@ namespace proton {
 
 			////////////////////////////// NetTransform Serialization //////////////////////////////
 
-			auto& netTransform = net.NetTransform;
-			bool rbSync = netTransform.Method == NetSyncMethod::Prediction;
+			bool rigidbodySimulated = entity.HasComponent<RigidbodyComponent>();
 
 			// Current values are stored in TransformComponent and VelocityComponent
-			const auto& position = rbSync ? transform.WorldPosition : transform.LocalPosition;
+			const auto& position = rigidbodySimulated ? transform.WorldPosition : transform.LocalPosition;
 			const auto& scale = transform.Scale;
 			const auto& rotation = transform.Rotation;
 			const auto& linearVelocity = velocity.LinearVelocity;

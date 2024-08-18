@@ -1,5 +1,6 @@
 #pragma once
 #include "Proton/Network/Common.h"
+#include "Proton/Scene/Entity.h"
 
 namespace proton {
 
@@ -38,11 +39,15 @@ namespace proton {
 		ConnectionStatus GetClientConnectionStatus() const;
 		uint32_t GetLocalClientID() const { return m_LocalClientID; }
 
-		Client* GetClient() const { return m_Client.get(); };
-		Server* GetServer() const { return m_Server.get(); };
+		void SetLocalPlayerEntity(Entity entity);
+		Entity GetLocalPlayerEntity() const { return m_LocalPlayerEntity; }
 
 		// Call this function in Application::OnCreate function to set game protocol version
 		static void SetGameProtocolVersion(uint32_t version);
+
+	private:
+		Client* GetClient() const { return m_Client.get(); };
+		Server* GetServer() const { return m_Server.get(); };
 
 	private:
 		void OnUpdate(float ts);
@@ -73,9 +78,6 @@ namespace proton {
 		// True if client has received any replication update from the server
 		bool m_ClientGameStateInitialized = false;
 
-		// The local client ID set after receiving HandshakeReply from the server
-		uint32_t m_LocalClientID = 0;
-
 		// True if server is running or client is connected/connecting to the server
 		bool m_IsNetworkActive = false;
 		uint32_t m_NetworkedSceneCount = 0;
@@ -85,6 +87,10 @@ namespace proton {
 		bool m_SaveStatsForAllClients = false;
 		uint32_t m_SaveStatsForClientID = 0;
 
+		// The local client ID set after receiving HandshakeReply from the server
+		uint32_t m_LocalClientID = 0;
+		Entity m_LocalPlayerEntity;
+
 		static uint32_t s_GameProtocolVersion; // default value is 1
 		static uint32_t s_NetworkServicesRunning; // across all editor game instances (server + clients)
 		static bool s_NetworkDriverInitialized; // release GNS resources after all network services stopped
@@ -92,6 +98,8 @@ namespace proton {
 		friend class Application;
 		friend class GameInstance;
 		friend class Scene;
+		friend class GameModeBase;
+
 		friend class Client;
 		friend class Server;
 		friend class NetReplicator;

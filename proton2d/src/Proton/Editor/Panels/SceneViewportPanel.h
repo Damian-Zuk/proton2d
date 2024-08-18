@@ -57,7 +57,7 @@ namespace proton {
 		bool m_MoveSelectedEntity = false;
 
 		// Debug tracing
-		bool m_TraceEntitySync = false;
+		bool m_TraceEntitySync = true;
 		bool m_ShowCullDistance = false;
 
 		bool m_ShowSelectionOutline = true;

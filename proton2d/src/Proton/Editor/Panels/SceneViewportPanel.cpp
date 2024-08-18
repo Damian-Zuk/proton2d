@@ -493,7 +493,7 @@ namespace proton {
 
 				// Predicted transform state
 				bool reconcileStarted = EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Position);
-				Renderer::DrawRect(Math::GetTransform({ pred.Position.x, pred.Position.y, 0.201f },
+				Renderer::DrawRect(Math::GetTransform({ pred.Position.x, pred.Position.y, 0.202f },
 					{ transform.Scale.x,transform.Scale.y }, last.Rotation),
 					reconcileStarted ? COLOR_LIGHT_RED : COLOR_GREEN);
 			}
@@ -501,7 +501,7 @@ namespace proton {
 			if (m_ShowCullDistance)
 			{
 				glm::vec3 position = { transform.WorldPosition.x, transform.WorldPosition.y, 0.2f };
-				glm::vec3 scale = { net.CullDistance * 2.0f, net.CullDistance * 2.0f, 1.0f };
+				glm::vec3 scale = { netTransform.CullDistance * 2.0f, netTransform.CullDistance * 2.0f, 1.0f };
 				glm::mat4 circleTransform = Math::GetTransform(position, scale, transform.Rotation);
 				Renderer::DrawCircle(circleTransform, COLOR_MAGENTA, 0.01f);
 

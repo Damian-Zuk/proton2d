@@ -10,8 +10,6 @@ class b2Body;
 
 namespace proton {
 
-	constexpr glm::vec4 DEFAULT_SCENE_SCREEN_CLEAR_COLOR = { 0.24f, 0.37f, 0.67f, 1.0f };
-
 	// Forward declaration
 	class Entity;
 	class PhysicsWorld;
@@ -24,11 +22,9 @@ namespace proton {
 		Stop, Play, Paused
 	};
 
-	//
-	// Scene Class
-	// Wrapper for the Entity Registry (entt:registry) from the EnTT Entity Component System (ECS) library.
-	// Provides additional functionalities to manage entities on the scene.
-	//
+	////////////////////////////////////////////////////////////////////////////////////////
+	// Scene class (wrapper around entt:registry with functionalities to manage entities) 
+	////////////////////////////////////////////////////////////////////////////////////////
 	class Scene
 	{
 	public:
@@ -130,7 +126,7 @@ namespace proton {
 
 		// General
 		std::string m_Filepath = "<Unsaved scene>";
-		glm::vec4 m_ClearColor = DEFAULT_SCENE_SCREEN_CLEAR_COLOR;
+		glm::vec4 m_ClearColor;
 
 		// ECS
 		entt::registry m_Registry;
