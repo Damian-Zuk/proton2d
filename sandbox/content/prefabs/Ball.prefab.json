@@ -1,10 +1,10 @@
 {
-    "UUID": 8994161714746395849,
+    "UUID": 2833341716255024865,
     "Tag": "Ball",
     "Transform": {
         "Position": [
-            52.1333,
-            -2.24731,
+            -2.60833,
+            3.23333,
             0.101
         ],
         "Rotation": 0.0,
@@ -14,7 +14,7 @@
         ]
     },
     "Network": {
-        "SyncMethod": "Interpolation",
+        "SyncMethod": "Extrapolation",
         "CullDistance": 20.0,
         "ReconcileThreshold": 0.029999999329447746,
         "ReconcileMaxTimer": 0.029999999329447746,

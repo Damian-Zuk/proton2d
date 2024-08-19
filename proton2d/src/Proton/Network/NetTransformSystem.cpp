@@ -15,7 +15,7 @@
 namespace proton {
 
 	using Transform = NetTransform::Transform;
-	using ReconcileState = NetTransform::ReconcileState;
+	using ReconcileFlags = NetTransform::ReconcileFlags;
 
 	NetTransformSystem::NetTransformSystem(Client* client)
 		: m_Client(client), m_NetworkManager(client->m_NetworkManager)
@@ -31,29 +31,34 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
-		// Timer testTimer;
 		auto view = scene->GetAllEntitiesWith<NetworkComponent, TransformComponent>();
 		for (auto _entity : view)
 		{
 			Entity entity(_entity, scene);
 			auto [net, transform] = view.get<NetworkComponent, TransformComponent>(_entity);
 
-			// Try to retrieve Box2D rigidbody `b2Body*`
-			bool isRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
+			// Try to retrieve Box2D rigidbody (b2Body*)
+			const bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
 			b2Body* rigidbody = entity.GetRuntimeBody();
-			if (isRigidbodySimulated && !rigidbody)
+			if (hasRigidbodySimulated && !rigidbody)
 				continue; // Runtime body not created yet, skip replication tick
-			
-			// `NetTransform` member references
-			auto& netTransform = net.NetTransform;
-			auto& lastAuthorative = netTransform.LastAuthoritativeTransform;
-			auto& prevAuthorative = netTransform.PrevAuthoritativeTransform;
-			auto& predictedTransform = netTransform.PredictedTransform;
-			auto& replicationTimer = netTransform.ReplicationTimer;
-			auto& replicationInterval = netTransform.ReplicationInterval;
 
-			// `replicationTimer` is being reset by `NetReplicator`
-			bool replicatedThisFrame = replicationTimer == 0.0f;
+			// Get current transform values from TransformComponent
+			const Transform currentTransform = Transform::Get(&transform);
+			
+			// NetTransform member references
+			auto& netTransform = net.NetTransform;
+			const auto& lastAuthorative = netTransform.LastAuthoritativeTransform;
+			const auto& prevAuthorative = netTransform.PrevAuthoritativeTransform;
+			const auto& replicationInterval = netTransform.ReplicationInterval;
+			const auto& reconcileMaxTime = netTransform.ReconcileMaxTime;
+			const auto& reconcileCooldownTime = netTransform.ReconcileCooldownTime;
+			auto& predictedTransform = netTransform.PredictedTransform;
+			auto& interpolationTimer = netTransform.InterpolationTimer;
+			auto& replicationTimer = netTransform.ReplicationTimer;
+
+			// replicationTimer is being reset by NetReplicator
+			const bool replicatedThisFrame = replicationTimer == 0.0f;
 
 			// Handle transform sync for each method
 			switch (netTransform.Method)
@@ -61,7 +66,7 @@ namespace proton {
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::None:
 			{
-				if (replicatedThisFrame)
+				if (!replicatedThisFrame)
 					break;
 
 				// Immediately set authoritative transform values
@@ -82,11 +87,10 @@ namespace proton {
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::Interpolation:
 			{
-				// Interpolate between last two authoritative transforms
-				// Calculate alpha
-				float alpha = glm::clamp(replicationTimer / replicationInterval, 0.0f, 1.0f);
-				glm::vec2 interpolatedPosition = glm::mix(prevAuthorative.Position, lastAuthorative.Position, alpha);
-				float interpolatedRotation = glm::mix(prevAuthorative.Rotation, lastAuthorative.Rotation, alpha);
+				// Interpolate between two last authoritative transforms
+				const float alpha = replicationInterval > 0.0f ? glm::clamp(interpolationTimer / replicationInterval, 0.0f, 1.0f) : 1.0f;
+				const glm::vec2 interpolatedPosition = glm::mix(prevAuthorative.Position, lastAuthorative.Position, alpha);
+				const float interpolatedRotation = glm::mix(prevAuthorative.Rotation, lastAuthorative.Rotation, alpha);
 				
 				if (rigidbody != nullptr)
 				{
@@ -98,80 +102,65 @@ namespace proton {
 					transform.Scale = glm::mix(prevAuthorative.Scale, lastAuthorative.Scale, alpha);
 					transform.Rotation = interpolatedRotation;
 				}
+				predictedTransform = lastAuthorative;
 				break;
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::Extrapolation:
 			{
-#if 0
-				if (!scene->m_PhysicsTick)
+				if (!hasRigidbodySimulated) // extrapolation supported only for rigidbodies
 					break;
 
-				if (!entity.HasComponent<RigidbodyComponent>())
-					break;
+				// Temporary ping value: Server::s_FakeServerLag
+				const float lag = Server::s_FakeServerLag / 1000.0f;
 
-				auto& rb = entity.GetComponent<RigidbodyComponent>();
-				if (rb.Type == b2_staticBody)
-					break;
+				const glm::vec2 currentVelocity = { rigidbody->GetLinearVelocity().x, rigidbody->GetLinearVelocity().y };
+				const glm::vec2 serverVelocity = (lastAuthorative.Position - prevAuthorative.Position) / m_NetworkManager->m_TickTime;
+				const glm::vec2 estimatedVelocity = (currentVelocity + serverVelocity) / 2.0f;
 
-				b2Body* body = rb.RuntimeBody;
-				if (!body || syncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
-					break;
-
-				float lastPacketElapsed = glm::min(syncState.PacketDelay, 1.0f / 16.0f);
-				float multiplier = lastPacketElapsed + Server::s_FakeServerLag / 1000.0f;
-
-				syncState.ExtrapolatedPoint = {
-					current.Position.x + velocity.LinearVelocity.x * multiplier,
-					current.Position.y + velocity.LinearVelocity.y * multiplier
+				predictedTransform.Position = {
+					lastAuthorative.Position.x + estimatedVelocity.x * lag,
+					lastAuthorative.Position.y + estimatedVelocity.y * lag
 				};
 
-				if (!syncState.ReconcileStarted && syncState.ReconcileCooldownTimer.Elapsed() > syncParams.ReconcileCooldownTime)
+				if (!netTransform.IsReconciling(ReconcileFlags::Position))
 				{
-					float distance = glm::distance(
-						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
-						glm::vec2{ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }
-					);
-					syncState.Error = distance;
+					const float distance = glm::distance(currentTransform.Position, predictedTransform.Position);
 
-					if (syncState.Error >= syncParams.ReconcileThreshold)
+					if (distance >= netTransform.ReconcileThreshold)
 					{
-						if (entity.GetTag() == "Player")
-							_PT_CORE_TRACE("Reconcile: len2={:.3f}, dist={:.3}, mul={:.3f}", syncState.Error, distance, multiplier);
+						_PT_CORE_TRACE("Reconcile pos ({}): error={}, lag={:.3f}, predicted={}, serverVel={}, estVel={}",
+							entity.GetTag(), distance, lag, predictedTransform.Position, serverVelocity, estimatedVelocity);
 
-						syncState.ReconcileStarted = true;
-						syncState.ReconcileCooldownTimer.Reset();
-
-						//body->SetGravityScale(0.0f);
+						netTransform.StartReconcile(ReconcileFlags::Position);
 					}
 				}
 
-				if (syncState.ReconcileStarted)
+				const float currentAngularVelocity = rigidbody->GetAngularVelocity();
+				const float serverAngularVelocity = (lastAuthorative.Rotation - prevAuthorative.Rotation) / m_NetworkManager->m_TickTime;
+				const float estimatedAngularVelocity = (currentAngularVelocity + serverAngularVelocity) / 2.0f;
+
+				predictedTransform.Rotation = lastAuthorative.Rotation + estimatedAngularVelocity * lag;
+				
+				if (!netTransform.IsReconciling(ReconcileFlags::Rotation))
 				{
-					body->SetTransform({ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }, 0);
-
-					float distanceError = glm::distance(
-						glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
-						glm::vec2{ syncState.ExtrapolatedPoint.x, syncState.ExtrapolatedPoint.y }
-					);
-					//float distanceError = glm::length2(syncState.ExtrapolatedPoint - transform.WorldPosition);
-
-					if (distanceError < 0.005f)
+					constexpr float rotationReconcileThreshold = 5.0f;
+					const float rotationError = glm::abs(currentTransform.Rotation - predictedTransform.Rotation);
+					if (rotationError > rotationReconcileThreshold)
 					{
-						syncState.ReconcileStarted = false;
-						//body->SetGravityScale(1.0f);
+						_PT_CORE_TRACE("Reconcile rot ({}): lag={:.3f}, predicted={}", entity.GetTag(), lag, predictedTransform.Rotation);
+						netTransform.StartReconcile(ReconcileFlags::Rotation);
 					}
 				}
-#endif
+
 				break;
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::Prediction:
 			{
 				// Get current transform values and calculate last tick delta (world space if uses physics body)
-				const Transform currentTransform = Transform::Get(&transform);
 				auto& deltaBuffer = netTransform.DeltaBuffer;
-
+				
 				// Push current delta and sequence number to the buffer
 				if (m_NetworkManager->IsNetworkTick())
 				{
@@ -182,13 +171,13 @@ namespace proton {
 					netTransform.LastTickTransform = currentTransform;
 
 					// Ignore delta if reconciling
-					if (netTransform.IsReconciling(ReconcileState::Position))
+					if (netTransform.IsReconciling(ReconcileFlags::Position))
 						thisTickDelta.Position = glm::vec2{ 0.0f, 0.0f };
 
-					if (netTransform.IsReconciling(ReconcileState::Scale))
+					if (netTransform.IsReconciling(ReconcileFlags::Scale))
 						thisTickDelta.Scale = glm::vec2{ 0.0f, 0.0f };
 
-					if (netTransform.IsReconciling(ReconcileState::Rotation))
+					if (netTransform.IsReconciling(ReconcileFlags::Rotation))
 						thisTickDelta.Rotation = 0.0f;
 					
 					// Store delta and new sequence number if delta not zero
@@ -201,15 +190,16 @@ namespace proton {
 					}
 				}
 
-				// Recalculate predicted transform and check if need to reconcile
+				// Recalculate predicted transform and check if reconcilation needed
 				if (replicatedThisFrame)
 				{
 					// Remove deltas that happened before last authoritative transform 
-					while (!deltaBuffer.empty() && deltaBuffer.front().SequenceNumber <= netTransform.ServerSequenceNumber)
-					{
-						deltaBuffer.erase(deltaBuffer.begin());
-						//deltaBuffer.pop_front();
-					}
+					auto deltaIt = deltaBuffer.begin();
+					while (deltaIt != deltaBuffer.end() && deltaIt->SequenceNumber <= netTransform.ServerSequenceNumber)
+						deltaIt++;
+
+					if (deltaIt != deltaBuffer.begin())
+						deltaBuffer.erase(deltaBuffer.begin(), deltaIt);
 
 					// Apply deltas not processed by server yet
 					predictedTransform = lastAuthorative;
@@ -221,103 +211,103 @@ namespace proton {
 					}
 
 					// Check position error
-					float positionError = glm::distance(currentTransform.Position, predictedTransform.Position);
+					const float positionError = glm::distance(currentTransform.Position, predictedTransform.Position);
 					if (positionError > netTransform.ReconcileThreshold)
-						netTransform.StartReconcile(ReconcileState::Position);
+						netTransform.StartReconcile(ReconcileFlags::Position);
 
 					// Check scale error
-					float scaleError = glm::distance(currentTransform.Scale, predictedTransform.Scale);
+					const float scaleError = glm::distance(currentTransform.Scale, predictedTransform.Scale);
 					if (scaleError > netTransform.ReconcileThreshold)
-						netTransform.StartReconcile(ReconcileState::Scale);
+						netTransform.StartReconcile(ReconcileFlags::Scale);
 
 					// Check rotation error
 					constexpr float rotationReconcileThreshold = 5.0f;
-					float rotationError = glm::abs(currentTransform.Rotation - predictedTransform.Rotation);
+					const float rotationError = glm::abs(currentTransform.Rotation - predictedTransform.Rotation);
 					if (rotationError > rotationReconcileThreshold)
-						netTransform.StartReconcile(ReconcileState::Rotation);
+						netTransform.StartReconcile(ReconcileFlags::Rotation);
 				}
 
-				// -------------------------------------------------- Transform reconcilation ----------------------------------------------------
-
-				// Reconcilation for physics body (scale not implemented yet)
-				if (rigidbody != nullptr)
-				{
-					constexpr float positionErrorThreshold = 0.01f;
-					constexpr float rotationErrorThreshold = 1.0f;
-
-					// Reconcile position and rotation
-					if (netTransform.IsReconciling(ReconcileState::PositionAndRotation))
-					{
-						float positionError = glm::distance(currentTransform.Position, predictedTransform.Position);
-						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(ReconcileState::Position);
-
-						float rotationError = glm::abs(currentTransform.Rotation - predictedTransform.Rotation);
-						if (rotationError < rotationErrorThreshold)
-							netTransform.StopReconcile(ReconcileState::Rotation);
-
-						rigidbody->SetTransform({ predictedTransform.Position.x, predictedTransform.Position.y }, predictedTransform.Rotation * (b2_pi / 180.0f));
-					}
-					// Reconcile position only
-					else if (netTransform.IsReconciling(ReconcileState::Position))
-					{
-						float positionError = glm::distance(currentTransform.Position, predictedTransform.Position);
-						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(ReconcileState::Position);
-
-						rigidbody->SetTransform({ predictedTransform.Position.x, predictedTransform.Position.y }, rigidbody->GetAngle());
-					}
-					// Reconcile rotation only
-					else if (netTransform.IsReconciling(ReconcileState::Rotation))
-					{
-						float rotationError = glm::abs(currentTransform.Rotation - predictedTransform.Rotation);
-						if (rotationError < rotationErrorThreshold)
-							netTransform.StopReconcile(ReconcileState::Rotation);
-
-						rigidbody->SetTransform({ transform.WorldPosition.x, transform.WorldPosition.y }, predictedTransform.Rotation * (b2_pi / 180.0f));
-					}
-				}
-				else // Reconcilation for TransformComponent (with interpolation for smoothness)
-				{
-					if (netTransform.IsReconciling(ReconcileState::Position))
-					{
-						float alpha = glm::clamp(replicationTimer / netTransform.ReconcileMaxTime, 0.0f, 1.0f);
-						glm::vec2 interpolated = glm::mix(currentTransform.Position, predictedTransform.Position, alpha);
-						entity.SetLocalPosition(interpolated);
-
-						if (alpha == 1.0f)
-							netTransform.StopReconcile(ReconcileState::Position);
-					}
-
-					if (netTransform.IsReconciling(ReconcileState::Scale))
-					{
-						float alpha = glm::clamp(replicationTimer / netTransform.ReconcileMaxTime, 0.0f, 1.0f);
-						glm::vec2 interpolated = glm::mix(currentTransform.Scale, predictedTransform.Scale, alpha);
-						transform.Scale = interpolated;
-
-						if (alpha == 1.0f)
-							netTransform.StopReconcile(ReconcileState::Scale);
-					}
-					
-					if (netTransform.IsReconciling(ReconcileState::Rotation))
-					{
-						float alpha = glm::clamp(replicationTimer / netTransform.ReconcileMaxTime, 0.0f, 1.0f);
-						float interpolated = glm::mix(currentTransform.Rotation, predictedTransform.Rotation, alpha);
-						transform.Rotation = interpolated;
-
-						if (alpha == 1.0f)
-							netTransform.StopReconcile(ReconcileState::Position);
-					}
-				}
-				
 				break;
 			}
 			}
 
-			netTransform.ReplicationTimer += ts;
-		}
+			// -------------------------------------------------- Transform reconcilation ----------------------------------------------------
 
-		//_PT_CORE_TRACE("{:.9f}", testTimer.ElapsedMillis());
+			// Reconcilation for physics body (scale not implemented yet)
+			if (rigidbody != nullptr)
+			{
+				constexpr float positionErrorThreshold = 0.01f;
+				constexpr float rotationErrorThreshold = 1.0f;
+
+				// Reconcile position and rotation
+				if (netTransform.IsReconciling(ReconcileFlags::PositionAndRotation))
+				{
+					const float positionError = glm::distance(currentTransform.Position, predictedTransform.Position);
+					if (positionError < positionErrorThreshold)
+						netTransform.StopReconcile(ReconcileFlags::Position);
+
+					const float rotationError = glm::abs(currentTransform.Rotation - predictedTransform.Rotation);
+					if (rotationError < rotationErrorThreshold)
+						netTransform.StopReconcile(ReconcileFlags::Rotation);
+
+					rigidbody->SetTransform({ predictedTransform.Position.x, predictedTransform.Position.y }, predictedTransform.Rotation * (b2_pi / 180.0f));
+				}
+				// Reconcile position only
+				else if (netTransform.IsReconciling(ReconcileFlags::Position))
+				{
+					const float positionError = glm::distance(currentTransform.Position, predictedTransform.Position);
+					if (positionError < positionErrorThreshold)
+						netTransform.StopReconcile(ReconcileFlags::Position);
+
+					rigidbody->SetTransform({ predictedTransform.Position.x, predictedTransform.Position.y }, rigidbody->GetAngle());
+				}
+				// Reconcile rotation only
+				else if (netTransform.IsReconciling(ReconcileFlags::Rotation))
+				{
+					const float rotationError = glm::abs(currentTransform.Rotation - predictedTransform.Rotation);
+					if (rotationError < rotationErrorThreshold)
+						netTransform.StopReconcile(ReconcileFlags::Rotation);
+
+					rigidbody->SetTransform({ transform.WorldPosition.x, transform.WorldPosition.y }, predictedTransform.Rotation * (b2_pi / 180.0f));
+				}
+			}
+			else // Reconcilation for TransformComponent (with interpolation for smoothness)
+			{
+				if (netTransform.IsReconciling(ReconcileFlags::Position))
+				{
+					const float alpha = netTransform.ReconcileMaxTime > 0.0f ? glm::clamp(interpolationTimer / netTransform.ReconcileMaxTime, 0.0f, 1.0f) : 1.0f;
+					const glm::vec2 interpolated = glm::mix(currentTransform.Position, predictedTransform.Position, alpha);
+					entity.SetLocalPosition(interpolated);
+
+					if (alpha == 1.0f)
+						netTransform.StopReconcile(ReconcileFlags::Position);
+				}
+
+				if (netTransform.IsReconciling(ReconcileFlags::Scale))
+				{
+					const float alpha = netTransform.ReconcileMaxTime > 0.0f ? glm::clamp(interpolationTimer / netTransform.ReconcileMaxTime, 0.0f, 1.0f) : 1.0f;
+					const glm::vec2 interpolated = glm::mix(currentTransform.Scale, predictedTransform.Scale, alpha);
+					transform.Scale = interpolated;
+
+					if (alpha == 1.0f)
+						netTransform.StopReconcile(ReconcileFlags::Scale);
+				}
+
+				if (netTransform.IsReconciling(ReconcileFlags::Rotation))
+				{
+					const float alpha = netTransform.ReconcileMaxTime > 0.0f ? glm::clamp(interpolationTimer / netTransform.ReconcileMaxTime, 0.0f, 1.0f) : 1.0f;
+					const float interpolated = glm::mix(currentTransform.Rotation, predictedTransform.Rotation, alpha);
+					transform.Rotation = interpolated;
+
+					if (alpha == 1.0f)
+						netTransform.StopReconcile(ReconcileFlags::Position);
+				}
+			}
+
+			// Increment timers
+			replicationTimer += ts;
+			interpolationTimer += ts;
+		}
 
 		if (m_Client && m_NetworkManager->IsNetworkTick())
 		{

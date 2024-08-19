@@ -23,7 +23,7 @@ namespace proton {
 		m_NetTransformSystem(MakeUnique<NetTransformSystem>(this))
 	{
 		// 128KB preallocated buffer for writting network messages
-		// Will be automaticly reallocated by NetworkStreamWriter when needed
+		// Will be automaticly resized by NetworkStreamWriter when needed
 		m_ScratchBuffer.Allocate(131072);
 	}
 
@@ -94,7 +94,7 @@ namespace proton {
 		SendBuffer(stream.GetBuffer());
 	}
 
-	void Client::SendPlayerAction(NetworkWriterDelegate sendFunction)
+	void Client::SendPlayerAction(NetworkStreamWriterDelegate sendFunction)
 	{
 		NetworkStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(MessageType::PlayerAction);
@@ -199,6 +199,7 @@ namespace proton {
 		s_ConnectionToInstanceMap[m_Connection] = this;
 		s_InstanceMapMutex.unlock();
 
+		PT_CORE_TRACE("Starting client network thread");
 		m_Running = true;
 		while (m_Running)
 		{

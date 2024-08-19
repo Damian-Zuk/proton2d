@@ -64,6 +64,8 @@ bool Player::OnCreate()
 
 	if (IsRunningServer())
 	{
+		//GetNetworkManager()->Server_SetCustomMessageCallback(m_ClientID, [])
+
 		GetGameMode()->Server_SetPlayerActionCallback(m_ClientID, [&](NetworkStreamReader& stream) {
 			stream.ReadRaw(m_ActionState);
 		});

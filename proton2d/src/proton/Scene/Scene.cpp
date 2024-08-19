@@ -531,6 +531,17 @@ namespace proton {
 	void Scene::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
+
+		NetworkManager* networkManager = m_GameInstance->m_NetworkManager.get();
+		if (networkManager->IsNetModeClient() && !networkManager->m_ClientGameStateInitialized)
+		{
+			CalculateWorldPositions();
+			CachePrimaryCameraPosition();
+			CacheCursorWorldPosition();
+			Camera& camera = GetPrimaryCamera();
+			RenderScene(camera);
+			return;
+		}
 		
 		if (m_State == SceneState::Play && IsPhysicsSimulated())
 		{
@@ -577,10 +588,6 @@ namespace proton {
 	void Scene::UpdateScripts(float ts)
 	{
 		PROFILE_FUNCTION();
-
-		NetworkManager* networkManager = m_GameInstance->m_NetworkManager.get();
-		if (networkManager->IsNetModeClient() && !networkManager->m_ClientGameStateInitialized)
-			return;// Update scripts after client state initialized
 
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view)

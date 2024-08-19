@@ -42,6 +42,12 @@ namespace proton {
 		void SetLocalPlayerEntity(Entity entity);
 		Entity GetLocalPlayerEntity() const { return m_LocalPlayerEntity; }
 
+		void Client_SetOnCustomMessageCallback(uint16_t messageType, const NetworkStreamReaderDelegate& delegate);
+		void Client_SendCustomMessage(const NetworkStreamWriter& delegate);
+
+		void Server_SetOnCustomMessageCallback(uint16_t messageType, ClientID clientID, const NetworkStreamReaderDelegate& delegate);
+		void Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriter& delegate);
+
 		// Call this function in Application::OnCreate function to set game protocol version
 		static void SetGameProtocolVersion(uint32_t version);
 

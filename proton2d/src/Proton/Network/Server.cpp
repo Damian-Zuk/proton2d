@@ -37,7 +37,7 @@ namespace proton {
 		m_NetTransformSystem(MakeUnique<NetTransformSystem>(this))
 	{
 		// Preallocated 128 KB buffer for writting network messages
-		// Will be automaticly reallocated by NetworkStreamWriter when needed
+		// Will be automaticly resized by NetworkStreamWriter when needed
 		m_ScratchBuffer.Allocate(131072);
 		SetPacketFakeLag(s_FakeServerLag);
 	}
@@ -142,7 +142,7 @@ namespace proton {
 			stream.SkipBytes(sizeof(NetMassagePlayerAction));
 			if (m_PlayerActionCallbacks.find(clientID) != m_PlayerActionCallbacks.end())
 			{
-				NetworkReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
+				NetworkStreamReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
 				callback(stream);
 			}
 			else
@@ -250,7 +250,7 @@ namespace proton {
 		m_Interface->SetConnectionName((HSteamNetConnection)clientID, name);
 	}
 
-	void Server::SetClientActionCallback(uint32_t clientID, NetworkReaderDelegate function)
+	void Server::SetClientActionCallback(uint32_t clientID, NetworkStreamReaderDelegate function)
 	{
 		m_PlayerActionCallbacks[clientID] = function;
 	}

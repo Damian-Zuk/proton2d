@@ -51,7 +51,7 @@ namespace proton
 		uint64_t m_BufferPosition = 0;
 	};
 
-	using NetworkReaderDelegate = std::function<void(NetworkStreamReader& stream)>;
-	using NetworkWriterDelegate = std::function<void(NetworkStreamWriter& stream)>;
+	using NetworkStreamReaderDelegate = std::function<void(NetworkStreamReader& stream)>;
+	using NetworkStreamWriterDelegate = std::function<void(NetworkStreamWriter& stream)>;
 
 }

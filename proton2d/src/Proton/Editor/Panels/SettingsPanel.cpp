@@ -52,12 +52,6 @@ namespace proton {
 			ImGui::PopItemWidth();
 
 			ImGui::PushItemWidth(95.0f);
-			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
-			{
-				int maxConnections = networkManager->m_MaxServerConnections;
-				if (ImGui::DragInt("Max Connections", &maxConnections))
-					networkManager->m_MaxServerConnections = (uint32_t)glm::max(maxConnections, 0);
-			}
 
 			int tickRate = networkManager->m_TickRate;
 			if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
@@ -65,16 +59,25 @@ namespace proton {
 				networkManager->SetTickRate(glm::max(tickRate, 1));
 			}
 
-			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer) &&
-				ImGui::DragFloat("Fake Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
+			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer))
 			{
-				if (Server* server = networkManager->GetServer())
-					server->SetPacketFakeLag(Server::s_FakeServerLag);
+				int maxConnections = networkManager->m_MaxServerConnections;
+				if (ImGui::DragInt("Max Connections", &maxConnections))
+					networkManager->m_MaxServerConnections = (uint32_t)glm::max(maxConnections, 0);
+
+				if (ImGui::DragFloat("Fake Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
+				{
+					if (Server* server = networkManager->GetServer())
+						server->SetPacketFakeLag(Server::s_FakeServerLag);
+				}
+
+				ImGui::Checkbox("Autostart Client", &EditorLayer::Get()->m_AutostartClient);
 			}
 			ImGui::PopItemWidth();
 
-			if ((netMode == NetMode::ListenServer || netMode == NetMode::Client))
-			ImGui::Checkbox("Trace Entity Sync", &viewportPanel->m_TraceEntitySync);
+			if (netMode == NetMode::Client)
+				ImGui::Checkbox("Trace Entity Sync", &viewportPanel->m_TraceEntitySync);
+			
 			ImGui::Checkbox("Show Cull Distance", &viewportPanel->m_ShowCullDistance);
 
 			ImGui::TreePop();

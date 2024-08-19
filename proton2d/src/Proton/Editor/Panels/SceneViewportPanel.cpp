@@ -492,7 +492,7 @@ namespace proton {
 					{ transform.Scale.x,transform.Scale.y }, last.Rotation), COLOR_CYAN);
 
 				// Predicted transform state
-				bool reconcileStarted = EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileState::Position);
+				bool reconcileStarted = EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileFlags::Position);
 				Renderer::DrawRect(Math::GetTransform({ pred.Position.x, pred.Position.y, 0.202f },
 					{ transform.Scale.x,transform.Scale.y }, last.Rotation),
 					reconcileStarted ? COLOR_LIGHT_RED : COLOR_GREEN);

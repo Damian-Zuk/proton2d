@@ -702,9 +702,9 @@ namespace proton {
 
 					ImGui::Dummy({ 0, 5 });
 					ImGui::Text("Reconcile state: pos=%d, sca=%d, rot=%d",
-						netTransform.IsReconciling(NetTransform::ReconcileState::Position),
-						netTransform.IsReconciling(NetTransform::ReconcileState::Scale),
-						netTransform.IsReconciling(NetTransform::ReconcileState::Rotation));
+						netTransform.IsReconciling(NetTransform::ReconcileFlags::Position),
+						netTransform.IsReconciling(NetTransform::ReconcileFlags::Scale),
+						netTransform.IsReconciling(NetTransform::ReconcileFlags::Rotation));
 					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
 					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
 					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());

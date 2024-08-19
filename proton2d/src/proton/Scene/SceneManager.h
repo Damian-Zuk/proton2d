@@ -40,10 +40,11 @@ namespace proton {
 		std::map<std::string, Shared<Scene>> m_Scenes;
 
 		friend class Application;
-		friend class ToolbarPanel;
+		friend class NetReplicator;
 
 		friend class EditorLayer;
 		friend class EditorMenuBar;
+		friend class ToolbarPanel;
 		friend class SceneViewportPanel;
 	};
 }

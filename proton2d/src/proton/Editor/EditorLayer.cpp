@@ -270,6 +270,16 @@ namespace proton {
 	void EditorLayer::OnStartSimulationButton()
 	{
 		Scene* scene = GetActiveScene(true);
+
+		if (scene->GetSceneState() != SceneState::Stop)
+			return;
+
+		if (m_AutostartClient && m_MainGameInstance.Instance->GetNetMode() == NetMode::ListenServer)
+		{
+			auto instance = LaunchNewGameInstance(NetMode::Client, false, "Client " + std::to_string(m_CurrentInstanceID + 1));
+			instance->GetActiveScene()->BeginPlay();
+		}
+
 		scene->BeginPlay();
 	}
 

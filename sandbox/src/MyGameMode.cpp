@@ -4,20 +4,20 @@ using namespace proton;
 #include "MyGameMode.h"
 #include "Scripts/Player.h"
 
-#define COLOR_RED    glm::vec4{ 1.0f, 0.356f, 0.065f, 1.0f }
-#define COLOR_GREEN  glm::vec4{ 0.526f, 1.0f, 0.065f, 1.0f }
-#define COLOR_BLUE   glm::vec4{ 0.209f, 0.431f, 0.987f, 1.0f }
-#define COLOR_YELLOW glm::vec4{ 0.987f, 1.0f, 0.065f, 1.0f }
-#define COLOR_ORANGE glm::vec4{ 1.0f, 0.679f, 0.294f, 1.0f }
-#define COLOR_CYAN   glm::vec4{ 0.065f, 0.793f, 1.0f, 1.0f }
-#define COLOR_PURPLE glm::vec4{ 0.478f, 0.065f, 1.0f, 1.0f }
-#define COLOR_PINK   glm::vec4{ 1.00f, 0.472f, 0.952f, 1.0f }
-#define COLOR_BLACK  glm::vec4{ 0.167f, 0.176f, 0.2f, 1.0f }
-#define COLOR_WHITE  glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }
+constexpr glm::vec4 COLOR_RED    { 1.000f, 0.356f, 0.065f, 1.0f };
+constexpr glm::vec4 COLOR_GREEN  { 0.526f, 1.000f, 0.065f, 1.0f };
+constexpr glm::vec4 COLOR_BLUE   { 0.209f, 0.431f, 0.987f, 1.0f };
+constexpr glm::vec4 COLOR_YELLOW { 0.987f, 1.000f, 0.065f, 1.0f };
+constexpr glm::vec4 COLOR_ORANGE { 1.000f, 0.679f, 0.294f, 1.0f };
+constexpr glm::vec4 COLOR_CYAN   { 0.065f, 0.793f, 1.000f, 1.0f };
+constexpr glm::vec4 COLOR_PURPLE { 0.478f, 0.065f, 1.000f, 1.0f };
+constexpr glm::vec4 COLOR_PINK   { 1.000f, 0.472f, 0.952f, 1.0f };
+constexpr glm::vec4 COLOR_BLACK  { 0.167f, 0.176f, 0.200f, 1.0f };
+constexpr glm::vec4 COLOR_WHITE  { 1.000f, 1.000f, 1.000f, 1.0f };
 
-static const glm::vec4 s_PlayerColors[10] = {
-	COLOR_GREEN, COLOR_YELLOW, COLOR_RED, COLOR_ORANGE, COLOR_CYAN,
-	COLOR_BLUE, COLOR_PURPLE, COLOR_PINK, COLOR_BLACK, COLOR_WHITE
+static const glm::vec4 s_PlayerColors[] = {
+	COLOR_RED, COLOR_GREEN, COLOR_ORANGE, COLOR_YELLOW, COLOR_CYAN, 
+	COLOR_PURPLE, COLOR_PINK, COLOR_BLUE, COLOR_WHITE, COLOR_BLACK,
 };
 
 bool MyGameMode::OnCreate()
@@ -34,7 +34,7 @@ bool MyGameMode::OnCreate()
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
 		m_LocalPlayer = SpawnPrefab("Player").As<Player>();
 		m_LocalPlayer->SetWorldPosition(spawnTransform.WorldPosition);
-		m_LocalPlayer->GetColor() = COLOR_GREEN;
+		m_LocalPlayer->GetColor() = COLOR_RED;
 	}
 	return true;
 }

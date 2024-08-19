@@ -32,7 +32,7 @@ namespace proton {
             All = Position | Scale | Rotation,
         };
 
-		enum class ReconcileState : uint8_t
+		enum class ReconcileFlags : uint8_t
 		{
 			None = 0,
 			Position = 1 << 0,
@@ -78,17 +78,17 @@ namespace proton {
 		Transform PrevAuthoritativeTransform;
 
 		ReplicationFlags Flags = ReplicationFlags::None;
-		ReconcileState State = ReconcileState::None;
+		ReconcileFlags State = ReconcileFlags::None;
 
 		float ReplicationInterval = 1.0f / 64.0f;
 		float ReplicationTimer = 0.0f;
 		float InterpolationTimer = 0.0f;
 
-		bool IsReconciling(ReconcileState component) const;
+		bool IsReconciling(ReconcileFlags component) const;
 		// State mutating function
-		void StartReconcile(ReconcileState component);
+		void StartReconcile(ReconcileFlags component);
 		// State mutating function
-		void StopReconcile(ReconcileState component);
+		void StopReconcile(ReconcileFlags component);
 
 		// Server-only data (TODO: store as separate EnTT component)
 		std::unordered_map<ClientID, SequencedItem> ClientDataMap; 

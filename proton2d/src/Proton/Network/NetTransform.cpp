@@ -69,17 +69,17 @@ namespace proton {
 		return delta;
 	}
 
-	bool NetTransform::IsReconciling(ReconcileState component) const
+	bool NetTransform::IsReconciling(ReconcileFlags component) const
 	{
 		return EnumHasAllFlags(State, component);
 	}
 
-	void NetTransform::StartReconcile(ReconcileState component)
+	void NetTransform::StartReconcile(ReconcileFlags component)
 	{
 		State = EnumAddFlags(State, component);
 	}
 
-	void NetTransform::StopReconcile(ReconcileState component)
+	void NetTransform::StopReconcile(ReconcileFlags component)
 	{
 		State = EnumRemoveFlags(State, component);
 	}

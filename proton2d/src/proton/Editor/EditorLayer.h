@@ -93,6 +93,9 @@ namespace proton {
 		std::vector<uint32_t> m_GameInstancesToClose;
 		uint32_t m_CurrentInstanceID = 0;
 
+		// Automatically launch client instance when server starts
+		bool m_AutostartClient = true;
+
 		std::unordered_map<std::string, Shared<Scene>> m_SceneSimulationBackup;
 
 		friend class Application;

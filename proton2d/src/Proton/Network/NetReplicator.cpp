@@ -9,6 +9,7 @@
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scene/SceneSerializer.h"
+#include "Proton/Scene/SceneManager.h"
 
 #include <Crc32.h>
 
@@ -127,8 +128,6 @@ namespace proton {
 
 			// ------------------------------------ TransformComponent Replication ------------------------------------
 			auto& transform = entity.GetComponent<TransformComponent>();
-			auto& velocity = entity.GetComponent<VelocityComponent>();
-
 			auto& netTransform = net.NetTransform;
 			auto& lastTransform = netTransform.LastAuthoritativeTransform;
 			auto& prevTransform = netTransform.PrevAuthoritativeTransform;
@@ -142,6 +141,7 @@ namespace proton {
 				netTransform.ServerSequenceNumber = item.TransformSequenceNumber;
 				netTransform.ReplicationInterval = netTransform.ReplicationTimer;
 				netTransform.ReplicationTimer = 0.0f;
+				netTransform.InterpolationTimer = 0.0f;
 			}
 			
 			// Read transform values from message payload
@@ -231,7 +231,7 @@ namespace proton {
 
 					auto& field = script.ReplicatedFields[fieldIndex];
 					
-					// Read field value from replication message
+					// Read field value from the replication message
 					if (!stream.ReadData((char*)field.Data, field.Size))
 					{
 						PT_THROW_ERROR("Failed to read script field data: Stream buffer of memory (i={}, j={})", i, j);
@@ -301,10 +301,18 @@ namespace proton {
 	void NetReplicator::Server_OnUpdate()
 	{
 		PROFILE_FUNCTION();
-		Scene* scene = m_Server->m_GameInstance->GetActiveScene();
-		Server_ProcessSpawnedEntityQueue(scene);
-		Server_ProcessDespawnedEntityQueue(scene);
-		//Server_SendReplicationMessage();
+
+		SceneManager* sceneManager = m_Server->m_GameInstance->GetSceneManager();
+
+		for (const auto& kv : sceneManager->m_Scenes)
+		{
+			Scene* scene = kv.second.get();
+			if (scene->IsSimulated())
+			{
+				Server_ProcessSpawnedEntityQueue(scene);
+				Server_ProcessDespawnedEntityQueue(scene);
+			}
+		}
 
 		for (auto& [clientID, clientInfo] : m_Server->m_ConnectedClients)
 		{
@@ -324,20 +332,20 @@ namespace proton {
 
 	void NetReplicator::Server_AddSpawnedEntity(Scene* scene, UUID entityUUID)
 	{
-		SceneData& sceneData = m_SceneData[scene];
+		auto& sceneData = m_SceneData[scene];
 		sceneData.SpawnedEntityQueue.push(entityUUID);
 	}
 
 	void NetReplicator::Server_AddDespawnedEntity(Scene* scene, UUID entityUUID)
 	{
-		SceneData& sceneData = m_SceneData[scene];
+		auto& sceneData = m_SceneData[scene];
 		sceneData.DespawnedEntityQueue.push(entityUUID);
 	}
 
 	void NetReplicator::Server_ProcessSpawnedEntityQueue(Scene* scene)
 	{
 		PROFILE_FUNCTION();
-		SceneData& sceneData = m_SceneData[scene];
+		auto& sceneData = m_SceneData[scene];
 		if (sceneData.SpawnedEntityQueue.empty())
 			return;
 
@@ -377,7 +385,7 @@ namespace proton {
 	void NetReplicator::Server_ProcessDespawnedEntityQueue(Scene* scene)
 	{
 		PROFILE_FUNCTION();
-		SceneData& sceneData = m_SceneData[scene];
+		auto& sceneData = m_SceneData[scene];
 		if (sceneData.DespawnedEntityQueue.empty())
 			return;
 
@@ -393,15 +401,14 @@ namespace proton {
 			stream.WriteRaw(uuid);
 			despawned++;
 
-			sceneData.DespawnedEntityQueue.pop();
-
 			auto& spawnedAll = sceneData.SpawnedAll;
 			auto spawnedIt = std::find(spawnedAll.begin(), spawnedAll.end(), uuid);
-
 			if (spawnedIt != spawnedAll.end())
 				spawnedAll.erase(spawnedIt);
 			else
 				sceneData.DespawnedAll.push_back(uuid);
+			
+			sceneData.DespawnedEntityQueue.pop();
 		}
 
 		if (despawned > 0)
@@ -415,8 +422,8 @@ namespace proton {
 	void NetReplicator::Server_SendAllSpawnedEntities(Scene* scene, ClientID clientID)
 	{
 		PROFILE_FUNCTION();
-		SceneData& sceneData = m_SceneData[scene];
-		auto& spawnedAll = sceneData.SpawnedAll;
+		const auto& sceneData = m_SceneData[scene];
+		const auto& spawnedAll = sceneData.SpawnedAll;
 		if (spawnedAll.size() > 0)
 		{
 			NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
@@ -441,8 +448,8 @@ namespace proton {
 	void NetReplicator::Server_SendAllDespawnedEntities(Scene* scene, ClientID clientID)
 	{
 		PROFILE_FUNCTION();
-		SceneData& sceneData = m_SceneData[scene];
-		auto& despawnedAll = sceneData.DespawnedAll;
+		const auto& sceneData = m_SceneData[scene];
+		const auto& despawnedAll = sceneData.DespawnedAll;
 		if (despawnedAll.size() > 0)
 		{
 			NetworkStreamWriter stream(m_Server->m_ScratchBuffer);

@@ -7,11 +7,6 @@ void RedPlatform::OnRegisterFields()
 {
 	REGISTER_FIELD(Float, m_VanishAfter);
 	REGISTER_FIELD(Float, m_VanishTime);
-
-	//REPLICATED_DATA(m_EnableCollision, [this](Entity* entity) {
-	//	auto& color = GetColor();
-	//	color.a = m_EnableCollision ? 1.0f : 0.33f;
-	//});
 }
 
 bool RedPlatform::OnCreate()
@@ -31,6 +26,7 @@ bool RedPlatform::OnCreate()
 			}
 
 			// Manually decrement player bottom sensor contact count
+			// TODO: Do this in PhysicsWorld callback
 			m_PlayerSensor = *contact.Other;
 			m_PlayerSensor.GetComponent<BoxColliderComponent>().ContactCallback.ContactCount--;
 			m_DecrementedSensor = true;

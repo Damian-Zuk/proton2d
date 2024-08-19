@@ -26,7 +26,7 @@ namespace proton {
 		PlayerAction, // Delete me
 
 		// [Client <-> Server]
-		Custom
+		CustomMessage
 	};
 
 	struct NetMessageHandshake
