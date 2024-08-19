@@ -25,14 +25,18 @@ namespace proton {
 		};
 
 		auto spritesheetIndexes = CalculateSpritesheetCellIndexPositions();
-		auto cellTransforms = CalculateCellTransforms(spritesheetIndexes);
-		RenderToFrameBuffer(cellTransforms);
+		CalculateCellTransforms(spritesheetIndexes);
 	}
 
 	void ResizableSprite::Render(const glm::mat4& transform, const glm::vec4& color)
 	{
-		if (m_FramebufferTexture)
-			Renderer::DrawQuad(transform, m_FramebufferTexture, color);
+		if (!m_Spritesheet || m_PixelSize.x == 0 || m_PixelSize.y == 0)
+			return;
+
+		for (const auto& tile : m_CellTransforms)
+		{
+			Renderer::DrawQuad(transform * tile.LocalTransform, m_Spritesheet->GetTexture(), tile.TextureCoords, glm::vec4{ 1.0f });
+		}
 	}
 
 	void ResizableSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
@@ -182,9 +186,9 @@ namespace proton {
 		return cells;
 	}
 
-	std::vector<ResizableSpriteCell> ResizableSprite::CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes)
+	void ResizableSprite::CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes)
 	{
-		std::vector<ResizableSpriteCell> cells;
+		auto& cells = m_CellTransforms;
 		cells.resize(m_CellCount.x * m_CellCount.y);
 
 		float width = m_TransformScale.x / m_CellScale;
@@ -320,41 +324,6 @@ namespace proton {
 				cells.at(x + y * m_CellCount.x).LocalTransform = Math::GetTransform({ pos.x, pos.y, 0 }, { scale.x, scale.y });
 			}
 		}
-
-		return cells;
-	}
-
-	void ResizableSprite::RenderToFrameBuffer(const std::vector<ResizableSpriteCell>& tilemap)
-	{
-		if (!m_Spritesheet || m_PixelSize.x == 0 || m_PixelSize.y == 0)
-			return;
-
-		FramebufferSpecification fbSpec;
-		fbSpec.Attachments = {
-			{ FramebufferTextureFormat::RGBA8, m_Spritesheet->GetTexture()->GetFilterMode() },
-		};
-		fbSpec.Width = m_PixelSize.x;
-		fbSpec.Height = m_PixelSize.y;
-
-		m_Framebuffer.reset(new Framebuffer(fbSpec));
-		m_Framebuffer->Bind();
-		
-		Camera camera;
-		camera.m_AspectRatio = (float)m_PixelSize.x / (float)m_PixelSize.y;
-		camera.m_OrthographicSize = m_TransformScale.y;
-		camera.RecalculateProjection();
-		
-		Renderer::BeginScene(camera, glm::vec3{ 0.0f });
-		Renderer::SetClearColor({ 1.0f, 1.0f, 1.0f, 0.0f });
-		Renderer::Clear();
-		for (const auto& tile : tilemap)
-		{
-			Renderer::DrawQuad(tile.LocalTransform, m_Spritesheet->GetTexture(), tile.TextureCoords, glm::vec4{1.0f});
-		}
-		Renderer::EndScene();
-
-		m_Framebuffer->Unbind();
-		m_FramebufferTexture.reset(new Texture(fbSpec.Width, fbSpec.Height, m_Framebuffer->GetColorAttachmentRendererID()));
 	}
 
 }

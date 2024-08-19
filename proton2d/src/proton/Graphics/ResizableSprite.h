@@ -1,6 +1,5 @@
 #pragma once
 #include "Proton/Graphics/Sprite.h"
-#include "Proton/Graphics/Renderer/Framebuffer.h"
 
 namespace proton {
 
@@ -22,8 +21,6 @@ namespace proton {
 		glm::mat4 LocalTransform;
 		TextureCoords TextureCoords;
 	};
-
-	class Framebuffer;
 
 	class ResizableSprite
 	{
@@ -50,13 +47,10 @@ namespace proton {
 
 	private:
 		std::vector<glm::uvec2> CalculateSpritesheetCellIndexPositions();
-		std::vector<ResizableSpriteCell> CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes);
-		void RenderToFrameBuffer(const std::vector<ResizableSpriteCell>& tilemap);
+		void CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes);
 
 	private:
 		Shared<Spritesheet> m_Spritesheet = nullptr;
-		Shared<Framebuffer> m_Framebuffer = nullptr;
-		Shared<Texture> m_FramebufferTexture = nullptr;
 
 		float m_CellScale = 1.0f;
 		glm::uvec2 m_PatternSize = { 3, 3 };
@@ -66,6 +60,8 @@ namespace proton {
 		glm::vec2 m_TransformScale = { 1.0f, 1.0f };
 		glm::uvec2 m_CellCount = { 0, 0 };
 		glm::uvec2 m_PixelSize = { 0, 0 };
+
+		std::vector<ResizableSpriteCell> m_CellTransforms;
 
 		friend class Scene;
 		friend class InspectorPanel;

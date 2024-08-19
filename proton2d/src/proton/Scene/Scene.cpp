@@ -661,17 +661,15 @@ namespace proton {
 	void Scene::RenderScene(const Camera& camera)
 	{
 		PROFILE_FUNCTION();
-		auto campos = GetPrimaryCameraPosition();
-
+		
 		Renderer::SetClearColor(m_ClearColor);
 		Renderer::Clear();
-		Renderer::BeginScene(camera, campos);
+		Renderer::BeginScene(camera, m_PrimaryCameraPosition);
 
 		// Render entities with SpriteComponent
 		auto renderableSprite = m_Registry.view<SpriteComponent, TransformComponent>();
 		for (auto e : renderableSprite)
 		{
-			PROFILE_SCOPE("entity_render_sprite");
 			auto [transform, sprite] = renderableSprite.get<TransformComponent, SpriteComponent>(e);
 			
 			// Sprite mirror flip
@@ -692,18 +690,16 @@ namespace proton {
 		auto renderableResizableSprite = m_Registry.view<TransformComponent, ResizableSpriteComponent>();
 		for (auto e : renderableResizableSprite)
 		{
-			PROFILE_SCOPE("entity_render_resizable_sprite");
 			auto [transform, rsc] = renderableResizableSprite.get<TransformComponent, ResizableSpriteComponent>(e);
 			auto& sprite = rsc.ResizableSprite;
 
-			sprite.Render(Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), rsc.Color);
+			sprite.Render(Math::GetTransform(transform.WorldPosition, glm::vec2{1.0f}, transform.Rotation), rsc.Color);
 		}
 
 		// Render Circles
 		auto circlesView = m_Registry.view<TransformComponent, CircleRendererComponent>();
 		for (auto entity : circlesView)
 		{
-			PROFILE_SCOPE("entity_render_circle");
 			auto [transform, circle] = circlesView.get<TransformComponent, CircleRendererComponent>(entity);
 
 			Renderer::DrawCircle(Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), circle.Color, circle.Thickness, circle.Fade);
@@ -713,7 +709,6 @@ namespace proton {
 		auto textView = m_Registry.view<TransformComponent, TextComponent>();
 		for (auto entity : textView)
 		{
-			PROFILE_SCOPE("entity_render_text");
 			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
 			if (!text.Hidden)
 				Renderer::DrawString(text.TextString, Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), text);
