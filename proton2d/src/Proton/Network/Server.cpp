@@ -129,7 +129,7 @@ namespace proton {
 			break;
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		case MessageType::TransformSequenceNumber:
+		case MessageType::EntityTransformSequence:
 		{
 			m_NetTransformSystem->Server_OnSequenceNumberMessage(clientID, stream);
 			break;

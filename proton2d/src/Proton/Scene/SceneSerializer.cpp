@@ -149,7 +149,7 @@ namespace proton {
 				{ "SyncMethod", NetSyncMethodToString(netTransform.Method) },
 				{ "CullDistance", netTransform.CullDistance, },
 				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
-				{ "ReconcileMaxTimer", netTransform.ReconcileThreshold },
+				{ "ReconcileMaxTime", netTransform.ReconcileThreshold },
 				{ "ReconcileCooldownTime", netTransform.ReconcileCooldownTime },
 			};
 		}

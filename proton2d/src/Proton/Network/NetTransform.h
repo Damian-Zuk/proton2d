@@ -6,7 +6,7 @@
 namespace proton {
 
 	struct TransformComponent; // forward declaration
-	
+
 	using ClientID = uint32_t;
 
 	struct NetTransform
@@ -19,7 +19,7 @@ namespace proton {
 			Prediction,
 		};
 
-        enum class ReplicationFlags : uint8_t
+        enum class ReplicateComponents : uint8_t
         {
             None = 0,
             PositionX = 1 << 0,
@@ -32,7 +32,7 @@ namespace proton {
             All = Position | Scale | Rotation,
         };
 
-		enum class ReconcileFlags : uint8_t
+		enum class ReconcileComponents : uint8_t
 		{
 			None = 0,
 			Position = 1 << 0,
@@ -54,7 +54,7 @@ namespace proton {
 			Transform operator-(const Transform& other) const;
 		};
 
-		struct SequencedItem
+		struct SequencedValue
 		{
 			uint16_t SequenceNumber;
 			Transform Value;
@@ -63,35 +63,35 @@ namespace proton {
 		// Parameters
 		SyncMethod Method = SyncMethod::None;
 		float CullDistance = 20.0f;
-		float ReconcileThreshold = 0.5f;
-		float ReconcileMaxTime = 1.0f;
-		float ReconcileCooldownTime = 1.0f;
+		float ReconcileThreshold = 0.5f; // position only
+		float ReconcileMaxTime = 1.0f; // position only
+		float ReconcileCooldownTime = 1.0f; // position only
 
 		// Internal state
-		std::vector<SequencedItem> DeltaBuffer;
+		std::vector<SequencedValue> DeltaBuffer;
 		uint16_t CurrentSequenceNumber = 0;
 		uint16_t ServerSequenceNumber = 0;
 
-		Transform LastTickTransform;
-		Transform PredictedTransform;
 		Transform LastAuthoritativeTransform;
 		Transform PrevAuthoritativeTransform;
+		Transform LastTickTransform;
+		Transform PredictedTransform;
 
-		ReplicationFlags Flags = ReplicationFlags::None;
-		ReconcileFlags State = ReconcileFlags::None;
-
-		float ReplicationInterval = 1.0f / 64.0f;
-		float ReplicationTimer = 0.0f;
+		float ReplicationTimer = 0.0f; // time elapsed from last replication
+		float ReconcileTimer = 0.0f; // negative value means on cooldown
 		float InterpolationTimer = 0.0f;
 
-		bool IsReconciling(ReconcileFlags component) const;
+		ReplicateComponents ReplicationFlags = ReplicateComponents::None;
+		ReconcileComponents ReconciliationState = ReconcileComponents::None;
+
+		bool IsReconciling(ReconcileComponents component) const;
 		// State mutating function
-		void StartReconcile(ReconcileFlags component);
+		void StartReconcile(ReconcileComponents component);
 		// State mutating function
-		void StopReconcile(ReconcileFlags component);
+		void StopReconcile(ReconcileComponents component);
 
 		// Server-only data (TODO: store as separate EnTT component)
-		std::unordered_map<ClientID, SequencedItem> ClientDataMap; 
+		std::unordered_map<ClientID, SequencedValue> ServerDataMap;
 	};
 
 	using NetSyncMethod = NetTransform::SyncMethod;

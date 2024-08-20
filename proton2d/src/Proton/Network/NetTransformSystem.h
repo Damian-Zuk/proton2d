@@ -2,7 +2,7 @@
 #include "Proton/Network/Common.h"
 #include "Proton/Network/Messages.h"
 
-#include <queue>
+#include "Proton/Scene/Entity.h"
 
 namespace proton {
 
@@ -18,18 +18,21 @@ namespace proton {
 		NetTransformSystem(Server* server);
 		NetTransformSystem() = delete;
 
+		void Client_OnUpdate(Scene* scene, float ts);
+
 		void Client_SendSequenceNumberMessage();
 
 		void Server_OnSequenceNumberMessage(ClientID clientID, NetworkStreamReader& stream);
 
-		void OnUpdate(Scene* scene, float ts);
+	private:
+		void SetAuthoritativeTransform(Entity entity, TransformComponent* transform, const NetTransform& netTransform, bool localSpace = true);
 
 	private:
 		Client* m_Client = nullptr;
 		Server* m_Server = nullptr;
 		NetworkManager* m_NetworkManager;
 
-		std::vector<NetMessageTransformSequenceNumber::PayloadItem> m_SequenceNumbersToSend;
+		std::vector<NetMessageTransformSequence::PayloadItem> m_SequenceNumbersToSend;
 	};
 
 }

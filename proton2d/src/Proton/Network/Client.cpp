@@ -75,12 +75,11 @@ namespace proton {
 			message->Release();
 			m_MessageQueue.pop();
 		}
-		
-		scene->CalculateWorldPositions(true);
 
-		if (m_NetworkManager->m_ClientGameStateInitialized)
+		if (scene->m_NetworkInitialized)
 		{
-			m_NetTransformSystem->OnUpdate(scene, ts);
+			scene->CalculateWorldPositions(true);
+			m_NetTransformSystem->Client_OnUpdate(scene, ts);
 		}
 	}
 
@@ -131,12 +130,14 @@ namespace proton {
 		{
 			m_NetReplicator->Client_ProcessReplicationMessage(stream);
 
-			if (!m_NetworkManager->m_ClientGameStateInitialized)
+			Scene* scene = m_GameInstance->GetActiveScene();
+
+			if (!scene->m_NetworkInitialized)
 			{
 				// First replication update
-				GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
+				GameModeBase* gameMode = scene->GetGameMode();
 				gameMode->Client_OnConnected(m_LocalClientID);
-				m_NetworkManager->m_ClientGameStateInitialized = true;
+				scene->m_NetworkInitialized = true;
 			}
 			break;
 		}

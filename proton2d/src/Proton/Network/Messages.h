@@ -21,7 +21,7 @@ namespace proton {
 		EntityReplicate,
 
 		// [Client -> Server]
-		TransformSequenceNumber,
+		EntityTransformSequence,
 
 		PlayerAction, // Delete me
 
@@ -74,19 +74,19 @@ namespace proton {
 
 		struct PayloadItem
 		{
-			using ReplicationFlags = NetTransform::ReplicationFlags;
+			using ReplicateComponents = NetTransform::ReplicateComponents;
 
 			UUID EntityUUID;
-			ReplicationFlags TransformFlags = ReplicationFlags::None;
+			ReplicateComponents TransformFlags = ReplicateComponents::None;
 			uint16_t TransformSequenceNumber = 0;
 			uint32_t ScriptCount;
 			uint64_t PayloadSize;
 		};
 	};
 
-	struct NetMessageTransformSequenceNumber
+	struct NetMessageTransformSequence
 	{
-		MessageType MessageType = MessageType::TransformSequenceNumber;
+		MessageType MessageType = MessageType::EntityTransformSequence;
 		uint32_t EntityCount = 0;
 
 		struct PayloadItem

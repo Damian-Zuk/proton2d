@@ -54,7 +54,7 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
-		using ReplicationFlags = NetTransform::ReplicationFlags;
+		using ReplicateComponents = NetTransform::ReplicateComponents;
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
 
 		NetMessageReplicate header;
@@ -74,8 +74,8 @@ namespace proton {
 
 			// ---------------------- Validate the message and find replicated entity in scene ----------------------
 			// Calculate remaining message buffer size
-			uint64_t entityPayloadStart = stream.GetStreamPosition();
-			uint64_t remainingBufferSize = stream.GetRemainingBufferSize();
+			const uint64_t entityPayloadStart = stream.GetStreamPosition();
+			const uint64_t remainingBufferSize = stream.GetRemainingBufferSize();
 
 			// Log payload item header content
 			#define DUMP_PAYLOAD_ITEM_HEADER() \
@@ -95,10 +95,10 @@ namespace proton {
 			}
 
 			// Transform components replication flags (each set bit corresponds to one float value in transform payload)
-			auto& flags = item.TransformFlags; 
+			const auto& flags = item.TransformFlags; 
 			
 			// Calculate NetTransform payload size that will be read from stream based on the flags from item header
-			uint64_t netTransformPayloadSize = CountSetBits((int)flags) * sizeof(float);
+			const uint64_t netTransformPayloadSize = CountSetBits((int)flags) * sizeof(float);
 
 			// Validate if transform values does not exceed remaining message buffer size
 			if (netTransformPayloadSize > remainingBufferSize)
@@ -127,55 +127,53 @@ namespace proton {
 			auto& net = entity.GetComponent<NetworkComponent>();
 
 			// ------------------------------------ TransformComponent Replication ------------------------------------
-			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& netTransform = net.NetTransform;
 			auto& lastTransform = netTransform.LastAuthoritativeTransform;
 			auto& prevTransform = netTransform.PrevAuthoritativeTransform;
 		
-			net.NetTransform.Flags = flags;
+			net.NetTransform.ReplicationFlags = flags;
 			
 			// If any transform components is replicated, reset NetTransform::SyncState
-			if (flags != ReplicationFlags::None)
+			if (flags != ReplicateComponents::None)
 			{
 				prevTransform = lastTransform;
 				netTransform.ServerSequenceNumber = item.TransformSequenceNumber;
-				netTransform.ReplicationInterval = netTransform.ReplicationTimer;
 				netTransform.ReplicationTimer = 0.0f;
 				netTransform.InterpolationTimer = 0.0f;
 			}
 			
 			// Read transform values from message payload
-			if (EnumHasAllFlags(flags, ReplicationFlags::All))
+			if (EnumHasAllFlags(flags, ReplicateComponents::All))
 			{
 				stream.ReadRaw(lastTransform);
 			}
 			else
 			{
-				if (EnumHasAllFlags(flags, ReplicationFlags::Position))
+				if (EnumHasAllFlags(flags, ReplicateComponents::Position))
 				{
 					stream.ReadRaw(lastTransform.Position);
 				}
-				else if (EnumHasAnyFlags(flags, ReplicationFlags::Position))
+				else if (EnumHasAnyFlags(flags, ReplicateComponents::Position))
 				{
-					if (EnumHasAnyFlags(flags, ReplicationFlags::PositionX))
+					if (EnumHasAnyFlags(flags, ReplicateComponents::PositionX))
 						stream.ReadRaw(lastTransform.Position.x);
-					if (EnumHasAnyFlags(flags, ReplicationFlags::PositionY))
+					if (EnumHasAnyFlags(flags, ReplicateComponents::PositionY))
 						stream.ReadRaw(lastTransform.Position.y);
 				}
 
-				if (EnumHasAllFlags(flags, ReplicationFlags::Scale))
+				if (EnumHasAllFlags(flags, ReplicateComponents::Scale))
 				{
 					stream.ReadRaw(lastTransform.Scale);
 				}
-				else if (EnumHasAnyFlags(flags, ReplicationFlags::Scale))
+				else if (EnumHasAnyFlags(flags, ReplicateComponents::Scale))
 				{
-					if (EnumHasAnyFlags(flags, ReplicationFlags::ScaleX))
+					if (EnumHasAnyFlags(flags, ReplicateComponents::ScaleX))
 						stream.ReadRaw(lastTransform.Scale.x);
-					if (EnumHasAnyFlags(flags, ReplicationFlags::ScaleY))
+					if (EnumHasAnyFlags(flags, ReplicateComponents::ScaleY))
 						stream.ReadRaw(lastTransform.Scale.y);
 				}
 
-				if (EnumHasAnyFlags(flags, ReplicationFlags::Rotation))
+				if (EnumHasAnyFlags(flags, ReplicateComponents::Rotation))
 				{
 					stream.ReadRaw(lastTransform.Rotation);
 				}
@@ -480,34 +478,47 @@ namespace proton {
 		if (scene->GetSceneState() == SceneState::Stop)
 			return;
 
-		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
-		if (view.empty() || m_Server->GetConnectedClientsCount() == 0)
+		// There is no need to replicate if no clients are connected
+		if (m_Server->GetConnectedClientsCount() == 0)
 			return;
 
+		// Get all entities with NetowrkComponent
+		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
+		if (view.empty())
+			return;
+
+		// Message header
 		NetMessageReplicate msgHeader;
 		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(msgHeader));
 
-		using ReplicationFlags = NetTransform::ReplicationFlags;
+		using ReplicateComponents = NetTransform::ReplicateComponents;
 
-		// Iterate over entities with NetworkComponent
+		// Iterate over all entities with NetworkComponent
 		for (entt::entity _entity : view)
 		{
 			Entity entity(_entity, scene);
 			auto& net = view.get<NetworkComponent>(_entity);
 			auto& transform = entity.GetComponent<TransformComponent>();
-			auto& velocity = entity.GetComponent<VelocityComponent>();
 			auto& netTransform = net.NetTransform;
+			auto& clientTransformData = netTransform.ServerDataMap[clientID];
 
+			// Network cull distance
 			if (clientEntity)
 			{
-				auto& clientTransform = clientEntity.GetComponent<TransformComponent>();
-				float distance = glm::distance(
+				const auto& clientTransform = clientEntity.GetComponent<TransformComponent>();
+				
+				float distanceToCurrent = glm::distance(
 					glm::vec2{ transform.WorldPosition.x, transform.WorldPosition.y },
 					glm::vec2{ clientTransform.WorldPosition.x, clientTransform.WorldPosition.y}
 				);
 
-				if (distance > netTransform.CullDistance)
+				float distanceToLastAuthoritative = glm::distance(
+					glm::vec2{ clientTransformData.Value.Position.x, clientTransformData.Value.Position.y },
+					glm::vec2{ clientTransform.WorldPosition.x, clientTransform.WorldPosition.y }
+				);
+
+				if (distanceToCurrent > netTransform.CullDistance && distanceToLastAuthoritative > netTransform.CullDistance)
 					continue;
 			}
 
@@ -517,37 +528,34 @@ namespace proton {
 			itemHeader.ScriptCount = 0;
 			auto& flags = itemHeader.TransformFlags;
 
-			uint64_t entityPayloadStart = stream.GetStreamPosition();
+			const uint64_t entityPayloadStart = stream.GetStreamPosition();
 			stream.SkipBytes(sizeof(itemHeader));
 
 			////////////////////////////// NetTransform Serialization //////////////////////////////
 
-			bool rigidbodySimulated = entity.HasComponent<RigidbodyComponent>();
+			bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
 
 			// Current values are stored in TransformComponent and VelocityComponent
-			const auto& position = rigidbodySimulated ? transform.WorldPosition : transform.LocalPosition;
+			const auto& position = hasRigidbodySimulated ? transform.WorldPosition : transform.LocalPosition;
 			const auto& scale = transform.Scale;
 			const auto& rotation = transform.Rotation;
-			const auto& linearVelocity = velocity.LinearVelocity;
-			const auto& angularVelocity = velocity.AngularVelocity;
 
 			// Previous server tick NetTransform values 
-			auto& clientData = netTransform.ClientDataMap[clientID];
-			auto& prevTransform = clientData.Value;
+			auto& prevTransform = clientTransformData.Value;
 			auto& prevPosition = prevTransform.Position;
 			auto& prevScale = prevTransform.Scale;
 			auto& prevRotation = prevTransform.Rotation;
 
-			itemHeader.TransformSequenceNumber = clientData.SequenceNumber;
+			itemHeader.TransformSequenceNumber = clientTransformData.SequenceNumber;
 
 			if (!forceReplication)
 			{
-				constexpr float epsilon = 1e-6f;
+				constexpr float epsilon = 1e-5f;
 				#define REPLICATE_COMPONENT(current, previous, flag) \
 				if (glm::epsilonNotEqual(current, previous, epsilon)) { \
 					stream.WriteRaw(current); \
 					previous = current; \
-					flags = EnumAddFlags(flags, ReplicationFlags::flag); \
+					flags = EnumAddFlags(flags, ReplicateComponents::flag); \
 				}
 				REPLICATE_COMPONENT(position.x, prevPosition.x, PositionX);
 				REPLICATE_COMPONENT(position.y, prevPosition.y, PositionY);
@@ -562,9 +570,9 @@ namespace proton {
 				stream.WriteRaw(scale.x); prevScale.x = scale.x;
 				stream.WriteRaw(scale.y); prevScale.y = scale.y;
 				stream.WriteRaw(rotation); prevRotation = rotation;
-				flags = EnumAddFlags(flags, ReplicationFlags::All);
+				flags = EnumAddFlags(flags, ReplicateComponents::All);
 			}
-			net.NetTransform.Flags = flags;
+			net.NetTransform.ReplicationFlags = flags;
 
 			////////////////////////////// ScriptComponent Serialization //////////////////////////////
 			uint64_t scriptsPayloadStart = stream.GetStreamPosition();
@@ -625,7 +633,7 @@ namespace proton {
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////
 
-			if (itemHeader.TransformFlags == ReplicationFlags::None && itemHeader.ScriptCount == 0)
+			if (itemHeader.TransformFlags == ReplicateComponents::None && itemHeader.ScriptCount == 0)
 			{
 				// Nothing was replicated, skip entity replication
 				stream.SetStreamPosition(entityPayloadStart);

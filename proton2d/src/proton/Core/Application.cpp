@@ -87,11 +87,11 @@ namespace proton {
 	#endif
 
 		PROFILE_BEGIN_SESSION("Proton-Runtime");
+		PROFILE_SCOPE("app_game_loop");
 
 		// Application loop
 		while (m_IsRunning) 
 		{
-			PROFILE_SCOPE("app_game_loop");
 			Timer timer;
 
 			if (!m_WindowMinimized) 
@@ -164,6 +164,7 @@ namespace proton {
 
 	void Application::OnEvent(Event& event)
 	{
+		PROFILE_FUNCTION();
 		EventDispatcher dispatcher(event);
 		
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)

@@ -701,10 +701,13 @@ namespace proton {
 					ImGui::DragFloat("Predicted", &predRot);
 
 					ImGui::Dummy({ 0, 5 });
-					ImGui::Text("Reconcile state: pos=%d, sca=%d, rot=%d",
-						netTransform.IsReconciling(NetTransform::ReconcileFlags::Position),
-						netTransform.IsReconciling(NetTransform::ReconcileFlags::Scale),
-						netTransform.IsReconciling(NetTransform::ReconcileFlags::Rotation));
+					ImGui::Text("Replication Timer: %.3f", netTransform.ReplicationTimer);
+					ImGui::Text("Interpolation Timer: %.3f", netTransform.InterpolationTimer);
+					ImGui::Text("Reconcile Timer: %.3f", netTransform.ReconcileTimer);
+					ImGui::Text("Reconcile State: pos=%d, sca=%d, rot=%d",
+						netTransform.IsReconciling(NetTransform::ReconcileComponents::Position),
+						netTransform.IsReconciling(NetTransform::ReconcileComponents::Scale),
+						netTransform.IsReconciling(NetTransform::ReconcileComponents::Rotation));
 					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
 					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
 					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());

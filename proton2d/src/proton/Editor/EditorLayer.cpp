@@ -164,9 +164,11 @@ namespace proton {
 
 		ImGui::End();
 	}
-
+	
 	void EditorLayer::OnEvent(Event& event)
 	{
+		PROFILE_FUNCTION();
+
 		ImGuiIO& io = ImGui::GetIO();
 		auto viewport = m_GameInstanceContext->Viewport.get();
 

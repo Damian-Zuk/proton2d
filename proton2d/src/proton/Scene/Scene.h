@@ -151,7 +151,8 @@ namespace proton {
 		glm::vec2 m_CursorWorldPosition = { 0.0f, 0.0f };
 
 		// Network
-		bool m_EnableNetworking = true;
+		bool m_EnableNetworking = true; // If false, scene will run in NetMode::Standalone 
+		bool m_NetworkInitialized = false; // True if client has received any replication update from the server
 
 		friend class Application;
 		friend class Entity;

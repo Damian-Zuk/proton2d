@@ -532,15 +532,19 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
-		NetworkManager* networkManager = m_GameInstance->m_NetworkManager.get();
-		if (networkManager->IsNetModeClient() && !networkManager->m_ClientGameStateInitialized)
+		if (m_State == SceneState::Play)
 		{
-			CalculateWorldPositions();
-			CachePrimaryCameraPosition();
-			CacheCursorWorldPosition();
-			Camera& camera = GetPrimaryCamera();
-			RenderScene(camera);
-			return;
+			if (m_EnableNetworking && !m_NetworkInitialized && m_GameInstance->m_NetworkManager->IsNetModeClient())
+			{
+				// Do not update simulate scene until first replication update
+				CalculateWorldPositions();
+				CachePrimaryCameraPosition();
+				CacheCursorWorldPosition();
+
+				Camera& camera = GetPrimaryCamera();
+				RenderScene(camera);
+				return;
+			}
 		}
 		
 		if (m_State == SceneState::Play && IsPhysicsSimulated())

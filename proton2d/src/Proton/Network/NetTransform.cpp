@@ -35,7 +35,7 @@ namespace proton {
 
 	bool Transform::IsZero() const
 	{
-		constexpr float epsilon = 1e-4f;
+		constexpr float epsilon = 1e-5f;
 		return glm::compMax(glm::abs(Position)) < epsilon
 			&& glm::compMax(glm::abs(Scale)) < epsilon
 			&& glm::abs(Rotation) < epsilon;
@@ -69,19 +69,20 @@ namespace proton {
 		return delta;
 	}
 
-	bool NetTransform::IsReconciling(ReconcileFlags component) const
+	bool NetTransform::IsReconciling(ReconcileComponents component) const
 	{
-		return EnumHasAllFlags(State, component);
+		return EnumHasAllFlags(ReconciliationState, component);
 	}
 
-	void NetTransform::StartReconcile(ReconcileFlags component)
+	void NetTransform::StartReconcile(ReconcileComponents component)
 	{
-		State = EnumAddFlags(State, component);
+		ReconciliationState = EnumAddFlags(ReconciliationState, component);
 	}
 
-	void NetTransform::StopReconcile(ReconcileFlags component)
+	void NetTransform::StopReconcile(ReconcileComponents component)
 	{
-		State = EnumRemoveFlags(State, component);
+		ReconciliationState = EnumRemoveFlags(ReconciliationState, component);
+		ReconcileTimer = -ReconcileCooldownTime;
 	}
 
 }

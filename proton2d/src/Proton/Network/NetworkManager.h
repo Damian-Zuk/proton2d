@@ -81,9 +81,6 @@ namespace proton {
 		float m_TickElapsed = 0.0f;
 		bool m_IsNetworkTick = false;
 
-		// True if client has received any replication update from the server
-		bool m_ClientGameStateInitialized = false;
-
 		// True if server is running or client is connected/connecting to the server
 		bool m_IsNetworkActive = false;
 		uint32_t m_NetworkedSceneCount = 0;

@@ -259,6 +259,7 @@ namespace proton {
 
 	void SceneViewportPanel::OnEvent(Event& event)
 	{
+		PROFILE_FUNCTION();
 		Scene* scene = m_GameInstance->GetActiveScene();
 		if (!scene)
 			return;
@@ -492,7 +493,7 @@ namespace proton {
 					{ transform.Scale.x,transform.Scale.y }, last.Rotation), COLOR_CYAN);
 
 				// Predicted transform state
-				bool reconcileStarted = EnumHasAnyFlags(netTransform.State, NetTransform::ReconcileFlags::Position);
+				bool reconcileStarted = netTransform.IsReconciling(NetTransform::ReconcileComponents::Position);
 				Renderer::DrawRect(Math::GetTransform({ pred.Position.x, pred.Position.y, 0.202f },
 					{ transform.Scale.x,transform.Scale.y }, last.Rotation),
 					reconcileStarted ? COLOR_LIGHT_RED : COLOR_GREEN);
