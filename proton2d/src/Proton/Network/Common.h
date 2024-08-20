@@ -25,10 +25,8 @@ namespace proton {
 
 	enum NetConnectionEndCode
 	{
-		NetConnectionEndCode_GameAndEngineProtocolMismatch = 2001,
-		NetConnectionEndCode_GameProtocolMismatch = 2002,
-		NetConnectionEndCode_EngineProtocolMismatch = 2003,
-		NetConnectionEndCode_MaxConnections = 2004
+		NetConnectionEndCode_ProtocolMismatch = 2001,
+		NetConnectionEndCode_MaxConnections = 2002
 	};
 
 	std::string NetModeToString(NetMode netMode);

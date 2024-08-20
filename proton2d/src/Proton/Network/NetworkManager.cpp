@@ -52,11 +52,11 @@ namespace proton {
 		if (IsNetModeServer())
 		{
 			if (m_IsNetworkTick)
-				m_Server->MainThread_OnTick();
+				m_Server->OnTick();
 		}
 		else
 		{
-			m_Client->MainThread_OnUpdate(ts);
+			m_Client->OnUpdate(ts);
 		}
 	}
 

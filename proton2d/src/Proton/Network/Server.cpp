@@ -68,7 +68,7 @@ namespace proton {
 		m_Running = false;
 	}
 
-	void Server::MainThread_OnTick()
+	void Server::OnTick()
 	{
 		PROFILE_FUNCTION();
 		Scene* scene = m_GameInstance->GetActiveScene();
@@ -98,22 +98,10 @@ namespace proton {
 			NetMessageHandshake handshake;
 			stream.ReadRaw(handshake);
 
-			if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION && handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
+			if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION || handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 			{
-				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch);
-				m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameAndEngineProtocolMismatch, "Failed to handshake", false);
-				break;
-			}
-			else if (handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
-			{
-				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_GameProtocolMismatch);
-				m_Interface->CloseConnection(clientID, NetConnectionEndCode_GameProtocolMismatch, "Failed to handshake", false);
-				break;
-			}
-			else if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION)
-			{
-				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_EngineProtocolMismatch);
-				m_Interface->CloseConnection(clientID, NetConnectionEndCode_EngineProtocolMismatch, "Failed to handshake", false);
+				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_ProtocolMismatch);
+				m_Interface->CloseConnection(clientID, NetConnectionEndCode_ProtocolMismatch, "Failed to handshake", false);
 				break;
 			}
 
@@ -515,16 +503,6 @@ namespace proton {
 			if (clientInfo.Status == ConnectionStatus::Connected && clientID != excludeClientID)
 				SendBufferToClient(clientID, buffer, reliable);
 		}
-	}
-
-	void Server::SendStringToClient(ClientID clientID, const std::string& string, bool reliable)
-	{
-		SendBufferToClient(clientID, Buffer(string.data(), string.size()), reliable);
-	}
-
-	void Server::SendStringToAllClients(const std::string& string, ClientID excludeClientID, bool reliable)
-	{
-		SendBufferToAllClients(Buffer(string.data(), string.size()), excludeClientID, reliable);
 	}
 
 }

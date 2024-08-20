@@ -24,20 +24,25 @@ namespace proton {
 	{
 	public:
 		Client(GameInstance* gameInstance);
-		~Client();
-	
-	private:
+		Client() = delete;
+		virtual ~Client();
+
 		void ConnectToServer(const std::string& serverAddress);
 		void Disconnect();
 		void Shutdown();
+	
+		bool IsRunning() const { return m_Running; }
+		ConnectionStatus GetConnectionStatus() const { return m_ConnectionStatus; }
+		const std::string& GetConnectionDebugMessage() const { return m_ConnectionDebugMessage; }
 
-		// Game client functionality
-		void MainThread_OnUpdate(float ts);
+	private:
+		// Game client functionality (main thread)
+		void OnUpdate(float ts);
 		void SendHandshake();
 		void OnNetworkMessage(ISteamNetworkingMessage* message);
 		void SendPlayerAction(NetworkStreamWriterDelegate sendFunction);
 		
-		// Client lower-level functionality
+		// Network thread and client lower-level functionality
 		void NetworkThreadFunction();
 		
 		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
@@ -48,20 +53,7 @@ namespace proton {
 
 		void OnFatalError(const std::string& message);
 
-		// Sending buffer to server
 		void SendBuffer(Buffer buffer, bool reliable = true);
-		void SendString(const std::string& string, bool reliable = true);
-
-		template<typename T>
-		void SendData(const T& data, bool reliable = true)
-		{
-			SendBuffer(Buffer(&data, sizeof(T)), reliable);
-		}
-
-		// Other
-		bool IsRunning() const { return m_Running; }
-		ConnectionStatus GetConnectionStatus() const { return m_ConnectionStatus; }
-		const std::string& GetConnectionDebugMessage() const { return m_ConnectionDebugMessage; }
 
 	private:
 		GameInstance* m_GameInstance;

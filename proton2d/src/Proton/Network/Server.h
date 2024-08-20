@@ -35,21 +35,25 @@ namespace proton {
 	{
 	public:
 		Server(GameInstance* gameInstance);
-		~Server();
+		Server() = delete;
+		virtual ~Server();
 
-		bool IsRunning() const { return m_Running; }
-
-		void SetClientEntity(ClientID clientID, Entity entity);
-		Entity GetClientEntity(ClientID clientID);
-
-		const std::map<HSteamNetConnection, ClientInfo>& GetConnectedClients() const { return m_ConnectedClients; }
-
-	private:
 		void Start(uint16_t port);
 		void Stop();
 
-		// Game server functionality
-		void MainThread_OnTick();
+		Entity GetClientEntity(ClientID clientID);
+		void SetClientEntity(ClientID clientID, Entity entity);
+		void SetClientName(ClientID clientID, const char* name);
+		void KickClient(ClientID clientID);
+
+		void SetPacketFakeLag(float latencyMs);
+
+		uint32_t GetConnectedClientsCount() const;
+		bool IsRunning() const { return m_Running; }
+
+	private:
+		// Game server functionality (main thread)
+		void OnTick();
 		void OnNetworkMessage(ISteamNetworkingMessage* message);
 
 		void ProcessConnectionStatusQueue();
@@ -58,18 +62,13 @@ namespace proton {
 		void OnClientConnecting(ClientID clientID);
 		void OnClientConnected(ClientID clientID);
 		void OnClientDisconnected(ClientID clientID);
-
-		uint32_t GetConnectedClientsCount() const;
-		void SetClientName(ClientID clientID, const char* name);
+		
 		void SetClientActionCallback(uint32_t clientID, NetworkStreamReaderDelegate function);
-		void KickClient(ClientID clientID);
-
+		
 		void OnEntitySpawned(Scene* scene, UUID entityUUID);
 		void OnEntityDespawned(Scene* scene, UUID entityUUID);
 
-		void SetPacketFakeLag(float latencyMs);
-
-		// Network thread and lower-level server functionality
+		// Network thread and server lower-level server functionality
 		void NetworkThreadFunction(); 
 
 		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
@@ -79,24 +78,8 @@ namespace proton {
 		void PollConnectionStateChanges();
 		void OnFatalError(const std::string& message);
 
-		// Sending buffer to clients
 		void SendBufferToClient(ClientID clientID, Buffer buffer, bool reliable = true);
 		void SendBufferToAllClients(Buffer buffer, ClientID excludeClientID = 0, bool reliable = true);
-
-		void SendStringToClient(ClientID clientID, const std::string& string, bool reliable = true);
-		void SendStringToAllClients(const std::string& string, ClientID excludeClientID = 0, bool reliable = true);
-
-		template<typename T>
-		void SendDataToClient(ClientID clientID, const T& data, bool reliable = true)
-		{
-			SendBufferToClient(clientID, Buffer(&data, sizeof(T)), reliable);
-		}
-
-		template<typename T>
-		void SendDataToAllClients(const T& data, ClientID excludeClientID = 0, bool reliable = true)
-		{
-			SendBufferToAllClients(Buffer(&data, sizeof(T)), excludeClientID, reliable);
-		}
 
 	private:
 		static Server* s_Instance;

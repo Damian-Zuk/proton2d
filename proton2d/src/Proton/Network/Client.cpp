@@ -61,7 +61,7 @@ namespace proton {
 		m_Running = false;
 	}
 
-	void Client::MainThread_OnUpdate(float ts)
+	void Client::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
 
@@ -219,11 +219,6 @@ namespace proton {
 	{
 		EResult result = m_Interface->SendMessageToConnection(m_Connection, buffer.Data, (uint32_t)buffer.Size, reliable ? k_nSteamNetworkingSend_Reliable : k_nSteamNetworkingSend_Unreliable, nullptr);
 		// handle result?
-	}
-
-	void Client::SendString(const std::string& string, bool reliable)
-	{
-		SendBuffer(Buffer(string.data(), string.size()), reliable);
 	}
 
 	void Client::PollIncomingMessages()
