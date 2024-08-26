@@ -1,0 +1,689 @@
+{
+    "UUID": 13582146669408713245,
+    "Tag": "TestFrame1",
+    "Transform": {
+        "Position": [
+            -28.91433,
+            4.03517,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
+    "Scripts": [
+        {
+            "ClassName": "TestFrame1Script",
+            "Fields": [
+                {
+                    "FieldName": "m_BounceForce",
+                    "Value": 15.0
+                },
+                {
+                    "FieldName": "m_Interval",
+                    "Value": 0.699999988079071
+                }
+            ]
+        }
+    ],
+    "Entities": [
+        {
+            "UUID": 15614117405774470107,
+            "Tag": "Balls",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 13620087508327163654,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            -1.07325,
+                            -0.67077,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ReconcileCooldownTime": 0.0
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 10518870378727133042,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            -1.81537,
+                            2.74484,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ReconcileCooldownTime": 0.0
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 8815808852904909030,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            2.3319,
+                            2.58652,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ReconcileCooldownTime": 0.0
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 17970072418144941895,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            0.99921,
+                            0.03026,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ReconcileCooldownTime": 0.0
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 17630741736171200380,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            0.20524,
+                            2.11258,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ReconcileCooldownTime": 0.0
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 8563477906216227953,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            -2.06795,
+                            0.85294,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ReconcileCooldownTime": 0.0
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 6127169197043460574,
+            "Tag": "Walls",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 3754804193389545973,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            4.0,
+                            -0.1,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            0.2,
+                            8.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 26709526720517021,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            -4.0,
+                            -0.1,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            0.2,
+                            8.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 7836872643327136726,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            3.8,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            8.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 3146098707087739411,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            -4.0,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            8.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 14812721306368090701,
+            "Tag": "Bouncer",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    -3.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    7.7,
+                    0.2
+                ]
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.5,
+                "ReconcileMaxTime": 0.5,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": true,
+                "AttachToParent": false
+            },
+            "Entities": [
+                {
+                    "UUID": 14803881372006151903,
+                    "Tag": "BouncerPart1",
+                    "Transform": {
+                        "Position": [
+                            -1.906,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": 15.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            0.50588,
+                            0.71373,
+                            0.53725,
+                            1.0
+                        ]
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": true
+                    }
+                },
+                {
+                    "UUID": 10684141423603376829,
+                    "Tag": "BouncerPart2",
+                    "Transform": {
+                        "Position": [
+                            1.906,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": -15.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            0.50402,
+                            0.71429,
+                            0.53679,
+                            1.0
+                        ]
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": true
+                    }
+                }
+            ]
+        }
+    ]
+}

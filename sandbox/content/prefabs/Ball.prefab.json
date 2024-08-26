@@ -1,10 +1,10 @@
 {
-    "UUID": 2833341716255024865,
+    "UUID": 15000688823409566923,
     "Tag": "Ball",
     "Transform": {
         "Position": [
-            -2.60833,
-            3.23333,
+            -0.43788,
+            5.83076,
             0.101
         ],
         "Rotation": 0.0,
@@ -14,11 +14,11 @@
         ]
     },
     "Network": {
-        "SyncMethod": "Extrapolation",
+        "SyncMethod": "Interpolation",
         "CullDistance": 20.0,
-        "ReconcileThreshold": 0.029999999329447746,
-        "ReconcileMaxTimer": 0.029999999329447746,
-        "ReconcileCooldownTime": 1.0
+        "ReconcileThreshold": 0.03999999910593033,
+        "ReconcileMaxTime": 0.03999999910593033,
+        "ReconcileCooldownTime": 0.0
     },
     "Sprite": {
         "Texture": "basketball.png",
