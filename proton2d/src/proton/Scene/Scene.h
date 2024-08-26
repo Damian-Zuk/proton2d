@@ -144,7 +144,7 @@ namespace proton {
 		Unique<PhysicsWorld> m_PhysicsWorld;
 		float m_PhysicsTimestep = 0.01f;
 		float m_PhysicsTimer = 0.0f;
-		bool m_PhysicsTick = false;
+		uint16_t m_PhysicsTicks = 0;
 
 		// Cache
 		glm::vec3 m_PrimaryCameraPosition = { 0.0f, 0.0f, 0.0f };

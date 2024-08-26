@@ -8,6 +8,14 @@ enum PlayerState : uint16_t // animation index
 	PlayerState_Land = 3
 };
 
+enum PlayerInput : uint64_t
+{
+	None = 0,
+	PlayerInput_MoveLeft = (1 << 0),
+	PlayerInput_MoveRight = (1 << 1),
+	PlayerInput_MoveJump = (1 << 2)
+};
+
 struct PlayerActionState
 {
 	bool MoveLeft = false;
@@ -47,7 +55,8 @@ private:
 	uint32_t m_ClientID = 0;
 
 	b2Body* m_Wheel = nullptr;
-
+	
+	PlayerInput m_PlayerInput;
 	PlayerActionState m_ActionState;
 	float m_PlayerMaxSpeed = 6.0f;
 	float m_JumpForce = 20.0f;

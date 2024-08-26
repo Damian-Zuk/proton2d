@@ -105,7 +105,7 @@ namespace proton {
 			float hy = bc.Size.y * transform.Scale.y / 2.0f;
 			
 			b2PolygonShape shape;
-			shape.SetAsBox(hx, hy, offset, 0);
+			shape.SetAsBox(hx, hy, offset, bc.AttachToParent ? glm::radians(transform.Rotation) : 0.0f);
 
 			fixtureDef.shape = &shape;
 			fixtureDef.isSensor = bc.IsSensor;

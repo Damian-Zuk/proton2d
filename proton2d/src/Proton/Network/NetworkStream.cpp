@@ -19,7 +19,7 @@ namespace proton {
 			PT_CORE_WARN("Performing buffer reallocation (new_size={})", newSize);
 			m_TargetBuffer.Reallocate(newSize);
 		}
-
+		
 		memcpy(m_TargetBuffer.As<uint8_t>() + m_BufferPosition, data, size);
 		m_BufferPosition += size;
 		return true;

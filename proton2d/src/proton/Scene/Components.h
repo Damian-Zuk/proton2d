@@ -163,7 +163,7 @@ namespace proton {
 			struct ReplicatedField
 			{
 				void* Data = nullptr;
-				uint64_t Size = 0;
+				size_t Size = 0;
 				std::function<void(Entity*)> NotifyFunction;
 				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
 			};

@@ -57,14 +57,14 @@ namespace proton {
 		using ReplicateComponents = NetTransform::ReplicateComponents;
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
 
-		NetMessageReplicate header;
+		MessageEntityReplicate header;
 		stream.ReadRaw(header); // if fails, then header.EntityCount is 0
 
 		// Loop for each entity stored in message payload
 		for (uint32_t entityIndex = 0; entityIndex < header.EntityCount; entityIndex++)
 		{
 			// ------------------------------------- Read entity payload header -------------------------------------
-			NetMessageReplicate::PayloadItem item;
+			MessageEntityReplicate::PayloadItem item;
 
 			if (!stream.ReadRaw(item))
 			{
@@ -253,12 +253,12 @@ namespace proton {
 		PROFILE_FUNCTION();
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
 
-		NetMessageSpawn header;
+		MessageEntitySpawn header;
 		stream.ReadRaw(header);
 
 		for (uint32_t i = 0; i < header.EntityCount; i++)
 		{
-			NetMessageSpawn::PayloadItem item;
+			MessageEntitySpawn::PayloadItem item;
 			stream.ReadString(item.EntityJsonData);
 
 			json jsonParsed = json::parse(item.EntityJsonData);
@@ -276,12 +276,12 @@ namespace proton {
 		PROFILE_FUNCTION();
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
 
-		NetMessageDespawn header;
+		MessageEntityDespawn header;
 		stream.ReadRaw(header);
 
 		for (uint32_t i = 0; i < header.EntityCount; i++)
 		{
-			NetMessageDespawn::PayloadItem item;
+			MessageEntityDespawn::PayloadItem item;
 			stream.ReadRaw(item);
 
 			Entity entity = scene->FindByID(item.EntityUUID);
@@ -347,7 +347,7 @@ namespace proton {
 		if (sceneData.SpawnedEntityQueue.empty())
 			return;
 
-		NetMessageSpawn header;
+		MessageEntitySpawn header;
 		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(header));
 
@@ -387,7 +387,7 @@ namespace proton {
 		if (sceneData.DespawnedEntityQueue.empty())
 			return;
 
-		NetMessageDespawn header;
+		MessageEntityDespawn header;
 		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(header));
 
@@ -426,13 +426,13 @@ namespace proton {
 		{
 			NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 
-			NetMessageSpawn msg;
+			MessageEntitySpawn msg;
 			msg.EntityCount = (uint32_t)spawnedAll.size();
 			stream.WriteRaw(msg);
 
 			for (UUID uuid : spawnedAll)
 			{
-				NetMessageSpawn::PayloadItem item;
+				MessageEntitySpawn::PayloadItem item;
 				Entity entity = scene->FindByID(uuid);
 				SceneSerializer serializer(scene, true);
 				item.EntityJsonData = serializer.SerializeEntityToString(entity);
@@ -452,13 +452,13 @@ namespace proton {
 		{
 			NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 
-			NetMessageDespawn msg;
+			MessageEntityDespawn msg;
 			msg.EntityCount = (uint32_t)despawnedAll.size();
 			stream.WriteRaw(msg);
 
 			for (UUID uuid : despawnedAll)
 			{
-				NetMessageDespawn::PayloadItem item;
+				MessageEntityDespawn::PayloadItem item;
 				item.EntityUUID = uuid;
 				stream.WriteRaw(item);
 			}
@@ -488,7 +488,7 @@ namespace proton {
 			return;
 
 		// Message header
-		NetMessageReplicate msgHeader;
+		MessageEntityReplicate msgHeader;
 		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(msgHeader));
 
@@ -523,7 +523,7 @@ namespace proton {
 			}
 
 			// Entity payload header
-			NetMessageReplicate::PayloadItem itemHeader;
+			MessageEntityReplicate::PayloadItem itemHeader;
 			itemHeader.EntityUUID = entity.GetUUID();
 			itemHeader.ScriptCount = 0;
 			auto& flags = itemHeader.TransformFlags;

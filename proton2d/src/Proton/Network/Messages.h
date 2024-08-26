@@ -21,7 +21,8 @@ namespace proton {
 		EntityReplicate,
 
 		// [Client -> Server]
-		EntityTransformSequence,
+		EntitySequence,
+		EntityInput,
 
 		PlayerAction, // Delete me
 
@@ -29,20 +30,20 @@ namespace proton {
 		CustomMessage
 	};
 
-	struct NetMessageHandshake
+	struct MessageHandshake
 	{
 		MessageType MessageType = MessageType::Handshake;
 		uint32_t EngineProtocolVersion;
 		uint32_t GameProtocolVersion;
 	};
 
-	struct NetMessageHandshakeReply
+	struct MessageHandshakeReply
 	{
 		MessageType MessageType = MessageType::HandshakeReply;
 		uint32_t ClientID;
 	};
 
-	struct NetMessageSpawn
+	struct MessageEntitySpawn
 	{
 		MessageType MessageType = MessageType::EntitySpawn;
 		uint32_t EntityCount = 0;
@@ -56,7 +57,7 @@ namespace proton {
 		};
 	};
 
-	struct NetMessageDespawn
+	struct MessageEntityDespawn
 	{
 		MessageType MessageType = MessageType::EntityDespawn;
 		uint32_t EntityCount = 0;
@@ -67,7 +68,7 @@ namespace proton {
 		};
 	};
 
-	struct NetMessageReplicate
+	struct MessageEntityReplicate
 	{
 		MessageType MessageType = MessageType::EntityReplicate;
 		uint32_t EntityCount = 0;
@@ -84,9 +85,9 @@ namespace proton {
 		};
 	};
 
-	struct NetMessageTransformSequence
+	struct MessageEntitySequence
 	{
-		MessageType MessageType = MessageType::EntityTransformSequence;
+		MessageType MessageType = MessageType::EntitySequence;
 		uint32_t EntityCount = 0;
 
 		struct PayloadItem
@@ -94,6 +95,12 @@ namespace proton {
 			UUID EnittyUUID;
 			uint16_t SequenceNumber;
 		};
+	};
+
+	struct MessageEntityInput
+	{
+		MessageType MessageType = MessageType::EntityInput;
+		uint32_t EntityCount = 0;
 	};
 
 	struct NetMassagePlayerAction

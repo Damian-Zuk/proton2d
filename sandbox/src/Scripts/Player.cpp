@@ -27,9 +27,6 @@ void Player::OnRegisterFields()
 	REGISTER_FIELD(Float, m_JumpForce);
 	REGISTER_FIELD(Float, m_GravityModifier);
 	REGISTER_FIELD(Int, m_ClientID);
-
-	//if (!HasComponent<NetworkComponent>() || GetComponent<NetworkComponent>().SyncParams.SyncMethod != NetSyncMethod::NetworkRigidbody)
-	//	return;
 	
 	REPLICATED_DATA(m_Direction);
 	REPLICATED_DATA(m_State);
@@ -37,10 +34,12 @@ void Player::OnRegisterFields()
 
 bool Player::OnCreate()
 {
-
+	NetworkManager* networkManager = GetNetworkManager();
 	MyGameMode* gameMode = GetGameMode<MyGameMode>();
 	uint32_t localPlayerID = gameMode->GetLocalPlayerID();
+	
 	m_IsLocalPlayer = m_ClientID == localPlayerID;
+	
 	if (m_IsLocalPlayer)
 	{
 		gameMode->m_LocalPlayer = this;
@@ -48,7 +47,8 @@ bool Player::OnCreate()
 		
 		if (IsRunningClient())
 		{
-			GetNetworkManager()->SetLocalPlayerEntity(*this);
+			networkManager->SetLocalPlayerEntity(*this);
+			//networkManager->Client_SetEntityInput(GetUUID(), &m_ActionState);
 		}
 	}
 
@@ -71,15 +71,12 @@ bool Player::OnCreate()
 		});
 	}
 
-	if (GetScene()->IsPhysicsSimulated())
-	{
-		// Set physics sensors to following child entities
-		SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
-		SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
-		SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
+	// Set physics sensors to following child entities
+	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
+	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
+	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
 
-		m_Wheel = FindChildByTag("Wheel").GetRuntimeBody();
-	}
+	m_Wheel = FindChildByTag("Wheel").GetRuntimeBody();
 
 	return true;
 }
@@ -88,6 +85,11 @@ void Player::OnUpdate(float ts)
 {
 	if (m_IsLocalPlayer)
 	{
+		//if (Input::IsKeyPressed(Key::D, this))
+		//	m_PlayerInput = EnumAddFlags(m_PlayerInput, PlayerInput_MoveRight);
+		//else
+		//	m_PlayerInput = EnumRemoveFlags(m_PlayerInput, PlayerInput_MoveRight);
+
 		// Input polling for local player
 		PlayerActionState previous = m_ActionState;
 		m_ActionState.MoveRight = Input::IsKeyPressed(Key::D, this);

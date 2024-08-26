@@ -85,7 +85,7 @@ namespace proton {
 
 	void Client::SendHandshake()
 	{
-		NetMessageHandshake header;
+		MessageHandshake header;
 		header.EngineProtocolVersion = PROTON_NET_PROTOCOL_VERSION;
 		header.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
 		NetworkStreamWriter stream(m_ScratchBuffer);
@@ -115,7 +115,7 @@ namespace proton {
 			///////////////////////////////////////////////////////////////////////////////////////
 		case MessageType::HandshakeReply:
 		{
-			NetMessageHandshakeReply reply;
+			MessageHandshakeReply reply;
 			stream.ReadRaw(reply);
 
 			m_LocalClientID = reply.ClientID;

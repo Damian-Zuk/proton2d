@@ -15,7 +15,7 @@ constexpr glm::vec4 COLOR_PINK   { 1.000f, 0.472f, 0.952f, 1.0f };
 constexpr glm::vec4 COLOR_BLACK  { 0.167f, 0.176f, 0.200f, 1.0f };
 constexpr glm::vec4 COLOR_WHITE  { 1.000f, 1.000f, 1.000f, 1.0f };
 
-static const glm::vec4 s_PlayerColors[] = {
+static const glm::vec4 PlayerColors[] = {
 	COLOR_RED, COLOR_GREEN, COLOR_ORANGE, COLOR_YELLOW, COLOR_CYAN, 
 	COLOR_PURPLE, COLOR_PINK, COLOR_BLUE, COLOR_WHITE, COLOR_BLACK,
 };
@@ -24,6 +24,7 @@ bool MyGameMode::OnCreate()
 {
 	if (HasAuthority())
 	{
+		// Check if player prefab is already on the scene
 		if (Entity player = FindByTag("Player"))
 		{
 			m_LocalPlayer = player.As<Player>();
@@ -80,20 +81,23 @@ void MyGameMode::Server_OnClientConnected(ClientID clientID)
 		
 	// Spawn Player object for connected client
 	Player* player = SpawnPrefab("Player").As<Player>();
-	Server_SetClientEntity(clientID, *player);
+	player->m_ClientID = clientID;
+	player->m_IsLocalPlayer = false;
 
 	// Get spawn point position
 	uint32_t spawnPoint = (m_RemotePlayers.size() + 1) % 4;
 	auto& spawnTransform = FindByTag("PlayerSpawn" + std::to_string(spawnPoint)).GetTransform();
-
-	// Set player properties
 	player->SetWorldPosition(spawnTransform.WorldPosition);
-	player->m_IsLocalPlayer = false;
-	player->m_ClientID = clientID;
-	player->GetColor() = s_PlayerColors[(m_NewColorIndex % 10)];
-	m_NewColorIndex++;
+
+	// Set player color
+	static uint32_t colorIndex = 0;
+	auto& playerColor = player->GetColor();
+	playerColor = PlayerColors[colorIndex];
+	colorIndex = (colorIndex + 1) % 10;
 	
 	m_RemotePlayers[clientID] = player;
+
+	Server_SetClientEntity(clientID, *player);
 }
 
 void MyGameMode::Server_OnClientDisconnected(ClientID clientID)

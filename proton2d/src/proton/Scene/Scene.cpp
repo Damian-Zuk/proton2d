@@ -551,12 +551,19 @@ namespace proton {
 		{
 			m_PhysicsWorld->ProcessCreatedEntities();
 			m_PhysicsTimer += ts;
-			m_PhysicsTick = (bool)(m_PhysicsTimer >= m_PhysicsTimestep);
-				
-			if (m_PhysicsTick)
+			m_PhysicsTicks = 0;
+			
+			while (m_PhysicsTimer >= m_PhysicsTimestep)
 			{
-				m_PhysicsWorld->Update(m_PhysicsTimer);
+				m_PhysicsWorld->Update(m_PhysicsTimestep);
+				m_PhysicsTimer -= m_PhysicsTimestep;
+				m_PhysicsTicks++;
 			}
+
+			//if (m_PhysicsTick)
+			//{
+			//	m_PhysicsWorld->Update(m_PhysicsTimer);
+			//}
 		}
 
 		CalculateWorldPositions();
@@ -570,11 +577,11 @@ namespace proton {
 
 			UpdateScripts(ts);
 
-			if (m_PhysicsTick)
-			{
-				//PT_CORE_TRACE("timer: {}, timestep: {}", m_PhysicsTimer, m_PhysicsTimestep);
-				m_PhysicsTimer = 0.0f;
-			}
+			//if (m_PhysicsTick)
+			//{
+			//	//PT_CORE_TRACE("timer: {}, timestep: {}", m_PhysicsTimer, m_PhysicsTimestep);
+			//	m_PhysicsTimer = 0.0f;
+			//}
 
 			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
@@ -615,10 +622,11 @@ namespace proton {
 				if (instance->m_Stopped)
 					continue;
 
-				if (m_PhysicsTick && m_Registry.any_of<RigidbodyComponent>(entity)
+				if (m_PhysicsTicks > 0 && m_Registry.any_of<RigidbodyComponent>(entity)
 					&& m_Registry.get<RigidbodyComponent>(entity).RuntimeBody)
 				{
-					instance->OnPhysicsUpdate(m_PhysicsTimer);
+					for (uint16_t i = 0; i < m_PhysicsTicks; i++)
+						instance->OnPhysicsUpdate(m_PhysicsTimestep);
 				}
 
 				instance->OnUpdate(ts);

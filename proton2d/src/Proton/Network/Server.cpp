@@ -95,7 +95,7 @@ namespace proton {
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		case MessageType::Handshake:
 		{
-			NetMessageHandshake handshake;
+			MessageHandshake handshake;
 			stream.ReadRaw(handshake);
 
 			if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION || handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
@@ -105,7 +105,7 @@ namespace proton {
 				break;
 			}
 
-			NetMessageHandshakeReply reply;
+			MessageHandshakeReply reply;
 			reply.ClientID = clientID;
 			writer.WriteRaw(reply);
 			SendBufferToClient(clientID, writer.GetBuffer());
@@ -117,7 +117,7 @@ namespace proton {
 			break;
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		case MessageType::EntityTransformSequence:
+		case MessageType::EntitySequence:
 		{
 			m_NetTransformSystem->Server_OnSequenceNumberMessage(clientID, stream);
 			break;

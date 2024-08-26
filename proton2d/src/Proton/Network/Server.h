@@ -41,10 +41,13 @@ namespace proton {
 		void Start(uint16_t port);
 		void Stop();
 
-		Entity GetClientEntity(ClientID clientID);
-		void SetClientEntity(ClientID clientID, Entity entity);
 		void SetClientName(ClientID clientID, const char* name);
 		void KickClient(ClientID clientID);
+
+		Entity GetClientEntity(ClientID clientID);
+		void SetClientEntity(ClientID clientID, Entity entity);
+
+		void SetEntityInput(ClientID clientID, Entity entity, uint64_t* inputStatePtr);
 
 		void SetPacketFakeLag(float latencyMs);
 

@@ -32,7 +32,7 @@ namespace proton {
 		Server* m_Server = nullptr;
 		NetworkManager* m_NetworkManager;
 
-		std::vector<NetMessageTransformSequence::PayloadItem> m_SequenceNumbersToSend;
+		std::vector<MessageEntitySequence::PayloadItem> m_SequenceNumbersToSend;
 	};
 
 }
