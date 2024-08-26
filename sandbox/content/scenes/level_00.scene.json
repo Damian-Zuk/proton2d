@@ -1,1 +1,2947 @@
-{"GameModeClass":"MyGameMode","EnablePhysics":true,"GravityForce":9.800000190734863,"VelocityIterations":2,"PositionIterations":6,"ScreenClearColor":[0.20795752108097076,0.24136096239089966,0.2895752787590027,1.0],"EnableNetworking":true,"Entities":[{"UUID":13582146669408713245,"Tag":"TestFrame1","Transform":{"Position":[-28.91433,4.03517,0.0],"Rotation":0.0,"Scale":[1.0,1.0]},"Scripts":[{"ClassName":"TestFrame1Script","Fields":[{"FieldName":"m_BounceForce","Value":15.0},{"FieldName":"m_Interval","Value":0.699999988079071}]}],"Entities":[{"UUID":15614117405774470107,"Tag":"Balls","Transform":{"Position":[0.0,0.0,0.0],"Rotation":0.0,"Scale":[1.0,1.0]},"Entities":[{"UUID":13620087508327163654,"Tag":"Ball","Transform":{"Position":[-1.07325,-0.67077,0.101],"Rotation":0.0,"Scale":[1.0,1.0]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.03999999910593033,"ReconcileMaxTime":0.03999999910593033,"ReconcileCooldownTime":0.0},"Sprite":{"Texture":"basketball.png","FilterMode":1,"Flip":[false,false],"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"CircleCollider":{"Offset":[0.0,0.0],"Radius":1.0,"Friction":0.5,"Restitution":0.699999988079071,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":10518870378727133042,"Tag":"Ball","Transform":{"Position":[-1.81537,2.74484,0.101],"Rotation":0.0,"Scale":[1.0,1.0]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.03999999910593033,"ReconcileMaxTime":0.03999999910593033,"ReconcileCooldownTime":0.0},"Sprite":{"Texture":"basketball.png","FilterMode":1,"Flip":[false,false],"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"CircleCollider":{"Offset":[0.0,0.0],"Radius":1.0,"Friction":0.5,"Restitution":0.699999988079071,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":8815808852904909030,"Tag":"Ball","Transform":{"Position":[2.3319,2.58652,0.101],"Rotation":0.0,"Scale":[1.0,1.0]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.03999999910593033,"ReconcileMaxTime":0.03999999910593033,"ReconcileCooldownTime":0.0},"Sprite":{"Texture":"basketball.png","FilterMode":1,"Flip":[false,false],"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"CircleCollider":{"Offset":[0.0,0.0],"Radius":1.0,"Friction":0.5,"Restitution":0.699999988079071,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":17970072418144941895,"Tag":"Ball","Transform":{"Position":[0.99921,0.03026,0.101],"Rotation":0.0,"Scale":[1.0,1.0]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.03999999910593033,"ReconcileMaxTime":0.03999999910593033,"ReconcileCooldownTime":0.0},"Sprite":{"Texture":"basketball.png","FilterMode":1,"Flip":[false,false],"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"CircleCollider":{"Offset":[0.0,0.0],"Radius":1.0,"Friction":0.5,"Restitution":0.699999988079071,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":17630741736171200380,"Tag":"Ball","Transform":{"Position":[0.20524,2.11258,0.101],"Rotation":0.0,"Scale":[1.0,1.0]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.03999999910593033,"ReconcileMaxTime":0.03999999910593033,"ReconcileCooldownTime":0.0},"Sprite":{"Texture":"basketball.png","FilterMode":1,"Flip":[false,false],"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"CircleCollider":{"Offset":[0.0,0.0],"Radius":1.0,"Friction":0.5,"Restitution":0.699999988079071,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":8563477906216227953,"Tag":"Ball","Transform":{"Position":[-2.06795,0.85294,0.101],"Rotation":0.0,"Scale":[1.0,1.0]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.03999999910593033,"ReconcileMaxTime":0.03999999910593033,"ReconcileCooldownTime":0.0},"Sprite":{"Texture":"basketball.png","FilterMode":1,"Flip":[false,false],"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"CircleCollider":{"Offset":[0.0,0.0],"Radius":1.0,"Friction":0.5,"Restitution":0.699999988079071,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}}]},{"UUID":6127169197043460574,"Tag":"Walls","Transform":{"Position":[0.0,0.0,0.0],"Rotation":0.0,"Scale":[1.0,1.0]},"Entities":[{"UUID":3754804193389545973,"Tag":"Wall","Transform":{"Position":[4.28027,-0.10884,0.0],"Rotation":-5.0,"Scale":[0.2,8.0]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":26709526720517021,"Tag":"Wall","Transform":{"Position":[-4.2863,-0.10957,0.0],"Rotation":5.0,"Scale":[0.2,8.0]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":7836872643327136726,"Tag":"Wall","Transform":{"Position":[0.0,3.785,0.0],"Rotation":0.0,"Scale":[9.2,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":3146098707087739411,"Tag":"Wall","Transform":{"Position":[0.0,-4.0,0.0],"Rotation":0.0,"Scale":[8.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}}]},{"UUID":14812721306368090701,"Tag":"Bouncer","Transform":{"Position":[0.0,-3.0,0.0],"Rotation":0.0,"Scale":[7.7,0.2]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.5,"ReconcileMaxTime":0.5,"ReconcileCooldownTime":1.0},"Rigidbody":{"Type":2,"FixedRotation":true,"AttachToParent":false},"Entities":[{"UUID":14803881372006151903,"Tag":"BouncerPart1","Transform":{"Position":[-1.906,0.0,0.0],"Rotation":15.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[0.50588,0.71373,0.53725,1.0]},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":true}},{"UUID":10684141423603376829,"Tag":"BouncerPart2","Transform":{"Position":[1.906,0.0,0.0],"Rotation":-15.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[0.50402,0.71429,0.53679,1.0]},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":true}}]}]},{"UUID":8829610755632904901,"Tag":"Box Pyramid","Transform":{"Position":[28.79095,11.52457,0.0],"Rotation":0.0,"Scale":[1.0,1.0]},"Entities":[{"UUID":11202505462944862882,"Tag":"Wooden Box","Transform":{"Position":[-0.06444,2.23212,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":1324019083391008307,"Tag":"Wooden Box","Transform":{"Position":[0.72242,0.69482,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":3420794200158399810,"Tag":"Wooden Box","Transform":{"Position":[-0.84211,0.70618,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":16033342422020026162,"Tag":"Wooden Box","Transform":{"Position":[1.54776,-0.83083,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":18174173560790338717,"Tag":"Wooden Box","Transform":{"Position":[-0.0124,-0.83083,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":5726290469398531901,"Tag":"Wooden Box","Transform":{"Position":[2.27567,-2.3618,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":14020829022695656961,"Tag":"Wooden Box","Transform":{"Position":[-1.56306,-0.83083,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":6982871279543430064,"Tag":"Wooden Box","Transform":{"Position":[0.75763,-2.34887,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":5964809909853225618,"Tag":"Wooden Box","Transform":{"Position":[-0.77022,-2.34887,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":11543175051992576698,"Tag":"Wooden Box","Transform":{"Position":[-2.29265,-2.35953,0.1],"Rotation":0.0,"Scale":[1.5,1.5]},"Network":{"SyncMethod":"Interpolation","CullDistance":20.0,"ReconcileThreshold":0.02500000037252903,"ReconcileMaxTime":0.02500000037252903,"ReconcileCooldownTime":1.0},"Sprite":{"Texture":"box.png","FilterMode":1,"Flip":[false,false],"Color":[0.92641,0.89214,0.54943,1.0]},"Rigidbody":{"Type":2,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.800000011920929,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}}]},{"UUID":1074232079100383678,"Tag":"Spawn Points","Transform":{"Position":[3.76592,2.18079,0.1],"Rotation":0.0,"Scale":[1.0,1.0]},"Entities":[{"UUID":5606593946181256124,"Tag":"PlayerSpawn3","Transform":{"Position":[3.5,-1.0,0.1],"Rotation":0.0,"Scale":[1.0,1.0]}},{"UUID":5639427727857990713,"Tag":"PlayerSpawn2","Transform":{"Position":[1.0,-1.0,0.1],"Rotation":0.0,"Scale":[1.0,1.0]}},{"UUID":10876946392408045961,"Tag":"PlayerSpawn1","Transform":{"Position":[-1.5,-1.0,0.1],"Rotation":0.0,"Scale":[1.0,1.0]}},{"UUID":9378735205985644248,"Tag":"PlayerSpawn0","Transform":{"Position":[-4.0,-1.0,0.1],"Rotation":0.0,"Scale":[1.0,1.0]}}]},{"UUID":3865364201745650504,"Tag":"Terrain","Transform":{"Position":[3.72639,11.69317,0.0],"Rotation":0.0,"Scale":[1.0,1.0]},"Entities":[{"UUID":12239762916182585917,"Tag":"Block","Transform":{"Position":[43.8861,-4.55849,0.061],"Rotation":0.0,"Scale":[50.0,3.0]},"ResizableSprite":{"Width":50,"Height":3,"TileScale":1.0,"Edges":255,"Offset":[0,0],"PatternSize":[3,3],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9900000095367432,0.8399999737739563],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":1.0,"IsSensor":false,"AttachToParent":false}},{"UUID":2747093060169507116,"Tag":"Block","Transform":{"Position":[9.94472,-14.58601,0.069],"Rotation":-20.0,"Scale":[4.92,2.49]},"ResizableSprite":{"Width":5,"Height":3,"TileScale":1.0,"Edges":52,"Offset":[0,0],"PatternSize":[3,3],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9900000095367432,0.9100000262260437],"Offset":[0.0,-0.07000000029802322],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":1.0,"IsSensor":false,"AttachToParent":false}},{"UUID":8834413499849454206,"Tag":"Block","Transform":{"Position":[-7.5196,-14.66566,0.073],"Rotation":35.8,"Scale":[3.0,3.0]},"ResizableSprite":{"Width":3,"Height":3,"TileScale":1.0,"Edges":52,"Offset":[0,0],"PatternSize":[3,3],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.8999999761581421],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":1.0,"IsSensor":false,"AttachToParent":false}},{"UUID":12751457892492321817,"Tag":"Block","Transform":{"Position":[53.11548,-10.08875,0.062],"Rotation":-31.0,"Scale":[2.04,11.28]},"ResizableSprite":{"Width":3,"Height":12,"TileScale":1.0,"Edges":99,"Offset":[0,0],"PatternSize":[3,3],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.9599999785423279],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":1.0,"IsSensor":false,"AttachToParent":false}},{"UUID":11749438385344095746,"Tag":"Block","Transform":{"Position":[0.42061,-14.06144,0.068],"Rotation":0.0,"Scale":[15.45,3.0]},"ResizableSprite":{"Width":16,"Height":3,"TileScale":1.0,"Edges":53,"Offset":[0,0],"PatternSize":[3,3],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9769999980926514,0.8700000047683716],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":1.0,"IsSensor":false,"AttachToParent":false}},{"UUID":11103003308206865619,"Tag":"Block","Transform":{"Position":[-10.79817,-4.74154,0.064],"Rotation":-29.0,"Scale":[5.19,1.12]},"ResizableSprite":{"Width":6,"Height":2,"TileScale":1.0,"Edges":255,"Offset":[0,0],"PatternSize":[3,3],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.5600000023841858],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":1.0,"IsSensor":false,"AttachToParent":false}},{"UUID":998885226346331882,"Tag":"Block","Transform":{"Position":[2.01067,-15.69318,0.061],"Rotation":0.0,"Scale":[100.0,3.0]},"ResizableSprite":{"Width":100,"Height":3,"TileScale":1.0,"Edges":255,"Offset":[0,0],"PatternSize":[3,3],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9900000095367432,0.8299999833106995],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":1.0,"IsSensor":false,"AttachToParent":false}}]},{"UUID":9698928837583253840,"Tag":"Platforms","Transform":{"Position":[31.46098,3.58408,0.0],"Rotation":0.0,"Scale":[1.0,1.0]},"Entities":[{"UUID":3019478765224490013,"Tag":"GrassPlatform","Transform":{"Position":[-16.11882,3.79151,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":5619162544135626808,"Tag":"GrassPlatform","Transform":{"Position":[-11.75533,4.10584,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":6044103527907771447,"Tag":"GrassPlatform","Transform":{"Position":[-21.27245,2.81078,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":15021560590143316854,"Tag":"GrassPlatform","Transform":{"Position":[-17.8088,0.92332,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":18264804407323187763,"Tag":"GrassPlatform","Transform":{"Position":[-12.00176,-0.58319,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":1954592331062449310,"Tag":"GrassPlatform","Transform":{"Position":[-15.67896,-2.18107,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":7016088491015288390,"Tag":"GrassPlatform","Transform":{"Position":[11.87519,-2.66605,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":203460064096137071,"Tag":"IcePlatform","Transform":{"Position":[6.59077,-2.68956,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,0],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":12477094058039218028,"Tag":"IcePlatform","Transform":{"Position":[0.90903,-2.72419,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,0],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":18247621261790862788,"Tag":"RedPlatform","Transform":{"Position":[-4.73871,-2.68067,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"Network":{"SyncMethod":"None","CullDistance":20.0,"ReconcileThreshold":0.5,"ReconcileMaxTime":0.5,"ReconcileCooldownTime":1.0},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,1],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false},"Scripts":[{"ClassName":"RedPlatform","Fields":[{"FieldName":"m_VanishAfter","Value":0.33000001311302185},{"FieldName":"m_VanishTime","Value":1.0}]}]},{"UUID":6366102341864812948,"Tag":"RedPlatform","Transform":{"Position":[-9.94308,-2.68659,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"Network":{"SyncMethod":"None","CullDistance":20.0,"ReconcileThreshold":0.5,"ReconcileMaxTime":0.5,"ReconcileCooldownTime":1.0},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,1],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false},"Scripts":[{"ClassName":"RedPlatform","Fields":[{"FieldName":"m_VanishAfter","Value":0.33000001311302185},{"FieldName":"m_VanishTime","Value":1.0}]}]},{"UUID":3729653305056612566,"Tag":"GrassPlatform","Transform":{"Position":[-20.68505,-2.76374,0.0],"Rotation":0.0,"Scale":[3.0,1.0]},"ResizableSprite":{"Width":3,"Height":1,"TileScale":1.0,"Edges":255,"Offset":[3,2],"PatternSize":[3,1],"Color":[1.0,1.0,1.0,1.0],"Spritesheet":"level-sheet.png"},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[0.9399999976158142,0.30000001192092896],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}}]},{"UUID":2443731468553217714,"Tag":"TestFrame2","Transform":{"Position":[-20.55876,6.22621,0.0],"Rotation":0.0,"Scale":[1.0,1.0]},"Scripts":[{"ClassName":"TestFrame2Script","Fields":[{"FieldName":"m_Interval","Value":1.0}]}],"Entities":[{"UUID":11201703649892254878,"Tag":"BallGroup","Transform":{"Position":[0.0,0.0,0.0],"Rotation":0.0,"Scale":[1.0,1.0]}},{"UUID":9936168011819296364,"Tag":"BallDespawn","Transform":{"Position":[1.34447,-5.81193,0.102],"Rotation":0.0,"Scale":[2.5,1.0]},"Sprite":{"Color":[0.8961,0.3181,0.3181,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,0.10000000149011612],"Offset":[0.0,-0.30000001192092896],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":true,"AttachToParent":false}},{"UUID":9674703665563560024,"Tag":"BallSpawn","Transform":{"Position":[-0.6165,6.9997,0.102],"Rotation":0.0,"Scale":[2.5,1.0]},"Sprite":{"Color":[0.33311,0.8961,0.3181,1.0]}},{"UUID":516969445946965861,"Tag":"Walls","Transform":{"Position":[-0.22003,-1.80913,0.0],"Rotation":0.0,"Scale":[0.2,0.2]},"Entities":[{"UUID":1999092461564697301,"Tag":"Wall","Transform":{"Position":[-0.3994,9.352,0.6],"Rotation":0.0,"Scale":[2.5,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":702020163027759580,"Tag":"Wall","Transform":{"Position":[1.57158,-4.5299,0.6],"Rotation":0.0,"Scale":[2.5,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":14390943701418886849,"Tag":"Wall","Transform":{"Position":[0.84786,8.45552,0.6],"Rotation":90.0,"Scale":[2.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":4657732814744366344,"Tag":"Wall","Transform":{"Position":[0.32121,-3.63078,0.6],"Rotation":90.0,"Scale":[2.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":3776020427959456908,"Tag":"Wall","Transform":{"Position":[-1.65037,8.45125,0.6],"Rotation":90.0,"Scale":[2.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":10729718298861624474,"Tag":"Wall","Transform":{"Position":[2.81856,-3.63167,0.6],"Rotation":90.0,"Scale":[2.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":13916228492680166310,"Tag":"Wall","Transform":{"Position":[1.83152,-0.95243,0.6],"Rotation":-60.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":2433291513548685687,"Tag":"Wall","Transform":{"Position":[-0.66318,-0.95229,0.6],"Rotation":-60.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":16496906275379686212,"Tag":"Wall","Transform":{"Position":[-0.66406,2.4109,0.6],"Rotation":60.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":15836658862585331265,"Tag":"Wall","Transform":{"Position":[1.83211,2.41355,0.6],"Rotation":60.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":9887238503203212220,"Tag":"Wall","Transform":{"Position":[1.83358,5.77761,0.6],"Rotation":-60.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}},{"UUID":3046107879386335463,"Tag":"Wall","Transform":{"Position":[-0.66642,5.77761,0.6],"Rotation":-60.0,"Scale":[4.0,0.2]},"Sprite":{"Color":[1.0,1.0,1.0,1.0]},"Rigidbody":{"Type":0,"FixedRotation":false,"AttachToParent":false},"BoxCollider":{"Size":[1.0,1.0],"Offset":[0.0,0.0],"Friction":0.5,"Restitution":0.0,"RestitutionThreshold":0.5,"Density":0.5,"IsSensor":false,"AttachToParent":false}}]}]}]}
+{
+    "GameModeClass": "MyGameMode",
+    "EnablePhysics": true,
+    "GravityForce": 9.800000190734863,
+    "VelocityIterations": 2,
+    "PositionIterations": 6,
+    "ScreenClearColor": [
+        0.20795752108097076,
+        0.24136096239089966,
+        0.2895752787590027,
+        1.0
+    ],
+    "EnableNetworking": true,
+    "Entities": [
+        {
+            "UUID": 13582146669408713245,
+            "Tag": "TestFrame1",
+            "Transform": {
+                "Position": [
+                    -28.91433,
+                    4.03517,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Scripts": [
+                {
+                    "ClassName": "TestFrame1Script",
+                    "Fields": [
+                        {
+                            "FieldName": "m_BounceForce",
+                            "Value": 15.0
+                        },
+                        {
+                            "FieldName": "m_Interval",
+                            "Value": 0.699999988079071
+                        }
+                    ]
+                }
+            ],
+            "Entities": [
+                {
+                    "UUID": 15614117405774470107,
+                    "Tag": "Balls",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Entities": [
+                        {
+                            "UUID": 17614830312660767629,
+                            "Tag": "Ball",
+                            "Transform": {
+                                "Position": [
+                                    1.16171,
+                                    0.17784,
+                                    0.101
+                                ],
+                                "Rotation": 0.0,
+                                "Scale": [
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Prefab": {
+                                "UUID": 5573556572364565067
+                            }
+                        },
+                        {
+                            "UUID": 1074538694341165919,
+                            "Tag": "Ball",
+                            "Transform": {
+                                "Position": [
+                                    -1.44139,
+                                    -0.31303,
+                                    0.101
+                                ],
+                                "Rotation": 0.0,
+                                "Scale": [
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Prefab": {
+                                "UUID": 5573556572364565067
+                            }
+                        }
+                    ]
+                },
+                {
+                    "UUID": 6127169197043460574,
+                    "Tag": "Walls",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Entities": [
+                        {
+                            "UUID": 3754804193389545973,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    4.28027,
+                                    -0.10884,
+                                    0.0
+                                ],
+                                "Rotation": -5.0,
+                                "Scale": [
+                                    0.2,
+                                    8.0
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 26709526720517021,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    -4.2863,
+                                    -0.10957,
+                                    0.0
+                                ],
+                                "Rotation": 5.0,
+                                "Scale": [
+                                    0.2,
+                                    8.0
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 7836872643327136726,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    0.0,
+                                    3.785,
+                                    0.0
+                                ],
+                                "Rotation": 0.0,
+                                "Scale": [
+                                    9.2,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 3146098707087739411,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    0.0,
+                                    -4.0,
+                                    0.0
+                                ],
+                                "Rotation": 0.0,
+                                "Scale": [
+                                    8.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        }
+                    ]
+                },
+                {
+                    "UUID": 14812721306368090701,
+                    "Tag": "Bouncer",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            -3.0,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            7.7,
+                            0.2
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.5,
+                        "ReconcileMaxTime": 0.5,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": true,
+                        "AttachToParent": false
+                    },
+                    "Entities": [
+                        {
+                            "UUID": 14803881372006151903,
+                            "Tag": "BouncerPart1",
+                            "Transform": {
+                                "Position": [
+                                    -1.906,
+                                    0.0,
+                                    0.0
+                                ],
+                                "Rotation": 15.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    0.50588,
+                                    0.71373,
+                                    0.53725,
+                                    1.0
+                                ]
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": true
+                            }
+                        },
+                        {
+                            "UUID": 10684141423603376829,
+                            "Tag": "BouncerPart2",
+                            "Transform": {
+                                "Position": [
+                                    1.906,
+                                    0.0,
+                                    0.0
+                                ],
+                                "Rotation": -15.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    0.50402,
+                                    0.71429,
+                                    0.53679,
+                                    1.0
+                                ]
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "UUID": 8829610755632904901,
+            "Tag": "Box Pyramid",
+            "Transform": {
+                "Position": [
+                    28.79095,
+                    11.52457,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 11202505462944862882,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            -0.06444,
+                            2.23212,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 1324019083391008307,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            0.72242,
+                            0.69482,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 3420794200158399810,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            -0.84211,
+                            0.70618,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 16033342422020026162,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            1.54776,
+                            -0.83083,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 18174173560790338717,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            -0.0124,
+                            -0.83083,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5726290469398531901,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            2.27567,
+                            -2.3618,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 14020829022695656961,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            -1.56306,
+                            -0.83083,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 6982871279543430064,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            0.75763,
+                            -2.34887,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5964809909853225618,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            -0.77022,
+                            -2.34887,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 11543175051992576698,
+                    "Tag": "Wooden Box",
+                    "Transform": {
+                        "Position": [
+                            -2.29265,
+                            -2.35953,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.5,
+                            1.5
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.02500000037252903,
+                        "ReconcileMaxTime": 0.02500000037252903,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "Sprite": {
+                        "Texture": "box.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            0.92641,
+                            0.89214,
+                            0.54943,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.800000011920929,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 1074232079100383678,
+            "Tag": "Spawn Points",
+            "Transform": {
+                "Position": [
+                    3.76592,
+                    2.18079,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 5606593946181256124,
+                    "Tag": "PlayerSpawn3",
+                    "Transform": {
+                        "Position": [
+                            3.5,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 5639427727857990713,
+                    "Tag": "PlayerSpawn2",
+                    "Transform": {
+                        "Position": [
+                            1.0,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 10876946392408045961,
+                    "Tag": "PlayerSpawn1",
+                    "Transform": {
+                        "Position": [
+                            -1.5,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 9378735205985644248,
+                    "Tag": "PlayerSpawn0",
+                    "Transform": {
+                        "Position": [
+                            -4.0,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 3865364201745650504,
+            "Tag": "Terrain",
+            "Transform": {
+                "Position": [
+                    3.72639,
+                    11.69317,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 12239762916182585917,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            43.8861,
+                            -4.55849,
+                            0.061
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            50.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 50,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.8399999737739563
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 2747093060169507116,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            9.94472,
+                            -14.58601,
+                            0.069
+                        ],
+                        "Rotation": -20.0,
+                        "Scale": [
+                            4.92,
+                            2.49
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 5,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 52,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.9100000262260437
+                        ],
+                        "Offset": [
+                            0.0,
+                            -0.07000000029802322
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 8834413499849454206,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            -7.5196,
+                            -14.66566,
+                            0.073
+                        ],
+                        "Rotation": 35.8,
+                        "Scale": [
+                            3.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 52,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.8999999761581421
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 12751457892492321817,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            53.11548,
+                            -10.08875,
+                            0.062
+                        ],
+                        "Rotation": -31.0,
+                        "Scale": [
+                            2.04,
+                            11.28
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 12,
+                        "TileScale": 1.0,
+                        "Edges": 99,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.9599999785423279
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 11749438385344095746,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            0.42061,
+                            -14.06144,
+                            0.068
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            15.45,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 16,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 53,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9769999980926514,
+                            0.8700000047683716
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 11103003308206865619,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            -10.79817,
+                            -4.74154,
+                            0.064
+                        ],
+                        "Rotation": -29.0,
+                        "Scale": [
+                            5.19,
+                            1.12
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 6,
+                        "Height": 2,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.5600000023841858
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 998885226346331882,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            2.01067,
+                            -15.69318,
+                            0.061
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            100.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 100,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.8299999833106995
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 9698928837583253840,
+            "Tag": "Platforms",
+            "Transform": {
+                "Position": [
+                    31.46098,
+                    3.58408,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 3019478765224490013,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -16.11882,
+                            3.79151,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5619162544135626808,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -11.75533,
+                            4.10584,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 6044103527907771447,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -21.27245,
+                            2.81078,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 15021560590143316854,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -17.8088,
+                            0.92332,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 18264804407323187763,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -12.00176,
+                            -0.58319,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 1954592331062449310,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -15.67896,
+                            -2.18107,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 7016088491015288390,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            11.87519,
+                            -2.66605,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 203460064096137071,
+                    "Tag": "IcePlatform",
+                    "Transform": {
+                        "Position": [
+                            6.59077,
+                            -2.68956,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 12477094058039218028,
+                    "Tag": "IcePlatform",
+                    "Transform": {
+                        "Position": [
+                            0.90903,
+                            -2.72419,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 18247621261790862788,
+                    "Tag": "RedPlatform",
+                    "Transform": {
+                        "Position": [
+                            -4.73871,
+                            -2.68067,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "None",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.5,
+                        "ReconcileMaxTime": 0.5,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            1
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "RedPlatform",
+                            "Fields": [
+                                {
+                                    "FieldName": "m_VanishAfter",
+                                    "Value": 0.33000001311302185
+                                },
+                                {
+                                    "FieldName": "m_VanishTime",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "UUID": 6366102341864812948,
+                    "Tag": "RedPlatform",
+                    "Transform": {
+                        "Position": [
+                            -9.94308,
+                            -2.68659,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "None",
+                        "CullDistance": 20.0,
+                        "ReconcileThreshold": 0.5,
+                        "ReconcileMaxTime": 0.5,
+                        "ReconcileCooldownTime": 1.0
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            1
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "RedPlatform",
+                            "Fields": [
+                                {
+                                    "FieldName": "m_VanishAfter",
+                                    "Value": 0.33000001311302185
+                                },
+                                {
+                                    "FieldName": "m_VanishTime",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "UUID": 3729653305056612566,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -20.68505,
+                            -2.76374,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 2443731468553217714,
+            "Tag": "TestFrame2",
+            "Transform": {
+                "Position": [
+                    -20.55876,
+                    6.22621,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Scripts": [
+                {
+                    "ClassName": "TestFrame2Script",
+                    "Fields": [
+                        {
+                            "FieldName": "m_Interval",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Entities": [
+                {
+                    "UUID": 11201703649892254878,
+                    "Tag": "BallGroup",
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 9936168011819296364,
+                    "Tag": "BallDespawn",
+                    "Transform": {
+                        "Position": [
+                            1.34447,
+                            -5.81193,
+                            0.102
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            2.5,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            0.8961,
+                            0.3181,
+                            0.3181,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            0.10000000149011612
+                        ],
+                        "Offset": [
+                            0.0,
+                            -0.30000001192092896
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": true,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 9674703665563560024,
+                    "Tag": "BallSpawn",
+                    "Transform": {
+                        "Position": [
+                            -0.6165,
+                            6.9997,
+                            0.102
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            2.5,
+                            1.0
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            0.33311,
+                            0.8961,
+                            0.3181,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 516969445946965861,
+                    "Tag": "Walls",
+                    "Transform": {
+                        "Position": [
+                            -0.22003,
+                            -1.80913,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            0.2,
+                            0.2
+                        ]
+                    },
+                    "Entities": [
+                        {
+                            "UUID": 1999092461564697301,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    -0.3994,
+                                    9.352,
+                                    0.6
+                                ],
+                                "Rotation": 0.0,
+                                "Scale": [
+                                    2.5,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 702020163027759580,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    1.57158,
+                                    -4.5299,
+                                    0.6
+                                ],
+                                "Rotation": 0.0,
+                                "Scale": [
+                                    2.5,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 14390943701418886849,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    0.84786,
+                                    8.45552,
+                                    0.6
+                                ],
+                                "Rotation": 90.0,
+                                "Scale": [
+                                    2.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 4657732814744366344,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    0.32121,
+                                    -3.63078,
+                                    0.6
+                                ],
+                                "Rotation": 90.0,
+                                "Scale": [
+                                    2.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 3776020427959456908,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    -1.65037,
+                                    8.45125,
+                                    0.6
+                                ],
+                                "Rotation": 90.0,
+                                "Scale": [
+                                    2.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 10729718298861624474,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    2.81856,
+                                    -3.63167,
+                                    0.6
+                                ],
+                                "Rotation": 90.0,
+                                "Scale": [
+                                    2.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 13916228492680166310,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    1.83152,
+                                    -0.95243,
+                                    0.6
+                                ],
+                                "Rotation": -60.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 2433291513548685687,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    -0.66318,
+                                    -0.95229,
+                                    0.6
+                                ],
+                                "Rotation": -60.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 16496906275379686212,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    -0.66406,
+                                    2.4109,
+                                    0.6
+                                ],
+                                "Rotation": 60.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 15836658862585331265,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    1.83211,
+                                    2.41355,
+                                    0.6
+                                ],
+                                "Rotation": 60.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 9887238503203212220,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    1.83358,
+                                    5.77761,
+                                    0.6
+                                ],
+                                "Rotation": -60.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        },
+                        {
+                            "UUID": 3046107879386335463,
+                            "Tag": "Wall",
+                            "Transform": {
+                                "Position": [
+                                    -0.66642,
+                                    5.77761,
+                                    0.6
+                                ],
+                                "Rotation": -60.0,
+                                "Scale": [
+                                    4.0,
+                                    0.2
+                                ]
+                            },
+                            "Sprite": {
+                                "Color": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rigidbody": {
+                                "Type": 0,
+                                "FixedRotation": false,
+                                "AttachToParent": false
+                            },
+                            "BoxCollider": {
+                                "Size": [
+                                    1.0,
+                                    1.0
+                                ],
+                                "Offset": [
+                                    0.0,
+                                    0.0
+                                ],
+                                "Friction": 0.5,
+                                "Restitution": 0.0,
+                                "RestitutionThreshold": 0.5,
+                                "Density": 0.5,
+                                "IsSensor": false,
+                                "AttachToParent": false
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
