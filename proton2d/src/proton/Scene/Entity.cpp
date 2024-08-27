@@ -131,6 +131,12 @@ namespace proton
 		return false;
 	}
 
+	Entity Entity::GetParent() const
+	{
+		auto& rc = GetComponent<RelationshipComponent>();
+		return Entity{ rc.Parent, m_Scene };
+	}
+
 	Entity Entity::FindChildByTag(const std::string& name)
 	{
 		auto& rc = GetComponent<RelationshipComponent>();

@@ -10,6 +10,7 @@
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/PrefabManager.h"
 
 #include <Crc32.h>
 
@@ -238,13 +239,14 @@ namespace proton {
 					}
 
 					// Call notify function (if defined)
-					if (field.NotifyFunction)
-						field.NotifyFunction(&entity);
+					if (field.NotifyFunction != nullptr)
+						field.NotifyFunction();
 				}
 
 				if (!success)
 					break;
 			}
+			net.WasReplicated = true;
 		}
 	}
 
@@ -259,15 +261,49 @@ namespace proton {
 		for (uint32_t i = 0; i < header.EntityCount; i++)
 		{
 			MessageEntitySpawn::PayloadItem item;
-			stream.ReadString(item.EntityJsonData);
+			uint64_t streamStart = stream.GetStreamPosition();
+			stream.ReadRaw(item);
 
-			json jsonParsed = json::parse(item.EntityJsonData);
+			if (scene->FindByID(item.EntityUUID))
+			{
+				PT_CORE_ERROR("Entity {} already exists", item.EntityUUID);
+				stream.SetStreamPosition(streamStart + item.PayloadSize);
+				continue;
+			}
 
-			if (scene->FindByID((UUID)jsonParsed.at("UUID")))
-				break;
+			Entity entity;
 
-			SceneSerializer serializer(scene);
-			Entity entity = serializer.DeserializeEntity(jsonParsed);
+			if (item.PrefabUUID)
+			{
+				entity = PrefabManager::Spawn(scene, item.PrefabUUID, item.EntityUUID);
+			}
+			else
+			{
+				std::string jsonEntity;
+				stream.ReadString(jsonEntity);
+				SceneSerializer serializer(scene);
+				entity = serializer.DeserializeEntity(json::parse(jsonEntity));
+			}
+
+			if (item.ParentUUID)
+			{
+				if (Entity parent = scene->FindByID(item.ParentUUID))
+				{
+					parent.AddChildEntity(entity);
+				}
+				else
+				{
+					PT_CORE_ERROR("Could not find parent entity {} for a spawned entity {}", item.ParentUUID, item.EntityUUID);
+				}
+			}
+			
+			auto& net = entity.GetComponent<NetworkComponent>();
+			bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
+			net.NetTransform.LastAuthoritativeTransform.Position = item.Position;
+			if (hasRigidbodySimulated)
+				entity.SetWorldPosition(item.Position);
+			else
+				entity.SetLocalPosition(item.Position);
 		}
 	}
 
@@ -340,6 +376,42 @@ namespace proton {
 		sceneData.DespawnedEntityQueue.push(entityUUID);
 	}
 
+	static void Server_WriteSpawnedEntityPayloadItem(NetworkStreamWriter& stream, Entity entity)
+	{
+		MessageEntitySpawn::PayloadItem item;
+		uint64_t streamStart = stream.GetStreamPosition();
+		stream.SkipBytes(sizeof(item));
+
+		auto& net = entity.GetComponent<NetworkComponent>();
+
+		item.EntityUUID = entity.GetUUID();
+		bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
+		auto& transform = entity.GetTransform();
+		auto& position = hasRigidbodySimulated ? transform.WorldPosition : transform.LocalPosition;
+		item.Position = position;
+
+		if (Entity parent = entity.GetParent())
+		{
+			item.ParentUUID = parent.GetUUID();
+		}
+
+		if (entity.HasComponent<PrefabComponent>())
+		{
+			auto& pc = entity.GetComponent<PrefabComponent>();
+			item.PrefabUUID = pc.PrefabUUID;
+		}
+		else
+		{
+			SceneSerializer serializer(entity.GetScene());
+			std::string entityJson = serializer.SerializeEntityToString(entity);
+			stream.WriteString(entityJson);
+		}
+
+		item.PayloadSize = stream.GetStreamPosition() - streamStart;
+
+		stream.WriteRawAt(streamStart, item);
+	}
+
 	void NetReplicator::Server_ProcessSpawnedEntityQueue(Scene* scene)
 	{
 		PROFILE_FUNCTION();
@@ -362,12 +434,10 @@ namespace proton {
 				sceneData.SpawnedEntityQueue.pop();
 				continue;
 			}
+			
+			Server_WriteSpawnedEntityPayloadItem(stream, entity);
 
-			// TODO: Change to PrefabUUID and EntityUUID
-			SceneSerializer serializer(entity.m_Scene, true);
-			stream.WriteString(serializer.SerializeEntityToString(entity));
 			spawned++;
-
 			sceneData.SpawnedEntityQueue.pop();
 			sceneData.SpawnedAll.push_back(uuid);
 		}
@@ -432,11 +502,8 @@ namespace proton {
 
 			for (UUID uuid : spawnedAll)
 			{
-				MessageEntitySpawn::PayloadItem item;
 				Entity entity = scene->FindByID(uuid);
-				SceneSerializer serializer(scene, true);
-				item.EntityJsonData = serializer.SerializeEntityToString(entity);
-				stream.WriteString(item.EntityJsonData);
+				Server_WriteSpawnedEntityPayloadItem(stream, entity);
 			}
 
 			m_Server->SendBufferToClient(clientID, stream.GetBuffer());

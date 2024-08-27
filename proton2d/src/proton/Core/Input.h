@@ -9,8 +9,8 @@ namespace proton {
 	class Input 
 	{
 	public:
-		static bool IsKeyPressed(int keyCode, EntityScript* script = nullptr);
-		static bool IsMouseButtonPressed(MouseCode button, EntityScript* script = nullptr);
+		static bool IsKeyPressed(int keyCode);
+		static bool IsMouseButtonPressed(MouseCode button);
 		static glm::vec2 GetMousePosition();
 	};
 

@@ -1,8 +1,35 @@
 #pragma once
 #include "Proton/Scene/Entity.h"
 #include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Core/KeyCodes.h"
+
+// This macro registers script class inside ScriptFactory.
+// Script class must inherit from EntityScript class.
+#define ENTITY_SCRIPT_CLASS(script_class) \
+	static inline const std::string __ScriptClassName = #script_class; \
+	static inline const bool __RegisteredInFactory = \
+		proton::ScriptFactory::Get().RegisterScript([&](proton::Entity entity) { \
+			return entity.AddScript<script_class>(); \
+		}, #script_class); \
+	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
+
+#define REGISTER_FIELD(type, field) \
+	RegisterField(ScriptFieldType::type, #field, &field, true);
+
+#define REGISTER_FIELD_NO_EDIT(type, field) \
+	RegisterField(ScriptFieldType::type, #field, &field, false);
+
+#define REPLICATED_FIELD(field, ...) \
+	SetReplicatedField(#field, __VA_ARGS__)
+
+#define REPLICATED_DATA(data, ...) \
+	SetReplicatedData(&data, sizeof(data), __VA_ARGS__);
 
 namespace proton {
+
+	// Forward declaration
+	class SceneManager;
+	class NetworkManager;
 
 	// Supported script variable types for Serialization / Editor view.
 	enum class ScriptFieldType { Float, Float2, Float3, Float4, Int, Int2, Int3, Int4, Bool };
@@ -11,18 +38,13 @@ namespace proton {
 	{
 		ScriptFieldType Type = ScriptFieldType::Float;
 		void* InstanceFieldValue = nullptr;
-		bool NetworkSerialize = false;
 		bool ShowInEditor = true;
 	};
 
-	// Forward declaration
-	class SceneManager;
-	class NetworkManager;
-
 	// Base class for entity scripts.
-	// - Use ENTITY_SCRIPT_CLASS in derived classes for registration.
+	// - Use ENTITY_SCRIPT_CLASS in derived classes for script class registration.
 	// - Implement OnCreate, OnDestroy, OnUpdate for entity behavior.
-	// - Use OnRegisterFields to register fields (variables) for Serialization / Editor view.
+	// - Use OnRegisterFields method to register fields (variables) for serialization / editor view.
 	class EntityScript : public Entity
 	{
 	public:
@@ -33,9 +55,9 @@ namespace proton {
 		virtual void OnUpdate(float ts) {}
 		virtual void OnPhysicsUpdate(float ts) {}
 
-		// Register your fields (variables) here. Use PT_REGISTER_FIELD macro or RegisterField function.
-		// Supported variable types are listed in ScriptFieldType enum.
-		// Use PT_REPLICATE_FIELD or PT_REPLICATE_DATA here.
+		// Register your fields (variables) in this method.
+		// Supported variable types are contained in ScriptFieldType enum.
+		// Call REGISTER_FIELD, REPLICATED_FIELD, REPLICATED_DATA macros here.
 		virtual void OnRegisterFields() {}
 
 		// Draw your custom ImGui Editor interface here.
@@ -45,21 +67,25 @@ namespace proton {
 
 		// Use glm::value_ptr for FloatX and IntX field types.
 		// Supported variable types are listed inside ScriptFieldType enum.
-		void RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor = true, bool networkSerialize = false);
+		void RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor = true);
 
+		// Scene
+		SceneManager* GetSceneManager() const;
+		
+		// Physics
 		void SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName);
 		bool CheckSensor(uint32_t sensorType) const;
 		uint32_t GetSensorContactCount(uint32_t sensorType) const;
 
-		SceneManager* GetSceneManager() const;
-
-		virtual const std::string& GetScriptClassName() = 0;
+		// Input
+		bool IsKeyPressed(KeyCode key) const;
+		bool IsMouseButtonPressed(MouseCode button) const;
 		
 		// Networking
 		NetworkManager* GetNetworkManager() const;
 
-		void SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction = nullptr);
-		void SetReplicatedData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction = nullptr);
+		void SetReplicatedField(const std::string& name, const std::function<void()>& notifyFunction = nullptr);
+		void SetReplicatedData(void* data, size_t size, const std::function<void()>& notifyFunction = nullptr);
 
 		bool HasAuthority() const;
 		bool IsRunningServer() const;
@@ -67,13 +93,14 @@ namespace proton {
 
 		// Other
 		static const size_t GetFieldSize(ScriptFieldType type);
+		virtual const std::string& GetScriptClassName() = 0; // Defined by ENTITY_SCRIPT_CLASS macro
 
 	private:
 		void SetFieldValueData(const std::string& fieldName, void* value);
 		
 	private:
-		bool m_Stopped = false;
 		bool m_Initialized = false;
+		bool m_FailedToInitialize = false;
 
 		std::unordered_map<std::string, ScriptField> m_ScriptFields;
 		std::unordered_map<uint32_t, uint32_t*> m_PhysicsSensorMap;
@@ -86,25 +113,3 @@ namespace proton {
 		friend class InspectorPanel;
 	};
 }
-
-// This macro registers script class inside ScriptFactory.
-// Script class must inherit from EntityScript class.
-#define ENTITY_SCRIPT_CLASS(script_class) \
-	static inline const std::string __ScriptClassName = #script_class; \
-	static inline const bool __RegisteredInFactory = \
-		proton::ScriptFactory::Get().RegisterScript([&](proton::Entity entity) { \
-			return entity.AddScript<script_class>(); \
-		}, #script_class); \
-	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
-
-#define REGISTER_FIELD(type, field, ...) \
-	RegisterField(ScriptFieldType::type, #field, &field, true, true);
-
-#define REGISTER_FIELD_NO_NET_SERIALIZE(type, field, ...) \
-	RegisterField(ScriptFieldType::type, #field, &field, __VA_ARGS__);
-
-#define REPLICATED_FIELD(field, ...) \
-	SetReplicatedField(#field, __VA_ARGS__)
-
-#define REPLICATED_DATA(data, ...) \
-	SetReplicatedData(&data, sizeof(data), __VA_ARGS__);

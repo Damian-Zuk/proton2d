@@ -28,11 +28,6 @@ namespace proton {
 		std::string Tag;
 	};
 
-	struct MetadataComponent
-	{
-		// TODO: Implement
-	};
-
 	struct TransformComponent
 	{
 		glm::vec3 WorldPosition { 0.0f, 0.0f, 0.0f };
@@ -41,10 +36,9 @@ namespace proton {
 		glm::vec2 Scale { 1.0f, 1.0f };
 	};
 
-	struct VelocityComponent
+	struct PrefabComponent
 	{
-		glm::vec2 LinearVelocity { 0.0f };
-		float AngularVelocity = 0.0f;
+		UUID PrefabUUID;
 	};
 
 	struct RelationshipComponent
@@ -164,13 +158,15 @@ namespace proton {
 			{
 				void* Data = nullptr;
 				size_t Size = 0;
-				std::function<void(Entity*)> NotifyFunction;
+				std::function<void()> NotifyFunction;
 				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
 			};
 			EntityScript* Script = nullptr;
 			std::vector<ReplicatedField> ReplicatedFields;
 		};
 		std::vector<ReplicatedScript> ReplicatedScripts;
+
+		bool WasReplicated = false;
 	};
 
 }

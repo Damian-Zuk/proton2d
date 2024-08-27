@@ -28,6 +28,8 @@
 
 #include "Proton/Network/NetworkManager.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #ifdef PT_EDITOR
 #include <imgui/imgui.h>
 #endif

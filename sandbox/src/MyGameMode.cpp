@@ -35,7 +35,7 @@ bool MyGameMode::OnCreate()
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
 		m_LocalPlayer = SpawnPrefab("Player").As<Player>();
 		m_LocalPlayer->SetWorldPosition(spawnTransform.WorldPosition);
-		m_LocalPlayer->GetColor() = COLOR_RED;
+		m_LocalPlayer->SetPlayerColor(COLOR_RED);
 	}
 	return true;
 }
@@ -90,9 +90,8 @@ void MyGameMode::Server_OnClientConnected(ClientID clientID)
 	player->SetWorldPosition(spawnTransform.WorldPosition);
 
 	// Set player color
-	static uint32_t colorIndex = 0;
-	auto& playerColor = player->GetColor();
-	playerColor = PlayerColors[colorIndex];
+	static uint32_t colorIndex = 1;
+	player->SetPlayerColor(PlayerColors[colorIndex]);
 	colorIndex = (colorIndex + 1) % 10;
 	
 	m_RemotePlayers[clientID] = player;

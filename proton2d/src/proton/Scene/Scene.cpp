@@ -72,7 +72,7 @@ namespace proton {
 	};
 
 	using ComponentsToCopy =
-		ComponentGroup<TransformComponent, CameraComponent, VelocityComponent,
+		ComponentGroup<TransformComponent, PrefabComponent, CameraComponent,
 		SpriteComponent, CircleRendererComponent, ResizableSpriteComponent, TextComponent,
 		RigidbodyComponent, BoxColliderComponent, CircleColliderComponent,
 		NetworkComponent>;
@@ -536,7 +536,7 @@ namespace proton {
 		{
 			if (m_EnableNetworking && !m_NetworkInitialized && m_GameInstance->m_NetworkManager->IsNetModeClient())
 			{
-				// Do not update simulate scene until first replication update
+				// Do not update simulation until first replication update
 				CalculateWorldPositions();
 				CachePrimaryCameraPosition();
 				CacheCursorWorldPosition();
@@ -551,19 +551,13 @@ namespace proton {
 		{
 			m_PhysicsWorld->ProcessCreatedEntities();
 			m_PhysicsTimer += ts;
-			m_PhysicsTicks = 0;
 			
 			while (m_PhysicsTimer >= m_PhysicsTimestep)
 			{
+				UpdateScripts(m_PhysicsTimestep, true);
 				m_PhysicsWorld->Update(m_PhysicsTimestep);
 				m_PhysicsTimer -= m_PhysicsTimestep;
-				m_PhysicsTicks++;
 			}
-
-			//if (m_PhysicsTick)
-			//{
-			//	m_PhysicsWorld->Update(m_PhysicsTimer);
-			//}
 		}
 
 		CalculateWorldPositions();
@@ -576,12 +570,6 @@ namespace proton {
 				m_GameMode->OnUpdate(ts);
 
 			UpdateScripts(ts);
-
-			//if (m_PhysicsTick)
-			//{
-			//	//PT_CORE_TRACE("timer: {}, timestep: {}", m_PhysicsTimer, m_PhysicsTimestep);
-			//	m_PhysicsTimer = 0.0f;
-			//}
 
 			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
@@ -596,7 +584,7 @@ namespace proton {
 		RenderUI();
 	}
 
-	void Scene::UpdateScripts(float ts)
+	void Scene::UpdateScripts(float ts, bool updatePhysics)
 	{
 		PROFILE_FUNCTION();
 
@@ -613,23 +601,26 @@ namespace proton {
 
 				if (!instance->m_Initialized)
 				{
-					instance->m_Initialized = true;
+					bool isNetworked = m_Registry.any_of<NetworkComponent>(entity);
+					if (isNetworked && m_GameInstance->GetNetworkManager()->IsNetModeClient())
+					{
+						auto& net = m_Registry.get<NetworkComponent>(entity);
+						if (!net.WasReplicated)
+							continue; // wait with script initialization 
+					}
 
+					instance->m_Initialized = true;
 					if (!instance->OnCreate())
-						instance->m_Stopped = true;
+						instance->m_FailedToInitialize = true;
 				}
 				
-				if (instance->m_Stopped)
+				if (instance->m_FailedToInitialize)
 					continue;
 
-				if (m_PhysicsTicks > 0 && m_Registry.any_of<RigidbodyComponent>(entity)
-					&& m_Registry.get<RigidbodyComponent>(entity).RuntimeBody)
-				{
-					for (uint16_t i = 0; i < m_PhysicsTicks; i++)
-						instance->OnPhysicsUpdate(m_PhysicsTimestep);
-				}
-
-				instance->OnUpdate(ts);
+				if (updatePhysics)
+					instance->OnPhysicsUpdate(ts);
+				else
+					instance->OnUpdate(ts);
 			}
 		}
 	}
@@ -966,7 +957,7 @@ namespace proton {
 	template<typename TComponent>
 	void Scene::OnComponentAdded(Entity entity, TComponent& component)
 	{
-		static_assert(false); // missing OnComponentAdded<T> definition
+		static_assert(sizeof(T) == 0); // missing OnComponentAdded<T> definition
 	}
 
 	template<>
@@ -980,22 +971,17 @@ namespace proton {
 	}
 
 	template<>
-	void Scene::OnComponentAdded<MetadataComponent>(Entity entity, MetadataComponent& component)
-	{
-	}
-
-	template<>
 	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<VelocityComponent>(Entity entity, VelocityComponent& component)
+	void Scene::OnComponentAdded<RelationshipComponent>(Entity entity, RelationshipComponent& component)
 	{
 	}
-
+	
 	template<>
-	void Scene::OnComponentAdded<RelationshipComponent>(Entity entity, RelationshipComponent& component)
+	void Scene::OnComponentAdded<PrefabComponent>(Entity entity, PrefabComponent& component)
 	{
 	}
 
@@ -1053,9 +1039,6 @@ namespace proton {
 
 		if (m_State == SceneState::Play && m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->m_EntitiesToInitialize.push_back(entity);
-
-		if (!entity.HasComponent<VelocityComponent>())
-			entity.AddComponent<VelocityComponent>();
 	}
 
 	template<>

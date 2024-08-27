@@ -1,6 +1,7 @@
 #include "ptpch.h"
 #include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Scene/Scene.h"
+#include "Proton/Scene/PrefabManager.h"
 #include "Proton/Core/AssetManager.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scripting/ScriptFactory.h"
@@ -8,8 +9,6 @@
 #include "Proton/Utils/Utils.h"
 
 #include <fstream>
-
-#define PROTON_SERIALIZER_INDENT_JSON 0
 
 namespace proton {
 
@@ -25,8 +24,8 @@ namespace proton {
 		return std::round((double)f * 100000) / 100000;
 	}
 
-	SceneSerializer::SceneSerializer(Scene* scene, bool isNetworkSerializer)
-		: m_Scene(scene), m_IsNetworkSerializer(isNetworkSerializer)
+	SceneSerializer::SceneSerializer(Scene* scene)
+		: m_Scene(scene)
 	{
 	}
 
@@ -34,7 +33,7 @@ namespace proton {
 	//         Serialize Scene Function
 	// *****************************************
 
-	bool SceneSerializer::Serialize(const std::string& filepath)
+	bool SceneSerializer::SerializeToFile(const std::string& filepath)
 	{
 		std::ofstream out(filepath);
 		out << Serialize();
@@ -66,7 +65,7 @@ namespace proton {
 		for (Entity entity : m_Scene->m_Root)
 			jsonObj["Entities"].push_back(SerializeEntity(entity));
 
-		return jsonObj.dump();
+		return jsonObj.dump(4);
 	}
 
 	// *****************************************
@@ -90,7 +89,7 @@ namespace proton {
 		json& c = jsonObj["ScreenClearColor"];
 		m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
 
-		json& entities = jsonObj["Entities"];
+		const json& entities = jsonObj["Entities"];
 		for (auto it = entities.rbegin(); it != entities.rend(); it++)
 			DeserializeEntity(*it);
 
@@ -115,16 +114,15 @@ namespace proton {
 	//       Serialize Entity Function
 	// *****************************************
 
-	json SceneSerializer::SerializeEntity(Entity entity, bool serializeUUID)
+	json SceneSerializer::SerializeEntity(Entity entity)
 	{
 		json jsonObj;
 
+		bool isPrefab = entity.HasComponent<PrefabComponent>();
+
 		// Serialize IDComponent
-		if (serializeUUID)
-		{
-			auto& uuid = entity.GetUUID();
-			jsonObj["UUID"] = (uint64_t)uuid;
-		}
+		auto& uuid = entity.GetUUID();
+		jsonObj["UUID"] = (uint64_t)uuid;
 
 		// Serialize TagComponent
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -139,6 +137,17 @@ namespace proton {
 			{ "Scale", { round(transform.Scale.x), round(transform.Scale.y) } }
 		};
 
+		if (isPrefab)
+		{
+			auto& pc = entity.GetComponent<PrefabComponent>();
+			jsonObj["Prefab"] = {
+				{ "UUID", (uint64_t)pc.PrefabUUID },
+			};
+
+			if (!IsPrefabSerializer)
+				return jsonObj;
+		}
+
 		// Serialize NetworkComponent
 		if (entity.HasComponent<NetworkComponent>())
 		{
@@ -149,7 +158,7 @@ namespace proton {
 				{ "SyncMethod", NetSyncMethodToString(netTransform.Method) },
 				{ "CullDistance", netTransform.CullDistance, },
 				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
-				{ "ReconcileMaxTime", netTransform.ReconcileThreshold },
+				{ "ReconcileMaxTime", netTransform.ReconcileMaxTime },
 				{ "ReconcileCooldownTime", netTransform.ReconcileCooldownTime },
 			};
 		}
@@ -292,9 +301,6 @@ namespace proton {
 				scriptObj["ClassName"] = scriptClassName;
 				for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
 				{
-					if (m_IsNetworkSerializer && !fieldData.NetworkSerialize)
-						continue;
-
 					json fieldObj;
 					fieldObj["FieldName"] = fieldName;
 
@@ -363,7 +369,7 @@ namespace proton {
 			{
 				Entity child{ current, entity.m_Scene };
 				auto& rc = child.GetComponent<RelationshipComponent>();
-				jsonObj["Entities"].push_back(SerializeEntity(child, serializeUUID));
+				jsonObj["Entities"].push_back(SerializeEntity(child));
 				current = rc.Next;
 			}
 		}
@@ -371,30 +377,63 @@ namespace proton {
 		return jsonObj;
 	}
 
-	std::string SceneSerializer::SerializeEntityToString(Entity entity, bool serializeUUID)
+	std::string SceneSerializer::SerializeEntityToString(Entity entity)
 	{
-		return SerializeEntity(entity, serializeUUID).dump();
+		return SerializeEntity(entity).dump();
 	}
 
 	// *****************************************
 	//       Deserialize Entity Function
 	// *****************************************
 
-	Entity SceneSerializer::DeserializeEntity(json jsonObj, bool deserializeUUID)
+	Entity SceneSerializer::DeserializeEntity(const json& jsonObj, UUID uuid)
 	{
-		Entity entity = deserializeUUID ?
-			m_Scene->CreateEntityWithUUID((uint64_t)jsonObj["UUID"], jsonObj["Tag"]) :
-			m_Scene->CreateEntity(jsonObj["Tag"]);
+		Entity entity;
+		bool isPrefab = jsonObj.contains("Prefab");
+
+		if (IsPrefabSerializer) // PrefabManager::Spawn
+		{
+			if (uuid)
+				entity = m_Scene->CreateEntityWithUUID(uuid, jsonObj["Tag"]);
+			else
+				entity = m_Scene->CreateEntity(jsonObj["Tag"]); // New UUID
+		}
+		else
+		{ 
+			if (isPrefab)
+			{
+				entity = PrefabManager::Spawn(m_Scene, jsonObj["Tag"]);
+				entity.GetComponent<IDComponent>().ID = (uint64_t)jsonObj["UUID"];
+			}
+			else
+			{
+				UUID uuidFromJson;
+				if (jsonObj.contains("UUID"))
+					uuidFromJson = (uint64_t)jsonObj["UUID"];
+				entity = m_Scene->CreateEntityWithUUID(uuidFromJson, jsonObj["Tag"]);
+			}
+		}
 
 		// Deserialize TransformComponent
 		auto& transform = entity.GetComponent<TransformComponent>();
-		json& position = jsonObj["Transform"]["Position"];
-		json& scale    = jsonObj["Transform"]["Scale"];
-		json& rotation = jsonObj["Transform"]["Rotation"];
+		const json& position = jsonObj["Transform"]["Position"];
+		const json& scale    = jsonObj["Transform"]["Scale"];
+		const json& rotation = jsonObj["Transform"]["Rotation"];
 		transform.WorldPosition = { position[0], position[1], position[2] };
 		transform.LocalPosition = { position[0], position[1], position[2] };
 		transform.Scale    = { scale[0], scale[1] };
 		transform.Rotation = rotation;
+
+		// Deserialize PrefabComponent
+		if (isPrefab)
+		{
+			auto& pc = entity.AddComponent<PrefabComponent>();
+			pc.PrefabUUID = (uint64_t)jsonObj["Prefab"]["UUID"];
+
+			if (!IsPrefabSerializer)
+				// Other properties deserialized by PrefabManager::Spawn
+				return entity;
+		}
 
 		// Deserialize NetworkComponent
 		if (jsonObj.contains("Network"))
@@ -422,7 +461,7 @@ namespace proton {
 		// Deserialize SpriteComponent
 		if (jsonObj.contains("Sprite"))
 		{
-			json& sprite = jsonObj["Sprite"];
+			const json& sprite = jsonObj["Sprite"];
 			auto& spriteComponent = entity.AddComponent<SpriteComponent>();
 			
 			if (sprite.contains("Texture"))
@@ -453,14 +492,14 @@ namespace proton {
 					PT_CORE_ERROR("Texture '{}' does not exist!", sprite["Texture"]);
 			}
 			
-			json& color = jsonObj["Sprite"]["Color"];
+			const json& color = jsonObj["Sprite"]["Color"];
 			spriteComponent.Color = { color[0], color[1], color[2], color[3] };
 		}
 
 		// Deserialize ResizableSpriteComponent
 		if (jsonObj.contains("ResizableSprite"))
 		{
-			json& jsonData = jsonObj["ResizableSprite"];
+			const json& jsonData = jsonObj["ResizableSprite"];
 			auto& component = entity.AddComponent<ResizableSpriteComponent>();
 			auto& sprite = component.ResizableSprite;
 			sprite.m_EdgesBitset = jsonData["Edges"];
@@ -484,7 +523,7 @@ namespace proton {
 		// Deserialize CircleRendererComponent
 		if (jsonObj.contains("CircleRenderer"))
 		{
-			json& jsonData = jsonObj["CircleRenderer"];
+			const json& jsonData = jsonObj["CircleRenderer"];
 			auto& component = entity.AddComponent<CircleRendererComponent>();
 			component.Thickness = jsonData["Thickness"];
 			component.Fade = jsonData["Fade"];
@@ -496,7 +535,7 @@ namespace proton {
 		if (jsonObj.contains("Camera"))
 		{
 			auto& camera = entity.AddComponent<CameraComponent>();
-			json& cameraJson = jsonObj["Camera"];
+			const json& cameraJson = jsonObj["Camera"];
 			camera.Camera.SetZoomLevel(cameraJson["ZoomLevel"]);
 			camera.PositionOffset = { cameraJson["PositionOffset"][0], cameraJson["PositionOffset"][1] };
 		}
@@ -505,9 +544,9 @@ namespace proton {
 		if (jsonObj.contains("BoxCollider"))
 		{
 			auto& collider = entity.AddComponent<BoxColliderComponent>();
-			json& boxCollider = jsonObj["BoxCollider"];
-			json& size = boxCollider["Size"];
-			json& offset = boxCollider["Offset"];
+			const json& boxCollider = jsonObj["BoxCollider"];
+			const json& size = boxCollider["Size"];
+			const json& offset = boxCollider["Offset"];
 
 			collider.Size = { size[0], size[1] };
 			collider.Offset = { offset[0], offset[1] };
@@ -525,8 +564,8 @@ namespace proton {
 		if (jsonObj.contains("CircleCollider"))
 		{
 			auto& collider = entity.AddComponent<CircleColliderComponent>();
-			json& circleCollider = jsonObj["CircleCollider"];
-			json& offset = circleCollider["Offset"];
+			const json& circleCollider = jsonObj["CircleCollider"];
+			const json& offset = circleCollider["Offset"];
 
 			collider.Offset = { offset[0], offset[1] };
 			collider.Radius = circleCollider["Radius"];
@@ -544,7 +583,7 @@ namespace proton {
 		if (jsonObj.contains("Text"))
 		{
 			auto& component = entity.AddComponent<TextComponent>();
-			json& jsonText = jsonObj["Text"];
+			const json& jsonText = jsonObj["Text"];
 			
 			component.TextString = jsonText["TextString"];
 			component.Kerning = jsonText["Kerning"];
@@ -560,7 +599,7 @@ namespace proton {
 		if (jsonObj.contains("Rigidbody"))
 		{
 			auto& rb = entity.AddComponent<RigidbodyComponent>();
-			json& jsonRb = jsonObj.at("Rigidbody");
+			const json& jsonRb = jsonObj.at("Rigidbody");
 			rb.Type = jsonRb.at("Type");
 			rb.FixedRotation = jsonRb.at("FixedRotation");
 			
@@ -581,14 +620,14 @@ namespace proton {
 
 				if (scriptJson.contains("Fields"))
 				{
-					json& fields = scriptJson["Fields"];
+					const json& fields = scriptJson["Fields"];
 					for (auto& field : fields)
 					{
 						std::string fieldName = field["FieldName"];
 						if (script->m_ScriptFields.find(fieldName) != script->m_ScriptFields.end())
 						{
 							ScriptField& scriptField = script->m_ScriptFields[fieldName];
-							json& value = field["Value"];
+							const json& value = field["Value"];
 
 							switch (scriptField.Type)
 							{
@@ -631,9 +670,9 @@ namespace proton {
 		// Deserialize child entities
 		if (jsonObj.contains("Entities"))
 		{
-			json& entities = jsonObj["Entities"];
+			const json& entities = jsonObj["Entities"];
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)
-				entity.AddChildEntity(DeserializeEntity(*it, deserializeUUID), false);
+				entity.AddChildEntity(DeserializeEntity(*it), false);
 		}
 
 		return entity;

@@ -50,10 +50,12 @@ namespace proton {
 
 		struct PayloadItem
 		{
-			std::string EntityJsonData;
-			// TODO: change to:
-			// uint64_t PrefabUUID;
-			// uint64_t EntityUUID;
+			uint64_t EntityUUID = 0;
+			uint64_t PrefabUUID = 0;
+			uint64_t ParentUUID = 0;
+			glm::vec2 Position { 0.0f };
+			uint64_t PayloadSize = 0;
+			// If PrefabUUID == 0, then contains serialized Entity as json string
 		};
 	};
 

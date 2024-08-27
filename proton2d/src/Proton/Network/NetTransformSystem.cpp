@@ -52,37 +52,39 @@ namespace proton {
 			// Try to get Box2D rigidbody
 			bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
 			b2Body* rigidbody = hasRigidbodySimulated ? entity.GetRuntimeBody() : nullptr;
-
 			if (hasRigidbodySimulated && !rigidbody)
 			{
 				// Runtime body not created yet (entity has just been spawned)
-				if (replicatedThisFrame)
-				{
-					// Initialize TransformComponent values 
-					SetAuthoritativeTransform(entity, &transform, netTransform, false);
-				}
-				continue; // skip this update tick
+				continue; // Skip this update tick
 			}
 
-			// Handle cull distance - set rigidbody to sleep when far away
-			if (Entity localPlayer = m_NetworkManager->GetLocalPlayerEntity())
+			// Handle cull distance: put rigidbody to sleep when far away
+			if (rigidbody)
 			{
-				auto& localPlayerPos = rigidbody ? localPlayer.GetTransform().WorldPosition : localPlayer.GetTransform().LocalPosition;
-				if (glm::distance(current.Position, { localPlayerPos.x, localPlayerPos.y }) > netTransform.CullDistance)
+				if (Entity localPlayer = m_NetworkManager->GetLocalPlayerEntity())
 				{
-					if (rigidbody && rigidbody->IsAwake())
-						rigidbody->SetAwake(false);
-				}
-				else if (rigidbody && !rigidbody->IsAwake())
-				{
-					rigidbody->SetAwake(true);
+					auto& tc = localPlayer.GetTransform();
+					auto& playerPos = rigidbody ? tc.WorldPosition : tc.LocalPosition;
+					if (glm::distance(current.Position, { playerPos.x, playerPos.y }) > netTransform.CullDistance)
+					{
+						if (rigidbody->IsAwake())
+						{
+							rigidbody->SetAwake(false);
+						}
+					}
+					else if (!rigidbody->IsAwake())
+					{
+						rigidbody->SetAwake(true);
+					}
 				}
 			}
+
 			
 			// NetTransform member references
 			const auto& reconcileThreshold = netTransform.ReconcileThreshold;
 			const auto& reconcileMaxTime = netTransform.ReconcileMaxTime;
 			const auto& reconcileCooldownTime = netTransform.ReconcileCooldownTime;
+			auto& lastTickTransform = netTransform.LastTickTransform;
 			auto& predicted = netTransform.PredictedTransform;
 			auto& interpolationTimer = netTransform.InterpolationTimer;
 			auto& reconcileTimer = netTransform.ReconcileTimer;
@@ -93,7 +95,38 @@ namespace proton {
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::None:
 			{
-				SetAuthoritativeTransform(entity, &transform, netTransform);
+				const auto& replicationFlags = netTransform.ReplicationFlags;
+
+				if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Position))
+				{
+					if (!rigidbody)
+					{
+						entity.SetLocalPosition({ lastAuthoritative.Position.x, lastAuthoritative.Position.y, transform.LocalPosition.z });
+					}
+					else
+					{
+						// Use reconcile logic for rigidbody
+						predicted.Position = { lastAuthoritative.Position.x, lastAuthoritative.Position.y };
+						netTransform.StartReconcile(ReconcileComponents::Position);
+					}
+				}
+				if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Scale))
+				{
+					transform.Scale = { lastAuthoritative.Scale.x, lastAuthoritative.Scale.y };
+				}
+				if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Rotation))
+				{
+					if (!rigidbody)
+					{
+						transform.Rotation = lastAuthoritative.Rotation;
+					}
+					else
+					{
+						// Use reconcile logic for rigidbody
+						predicted.Rotation = lastAuthoritative.Rotation;
+						netTransform.StartReconcile(ReconcileComponents::Rotation);
+					}
+				}
 				break;
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,15 +137,15 @@ namespace proton {
 				const glm::vec2 interpolatedPosition = glm::mix(prevAuthoritative.Position, lastAuthoritative.Position, alpha);
 				const float interpolatedRotation = glm::mix(prevAuthoritative.Rotation, lastAuthoritative.Rotation, alpha);
 				
-				if (rigidbody)
-				{
-					rigidbody->SetTransform({ interpolatedPosition.x, interpolatedPosition.y }, interpolatedRotation * (b2_pi / 180.0f));
-				}
-				else
+				if (!rigidbody)
 				{
 					entity.SetLocalPosition(interpolatedPosition);
 					transform.Scale = glm::mix(prevAuthoritative.Scale, lastAuthoritative.Scale, alpha);
 					transform.Rotation = interpolatedRotation;
+				}
+				else
+				{
+					rigidbody->SetTransform({ interpolatedPosition.x, interpolatedPosition.y }, interpolatedRotation * (b2_pi / 180.0f));
 				}
 				predicted = lastAuthoritative;
 				break;
@@ -165,30 +198,27 @@ namespace proton {
 			case NetTransform::SyncMethod::Prediction:
 			{
 				auto& deltaBuffer = netTransform.DeltaBuffer;
-				auto& lastTickTransform = netTransform.LastTickTransform;
 				
 				// Push current delta and sequence number to the buffer
 				if (m_NetworkManager->IsNetworkTick())
 				{
 					// Calculate this tick delta
 					Transform thisTickDelta = current - lastTickTransform;
-					
-					// Update last tick transform
-					lastTickTransform = current;
 
 					// Ignore delta if reconciling
-					if (netTransform.IsReconciling(ReconcileComponents::Position))
-						thisTickDelta.Position = glm::vec2{ 0.0f, 0.0f };
-
-					if (netTransform.IsReconciling(ReconcileComponents::Scale))
-						thisTickDelta.Scale = glm::vec2{ 0.0f, 0.0f };
-
-					if (netTransform.IsReconciling(ReconcileComponents::Rotation))
-						thisTickDelta.Rotation = 0.0f;
+					//if (netTransform.IsReconciling(ReconcileComponents::Position))
+					//	thisTickDelta.Position = glm::vec2{ 0.0f, 0.0f };
+					//if (netTransform.IsReconciling(ReconcileComponents::Scale))
+					//	thisTickDelta.Scale = glm::vec2{ 0.0f, 0.0f };
+					//if (netTransform.IsReconciling(ReconcileComponents::Rotation))
+					//	thisTickDelta.Rotation = 0.0f;
 					
 					// Increment sequence number, store in deltaBuffer and send current sequence number to server
 					if (thisTickDelta.IsNotZero())
 					{
+						//if (entity.GetTag() == "Ball")
+						//	PT_CORE_TRACE("delta: {}", thisTickDelta.Position);
+
 						netTransform.CurrentSequenceNumber++;
 						deltaBuffer.push_back({ netTransform.CurrentSequenceNumber, thisTickDelta });
 						m_SequenceNumbersToSend.push_back({ entity.GetUUID(), netTransform.CurrentSequenceNumber });
@@ -245,17 +275,21 @@ namespace proton {
 			}
 			// ---------------------------------------------------------------------------------------------------------------------
 
+			// Update last tick transform
+			if (m_NetworkManager->IsNetworkTick() && !replicatedThisFrame)
+				lastTickTransform = current;
+
 			// Handle reconcile max time limit
 			if (reconcileMaxTime > 0.0f && reconcileTimer > reconcileMaxTime)
 				netTransform.StopReconcile(ReconcileComponents::Position);
 
 			// ------------------------------------------ Box2D Rigidbody Reconciliation ------------------------------------------
-			if (rigidbody) // NOTE: (scale not implemented yet)
+			if (rigidbody)
 			{
 				constexpr float positionErrorThreshold = 0.05f;
 				constexpr float rotationErrorThreshold = 1.0f;
 
-				// Reconcile position and rotation (together because of single b2Body::SetTransform function call)
+				// Reconcile position and rotation (single b2Body::SetTransform function call)
 				if (netTransform.IsReconciling(ReconcileComponents::PositionAndRotation))
 				{
 					const float positionError = glm::distance(current.Position, predicted.Position);
@@ -267,6 +301,10 @@ namespace proton {
 						netTransform.StopReconcile(ReconcileComponents::Rotation);
 
 					rigidbody->SetTransform({ predicted.Position.x, predicted.Position.y }, predicted.Rotation * (b2_pi / 180.0f));
+					
+					if (netTransform.Method == NetTransform::SyncMethod::None)
+						rigidbody->SetLinearVelocity({ 0.0f, 0.0f }); // ignore gravity
+					
 					reconcileTimer += ts;
 				}
 				// Reconcile position only
@@ -277,6 +315,10 @@ namespace proton {
 						netTransform.StopReconcile(ReconcileComponents::Position);
 
 					rigidbody->SetTransform({ predicted.Position.x, predicted.Position.y }, rigidbody->GetAngle());
+					
+					if (netTransform.Method == NetTransform::SyncMethod::None)
+						rigidbody->SetLinearVelocity({ 0.0f, 0.0f }); // ignore gravity
+					
 					reconcileTimer += ts;
 				}
 				// Reconcile rotation only
@@ -296,8 +338,7 @@ namespace proton {
 
 				if (netTransform.IsReconciling(ReconcileComponents::Position))
 				{
-					const glm::vec2 predictedPos = glm::mix(current.Position, predicted.Position, alpha);
-					entity.SetLocalPosition(predictedPos);
+					entity.SetLocalPosition(glm::mix(current.Position, predicted.Position, alpha));
 					reconcileTimer += ts;
 
 					if (alpha == 1.0f)
@@ -306,8 +347,7 @@ namespace proton {
 
 				if (netTransform.IsReconciling(ReconcileComponents::Scale))
 				{
-					const glm::vec2 predictedScale = glm::mix(current.Scale, predicted.Scale, alpha);
-					transform.Scale = predictedScale;
+					transform.Scale = glm::mix(current.Scale, predicted.Scale, alpha);
 
 					if (alpha == 1.0f)
 						netTransform.StopReconcile(ReconcileComponents::Scale);
@@ -315,8 +355,7 @@ namespace proton {
 
 				if (netTransform.IsReconciling(ReconcileComponents::Rotation))
 				{
-					const float predictedRot = glm::mix(current.Rotation, predicted.Rotation, alpha);
-					transform.Rotation = predictedRot;
+					transform.Rotation = glm::mix(current.Rotation, predicted.Rotation, alpha);
 
 					if (alpha == 1.0f)
 						netTransform.StopReconcile(ReconcileComponents::Position);
@@ -335,36 +374,6 @@ namespace proton {
 
 		if (m_Client && m_NetworkManager->IsNetworkTick())
 			Client_SendSequenceNumberMessage();
-	}
-
-	void NetTransformSystem::SetAuthoritativeTransform(Entity entity, TransformComponent* transform, const NetTransform& netTransform, bool localSpace)
-	{
-		bool replicatedThisFrame = netTransform.ReplicationTimer == 0.0f;
-		if (!replicatedThisFrame)
-			return;
-
-		const auto& replicationFlags = netTransform.ReplicationFlags;
-		const auto& lastAuthorative = netTransform.LastAuthoritativeTransform;
-
-		if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Position))
-		{
-			if (localSpace)
-			{
-				entity.SetLocalPosition({ lastAuthorative.Position.x, lastAuthorative.Position.y, transform->LocalPosition.z });
-			}
-			else
-			{
-				entity.SetWorldPosition({ lastAuthorative.Position.x, lastAuthorative.Position.y, transform->LocalPosition.z });
-			}
-		}
-		if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Scale))
-		{
-			transform->Scale = { lastAuthorative.Scale.x, lastAuthorative.Scale.y };
-		}
-		if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Rotation))
-		{
-			transform->Rotation = lastAuthorative.Rotation;
-		}
 	}
 
 	void NetTransformSystem::Client_SendSequenceNumberMessage()

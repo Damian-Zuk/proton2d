@@ -130,7 +130,7 @@ namespace proton {
 		}
 
 		SceneSerializer serializer(GetScene(scenePath));
-		serializer.Serialize("content/scenes/" + newScenePath + ".scene.json");
+		serializer.SerializeToFile("content/scenes/" + newScenePath + ".scene.json");
 	}
 
 	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)

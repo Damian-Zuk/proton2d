@@ -41,7 +41,7 @@ void TestFrame2Script::OnUpdate(float ts)
 	{
 		auto& transform = m_BallSpawn.GetTransform();
 		Entity ball = PrefabManager::Spawn(GetScene(), "Ball");
-		ball.SetWorldPosition({ transform.WorldPosition.x, transform.WorldPosition.y });
+		ball.SetWorldPosition({ transform.WorldPosition.x + Random::Float(-0.5f, 0.5f), transform.WorldPosition.y});
 		m_BallGroup.AddChildEntity(ball);
 		m_Timer = 0.0f;
 		return;

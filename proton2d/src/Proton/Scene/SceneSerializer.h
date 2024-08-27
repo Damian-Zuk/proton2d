@@ -1,4 +1,5 @@
 #pragma once
+#include "Proton/Core/UUID.h"
 #include <nlohmann/json.hpp>
 
 namespace proton {
@@ -11,21 +12,26 @@ namespace proton {
 	class SceneSerializer
 	{
 	public:
-		SceneSerializer(Scene* scene, bool isNetworkSerializer = false);
+		bool IsPrefabSerializer = false;
+
+	public:
+		SceneSerializer(Scene* scene);
+		SceneSerializer() = delete;
 		~SceneSerializer() = default;
 
-		bool Serialize(const std::string& filepath);
+		bool SerializeToFile(const std::string& filepath);
 		std::string Serialize();
-		json SerializeEntity(Entity entity, bool serializeUUID = true);
-		std::string SerializeEntityToString(Entity entity, bool serializeUUID = true);
+
+		json SerializeEntity(Entity entity);
+		std::string SerializeEntityToString(Entity entity);
 
 		bool Deserialize(const std::string& jsonData);
 		bool DeserializeFromFile(const std::string& filepath);
-		Entity DeserializeEntity(json jsonObj, bool deserializeUUID = true);
-	
+
+		Entity DeserializeEntity(const json& jsonObj, UUID uuid = 0);
+		
 	private:
 		Scene* m_Scene;
-		bool m_IsNetworkSerializer = false;
 	};
 
 }

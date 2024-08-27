@@ -8,14 +8,6 @@ enum PlayerState : uint16_t // animation index
 	PlayerState_Land = 3
 };
 
-enum PlayerInput : uint64_t
-{
-	None = 0,
-	PlayerInput_MoveLeft = (1 << 0),
-	PlayerInput_MoveRight = (1 << 1),
-	PlayerInput_MoveJump = (1 << 2)
-};
-
 struct PlayerActionState
 {
 	bool MoveLeft = false;
@@ -46,6 +38,8 @@ public:
 	virtual void OnPhysicsUpdate(float ts) override;
 	virtual void OnImGuiRender();
 
+	void SetPlayerColor(const glm::vec4& color);
+
 private:
 	bool IsGrounded() const;
 	bool IsOnHighSlope() const;
@@ -53,16 +47,17 @@ private:
 private:
 	bool m_IsLocalPlayer = true;
 	uint32_t m_ClientID = 0;
-
-	b2Body* m_Wheel = nullptr;
 	
-	PlayerInput m_PlayerInput;
-	PlayerActionState m_ActionState;
 	float m_PlayerMaxSpeed = 6.0f;
 	float m_JumpForce = 20.0f;
 	float m_PlayerAcceleration = 40.0f;
-	float m_GravityModifier = -10.0f;
+	float m_FallModifier = 100.0f;
+	glm::vec4 m_PlayerColor { 1.0f };
 
+	b2Body* m_Body = nullptr;
+	b2Body* m_Wheel = nullptr;
+
+	PlayerActionState m_ActionState;
 	PlayerState m_State = PlayerState_Idle;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;

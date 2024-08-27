@@ -123,6 +123,7 @@ namespace proton {
 		void DestroyChildEntities() const;
 		void PopHierarchy() const;
 		bool IsParentOf(Entity entity) const;
+		Entity GetParent() const;
 		Entity FindChildByTag(const std::string& name);
 
 		// Component getters

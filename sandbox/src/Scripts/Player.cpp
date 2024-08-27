@@ -25,19 +25,24 @@ void Player::OnRegisterFields()
 	REGISTER_FIELD(Float, m_PlayerMaxSpeed);
 	REGISTER_FIELD(Float, m_PlayerAcceleration);
 	REGISTER_FIELD(Float, m_JumpForce);
-	REGISTER_FIELD(Float, m_GravityModifier);
+	REGISTER_FIELD(Float, m_FallModifier);
 	REGISTER_FIELD(Int, m_ClientID);
+	REGISTER_FIELD_NO_EDIT(Float4, m_PlayerColor);
 	
 	REPLICATED_DATA(m_Direction);
 	REPLICATED_DATA(m_State);
+	REPLICATED_FIELD(m_ClientID);
+	REPLICATED_FIELD(m_PlayerColor, [&]() {
+		SetPlayerColor(m_PlayerColor);
+	});
 }
 
 bool Player::OnCreate()
 {
+	// Get local player ID
 	NetworkManager* networkManager = GetNetworkManager();
 	MyGameMode* gameMode = GetGameMode<MyGameMode>();
 	uint32_t localPlayerID = gameMode->GetLocalPlayerID();
-	
 	m_IsLocalPlayer = m_ClientID == localPlayerID;
 	
 	if (m_IsLocalPlayer)
@@ -51,6 +56,21 @@ bool Player::OnCreate()
 			//networkManager->Client_SetEntityInput(GetUUID(), &m_ActionState);
 		}
 	}
+	else
+	{
+		// Set sync method to default if not local player
+		auto& net = GetComponent<NetworkComponent>();
+		net.NetTransform.Method = NetSyncMethod::None;
+	}
+
+	if (IsRunningServer())
+	{
+		//GetNetworkManager()->Server_SetCustomMessageCallback(m_ClientID, [])
+
+		GetGameMode()->Server_SetPlayerActionCallback(m_ClientID, [&](NetworkStreamReader& stream) {
+			stream.ReadRaw(m_ActionState);
+		});
+	}
 
 	// Set up sprite animations
 	AddComponent<SpriteAnimationComponent>();
@@ -62,39 +82,26 @@ bool Player::OnCreate()
 	animation.Add(PlayerState_Land, 9, AnimationPlayMode::PLAY_ONCE);
 	animation.SetFPS(12);
 
-	if (IsRunningServer())
-	{
-		//GetNetworkManager()->Server_SetCustomMessageCallback(m_ClientID, [])
-
-		GetGameMode()->Server_SetPlayerActionCallback(m_ClientID, [&](NetworkStreamReader& stream) {
-			stream.ReadRaw(m_ActionState);
-		});
-	}
-
 	// Set physics sensors to following child entities
 	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
 	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
 	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
 
 	m_Wheel = FindChildByTag("Wheel").GetRuntimeBody();
+	m_Body = GetRuntimeBody();
 
 	return true;
 }
 
 void Player::OnUpdate(float ts)
 {
+	// Input polling for local player
 	if (m_IsLocalPlayer)
 	{
-		//if (Input::IsKeyPressed(Key::D, this))
-		//	m_PlayerInput = EnumAddFlags(m_PlayerInput, PlayerInput_MoveRight);
-		//else
-		//	m_PlayerInput = EnumRemoveFlags(m_PlayerInput, PlayerInput_MoveRight);
-
-		// Input polling for local player
 		PlayerActionState previous = m_ActionState;
-		m_ActionState.MoveRight = Input::IsKeyPressed(Key::D, this);
-		m_ActionState.MoveLeft = Input::IsKeyPressed(Key::A, this);
-		m_ActionState.Jump = Input::IsKeyPressed(Key::W, this);
+		m_ActionState.MoveRight = IsKeyPressed(Key::D);
+		m_ActionState.MoveLeft = IsKeyPressed(Key::A);
+		m_ActionState.Jump = IsKeyPressed(Key::W);
 
 		if (IsRunningClient() && m_ActionState != previous)
 		{
@@ -104,12 +111,12 @@ void Player::OnUpdate(float ts)
 		}
 	}
 	
-	const auto& velocity = GetComponent<VelocityComponent>().LinearVelocity;
 	SpriteAnimation& animation = GetSpriteAnimation();
 
 	if (m_State == PlayerState_Jump)
 	{
 		// Update jump animation frame
+		glm::vec2 velocity = GetLinearVelocity();
 		uint16_t frame = velocity.y > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
 		animation.SetAnimationFrame(frame);
 	}
@@ -117,16 +124,15 @@ void Player::OnUpdate(float ts)
 	// Play current animation
 	animation.Play(m_State);
 	animation.SetMirrorFlip(m_Direction < 0.0f);
-
-	if (m_IsLocalPlayer && Input::IsKeyPressed(Key::P, this))
-	{
-		GetRuntimeBody()->SetTransform({ 0, 3 }, 0);
-	}
 }
 
 void Player::OnPhysicsUpdate(float ts)
 {
-	const auto& velocity = GetComponent<VelocityComponent>().LinearVelocity;
+	auto& net = GetComponent<NetworkComponent>();
+	if (IsRunningClient() && !m_IsLocalPlayer && net.NetTransform.Method != NetSyncMethod::Prediction)
+		return;
+
+	glm::vec2 velocity = GetLinearVelocity();
 
 	// Set player direction (right: 1.0, left: -1.0f)
 	m_Direction = m_ActionState.MoveRight ? 1.0f : (m_ActionState.MoveLeft ? -1.0f : m_Direction);
@@ -180,7 +186,9 @@ void Player::OnPhysicsUpdate(float ts)
 	{
 		// Modify vertical velocity to make jump feel less floaty
 		if (velocity.y < 0.5f && velocity.y > -10.0f)
-			ApplyLinearImpulse({ 0.0f, m_GravityModifier * 0.1f });
+		{
+			m_Body->ApplyForceToCenter({ 0.0f, -m_FallModifier }, true);
+		}
 
 		m_State = PlayerState_Jump;
 	}
@@ -202,12 +210,23 @@ bool Player::IsOnHighSlope() const
 	return !CheckSensor(Sensor_Bottom) && (CheckSensor(Sensor_BottomLeft) || CheckSensor(Sensor_BottomRight));
 }
 
+void Player::SetPlayerColor(const glm::vec4& color)
+{
+	auto& spriteColor = GetComponent<SpriteComponent>().Color;
+	spriteColor = color;
+	m_PlayerColor = color;
+}
+
+// --------- Editor ---------
 void Player::OnImGuiRender()
 {
 #ifdef PT_EDITOR
 	ImGui::Dummy({ 0, 5 });
 	char buffer[128];
-	
+
+	if (ImGui::ColorEdit4("Color", glm::value_ptr(m_PlayerColor)))
+		SetPlayerColor(m_PlayerColor);
+
 	const auto& color = GetComponent<SpriteComponent>().Color;
 	std::string colorStr = fmt::format("{:.3f}, {:.3f}, {:.3f}, {:.3f}", color.r, color.g, color.b, color.a);
 	strcpy_s(buffer, colorStr.c_str());
@@ -219,6 +238,10 @@ void Player::OnImGuiRender()
 		std::string velocity = fmt::format("{:.3f}, {:.3f}", vel.x, vel.y);
 		strcpy_s(buffer, velocity.c_str());
 		ImGui::InputText("Velocity", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
+		
+		ImGui::Text("Gravity scale: %f", m_Body->GetGravityScale());
 	}
+
+	ImGui::Text("Is local player: %d", m_IsLocalPlayer);
 #endif
 }

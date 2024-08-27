@@ -86,7 +86,12 @@ namespace proton {
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.0f);
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetComponent<TagComponent>().Tag.c_str());
+
+		bool isPrefab = entity.HasComponent<PrefabComponent>();
+
+		if (isPrefab) ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 225, 0, 255));
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+		if (isPrefab) ImGui::PopStyleColor();
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
 		{

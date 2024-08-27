@@ -25,9 +25,6 @@ namespace proton {
 		void Server_OnSequenceNumberMessage(ClientID clientID, NetworkStreamReader& stream);
 
 	private:
-		void SetAuthoritativeTransform(Entity entity, TransformComponent* transform, const NetTransform& netTransform, bool localSpace = true);
-
-	private:
 		Client* m_Client = nullptr;
 		Server* m_Server = nullptr;
 		NetworkManager* m_NetworkManager;

@@ -72,6 +72,8 @@ namespace proton {
 			return;
 		}
 
+		bool isPrefab = selectedEntity.HasComponent<PrefabComponent>();
+
 		char buffer[256];
 		strcpy_s(buffer, sizeof(buffer), selectedEntity.GetTag().c_str());
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8, 5 });
@@ -134,11 +136,19 @@ namespace proton {
 		}
 		ImGui::PopFont();
 
-		if (ImGui::BeginPopup("Entity options")) {
-			if (ImGui::MenuItem("Create Prefab"))
+		if (ImGui::BeginPopup("Entity options")) 
+		{
+			if (ImGui::MenuItem(isPrefab ? "Save Prefab" : "Create Prefab"))
 			{
-				PrefabManager::CreatePrefabFromEntity(selectedEntity);
+				PrefabManager::SaveEntityAsPrefab(selectedEntity);
 			}
+
+			if (isPrefab && ImGui::MenuItem("Detach Prefab"))
+			{
+				selectedEntity.RemoveComponent<PrefabComponent>();
+			}
+
+			ImGui::Separator();
 			if (ImGui::MenuItem("Delete Entity"))
 			{
 				selectedEntity.Destroy();

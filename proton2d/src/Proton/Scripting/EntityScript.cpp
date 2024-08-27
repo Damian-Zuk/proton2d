@@ -3,12 +3,17 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Network/NetworkManager.h"
+#include "Proton/Core/Input.h"
+
+#ifdef PT_EDITOR
+	#include "Proton/Editor/EditorLayer.h"
+#endif
 
 namespace proton {
 
-	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor, bool networkSerialize)
+	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor)
 	{
-		m_ScriptFields[name] = { type, field, networkSerialize, showInEditor };
+		m_ScriptFields[name] = { type, field, showInEditor };
 	}
 
 	void EntityScript::SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName)
@@ -57,16 +62,36 @@ namespace proton {
 		return GetScene()->GetGameInstance()->GetSceneManager();
 	}
 
+	bool EntityScript::IsKeyPressed(KeyCode key) const
+	{
+	#ifdef PT_EDITOR
+		GameInstance* focusedInstance = EditorLayer::Get()->GetFocusedGameInstance();
+		if (GetScene() != focusedInstance->GetActiveScene())
+			return false;
+	#endif
+		return Input::IsKeyPressed(key);
+	}
+
+	bool EntityScript::IsMouseButtonPressed(MouseCode button) const
+	{
+	#ifdef PT_EDITOR
+		GameInstance* focusedInstance = EditorLayer::Get()->GetFocusedGameInstance();
+		if (GetScene() != focusedInstance->GetActiveScene())
+			return false;
+	#endif
+		return Input::IsMouseButtonPressed(button);
+	}
+
 	// ------------------------------- Networking -------------------------------
 
 	using ReplicatedScript = NetworkComponent::ReplicatedScript;
 	using ReplicatedField = ReplicatedScript::ReplicatedField;
 
-	static bool CompareByTag(const ReplicatedScript& a, const  ReplicatedScript& b) {
-		return a.Script->GetTag() < b.Script->GetTag();
+	static bool CompareByClassName(const ReplicatedScript& a, const  ReplicatedScript& b) {
+		return a.Script->GetScriptClassName() < b.Script->GetScriptClassName();
 	}
 
-	void EntityScript::SetReplicatedData(void* data, size_t size, const std::function<void(Entity*)>& notifyFunction)
+	void EntityScript::SetReplicatedData(void* data, size_t size, const std::function<void()>& notifyFunction)
 	{
 		if (!HasComponent<NetworkComponent>())
 		{
@@ -86,7 +111,7 @@ namespace proton {
 			newEntry.Script = this;
 			newEntry.ReplicatedFields.push_back(ReplicatedField{ data, size, notifyFunction });
 			
-			auto insertPosition = std::lower_bound(repScripts.begin(), repScripts.end(), newEntry, CompareByTag);
+			auto insertPosition = std::lower_bound(repScripts.begin(), repScripts.end(), newEntry, CompareByClassName);
 			repScripts.insert(insertPosition, newEntry);
 			return;
 		}
@@ -99,7 +124,7 @@ namespace proton {
 		return GetScene()->GetGameInstance()->GetNetworkManager();
 	}
 
-	void EntityScript::SetReplicatedField(const std::string& name, const std::function<void(Entity*)>& notifyFunction)
+	void EntityScript::SetReplicatedField(const std::string& name, const std::function<void()>& notifyFunction)
 	{
 		PT_CORE_ASSERT(m_ScriptFields.find(name) != m_ScriptFields.end(), "Script field not found");
 
