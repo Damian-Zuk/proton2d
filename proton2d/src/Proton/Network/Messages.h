@@ -81,7 +81,7 @@ namespace proton {
 
 			UUID EntityUUID;
 			ReplicateComponents TransformFlags = ReplicateComponents::None;
-			uint16_t TransformSequenceNumber = 0;
+			uint32_t TransformSequenceNumber = 0;
 			uint32_t ScriptCount;
 			uint64_t PayloadSize;
 		};
@@ -95,7 +95,7 @@ namespace proton {
 		struct PayloadItem
 		{
 			UUID EnittyUUID;
-			uint16_t SequenceNumber;
+			uint32_t SequenceNumber;
 		};
 	};
 

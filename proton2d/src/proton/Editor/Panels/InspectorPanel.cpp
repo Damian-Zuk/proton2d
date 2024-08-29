@@ -678,7 +678,7 @@ namespace proton {
 				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Time", &netTransform.ReconcileTime, 0.001f);
 				ImGui::DragFloat("Reconcile Cooldown", &netTransform.ReconcileCooldownTime, 0.001f);
-				ImGui::DragFloat("Reconcile Offset Factor", &netTransform.ReconcileOffsetFactor, 0.001f);
+				ImGui::DragFloat("Teleport Threshold", &netTransform.TeleportThreshold, 0.001f);
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });

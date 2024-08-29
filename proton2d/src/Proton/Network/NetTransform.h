@@ -57,7 +57,7 @@ namespace proton {
 
 		struct SequencedValue
 		{
-			uint16_t SequenceNumber;
+			uint32_t SequenceNumber;
 			Transform Value;
 		};
 
@@ -67,12 +67,13 @@ namespace proton {
 		float ReconcileThreshold = 0.5f; // position only
 		float ReconcileTime = 1.0f; // position only
 		float ReconcileCooldownTime = 1.0f; // position only
-		float ReconcileOffsetFactor = 1.0f;
+		float TeleportThreshold = 5.0f;
 
 		// Internal state
 		std::vector<SequencedValue> DeltaBuffer;
-		uint16_t CurrentSequenceNumber = 0;
-		uint16_t ServerSequenceNumber = 0;
+		uint32_t CurrentSequenceNumber = 0;
+		uint32_t ServerSequenceNumber = 0;
+		bool HasNewDeltas = false;
 
 		Transform LastAuthoritativeTransform;
 		Transform PrevAuthoritativeTransform;
