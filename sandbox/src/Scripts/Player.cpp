@@ -142,7 +142,7 @@ void Player::OnPhysicsUpdate(float ts)
 	if (!IsOnHighSlope())
 	{
 		float maxSpeed = m_PlayerMaxSpeed * (m_State == PlayerState_Run ? 1.0f : 0.8f);
-		float newVelocity = velocity.x + m_PlayerAcceleration * m_Direction * ts;
+		float newVelocity = velocity.x + m_PlayerAcceleration * 10.0f * m_Direction * ts;
 
 		SetLinearVelocityX(!move ? 0.0f : glm::clamp(newVelocity, -maxSpeed, maxSpeed));
 

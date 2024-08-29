@@ -158,7 +158,7 @@ namespace proton {
 				{ "SyncMethod", NetSyncMethodToString(netTransform.Method) },
 				{ "CullDistance", netTransform.CullDistance, },
 				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
-				{ "ReconcileMaxTime", netTransform.ReconcileMaxTime },
+				{ "ReconcileTime", netTransform.ReconcileTime },
 				{ "ReconcileCooldownTime", netTransform.ReconcileCooldownTime },
 			};
 		}
@@ -448,8 +448,8 @@ namespace proton {
 			if (netJson.contains("CullDistance"))
 				netTransform.CullDistance = netJson["CullDistance"];
 
-			if (netJson.contains("ReconcileMaxTime"))
-				netTransform.ReconcileMaxTime = netJson["ReconcileMaxTime"];
+			if (netJson.contains("ReconcileTime"))
+				netTransform.ReconcileTime = netJson["ReconcileTime"];
 
 			if (netJson.contains("ReconcileThreshold"))
 				netTransform.ReconcileThreshold = netJson["ReconcileThreshold"];

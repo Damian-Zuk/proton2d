@@ -305,10 +305,9 @@ namespace proton {
 		}
 		else if (srcRelation.Parent != entt::null)
 		{
-			Entity(srcRelation.Parent, this).AddChildEntity(newEntity);
+			Entity parent(srcRelation.Parent, this);
+			parent.AddChildEntity(newEntity);
 		}
-		else
-			m_Root.push_back(newEntity);
 
 		// Copy components ...
 		CopyComponentIfExists(ComponentsToCopy{}, newEntity, entity);
@@ -551,12 +550,14 @@ namespace proton {
 		{
 			m_PhysicsWorld->ProcessCreatedEntities();
 			m_PhysicsTimer += ts;
+			m_IsPhysicsTick = false;
 			
 			while (m_PhysicsTimer >= m_PhysicsTimestep)
 			{
 				UpdateScripts(m_PhysicsTimestep, true);
 				m_PhysicsWorld->Update(m_PhysicsTimestep);
 				m_PhysicsTimer -= m_PhysicsTimestep;
+				m_IsPhysicsTick = true;
 			}
 		}
 

@@ -35,7 +35,7 @@ namespace proton {
 
 	bool Transform::IsZero() const
 	{
-		constexpr float epsilon = 1e-5f;
+		constexpr float epsilon = 1e-4f;
 		return glm::compMax(glm::abs(Position)) < epsilon
 			&& glm::compMax(glm::abs(Scale)) < epsilon
 			&& glm::abs(Rotation) < epsilon;
@@ -62,11 +62,20 @@ namespace proton {
 
 	Transform Transform::operator-(const Transform& other) const
 	{
-		Transform delta;
-		delta.Position = this->Position - other.Position;
-		delta.Scale = this->Scale - other.Scale;
-		delta.Rotation = this->Rotation - other.Rotation;
-		return delta;
+		return Transform {
+			this->Position - other.Position,
+			this->Scale - other.Scale,
+			this->Rotation - other.Rotation,
+		};
+	}
+
+	Transform NetTransform::Transform::operator+(const Transform& other) const
+	{
+		return Transform {
+			this->Position + other.Position,
+			this->Scale + other.Scale,
+			this->Rotation + other.Rotation,
+		};
 	}
 
 	bool NetTransform::IsReconciling(ReconcileComponents component) const

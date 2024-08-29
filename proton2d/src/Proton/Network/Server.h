@@ -123,7 +123,7 @@ namespace proton {
 		std::unordered_map<uint32_t, NetworkStreamReaderDelegate> m_PlayerActionCallbacks;
 
 		// Debug
-		static float s_FakeServerLag;
+		inline static float s_FakeServerLag = 50.0f;
 
 		friend class NetworkManager;
 		friend class NetReplicator;

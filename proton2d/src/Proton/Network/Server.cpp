@@ -28,7 +28,6 @@ namespace proton {
 
 	// Can only have one server instance per-process
 	Server* Server::s_Instance = nullptr;
-	float Server::s_FakeServerLag = 0.0f;
 
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),

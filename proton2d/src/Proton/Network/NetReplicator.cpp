@@ -300,6 +300,9 @@ namespace proton {
 			auto& net = entity.GetComponent<NetworkComponent>();
 			bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
 			net.NetTransform.LastAuthoritativeTransform.Position = item.Position;
+			net.NetTransform.PrevAuthoritativeTransform.Position = item.Position;
+			net.NetTransform.LastTickTransform.Position = item.Position;
+			
 			if (hasRigidbodySimulated)
 				entity.SetWorldPosition(item.Position);
 			else

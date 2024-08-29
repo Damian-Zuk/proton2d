@@ -55,6 +55,7 @@ namespace proton {
 			if (hasRigidbodySimulated && !rigidbody)
 			{
 				// Runtime body not created yet (entity has just been spawned)
+
 				continue; // Skip this update tick
 			}
 
@@ -79,15 +80,17 @@ namespace proton {
 				}
 			}
 
-			
 			// NetTransform member references
 			const auto& reconcileThreshold = netTransform.ReconcileThreshold;
-			const auto& reconcileMaxTime = netTransform.ReconcileMaxTime;
+			const auto& reconcileTime = netTransform.ReconcileTime;
 			const auto& reconcileCooldownTime = netTransform.ReconcileCooldownTime;
 			auto& lastTickTransform = netTransform.LastTickTransform;
 			auto& predicted = netTransform.PredictedTransform;
+			auto& reconcileOffset = netTransform.ReconcileOffset;
 			auto& interpolationTimer = netTransform.InterpolationTimer;
 			auto& reconcileTimer = netTransform.ReconcileTimer;
+
+			bool isLocalPlayer = m_NetworkManager->GetLocalPlayerEntity() == entity;
 
 			// Handle transform sync for each method
 			switch (netTransform.Method)
@@ -198,89 +201,105 @@ namespace proton {
 			case NetTransform::SyncMethod::Prediction:
 			{
 				auto& deltaBuffer = netTransform.DeltaBuffer;
+
+				Transform thisTickDelta = current - lastTickTransform - reconcileOffset;
+				lastTickTransform = current;
+				reconcileOffset = Transform{};
+
+				// Increment sequence number, store in deltaBuffer and send current sequence number to server
+				if (thisTickDelta.IsNotZero())
+				{
+					deltaBuffer.push_back({ (uint16_t)(netTransform.CurrentSequenceNumber + 1), thisTickDelta });
+				}
 				
-				// Push current delta and sequence number to the buffer
 				if (m_NetworkManager->IsNetworkTick())
 				{
-					// Calculate this tick delta
-					Transform thisTickDelta = current - lastTickTransform;
-
-					// Ignore delta if reconciling
-					//if (netTransform.IsReconciling(ReconcileComponents::Position))
-					//	thisTickDelta.Position = glm::vec2{ 0.0f, 0.0f };
-					//if (netTransform.IsReconciling(ReconcileComponents::Scale))
-					//	thisTickDelta.Scale = glm::vec2{ 0.0f, 0.0f };
-					//if (netTransform.IsReconciling(ReconcileComponents::Rotation))
-					//	thisTickDelta.Rotation = 0.0f;
-					
-					// Increment sequence number, store in deltaBuffer and send current sequence number to server
-					if (thisTickDelta.IsNotZero())
-					{
-						//if (entity.GetTag() == "Ball")
-						//	PT_CORE_TRACE("delta: {}", thisTickDelta.Position);
-
-						netTransform.CurrentSequenceNumber++;
-						deltaBuffer.push_back({ netTransform.CurrentSequenceNumber, thisTickDelta });
-						m_SequenceNumbersToSend.push_back({ entity.GetUUID(), netTransform.CurrentSequenceNumber });
-					}
+					m_SequenceNumbersToSend.push_back({ entity.GetUUID(), (uint16_t)(netTransform.CurrentSequenceNumber + 1) });
+					netTransform.CurrentSequenceNumber++;
 				}
 
-				// Calculate predicted transform and check if reconciliation needed
-				if (replicatedThisFrame)
+				// Remove deltas that happened before last authoritative transform 
+				auto deltaIt = deltaBuffer.begin();
+				while (deltaIt != deltaBuffer.end() && deltaIt->SequenceNumber <= netTransform.ServerSequenceNumber)
+					deltaIt++;
+
+				if (deltaIt != deltaBuffer.begin())
+					deltaBuffer.erase(deltaBuffer.begin(), deltaIt);
+
+				// Calculate predicted transform: apply deltas not processed by server yet
+				predicted = lastAuthoritative;
+				for (const auto& delta : deltaBuffer)
 				{
-					// Remove deltas that happened before last authoritative transform 
-					auto deltaIt = deltaBuffer.begin();
-					while (deltaIt != deltaBuffer.end() && deltaIt->SequenceNumber <= netTransform.ServerSequenceNumber)
-						deltaIt++;
+					predicted.Position += delta.Value.Position;
+					predicted.Scale += delta.Value.Scale;
+					predicted.Rotation += delta.Value.Rotation;
+				}
 
-					if (deltaIt != deltaBuffer.begin())
-						deltaBuffer.erase(deltaBuffer.begin(), deltaIt);
-
-					// Calculate predicted transform: apply deltas not processed by server yet
-					predicted = lastAuthoritative;
-					for (const auto& delta : deltaBuffer)
+				// Check position error
+				if (!netTransform.IsReconciling(ReconcileComponents::Position))
+				{
+					const float positionError = glm::distance(current.Position, predicted.Position);
+					if (positionError > reconcileThreshold && reconcileTimer >= 0.0f)
 					{
-						predicted.Position += delta.Value.Position;
-						predicted.Scale += delta.Value.Scale;
-						predicted.Rotation += delta.Value.Rotation;
-					}
-
-					// Check position error
-					if (!netTransform.IsReconciling(ReconcileComponents::Position))
-					{
-						const float positionError = glm::distance(current.Position, predicted.Position);
-						if (positionError > reconcileThreshold && reconcileTimer >= 0)
-							netTransform.StartReconcile(ReconcileComponents::Position);
-					}
-
-					// Check scale error
-					if (!netTransform.IsReconciling(ReconcileComponents::Scale))
-					{
-						const float scaleError = glm::distance(current.Scale, predicted.Scale);
-						if (scaleError > s_ScaleReconcileThreshold)
-							netTransform.StartReconcile(ReconcileComponents::Scale);
-					}
-
-					// Check rotation error
-					if (!netTransform.IsReconciling(ReconcileComponents::Rotation))
-					{
-						const float rotationError = glm::abs(current.Rotation - predicted.Rotation);
-						if (rotationError > s_RotationReconcileThreshold)
-							netTransform.StartReconcile(ReconcileComponents::Rotation);
+						//if (isLocalPlayer) _PT_CORE_TRACE("Start reconcile: error={}", positionError);
+						netTransform.StartReconcile(ReconcileComponents::Position);
 					}
 				}
+
+				// Check scale error
+				//if (!netTransform.IsReconciling(ReconcileComponents::Scale))
+				//{
+				//	const float scaleError = glm::distance(current.Scale, predicted.Scale);
+				//	if (scaleError > s_ScaleReconcileThreshold)
+				//		netTransform.StartReconcile(ReconcileComponents::Scale);
+				//}
+
+				// Check rotation error
+				//if (!netTransform.IsReconciling(ReconcileComponents::Rotation))
+				//{
+				//	const float rotationError = glm::abs(current.Rotation - predicted.Rotation);
+				//	if (rotationError > s_RotationReconcileThreshold)
+				//		netTransform.StartReconcile(ReconcileComponents::Rotation);
+				//}
 
 				break;
 			}
 			}
 			// ---------------------------------------------------------------------------------------------------------------------
 
-			// Update last tick transform
-			if (m_NetworkManager->IsNetworkTick() && !replicatedThisFrame)
-				lastTickTransform = current;
+			// Handle Reconciliation
+			if (rigidbody)
+			{
+				if (netTransform.IsReconciling(ReconcileComponents::Position))
+				{
+					reconcileTimer += ts;
 
+					float alpha = reconcileTime > 0.0f ? glm::clamp(reconcileTimer / reconcileTime, 0.0f, 1.0f) : 1.0f;
+					
+					if (alpha > 0.0f)
+					{
+						glm::vec2 interpolated = glm::mix(current.Position, predicted.Position, alpha);
+						glm::vec2 offset = interpolated - current.Position;
+
+						entity.SetRigidbodyTransform(interpolated, current.Rotation);
+
+						if (alpha == 1.0f)
+						{
+							//if (isLocalPlayer) _PT_CORE_TRACE("___Stop reconcile___");
+							netTransform.StopReconcile(ReconcileComponents::Position);
+							//lastTickTransform.Position = interpolated;
+						}
+
+						reconcileOffset.Position = offset * netTransform.ReconcileOffsetFactor;
+					}
+					
+				}
+			}
+
+
+#if 0
 			// Handle reconcile max time limit
-			if (reconcileMaxTime > 0.0f && reconcileTimer > reconcileMaxTime)
+			if (reconcileTime > 0.0f && reconcileTimer > reconcileTime)
 				netTransform.StopReconcile(ReconcileComponents::Position);
 
 			// ------------------------------------------ Box2D Rigidbody Reconciliation ------------------------------------------
@@ -300,10 +319,11 @@ namespace proton {
 					if (rotationError < rotationErrorThreshold)
 						netTransform.StopReconcile(ReconcileComponents::Rotation);
 
-					rigidbody->SetTransform({ predicted.Position.x, predicted.Position.y }, predicted.Rotation * (b2_pi / 180.0f));
+					entity.SetRigidbodyTransform(predicted.Position, predicted.Rotation);
+					lastTickTransform = current;
 					
 					if (netTransform.Method == NetTransform::SyncMethod::None)
-						rigidbody->SetLinearVelocity({ 0.0f, 0.0f }); // ignore gravity
+						rigidbody->SetLinearVelocity({ 0.0f, 0.0f }); // ignore gravity (on default method)
 					
 					reconcileTimer += ts;
 				}
@@ -314,10 +334,11 @@ namespace proton {
 					if (positionError < positionErrorThreshold)
 						netTransform.StopReconcile(ReconcileComponents::Position);
 
-					rigidbody->SetTransform({ predicted.Position.x, predicted.Position.y }, rigidbody->GetAngle());
-					
+					entity.SetRigidbodyTransform(predicted.Position, current.Rotation);
+					lastTickTransform.Position = current.Position;
+
 					if (netTransform.Method == NetTransform::SyncMethod::None)
-						rigidbody->SetLinearVelocity({ 0.0f, 0.0f }); // ignore gravity
+						rigidbody->SetLinearVelocity({ 0.0f, 0.0f }); // ignore gravity (on default method)
 					
 					reconcileTimer += ts;
 				}
@@ -327,14 +348,15 @@ namespace proton {
 					const float rotationError = glm::abs(current.Rotation - predicted.Rotation);
 					if (rotationError < rotationErrorThreshold)
 						netTransform.StopReconcile(ReconcileComponents::Rotation);
+					lastTickTransform.Rotation = current.Rotation;
 
-					rigidbody->SetTransform({ transform.WorldPosition.x, transform.WorldPosition.y }, predicted.Rotation * (b2_pi / 180.0f));
+					entity.SetRigidbodyTransform(current.Position, predicted.Rotation);
 				}
 			}
 			// ----------------------------------------- TransformComponent Reconciliation -----------------------------------------
 			else // (with interpolation for smoothness)
 			{
-				const float alpha = netTransform.ReconcileMaxTime > 0.0f ? glm::clamp(interpolationTimer / netTransform.ReconcileMaxTime, 0.0f, 1.0f) : 1.0f;
+				const float alpha = netTransform.ReconcileTime > 0.0f ? glm::clamp(interpolationTimer / netTransform.ReconcileTime, 0.0f, 1.0f) : 1.0f;
 
 				if (netTransform.IsReconciling(ReconcileComponents::Position))
 				{
@@ -362,7 +384,7 @@ namespace proton {
 				}
 			}
 			// ---------------------------------------------------------------------------------------------------------------------
-
+#endif 
 			// Increment timers
 			replicationTimer += ts;
 			interpolationTimer += ts;

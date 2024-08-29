@@ -152,6 +152,7 @@ namespace proton {
 		void SetLinearVelocityX(float mps) const;
 		void SetLinearVelocityY(float mps) const;
 		void ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point = {0.0f, 0.0f}) const;
+		void SetRigidbodyTransform(const glm::vec2& position, float rotation) const;
 
 		// Network
 		bool IsNetworked() const;

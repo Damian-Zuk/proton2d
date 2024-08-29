@@ -67,11 +67,12 @@ namespace proton {
 		bool IsPhysicsEnabled() const;
 		bool IsPhysicsWorldInitialized() const;
 		bool IsPhysicsSimulated() const;
+		bool IsPhysicsTick() const { return m_IsPhysicsTick; }
+
 		bool IsSimulated() const { return m_State != SceneState::Stop; };
 		bool IsPaused() const { return m_State == SceneState::Paused; };
-
-		const std::string& GetFilepath() const;
 		SceneState GetSceneState() const { return m_State; }
+		const std::string& GetFilepath() const;
 		uint32_t GetEntitiesCount() const;
 		uint32_t GetScriptedEntitiesCount() const;
 		uint32_t GetNetworkedEntitiesCount() const;
@@ -144,6 +145,7 @@ namespace proton {
 		Unique<PhysicsWorld> m_PhysicsWorld;
 		float m_PhysicsTimestep = 0.01f;
 		float m_PhysicsTimer = 0.0f;
+		bool m_IsPhysicsTick = false;
 
 		// Cache
 		glm::vec3 m_PrimaryCameraPosition = { 0.0f, 0.0f, 0.0f };

@@ -1,10 +1,10 @@
 {
-    "UUID": 15980101982816540340,
+    "UUID": 9038120278090239375,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            0.86711,
-            0.27473,
+            3.93847,
+            3.33492,
             0.1
         ],
         "Rotation": 0.0,
@@ -19,9 +19,9 @@
     "Network": {
         "SyncMethod": "Prediction",
         "CullDistance": 20.0,
-        "ReconcileThreshold": 0.15000000596046448,
-        "ReconcileMaxTime": 0.75,
-        "ReconcileCooldownTime": 0.10000000149011612
+        "ReconcileThreshold": 0.10000000149011612,
+        "ReconcileTime": 0.10000000149011612,
+        "ReconcileCooldownTime": 0.0
     },
     "Sprite": {
         "Texture": "character.png",
@@ -75,7 +75,7 @@
                 },
                 {
                     "FieldName": "m_PlayerAcceleration",
-                    "Value": 300.0
+                    "Value": 100.0
                 },
                 {
                     "FieldName": "m_ClientID",
@@ -95,7 +95,7 @@
     ],
     "Entities": [
         {
-            "UUID": 7163818725298512642,
+            "UUID": 12244216424334726153,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -127,7 +127,7 @@
             }
         },
         {
-            "UUID": 16189106898298825629,
+            "UUID": 7770058897514055422,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -161,7 +161,7 @@
             }
         },
         {
-            "UUID": 10074542743104227723,
+            "UUID": 15387749981467108395,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -193,7 +193,7 @@
             }
         },
         {
-            "UUID": 10831928991335445447,
+            "UUID": 61355635526383696,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -225,7 +225,7 @@
             }
         },
         {
-            "UUID": 3253162841848356149,
+            "UUID": 879046591885949303,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [

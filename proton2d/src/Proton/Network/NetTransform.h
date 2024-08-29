@@ -52,6 +52,7 @@ namespace proton {
 			bool IsNotZero() const;
 			static Transform Get(TransformComponent* component, bool localSpace = false);
 			Transform operator-(const Transform& other) const;
+			Transform operator+(const Transform& other) const;
 		};
 
 		struct SequencedValue
@@ -64,8 +65,9 @@ namespace proton {
 		SyncMethod Method = SyncMethod::None;
 		float CullDistance = 20.0f;
 		float ReconcileThreshold = 0.5f; // position only
-		float ReconcileMaxTime = 1.0f; // position only
+		float ReconcileTime = 1.0f; // position only
 		float ReconcileCooldownTime = 1.0f; // position only
+		float ReconcileOffsetFactor = 1.0f;
 
 		// Internal state
 		std::vector<SequencedValue> DeltaBuffer;
@@ -74,8 +76,10 @@ namespace proton {
 
 		Transform LastAuthoritativeTransform;
 		Transform PrevAuthoritativeTransform;
+		
 		Transform LastTickTransform;
 		Transform PredictedTransform;
+		Transform ReconcileOffset;
 
 		float ReplicationTimer = 0.0f; // time elapsed from last replication
 		float ReconcileTimer = 0.0f; // negative value means on cooldown

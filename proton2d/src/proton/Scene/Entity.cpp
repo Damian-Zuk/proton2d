@@ -255,6 +255,36 @@ namespace proton
 			body->ApplyLinearImpulse({impulse.x, impulse.y }, {point.x, point.y}, true);
 	}
 
+	void Entity::SetRigidbodyTransform(const glm::vec2& position, float rotation) const
+	{
+		b2Body* body = GetRuntimeBody();
+		if (!body)
+			return;
+
+		body->SetTransform({ position.x, position.y }, glm::radians(rotation));
+
+		auto& hierarhy = GetComponent<RelationshipComponent>();
+		Entity current{ hierarhy.First, m_Scene };
+
+		while (current)
+		{
+			if (current.HasComponent<RigidbodyComponent>())
+			{
+				auto& tc = current.GetComponent<TransformComponent>();
+				auto& rb = current.GetComponent<RigidbodyComponent>();
+				if (rb.AttachToParent)
+				{
+					glm::vec2 offset = position;
+					offset.x += tc.LocalPosition.x;
+					offset.y += tc.LocalPosition.y;
+					current.SetRigidbodyTransform(offset, tc.Rotation);
+				}
+			}
+			auto& h = current.GetComponent<RelationshipComponent>();
+			current = Entity{ h.Next, m_Scene };
+		}
+	}
+
 	bool Entity::IsNetworked() const
 	{
 		return HasComponent<NetworkComponent>();

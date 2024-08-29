@@ -219,7 +219,8 @@ namespace proton {
 					if (b2Body* body = m_SelectedEntity.GetRuntimeBody())
 					{
 						const auto& cursor = GetActiveScene()->GetCursorWorldPosition();
-						body->SetTransform({ cursor.x, cursor.y }, 0.0f);
+						//body->SetTransform({ cursor.x, cursor.y }, 0.0f);
+						m_SelectedEntity.SetRigidbodyTransform({ cursor.x, cursor.y }, 0.0f);
 						body->SetLinearVelocity({ 0.0f, 0.0f });
 					}
 				}

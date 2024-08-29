@@ -676,13 +676,27 @@ namespace proton {
 				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
 					netTransform.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
 				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
-				ImGui::DragFloat("Reconcile Max Time", &netTransform.ReconcileMaxTime, 0.001f);
+				ImGui::DragFloat("Reconcile Time", &netTransform.ReconcileTime, 0.001f);
 				ImGui::DragFloat("Reconcile Cooldown", &netTransform.ReconcileCooldownTime, 0.001f);
+				ImGui::DragFloat("Reconcile Offset Factor", &netTransform.ReconcileOffsetFactor, 0.001f);
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });
 				if (ImGui::TreeNode("Debug"))
 				{
+					ImGui::Dummy({ 0, 2 });
+					ImGui::Text("Replication Timer: %.3f", netTransform.ReplicationTimer);
+					ImGui::Text("Interpolation Timer: %.3f", netTransform.InterpolationTimer);
+					ImGui::Text("Reconcile Timer: %.3f", netTransform.ReconcileTimer);
+					ImGui::Text("Reconcile State: pos=%d, sca=%d, rot=%d",
+						netTransform.IsReconciling(NetTransform::ReconcileComponents::Position),
+						netTransform.IsReconciling(NetTransform::ReconcileComponents::Scale),
+						netTransform.IsReconciling(NetTransform::ReconcileComponents::Rotation));
+					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
+					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
+					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());
+
+					ImGui::Dummy({ 0, 5 });
 					float lastPos[] = { netTransform.LastAuthoritativeTransform.Position.x, netTransform.LastAuthoritativeTransform.Position.y };
 					float prevPos[] = { netTransform.PrevAuthoritativeTransform.Position.x, netTransform.PrevAuthoritativeTransform.Position.y };
 					float predPos[] = { netTransform.PredictedTransform.Position.x, netTransform.PredictedTransform.Position.x };
@@ -709,18 +723,6 @@ namespace proton {
 					ImGui::DragFloat("Last", &lastRot);
 					ImGui::DragFloat("Previous", &prevRot);
 					ImGui::DragFloat("Predicted", &predRot);
-
-					ImGui::Dummy({ 0, 5 });
-					ImGui::Text("Replication Timer: %.3f", netTransform.ReplicationTimer);
-					ImGui::Text("Interpolation Timer: %.3f", netTransform.InterpolationTimer);
-					ImGui::Text("Reconcile Timer: %.3f", netTransform.ReconcileTimer);
-					ImGui::Text("Reconcile State: pos=%d, sca=%d, rot=%d",
-						netTransform.IsReconciling(NetTransform::ReconcileComponents::Position),
-						netTransform.IsReconciling(NetTransform::ReconcileComponents::Scale),
-						netTransform.IsReconciling(NetTransform::ReconcileComponents::Rotation));
-					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
-					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
-					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());
 
 					ImGui::TreePop();
 				}
