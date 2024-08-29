@@ -54,8 +54,6 @@ namespace proton {
 	void NetReplicator::Client_ProcessReplicationMessage(NetworkStreamReader& stream)
 	{
 		PROFILE_FUNCTION();
-
-		using ReplicateComponents = NetTransform::ReplicateComponents;
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
 
 		MessageEntityReplicate header;
@@ -133,9 +131,10 @@ namespace proton {
 			auto& prevTransform = netTransform.PrevAuthoritativeTransform;
 		
 			net.NetTransform.ReplicationFlags = flags;
-			
+			using Components = NetTransform::Components;
+
 			// If any transform components is replicated, reset NetTransform::SyncState
-			if (flags != ReplicateComponents::None)
+			if (flags != Components::None)
 			{
 				prevTransform = lastTransform;
 				netTransform.ServerSequenceNumber = item.TransformSequenceNumber;
@@ -144,37 +143,37 @@ namespace proton {
 			}
 			
 			// Read transform values from message payload
-			if (EnumHasAllFlags(flags, ReplicateComponents::All))
+			if (EnumHasAllFlags(flags, Components::All))
 			{
 				stream.ReadRaw(lastTransform);
 			}
 			else
 			{
-				if (EnumHasAllFlags(flags, ReplicateComponents::Position))
+				if (EnumHasAllFlags(flags, Components::Position))
 				{
 					stream.ReadRaw(lastTransform.Position);
 				}
-				else if (EnumHasAnyFlags(flags, ReplicateComponents::Position))
+				else if (EnumHasAnyFlags(flags, Components::Position))
 				{
-					if (EnumHasAnyFlags(flags, ReplicateComponents::PositionX))
+					if (EnumHasAnyFlags(flags, Components::PositionX))
 						stream.ReadRaw(lastTransform.Position.x);
-					if (EnumHasAnyFlags(flags, ReplicateComponents::PositionY))
+					if (EnumHasAnyFlags(flags, Components::PositionY))
 						stream.ReadRaw(lastTransform.Position.y);
 				}
 
-				if (EnumHasAllFlags(flags, ReplicateComponents::Scale))
+				if (EnumHasAllFlags(flags, Components::Scale))
 				{
 					stream.ReadRaw(lastTransform.Scale);
 				}
-				else if (EnumHasAnyFlags(flags, ReplicateComponents::Scale))
+				else if (EnumHasAnyFlags(flags, Components::Scale))
 				{
-					if (EnumHasAnyFlags(flags, ReplicateComponents::ScaleX))
+					if (EnumHasAnyFlags(flags, Components::ScaleX))
 						stream.ReadRaw(lastTransform.Scale.x);
-					if (EnumHasAnyFlags(flags, ReplicateComponents::ScaleY))
+					if (EnumHasAnyFlags(flags, Components::ScaleY))
 						stream.ReadRaw(lastTransform.Scale.y);
 				}
 
-				if (EnumHasAnyFlags(flags, ReplicateComponents::Rotation))
+				if (EnumHasAnyFlags(flags, Components::Rotation))
 				{
 					stream.ReadRaw(lastTransform.Rotation);
 				}
@@ -562,8 +561,6 @@ namespace proton {
 		NetworkStreamWriter stream(m_Server->m_ScratchBuffer);
 		stream.SkipBytes(sizeof(msgHeader));
 
-		using ReplicateComponents = NetTransform::ReplicateComponents;
-
 		// Iterate over all entities with NetworkComponent
 		for (entt::entity _entity : view)
 		{
@@ -625,7 +622,7 @@ namespace proton {
 				if (glm::epsilonNotEqual(current, previous, epsilon)) { \
 					stream.WriteRaw(current); \
 					previous = current; \
-					flags = EnumAddFlags(flags, ReplicateComponents::flag); \
+					flags = EnumAddFlags(flags, NetTransform::Components::flag); \
 				}
 				REPLICATE_COMPONENT(position.x, prevPosition.x, PositionX);
 				REPLICATE_COMPONENT(position.y, prevPosition.y, PositionY);
@@ -640,7 +637,7 @@ namespace proton {
 				stream.WriteRaw(scale.x); prevScale.x = scale.x;
 				stream.WriteRaw(scale.y); prevScale.y = scale.y;
 				stream.WriteRaw(rotation); prevRotation = rotation;
-				flags = EnumAddFlags(flags, ReplicateComponents::All);
+				flags = EnumAddFlags(flags, NetTransform::Components::All);
 			}
 			net.NetTransform.ReplicationFlags = flags;
 
@@ -703,7 +700,7 @@ namespace proton {
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////
 
-			if (itemHeader.TransformFlags == ReplicateComponents::None && itemHeader.ScriptCount == 0)
+			if (itemHeader.TransformFlags == NetTransform::Components::None && itemHeader.ScriptCount == 0)
 			{
 				// Nothing was replicated, skip entity replication
 				stream.SetStreamPosition(entityPayloadStart);

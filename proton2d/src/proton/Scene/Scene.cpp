@@ -16,6 +16,7 @@
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/NetTransformSystem.h"
 #include "Proton/Network/Server.h"
+#include "Proton/Network/Client.h"
 
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
@@ -531,9 +532,11 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
+		bool isNetModeClient = m_GameInstance->m_NetworkManager->IsNetModeClient();
+
 		if (m_State == SceneState::Play)
 		{
-			if (m_EnableNetworking && !m_NetworkInitialized && m_GameInstance->m_NetworkManager->IsNetModeClient())
+			if (m_EnableNetworking && !m_NetworkInitialized && isNetModeClient)
 			{
 				// Do not update simulation until first replication update
 				CalculateWorldPositions();
@@ -567,6 +570,12 @@ namespace proton {
 
 		if (m_State == SceneState::Play)
 		{
+			if (m_NetworkInitialized && isNetModeClient)
+			{
+				Client* client = m_GameInstance->m_NetworkManager->GetClient();
+				client->m_NetTransformSystem->Client_OnUpdate(this, ts);
+			}
+
 			if (m_GameMode)
 				m_GameMode->OnUpdate(ts);
 

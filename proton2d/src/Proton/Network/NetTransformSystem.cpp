@@ -15,7 +15,7 @@
 namespace proton {
 
 	using Transform = NetTransform::Transform;
-	using ReconcileComponents = NetTransform::ReconcileComponents;
+	using Components = NetTransform::Components;
 
 	constexpr static float s_ScaleReconcileThreshold = 0.1f;
 	constexpr static float s_RotationReconcileThreshold = 3.0f;
@@ -48,6 +48,7 @@ namespace proton {
 			const auto& reconcileTime = netTransform.ReconcileTime;
 			const auto& reconcileCooldownTime = netTransform.ReconcileCooldownTime;
 			const auto& teleportThreshold = netTransform.TeleportThreshold;
+			const auto& replicationFlags = netTransform.ReplicationFlags;
 			auto& replicationTimer = netTransform.ReplicationTimer;
 			auto& currentSequenceNumber = netTransform.CurrentSequenceNumber;
 			auto& hasNewDeltas = netTransform.HasNewDeltas;
@@ -60,14 +61,8 @@ namespace proton {
 			// Get current transform values from TransformComponent
 			const Transform current = Transform::Get(&transform);
 
-			// Try to get Box2D rigidbody
-			bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
-			b2Body* rigidbody = hasRigidbodySimulated ? entity.GetRuntimeBody() : nullptr;
-			if (hasRigidbodySimulated && !rigidbody)
-			{
-				// Runtime body not created yet (entity has just been spawned)
-				continue; // Skip this update tick
-			}
+			// Try to get Box2D rigidbody (nullptr if non physics entity)
+			b2Body* rigidbody = entity.GetRuntimeBody();
 
 			// Cull Distance: Put rigidbody to sleep when far away
 			if (rigidbody)
@@ -93,31 +88,28 @@ namespace proton {
 			case NetTransform::SyncMethod::None:
 			{
 				// Check if replicated this frame
-				if (replicationTimer == 0.0f) break;
-
-				const auto& replicationFlags = netTransform.ReplicationFlags;
+				if (replicationTimer > 0.0f) break;
 
 				if (rigidbody) // physics body
 				{
-					if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Position)
-						&& EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Rotation))
-					{
+					if (netTransform.WasReplicated(Components::Position) && netTransform.WasReplicated(Components::Rotation))
 						entity.SetRigidbodyTransform(lastAuthoritative.Position, lastAuthoritative.Rotation);
-					}
-					else if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Position))
+					
+					else if (netTransform.WasReplicated(Components::Position))
 						entity.SetRigidbodyTransform(lastAuthoritative.Position, current.Rotation);
-					else if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Rotation))
+					
+					else if (netTransform.WasReplicated(Components::Rotation))
 						entity.SetRigidbodyTransform(current.Position, lastAuthoritative.Rotation);
 				}
-				else // non physical entity
+				else // non physics entity
 				{
-					if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Position))
+					if (netTransform.WasReplicated(Components::Position))
 						entity.SetLocalPosition({ lastAuthoritative.Position.x, lastAuthoritative.Position.y, transform.LocalPosition.z });
 
-					if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Scale))
+					if (netTransform.WasReplicated(Components::Scale))
 						transform.Scale = { lastAuthoritative.Scale.x, lastAuthoritative.Scale.y };
 
-					if (EnumHasAnyFlags(replicationFlags, NetTransform::ReplicateComponents::Rotation))
+					if (netTransform.WasReplicated(Components::Rotation))
 						transform.Rotation = lastAuthoritative.Rotation;
 				}
 
@@ -135,7 +127,7 @@ namespace proton {
 				{
 					entity.SetRigidbodyTransform(interpolatedPosition, interpolatedRotation);
 				}
-				else // non physical entity
+				else // non physics entity
 				{
 					entity.SetLocalPosition(interpolatedPosition);
 					transform.Rotation = interpolatedRotation;
@@ -161,11 +153,11 @@ namespace proton {
 					lastAuthoritative.Position.y + estimatedVelocity.y * lag
 				};
 
-				if (!netTransform.IsReconciling(ReconcileComponents::Position))
+				if (!netTransform.IsReconciling(Components::Position))
 				{
 					const float positionError = glm::distance(current.Position, predicted.Position);
 					if (positionError >= reconcileThreshold)
-						netTransform.StartReconcile(ReconcileComponents::Position);
+						netTransform.StartReconcile(Components::Position);
 				}
 
 				// Rotation extrapolation
@@ -175,12 +167,12 @@ namespace proton {
 
 				predicted.Rotation = lastAuthoritative.Rotation + estimatedAngularVelocity * lag;
 				
-				if (!netTransform.IsReconciling(ReconcileComponents::Rotation))
+				if (!netTransform.IsReconciling(Components::Rotation))
 				{
 					constexpr float s_RotationReconcileThreshold = 5.0f;
 					const float rotationError = glm::abs(current.Rotation - predicted.Rotation);
 					if (rotationError > s_RotationReconcileThreshold)
-						netTransform.StartReconcile(ReconcileComponents::Rotation);
+						netTransform.StartReconcile(Components::Rotation);
 				}
 
 				break;
@@ -242,20 +234,20 @@ namespace proton {
 							else
 								entity.SetLocalPosition(predicted.Position);
 							
-							netTransform.StopReconcile(ReconcileComponents::Position);
+							netTransform.StopReconcile(Components::Position);
 							lastTickTransform = predicted;
 						}
 						else
-							netTransform.StartReconcile(ReconcileComponents::Position);
+							netTransform.StartReconcile(Components::Position);
 					}
 
 					// Handle scale error
 					if (scaleError > s_ScaleReconcileThreshold)
-						netTransform.StartReconcile(ReconcileComponents::Scale);
+						netTransform.StartReconcile(Components::Scale);
 
 					// Handle rotation error
 					if (rotationError > s_RotationReconcileThreshold)
-						netTransform.StartReconcile(ReconcileComponents::Rotation);
+						netTransform.StartReconcile(Components::Rotation);
 				}
 
 				// If network tick and buffer has new deltas, increment and send sequence nummber
@@ -275,11 +267,11 @@ namespace proton {
 			constexpr float scaleErrorThreshold = 0.01f;
 			constexpr float rotationErrorThreshold = 0.1f;
 
-			// Rigidbody reconciliation
+			// Physics body reconciliation
 			if (rigidbody && scene->IsPhysicsTick())
 			{
 				// Position and rotation (for single Entity::SetRigidbodyTransform function call)
-				if (netTransform.IsReconciling(ReconcileComponents::PositionAndRotation))
+				if (netTransform.IsReconciling(Components::PositionAndRotation))
 				{
 					float alpha = reconcileTime > 0.0f ? glm::clamp(reconcileTimer / reconcileTime, 0.0f, 1.0f) : 1.0f;
 					if (alpha > 0.0f)
@@ -293,16 +285,16 @@ namespace proton {
 
 						const float positionError = glm::distance(interpolatedPos, predicted.Position);
 						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(ReconcileComponents::Position);
+							netTransform.StopReconcile(Components::Position);
 
 						const float rotationError = glm::abs(interpolatedRot - predicted.Rotation);
 						if (rotationError < rotationErrorThreshold)
-							netTransform.StopReconcile(ReconcileComponents::Rotation);
+							netTransform.StopReconcile(Components::Rotation);
 					}
 					reconcileTimer += ts;
 				}
 				// Position
-				else if (netTransform.IsReconciling(ReconcileComponents::Position))
+				else if (netTransform.IsReconciling(Components::Position))
 				{
 					float alpha = reconcileTime > 0.0f ? glm::clamp(reconcileTimer / reconcileTime, 0.0f, 1.0f) : 1.0f;
 					if (alpha > 0.0f)
@@ -314,12 +306,12 @@ namespace proton {
 
 						const float positionError = glm::distance(interpolatedPos, predicted.Position);
 						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(ReconcileComponents::Position);
+							netTransform.StopReconcile(Components::Position);
 					}
 					reconcileTimer += ts;
 				}
 				// Rotation
-				else if (netTransform.IsReconciling(ReconcileComponents::Rotation))
+				else if (netTransform.IsReconciling(Components::Rotation))
 				{
 					float alpha = reconcileTime > 0.0f ? glm::clamp(reconcileTimer / reconcileTime, 0.0f, 1.0f) : 1.0f;
 					if (alpha > 0.0f)
@@ -331,19 +323,19 @@ namespace proton {
 
 						const float rotationError = glm::abs(interpolatedRot - predicted.Rotation);
 						if (rotationError < rotationErrorThreshold)
-							netTransform.StopReconcile(ReconcileComponents::Rotation);
+							netTransform.StopReconcile(Components::Rotation);
 					}
 					reconcileTimer += ts;
 				}
 			}
 
-			// Non physical entity reconciliation
+			// Non physics entity reconciliation
 			if (!rigidbody)
 			{
 				const float alpha = netTransform.ReconcileTime > 0.0f ? glm::clamp(reconcileTimer / netTransform.ReconcileTime, 0.0f, 1.0f) : 1.0f;
 
 				// Position
-				if (netTransform.IsReconciling(ReconcileComponents::Position))
+				if (netTransform.IsReconciling(Components::Position))
 				{
 					if (alpha > 0.0f)
 					{
@@ -352,13 +344,13 @@ namespace proton {
 
 						const float positionError = glm::distance(interpolatedPos, predicted.Position);
 						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(ReconcileComponents::Position);
+							netTransform.StopReconcile(Components::Position);
 					}
 					reconcileTimer += ts;
 				}
 
 				// Scale
-				if (netTransform.IsReconciling(ReconcileComponents::Scale))
+				if (netTransform.IsReconciling(Components::Scale))
 				{
 					if (alpha > 0.0f)
 					{
@@ -366,12 +358,12 @@ namespace proton {
 						
 						const float scaleError = glm::distance(transform.Scale, predicted.Scale);
 						if (scaleError < scaleErrorThreshold)
-							netTransform.StopReconcile(ReconcileComponents::Scale);
+							netTransform.StopReconcile(Components::Scale);
 					}
 				}
 
 				// Rotation
-				if (netTransform.IsReconciling(ReconcileComponents::Rotation))
+				if (netTransform.IsReconciling(Components::Rotation))
 				{
 					if (alpha > 0.0f)
 					{
@@ -379,7 +371,7 @@ namespace proton {
 
 						const float rotationError = glm::abs(transform.Rotation - predicted.Rotation);
 						if (rotationError > rotationErrorThreshold)
-							netTransform.StopReconcile(ReconcileComponents::Rotation);
+							netTransform.StopReconcile(Components::Rotation);
 					}
 				}
 			}

@@ -39,7 +39,7 @@ void Player::OnRegisterFields()
 
 bool Player::OnCreate()
 {
-	// Get local player ID
+	// Network: Get local player ID
 	NetworkManager* networkManager = GetNetworkManager();
 	MyGameMode* gameMode = GetGameMode<MyGameMode>();
 	uint32_t localPlayerID = gameMode->GetLocalPlayerID();
@@ -58,9 +58,9 @@ bool Player::OnCreate()
 	}
 	else
 	{
-		// Set sync method to default if not local player
+		// Set sync method to interpolation if not local player
 		auto& net = GetComponent<NetworkComponent>();
-		net.NetTransform.Method = NetSyncMethod::None;
+		net.NetTransform.Method = NetSyncMethod::Interpolation;
 	}
 
 	if (IsRunningServer())
@@ -103,6 +103,7 @@ void Player::OnUpdate(float ts)
 		m_ActionState.MoveLeft = IsKeyPressed(Key::A);
 		m_ActionState.Jump = IsKeyPressed(Key::W);
 
+		// Network
 		if (IsRunningClient() && m_ActionState != previous)
 		{
 			GetGameMode()->Client_SendPlayerAction([&](NetworkStreamWriter& stream) {
@@ -128,15 +129,23 @@ void Player::OnUpdate(float ts)
 
 void Player::OnPhysicsUpdate(float ts)
 {
-	auto& net = GetComponent<NetworkComponent>();
-	if (IsRunningClient() && !m_IsLocalPlayer && net.NetTransform.Method != NetSyncMethod::Prediction)
-		return;
-
 	glm::vec2 velocity = GetLinearVelocity();
 
 	// Set player direction (right: 1.0, left: -1.0f)
 	m_Direction = m_ActionState.MoveRight ? 1.0f : (m_ActionState.MoveLeft ? -1.0f : m_Direction);
 	bool move = m_ActionState.MoveLeft || m_ActionState.MoveRight;
+
+	if (!move)
+	{
+		m_Wheel->SetFixedRotation(true);
+		m_Wheel->SetLinearVelocity({ 0.0f, m_Wheel->GetLinearVelocity().y });
+	}
+	else
+		m_Wheel->SetFixedRotation(false);
+
+	// Network
+	if (IsRunningClient() && !HasNetworkPrediction())
+		return;
 
 	// Set horizontal velocity (acceleration)
 	if (!IsOnHighSlope())
@@ -145,14 +154,6 @@ void Player::OnPhysicsUpdate(float ts)
 		float newVelocity = velocity.x + m_PlayerAcceleration * 10.0f * m_Direction * ts;
 
 		SetLinearVelocityX(!move ? 0.0f : glm::clamp(newVelocity, -maxSpeed, maxSpeed));
-
-		if (!move)
-		{
-			m_Wheel->SetFixedRotation(true);
-			m_Wheel->SetLinearVelocity({ 0.0f, m_Wheel->GetLinearVelocity().y });
-		}
-		else
-			m_Wheel->SetFixedRotation(false);
 	}
 
 	// Set player state to Run when key is pressed and player is not in the air

@@ -19,7 +19,7 @@ namespace proton {
 			Prediction,
 		};
 
-        enum class ReplicateComponents : uint8_t
+        enum class Components : uint8_t
         {
             None = 0,
             PositionX = 1 << 0,
@@ -29,18 +29,9 @@ namespace proton {
             Rotation = 1 << 4,
             Position = PositionX | PositionY,
             Scale = ScaleX | ScaleY,
+			PositionAndRotation = Position | Rotation,
             All = Position | Scale | Rotation,
         };
-
-		enum class ReconcileComponents : uint8_t
-		{
-			None = 0,
-			Position = 1 << 0,
-			Scale = 1 << 1,
-			Rotation = 1 << 2,
-			PositionAndRotation = Position | Rotation,
-			All = Position | Scale | Rotation
-		};
 
 		struct Transform
 		{
@@ -86,14 +77,16 @@ namespace proton {
 		float ReconcileTimer = 0.0f; // negative value means on cooldown
 		float InterpolationTimer = 0.0f;
 
-		ReplicateComponents ReplicationFlags = ReplicateComponents::None;
-		ReconcileComponents ReconciliationState = ReconcileComponents::None;
+		Components ReplicationFlags = Components::None;
+		Components ReconcileState = Components::None;
 
-		bool IsReconciling(ReconcileComponents component) const;
+		bool WasReplicated(Components component) const;
+		bool IsReconciling(Components component) const;
+
 		// State mutating function
-		void StartReconcile(ReconcileComponents component);
+		void StartReconcile(Components component);
 		// State mutating function
-		void StopReconcile(ReconcileComponents component);
+		void StopReconcile(Components component);
 
 		// Server-only data (TODO: store as separate EnTT component)
 		std::unordered_map<ClientID, SequencedValue> ServerDataMap;

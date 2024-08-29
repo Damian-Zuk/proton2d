@@ -77,10 +77,8 @@ namespace proton {
 
 		struct PayloadItem
 		{
-			using ReplicateComponents = NetTransform::ReplicateComponents;
-
 			UUID EntityUUID;
-			ReplicateComponents TransformFlags = ReplicateComponents::None;
+			NetTransform::Components TransformFlags = NetTransform::Components::None;
 			uint32_t TransformSequenceNumber = 0;
 			uint32_t ScriptCount;
 			uint64_t PayloadSize;

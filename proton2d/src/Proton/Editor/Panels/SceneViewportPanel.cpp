@@ -494,10 +494,13 @@ namespace proton {
 					{ transform.Scale.x,transform.Scale.y }, last.Rotation), COLOR_CYAN);
 
 				// Predicted transform state
-				bool reconcileStarted = netTransform.IsReconciling(NetTransform::ReconcileComponents::Position);
-				Renderer::DrawRect(Math::GetTransform({ pred.Position.x, pred.Position.y, 0.202f },
-					{ transform.Scale.x,transform.Scale.y }, last.Rotation),
-					reconcileStarted ? COLOR_LIGHT_RED : COLOR_GREEN);
+				if (netTransform.Method == NetSyncMethod::Prediction || netTransform.Method == NetSyncMethod::Extrapolation)
+				{
+					bool reconcileStarted = netTransform.IsReconciling(NetTransform::Components::Position);
+					Renderer::DrawRect(Math::GetTransform({ pred.Position.x, pred.Position.y, 0.202f },
+						{ transform.Scale.x,transform.Scale.y }, last.Rotation),
+						reconcileStarted ? COLOR_LIGHT_RED : COLOR_GREEN);
+				}
 			}
 			
 			if (m_ShowCullDistance)

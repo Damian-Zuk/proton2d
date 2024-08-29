@@ -78,19 +78,24 @@ namespace proton {
 		};
 	}
 
-	bool NetTransform::IsReconciling(ReconcileComponents component) const
+	bool NetTransform::WasReplicated(Components component) const
 	{
-		return EnumHasAllFlags(ReconciliationState, component);
+		return EnumHasAnyFlags(ReplicationFlags, component);
 	}
 
-	void NetTransform::StartReconcile(ReconcileComponents component)
+	bool NetTransform::IsReconciling(Components component) const
 	{
-		ReconciliationState = EnumAddFlags(ReconciliationState, component);
+		return EnumHasAllFlags(ReconcileState, component);
 	}
 
-	void NetTransform::StopReconcile(ReconcileComponents component)
+	void NetTransform::StartReconcile(Components component)
 	{
-		ReconciliationState = EnumRemoveFlags(ReconciliationState, component);
+		ReconcileState = EnumAddFlags(ReconcileState, component);
+	}
+
+	void NetTransform::StopReconcile(Components component)
+	{
+		ReconcileState = EnumRemoveFlags(ReconcileState, component);
 		ReconcileTimer = -ReconcileCooldownTime;
 	}
 

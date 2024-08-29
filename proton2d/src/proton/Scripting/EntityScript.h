@@ -91,6 +91,8 @@ namespace proton {
 		bool IsRunningServer() const;
 		bool IsRunningClient() const;
 
+		bool HasNetworkPrediction() const;
+
 		// Other
 		static const size_t GetFieldSize(ScriptFieldType type);
 		virtual const std::string& GetScriptClassName() = 0; // Defined by ENTITY_SCRIPT_CLASS macro

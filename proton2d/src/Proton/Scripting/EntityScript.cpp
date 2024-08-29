@@ -144,6 +144,12 @@ namespace proton {
 		return netManager->IsNetModeClient() && netManager->IsNetworkActive();
 	}
 
+	bool EntityScript::HasNetworkPrediction() const
+	{
+		auto& net = GetComponent<NetworkComponent>();
+		return net.NetTransform.Method == NetSyncMethod::Prediction || net.NetTransform.Method == NetSyncMethod::Extrapolation;
+	}
+
 	bool EntityScript::HasAuthority() const
 	{
 		NetMode netMode = GetNetworkManager()->GetNetMode();
