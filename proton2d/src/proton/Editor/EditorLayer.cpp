@@ -22,6 +22,7 @@
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
@@ -217,6 +218,8 @@ namespace proton {
 		instance->m_EditorGameInstance = game;
 		instance->m_IsMainInstance = false;
 		instance->SetNetMode(netMode);
+		uint16_t tickrate = m_MainGameInstance.Instance->GetNetworkManager()->GetTickrate();
+		instance->GetNetworkManager()->SetTickRate(tickrate);
 
 		viewport->m_EditorGameInstance = game;
 		viewport->m_IsMainViewport = false;

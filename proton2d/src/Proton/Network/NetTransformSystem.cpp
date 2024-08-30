@@ -18,7 +18,7 @@ namespace proton {
 	using Components = NetTransform::Components;
 
 	constexpr static float s_ScaleReconcileThreshold = 0.1f;
-	constexpr static float s_RotationReconcileThreshold = 3.0f;
+	constexpr static float s_RotationReconcileThreshold = 1.0f;
 
 	NetTransformSystem::NetTransformSystem(Client* client)
 		: m_Client(client), m_NetworkManager(client->m_NetworkManager)
@@ -34,12 +34,12 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
-		// Prediction updates and reconciliation happen on fixed timestamps
+		// Prediction and reconciliation happens on fixed timestamps
 		// Rigidbody entities are updated on physics tick
 		// Non physics entities are updated based on m_FixedUpdateTime
-		const bool isFixedUpdate = m_FixedUpdateElapsed >= m_FixedUpdateTime;
-		if (isFixedUpdate) m_FixedUpdateElapsed -= m_FixedUpdateTime;
-		m_FixedUpdateElapsed += ts;
+		const bool isFixedUpdate = m_FixedUpdateTimer >= m_FixedUpdateTimestep;
+		if (isFixedUpdate) m_FixedUpdateTimer -= m_FixedUpdateTimestep;
+		m_FixedUpdateTimer += ts;
 
 		// Iterate over network and transform components
 		auto view = scene->GetAllEntitiesWith<NetworkComponent, TransformComponent>();
@@ -97,7 +97,7 @@ namespace proton {
 				// Skip if not replicated this frame
 				if (replicationTimer > 0.0f) break;
 
-				if (rigidbody) // physics body
+				if (rigidbody) // Physics body
 				{
 					if (netTransform.WasReplicated(Components::Position) && netTransform.WasReplicated(Components::Rotation))
 						entity.SetRigidbodyTransform(lastAuthoritative.Position, lastAuthoritative.Rotation);
@@ -108,7 +108,7 @@ namespace proton {
 					else if (netTransform.WasReplicated(Components::Rotation))
 						entity.SetRigidbodyTransform(current.Position, lastAuthoritative.Rotation);
 				}
-				else // non physics entity
+				else // Non physics entity
 				{
 					if (netTransform.WasReplicated(Components::Position))
 						entity.SetLocalPosition({ lastAuthoritative.Position.x, lastAuthoritative.Position.y, transform.LocalPosition.z });
@@ -130,11 +130,11 @@ namespace proton {
 				const glm::vec2 interpolatedPosition = glm::mix(prevAuthoritative.Position, lastAuthoritative.Position, alpha);
 				const float interpolatedRotation = glm::mix(prevAuthoritative.Rotation, lastAuthoritative.Rotation, alpha);
 				
-				if (rigidbody) // physics body
+				if (rigidbody) // Physics body
 				{
 					entity.SetRigidbodyTransform(interpolatedPosition, interpolatedRotation);
 				}
-				else // non physics entity
+				else // Non physics entity
 				{
 					entity.SetLocalPosition(interpolatedPosition);
 					transform.Rotation = interpolatedRotation;
@@ -150,7 +150,7 @@ namespace proton {
 
 				const float lag = Server::s_FakeServerLag / 1000.0f;
 				
-				// Rotation extrapolation
+				// Position
 				const glm::vec2 serverVelocity = (lastAuthoritative.Position - prevAuthoritative.Position) / m_NetworkManager->m_TickTime;
 				const glm::vec2 currentVelocity = { rigidbody->GetLinearVelocity().x, rigidbody->GetLinearVelocity().y };
 				const glm::vec2 estimatedVelocity = (currentVelocity + serverVelocity) / 2.0f;
@@ -172,7 +172,7 @@ namespace proton {
 					}
 				}
 
-				// Rotation extrapolation
+				// Rotation
 				const float currentAngularVelocity = rigidbody->GetAngularVelocity();
 				const float serverAngularVelocity = (lastAuthoritative.Rotation - prevAuthoritative.Rotation) / m_NetworkManager->m_TickTime;
 				const float estimatedAngularVelocity = (currentAngularVelocity + serverAngularVelocity) / 2.0f;
@@ -181,7 +181,6 @@ namespace proton {
 				
 				if (!netTransform.IsReconciling(Components::Rotation))
 				{
-					constexpr float s_RotationReconcileThreshold = 5.0f;
 					const float rotationError = glm::abs(current.Rotation - predicted.Rotation);
 					if (rotationError > s_RotationReconcileThreshold)
 						netTransform.StartReconcile(Components::Rotation);
@@ -196,17 +195,17 @@ namespace proton {
 				{
 					auto& deltaBuffer = netTransform.DeltaBuffer;
 					
-					// Calculate this tick delta (add reconcile offset to prevent delta accumulation)
-					Transform thisTickDelta = (current - lastTickTransform) + reconcileOffset;
+					// Calculate delta (add offset to prevent delta accumulation during reconciliation)
+					Transform delta = (current - lastTickTransform) + reconcileOffset;
 					reconcileOffset = Transform{};
-					lastTickTransform = current;
 
-					// If delta is not zero, store in deltaBuffer
-					if (thisTickDelta.IsNotZero())
+					// If delta is not zero, store it in the buffer
+					if (delta.IsNotZero())
 					{
-						// Current sequence number is incremented on network tick
-						deltaBuffer.push_back({ (uint16_t)(currentSequenceNumber + 1), thisTickDelta });
+						// Sequence number is incremented on network tick
+						deltaBuffer.push_back({ (uint16_t)(currentSequenceNumber + 1), delta });
 						bufferHasNewDeltas = true;
+						lastTickTransform = current;
 					}
 
 					// Remove deltas that happened before last authoritative transform 
@@ -230,7 +229,7 @@ namespace proton {
 						predicted.Rotation += delta.Value.Rotation;
 					}
 
-					// Calculate errors (distance between current value and predicted value)
+					// Calculate errors (difference between current and predicted value)
 					const float positionError = glm::distance(current.Position, predicted.Position);
 					const float scaleError = glm::distance(current.Scale, predicted.Scale);
 					const float rotationError = glm::abs(current.Rotation - predicted.Rotation);
@@ -275,13 +274,17 @@ namespace proton {
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			// Thresholds below which reconciliation is stopped
+			// Threshold below which reconciliation is stopped
 			constexpr float reconcileStopThreshold = 0.01f;
 
 			// Physics body reconciliation
 			if (rigidbody && scene->IsPhysicsTick())
 			{
-				// Interpolator alpha
+				// Update timer if any component is reconiling
+				if (netTransform.IsReconciling())
+					reconcileTimer += scene->GetPhysicsTimestep();
+
+				// Interpolator
 				float alpha = reconcileMaxTime > 0.0f ? glm::clamp(reconcileTimer / reconcileMaxTime, 0.0f, 1.0f) : 1.0f;
 
 				// Position and rotation (for single Entity::SetRigidbodyTransform function call)
@@ -329,16 +332,16 @@ namespace proton {
 					if (rotationError < reconcileStopThreshold)
 						netTransform.StopReconcile(Components::Rotation);
 				}
-
-				// Update timer if any component is reconiling
-				if (netTransform.IsReconciling())
-					reconcileTimer += scene->GetPhysicsTimestep();
 			}
 
 			// Non physics entity reconciliation
 			if (!rigidbody && isFixedUpdate)
 			{
-				// Interpolator alpha
+				// Update timer if any component is reconiling
+				if (netTransform.IsReconciling())
+					reconcileTimer += m_FixedUpdateTimestep;
+
+				// Interpolator
 				const float alpha = reconcileMaxTime > 0.0f ? glm::clamp(reconcileTimer / reconcileMaxTime, 0.0f, 1.0f) : 1.0f;
 
 				// Position
@@ -374,10 +377,6 @@ namespace proton {
 					if (rotationError < reconcileStopThreshold)
 						netTransform.StopReconcile(Components::Rotation);
 				}
-
-				// Update timer if any component is reconiling
-				if (netTransform.IsReconciling())
-					reconcileTimer += m_FixedUpdateTime;
 			}
 
 			// Increment timers
