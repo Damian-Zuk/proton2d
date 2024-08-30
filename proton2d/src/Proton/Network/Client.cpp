@@ -75,12 +75,6 @@ namespace proton {
 			message->Release();
 			m_MessageQueue.pop();
 		}
-
-		//if (scene->m_NetworkInitialized)
-		//{
-		//	scene->CalculateWorldPositions(true);
-		//	m_NetTransformSystem->Client_OnUpdate(scene, ts);
-		//}
 	}
 
 	void Client::SendHandshake()

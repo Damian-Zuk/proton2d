@@ -157,9 +157,9 @@ namespace proton {
 			jsonObj["Network"] = {
 				{ "SyncMethod", NetSyncMethodToString(netTransform.Method) },
 				{ "CullDistance", netTransform.CullDistance, },
+				{ "TeleportThreshold", netTransform.TeleportThreshold },
 				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
-				{ "ReconcileTime", netTransform.ReconcileTime },
-				{ "ReconcileCooldownTime", netTransform.ReconcileCooldownTime },
+				{ "ReconcileMaxTime", netTransform.ReconcileMaxTime },
 			};
 		}
 
@@ -427,7 +427,7 @@ namespace proton {
 		// Deserialize PrefabComponent
 		if (isPrefab)
 		{
-			auto& pc = entity.AddComponent<PrefabComponent>();
+			auto& pc = entity.AddOrReplaceComponent<PrefabComponent>();
 			pc.PrefabUUID = (uint64_t)jsonObj["Prefab"]["UUID"];
 
 			if (!IsPrefabSerializer)
@@ -448,14 +448,14 @@ namespace proton {
 			if (netJson.contains("CullDistance"))
 				netTransform.CullDistance = netJson["CullDistance"];
 
-			if (netJson.contains("ReconcileTime"))
-				netTransform.ReconcileTime = netJson["ReconcileTime"];
+			if (netJson.contains("TeleportThreshold"))
+				netTransform.TeleportThreshold = netJson["TeleportThreshold"];
 
 			if (netJson.contains("ReconcileThreshold"))
 				netTransform.ReconcileThreshold = netJson["ReconcileThreshold"];
 
-			if (netJson.contains("ReconcileCooldownTime"))
-				netTransform.ReconcileCooldownTime = netJson["ReconcileCooldownTime"];
+			if (netJson.contains("ReconcileMaxTime"))
+				netTransform.ReconcileMaxTime = netJson["ReconcileMaxTime"];
 		}
 
 		// Deserialize SpriteComponent

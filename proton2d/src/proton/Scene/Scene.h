@@ -68,6 +68,7 @@ namespace proton {
 		bool IsPhysicsWorldInitialized() const;
 		bool IsPhysicsSimulated() const;
 		bool IsPhysicsTick() const { return m_IsPhysicsTick; }
+		float GetPhysicsTimestep() const { return m_PhysicsTimestep; }
 
 		bool IsSimulated() const { return m_State != SceneState::Stop; };
 		bool IsPaused() const { return m_State == SceneState::Paused; };

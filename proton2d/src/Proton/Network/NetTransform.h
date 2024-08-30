@@ -48,23 +48,22 @@ namespace proton {
 
 		struct SequencedValue
 		{
-			uint32_t SequenceNumber;
+			uint16_t SequenceNumber;
 			Transform Value;
 		};
 
 		// Parameters
 		SyncMethod Method = SyncMethod::None;
 		float CullDistance = 20.0f;
-		float ReconcileThreshold = 0.5f; // position only
-		float ReconcileTime = 1.0f; // position only
-		float ReconcileCooldownTime = 1.0f; // position only
 		float TeleportThreshold = 5.0f;
+		float ReconcileThreshold = 0.1f;
+		float ReconcileMaxTime = 0.1f;
 
 		// Internal state
 		std::vector<SequencedValue> DeltaBuffer;
-		uint32_t CurrentSequenceNumber = 0;
-		uint32_t ServerSequenceNumber = 0;
-		bool HasNewDeltas = false;
+		bool BufferHasNewDeltas = false;
+		uint16_t CurrentSequenceNumber = 0;
+		uint16_t ServerSequenceNumber = 0;
 
 		Transform LastAuthoritativeTransform;
 		Transform PrevAuthoritativeTransform;
@@ -73,8 +72,8 @@ namespace proton {
 		Transform PredictedTransform;
 		Transform ReconcileOffset;
 
-		float ReplicationTimer = 0.0f; // time elapsed from last replication
-		float ReconcileTimer = 0.0f; // negative value means on cooldown
+		float ReplicationTimer = 0.0f;
+		float ReconcileTimer = 0.0f;
 		float InterpolationTimer = 0.0f;
 
 		Components ReplicationFlags = Components::None;
@@ -82,18 +81,14 @@ namespace proton {
 
 		bool WasReplicated(Components component) const;
 		bool IsReconciling(Components component) const;
+		bool IsReconciling() const;
 
-		// State mutating function
 		void StartReconcile(Components component);
-		// State mutating function
 		void StopReconcile(Components component);
-
-		// Server-only data (TODO: store as separate EnTT component)
-		std::unordered_map<ClientID, SequencedValue> ServerDataMap;
 	};
 
 	using NetSyncMethod = NetTransform::SyncMethod;
-
+	
 	std::string NetSyncMethodToString(NetSyncMethod method);
 	NetSyncMethod StringToNetSyncMethod(const std::string& syncMethod);
 

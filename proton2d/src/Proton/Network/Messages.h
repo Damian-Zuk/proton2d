@@ -79,7 +79,7 @@ namespace proton {
 		{
 			UUID EntityUUID;
 			NetTransform::Components TransformFlags = NetTransform::Components::None;
-			uint32_t TransformSequenceNumber = 0;
+			uint16_t TransformSequenceNumber = 0;
 			uint32_t ScriptCount;
 			uint64_t PayloadSize;
 		};
@@ -93,7 +93,7 @@ namespace proton {
 		struct PayloadItem
 		{
 			UUID EnittyUUID;
-			uint32_t SequenceNumber;
+			uint16_t SequenceNumber;
 		};
 	};
 

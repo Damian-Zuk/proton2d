@@ -568,7 +568,7 @@ namespace proton {
 			auto& net = view.get<NetworkComponent>(_entity);
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& netTransform = net.NetTransform;
-			auto& clientTransformData = netTransform.ServerDataMap[clientID];
+			auto& clientTransformData = net.ServerDataMap[clientID];
 
 			// Network cull distance
 			if (clientEntity)

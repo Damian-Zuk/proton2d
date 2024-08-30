@@ -4,9 +4,8 @@
 
 namespace proton
 {
-	// BufferStream with networking in mind
-	// Adapted from: Proton/Serialization/BufferStream.h
-	// Writer: Prevents buffer overflow by updating buffer size with reallocation.
+	// Adapted from: Serialization/BufferStream.h
+	// StreamWriter: Prevents buffer overflow by updating buffer size with reallocation.
 	// Network messages are written to preallocated buffer with fixed initial size (m_ScratchBuffer).
 
 	class NetworkStreamWriter : public StreamWriter

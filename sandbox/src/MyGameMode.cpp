@@ -90,9 +90,8 @@ void MyGameMode::Server_OnClientConnected(ClientID clientID)
 	player->SetWorldPosition(spawnTransform.WorldPosition);
 
 	// Set player color
-	static uint32_t colorIndex = 1;
-	player->SetPlayerColor(PlayerColors[colorIndex]);
-	colorIndex = (colorIndex + 1) % 10;
+	player->SetPlayerColor(PlayerColors[m_NewColorIndex]);
+	m_NewColorIndex = (m_NewColorIndex + 1) % 10;
 	
 	m_RemotePlayers[clientID] = player;
 

@@ -20,8 +20,10 @@ public:
 
 private:
 	std::map<uint32_t, Player*> m_RemotePlayers;
+	
 	Player* m_LocalPlayer;
 	ClientID m_LocalClientID = 0;
+
 	uint32_t m_NewColorIndex = 1;
 
 	friend class Player;

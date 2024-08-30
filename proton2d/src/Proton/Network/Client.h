@@ -60,7 +60,7 @@ namespace proton {
 		NetworkManager* m_NetworkManager;
 
 		Unique<NetReplicator> m_NetReplicator;
-		Unique<NetTransformSystem> m_NetTransformSystem;
+		Unique<NetTransformSystem> m_NetTransformSystem; // updated by Scene
 
 		// GameNetworkingSockets API
 		ISteamNetworkingSockets* m_Interface = nullptr;

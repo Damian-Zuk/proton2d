@@ -88,6 +88,11 @@ namespace proton {
 		return EnumHasAllFlags(ReconcileState, component);
 	}
 
+	bool NetTransform::IsReconciling() const
+	{
+		return EnumHasAnyFlags(ReconcileState, Components::All);
+	}
+
 	void NetTransform::StartReconcile(Components component)
 	{
 		ReconcileState = EnumAddFlags(ReconcileState, component);
@@ -96,7 +101,7 @@ namespace proton {
 	void NetTransform::StopReconcile(Components component)
 	{
 		ReconcileState = EnumRemoveFlags(ReconcileState, component);
-		ReconcileTimer = -ReconcileCooldownTime;
+		ReconcileTimer = 0.0f;
 	}
 
 }

@@ -29,6 +29,10 @@ namespace proton {
 		Server* m_Server = nullptr;
 		NetworkManager* m_NetworkManager;
 
+		// Prediction fixed update time for non physics entities
+		float m_FixedUpdateTime = 0.01f;
+		float m_FixedUpdateElapsed = m_FixedUpdateTime;
+
 		std::vector<MessageEntitySequence::PayloadItem> m_SequenceNumbersToSend;
 	};
 

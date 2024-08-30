@@ -675,10 +675,9 @@ namespace proton {
 				float cullDistance = netTransform.CullDistance;
 				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
 					netTransform.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
-				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
-				ImGui::DragFloat("Reconcile Time", &netTransform.ReconcileTime, 0.001f);
-				ImGui::DragFloat("Reconcile Cooldown", &netTransform.ReconcileCooldownTime, 0.001f);
 				ImGui::DragFloat("Teleport Threshold", &netTransform.TeleportThreshold, 0.001f);
+				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
+				ImGui::DragFloat("Reconcile Max Time", &netTransform.ReconcileMaxTime, 0.001f);
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });

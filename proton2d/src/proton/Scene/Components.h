@@ -159,6 +159,7 @@ namespace proton {
 				void* Data = nullptr;
 				size_t Size = 0;
 				std::function<void()> NotifyFunction;
+				// Server-only (store in serparate EnTT component?)
 				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
 			};
 			EntityScript* Script = nullptr;
@@ -167,6 +168,9 @@ namespace proton {
 		std::vector<ReplicatedScript> ReplicatedScripts;
 
 		bool WasReplicated = false;
+
+		// Server-only data (TODO: store as separate EnTT component)
+		std::unordered_map<ClientID, NetTransform::SequencedValue> ServerDataMap;
 	};
 
 }

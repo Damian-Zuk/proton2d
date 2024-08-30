@@ -34,6 +34,14 @@ namespace proton {
 	{
 		PROFILE_FUNCTION();
 
+		// Prediction updates and reconciliation happen on fixed timestamps
+		// Rigidbody entities are updated on physics tick
+		// Non physics entities are updated based on m_FixedUpdateTime
+		const bool isFixedUpdate = m_FixedUpdateElapsed >= m_FixedUpdateTime;
+		if (isFixedUpdate) m_FixedUpdateElapsed -= m_FixedUpdateTime;
+		m_FixedUpdateElapsed += ts;
+
+		// Iterate over network and transform components
 		auto view = scene->GetAllEntitiesWith<NetworkComponent, TransformComponent>();
 		for (auto _entity : view)
 		{
@@ -45,13 +53,12 @@ namespace proton {
 			const auto& lastAuthoritative = netTransform.LastAuthoritativeTransform;
 			const auto& prevAuthoritative = netTransform.PrevAuthoritativeTransform;
 			const auto& reconcileThreshold = netTransform.ReconcileThreshold;
-			const auto& reconcileTime = netTransform.ReconcileTime;
-			const auto& reconcileCooldownTime = netTransform.ReconcileCooldownTime;
+			const auto& reconcileMaxTime = netTransform.ReconcileMaxTime;
 			const auto& teleportThreshold = netTransform.TeleportThreshold;
 			const auto& replicationFlags = netTransform.ReplicationFlags;
 			auto& replicationTimer = netTransform.ReplicationTimer;
 			auto& currentSequenceNumber = netTransform.CurrentSequenceNumber;
-			auto& hasNewDeltas = netTransform.HasNewDeltas;
+			auto& bufferHasNewDeltas = netTransform.BufferHasNewDeltas;
 			auto& lastTickTransform = netTransform.LastTickTransform;
 			auto& predicted = netTransform.PredictedTransform;
 			auto& reconcileOffset = netTransform.ReconcileOffset;
@@ -64,7 +71,7 @@ namespace proton {
 			// Try to get Box2D rigidbody (nullptr if non physics entity)
 			b2Body* rigidbody = entity.GetRuntimeBody();
 
-			// Cull Distance: Put rigidbody to sleep when far away
+			// Cull Distance: put rigidbody to sleep when far away
 			if (rigidbody)
 			{
 				if (Entity localPlayer = m_NetworkManager->GetLocalPlayerEntity())
@@ -87,7 +94,7 @@ namespace proton {
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::None:
 			{
-				// Check if replicated this frame
+				// Skip if not replicated this frame
 				if (replicationTimer > 0.0f) break;
 
 				if (rigidbody) // physics body
@@ -139,7 +146,7 @@ namespace proton {
 			case NetTransform::SyncMethod::Extrapolation:
 			{
 				// Extrapolation supported only for rigidbodies
-				if (!rigidbody) break;
+				if (!rigidbody || !scene->IsPhysicsTick()) break;
 
 				const float lag = Server::s_FakeServerLag / 1000.0f;
 				
@@ -156,8 +163,13 @@ namespace proton {
 				if (!netTransform.IsReconciling(Components::Position))
 				{
 					const float positionError = glm::distance(current.Position, predicted.Position);
-					if (positionError >= reconcileThreshold)
-						netTransform.StartReconcile(Components::Position);
+					if (positionError > reconcileThreshold)
+					{
+						if (positionError > teleportThreshold)
+							entity.SetRigidbodyTransform(predicted.Position, current.Rotation);
+						else
+							netTransform.StartReconcile(Components::Position);
+					}
 				}
 
 				// Rotation extrapolation
@@ -180,24 +192,24 @@ namespace proton {
 			////////////////////////////////////////////////////////////////////////////////////////////////////
 			case NetTransform::SyncMethod::Prediction:
 			{
-				if (scene->IsPhysicsTick()) // TODO: Transform IsNetworkTick
+				if ((rigidbody && scene->IsPhysicsTick()) || (!rigidbody && isFixedUpdate))
 				{
 					auto& deltaBuffer = netTransform.DeltaBuffer;
 					
-					// Calculate this tick delta
-					Transform thisTickDelta = current - lastTickTransform - reconcileOffset;
+					// Calculate this tick delta (add reconcile offset to prevent delta accumulation)
+					Transform thisTickDelta = (current - lastTickTransform) + reconcileOffset;
 					reconcileOffset = Transform{};
 					lastTickTransform = current;
 
-					// If delta not zero, store entry in deltaBuffer
+					// If delta is not zero, store in deltaBuffer
 					if (thisTickDelta.IsNotZero())
 					{
 						// Current sequence number is incremented on network tick
-						deltaBuffer.push_back({ currentSequenceNumber + 1, thisTickDelta });
-						hasNewDeltas = true;
+						deltaBuffer.push_back({ (uint16_t)(currentSequenceNumber + 1), thisTickDelta });
+						bufferHasNewDeltas = true;
 					}
 
-					// Remove deltas that happened before the last authoritative transform 
+					// Remove deltas that happened before last authoritative transform 
 					auto deltaIt = deltaBuffer.begin();
 					while (deltaIt != deltaBuffer.end() && deltaIt->SequenceNumber <= netTransform.ServerSequenceNumber)
 						deltaIt++;
@@ -206,7 +218,7 @@ namespace proton {
 						deltaBuffer.erase(deltaBuffer.begin(), deltaIt);
 					
 					// If not moved and not received replication for some time, clear the delta buffer 
-					if (!hasNewDeltas && replicationTimer > m_NetworkManager->m_TickTime * 10.0f)
+					if (!bufferHasNewDeltas && replicationTimer > m_NetworkManager->m_TickTime * 10.0f)
 						deltaBuffer.clear();
 
 					// Calculate predicted transform: apply deltas not processed by server yet
@@ -218,15 +230,15 @@ namespace proton {
 						predicted.Rotation += delta.Value.Rotation;
 					}
 
-					// Check position error
+					// Calculate errors (distance between current value and predicted value)
 					const float positionError = glm::distance(current.Position, predicted.Position);
 					const float scaleError = glm::distance(current.Scale, predicted.Scale);
 					const float rotationError = glm::abs(current.Rotation - predicted.Rotation);
 					
 					// Handle position error
-					if (positionError > reconcileThreshold && reconcileTimer >= 0.0f)
+					if (positionError > reconcileThreshold)
 					{
-						if (positionError >= teleportThreshold)
+						if (positionError > teleportThreshold)
 						{
 							// Teleport entity if error exceeds threshold
 							if (rigidbody)
@@ -250,139 +262,127 @@ namespace proton {
 						netTransform.StartReconcile(Components::Rotation);
 				}
 
-				// If network tick and buffer has new deltas, increment and send sequence nummber
-				if (hasNewDeltas && m_NetworkManager->IsNetworkTick())
+				// If is network tick and buffer has new deltas, increment and send sequence nummber
+				if (bufferHasNewDeltas && m_NetworkManager->IsNetworkTick())
 				{
-					m_SequenceNumbersToSend.push_back({ entity.GetUUID(), currentSequenceNumber });
 					currentSequenceNumber++;
-					hasNewDeltas = false;
+					m_SequenceNumbersToSend.push_back({ entity.GetUUID(), currentSequenceNumber });
+					bufferHasNewDeltas = false;
 				}
 
 				break;
 			}
 			}
+			////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			// Thresholds below which reconciliation is stopped
-			constexpr float positionErrorThreshold = 0.01f;
-			constexpr float scaleErrorThreshold = 0.01f;
-			constexpr float rotationErrorThreshold = 0.1f;
+			constexpr float reconcileStopThreshold = 0.01f;
 
 			// Physics body reconciliation
 			if (rigidbody && scene->IsPhysicsTick())
 			{
+				// Interpolator alpha
+				float alpha = reconcileMaxTime > 0.0f ? glm::clamp(reconcileTimer / reconcileMaxTime, 0.0f, 1.0f) : 1.0f;
+
 				// Position and rotation (for single Entity::SetRigidbodyTransform function call)
-				if (netTransform.IsReconciling(Components::PositionAndRotation))
+				if (netTransform.IsReconciling(Components::PositionAndRotation) && alpha > 0.0f)
 				{
-					float alpha = reconcileTime > 0.0f ? glm::clamp(reconcileTimer / reconcileTime, 0.0f, 1.0f) : 1.0f;
-					if (alpha > 0.0f)
-					{
-						glm::vec2 interpolatedPos = glm::mix(current.Position, predicted.Position, alpha);
-						float interpolatedRot = glm::mix(current.Rotation, predicted.Rotation, alpha);
+					glm::vec2 interpolatedPos = glm::mix(current.Position, predicted.Position, alpha);
+					float interpolatedRot = glm::mix(current.Rotation, predicted.Rotation, alpha);
 
-						reconcileOffset.Position = interpolatedPos - current.Position;
-						reconcileOffset.Rotation = interpolatedRot - current.Rotation;
-						entity.SetRigidbodyTransform(interpolatedPos, interpolatedRot);
+					reconcileOffset.Position = current.Position - interpolatedPos;
+					reconcileOffset.Rotation = current.Rotation - interpolatedRot;
+					entity.SetRigidbodyTransform(interpolatedPos, interpolatedRot);
 
-						const float positionError = glm::distance(interpolatedPos, predicted.Position);
-						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(Components::Position);
+					const float positionError = glm::distance(interpolatedPos, predicted.Position);
+					if (positionError < reconcileStopThreshold)
+						netTransform.StopReconcile(Components::Position);
 
-						const float rotationError = glm::abs(interpolatedRot - predicted.Rotation);
-						if (rotationError < rotationErrorThreshold)
-							netTransform.StopReconcile(Components::Rotation);
-					}
-					reconcileTimer += ts;
+					const float rotationError = glm::abs(interpolatedRot - predicted.Rotation);
+					if (rotationError < reconcileStopThreshold)
+						netTransform.StopReconcile(Components::Rotation);
 				}
 				// Position
-				else if (netTransform.IsReconciling(Components::Position))
+				else if (netTransform.IsReconciling(Components::Position) && alpha > 0.0f)
 				{
-					float alpha = reconcileTime > 0.0f ? glm::clamp(reconcileTimer / reconcileTime, 0.0f, 1.0f) : 1.0f;
-					if (alpha > 0.0f)
+					glm::vec2 interpolatedPos = glm::mix(current.Position, predicted.Position, alpha);
+
+					reconcileOffset.Position = current.Position - interpolatedPos;
+					entity.SetRigidbodyTransform(interpolatedPos, current.Rotation);
+
+					const float positionError = glm::distance(interpolatedPos, predicted.Position);
+					if (positionError < reconcileStopThreshold)
 					{
-						glm::vec2 interpolatedPos = glm::mix(current.Position, predicted.Position, alpha);
-
-						reconcileOffset.Position = interpolatedPos - current.Position;
-						entity.SetRigidbodyTransform(interpolatedPos, current.Rotation);
-
-						const float positionError = glm::distance(interpolatedPos, predicted.Position);
-						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(Components::Position);
+						//if (entity == m_NetworkManager->GetLocalPlayerEntity()) PT_CORE_TRACE("Stop: elapsed={}, alpha={}", reconcileTimer, alpha);
+						netTransform.StopReconcile(Components::Position);
 					}
-					reconcileTimer += ts;
 				}
 				// Rotation
-				else if (netTransform.IsReconciling(Components::Rotation))
+				else if (netTransform.IsReconciling(Components::Rotation) && alpha > 0.0f)
 				{
-					float alpha = reconcileTime > 0.0f ? glm::clamp(reconcileTimer / reconcileTime, 0.0f, 1.0f) : 1.0f;
-					if (alpha > 0.0f)
-					{
-						float interpolatedRot = glm::mix(current.Rotation, predicted.Rotation, alpha);
+					float interpolatedRot = glm::mix(current.Rotation, predicted.Rotation, alpha);
 
-						reconcileOffset.Rotation = interpolatedRot - current.Rotation;
-						entity.SetRigidbodyTransform(current.Position, interpolatedRot);
+					reconcileOffset.Rotation = current.Rotation - interpolatedRot;
+					entity.SetRigidbodyTransform(current.Position, interpolatedRot);
 
-						const float rotationError = glm::abs(interpolatedRot - predicted.Rotation);
-						if (rotationError < rotationErrorThreshold)
-							netTransform.StopReconcile(Components::Rotation);
-					}
-					reconcileTimer += ts;
+					const float rotationError = glm::abs(interpolatedRot - predicted.Rotation);
+					if (rotationError < reconcileStopThreshold)
+						netTransform.StopReconcile(Components::Rotation);
 				}
+
+				// Update timer if any component is reconiling
+				if (netTransform.IsReconciling())
+					reconcileTimer += scene->GetPhysicsTimestep();
 			}
 
 			// Non physics entity reconciliation
-			if (!rigidbody)
+			if (!rigidbody && isFixedUpdate)
 			{
-				const float alpha = netTransform.ReconcileTime > 0.0f ? glm::clamp(reconcileTimer / netTransform.ReconcileTime, 0.0f, 1.0f) : 1.0f;
+				// Interpolator alpha
+				const float alpha = reconcileMaxTime > 0.0f ? glm::clamp(reconcileTimer / reconcileMaxTime, 0.0f, 1.0f) : 1.0f;
 
 				// Position
-				if (netTransform.IsReconciling(Components::Position))
+				if (netTransform.IsReconciling(Components::Position) && alpha > 0.0f)
 				{
-					if (alpha > 0.0f)
-					{
-						glm::vec2 interpolatedPos = glm::mix(current.Position, predicted.Position, alpha);
-						entity.SetLocalPosition(interpolatedPos);
+					glm::vec2 interpolatedPos = glm::mix(current.Position, predicted.Position, alpha);
+					entity.SetLocalPosition(interpolatedPos);
+					reconcileOffset.Position = current.Position - interpolatedPos;
 
-						const float positionError = glm::distance(interpolatedPos, predicted.Position);
-						if (positionError < positionErrorThreshold)
-							netTransform.StopReconcile(Components::Position);
-					}
-					reconcileTimer += ts;
+					const float positionError = glm::distance(interpolatedPos, predicted.Position);
+					if (positionError < reconcileStopThreshold)
+						netTransform.StopReconcile(Components::Position);
 				}
 
 				// Scale
-				if (netTransform.IsReconciling(Components::Scale))
+				if (netTransform.IsReconciling(Components::Scale) && alpha > 0.0f)
 				{
-					if (alpha > 0.0f)
-					{
-						transform.Scale = glm::mix(current.Scale, predicted.Scale, alpha);
+					transform.Scale = glm::mix(current.Scale, predicted.Scale, alpha);
+					reconcileOffset.Scale = current.Scale - transform.Scale;
 						
-						const float scaleError = glm::distance(transform.Scale, predicted.Scale);
-						if (scaleError < scaleErrorThreshold)
-							netTransform.StopReconcile(Components::Scale);
-					}
+					const float scaleError = glm::distance(transform.Scale, predicted.Scale);
+					if (scaleError < reconcileStopThreshold)
+						netTransform.StopReconcile(Components::Scale);
 				}
 
 				// Rotation
-				if (netTransform.IsReconciling(Components::Rotation))
+				if (netTransform.IsReconciling(Components::Rotation) && alpha > 0.0f)
 				{
-					if (alpha > 0.0f)
-					{
-						transform.Rotation = glm::mix(current.Rotation, predicted.Rotation, alpha);
+					transform.Rotation = glm::mix(current.Rotation, predicted.Rotation, alpha);
+					reconcileOffset.Rotation = current.Rotation - transform.Rotation;
 
-						const float rotationError = glm::abs(transform.Rotation - predicted.Rotation);
-						if (rotationError > rotationErrorThreshold)
-							netTransform.StopReconcile(Components::Rotation);
-					}
+					const float rotationError = glm::abs(transform.Rotation - predicted.Rotation);
+					if (rotationError < reconcileStopThreshold)
+						netTransform.StopReconcile(Components::Rotation);
 				}
+
+				// Update timer if any component is reconiling
+				if (netTransform.IsReconciling())
+					reconcileTimer += m_FixedUpdateTime;
 			}
 
 			// Increment timers
 			replicationTimer += ts;
 			interpolationTimer += ts;
-
-			// Reconcile timer on cooldown
-			if (reconcileTimer < 0.0f)
-				reconcileTimer = glm::min(reconcileTimer + ts, 0.0f);
 		}
 
 		// Send sequence numbers to server on network tick
@@ -445,8 +445,7 @@ namespace proton {
 				}
 
 				auto& net = entity.GetComponent<NetworkComponent>();
-				auto& data = net.NetTransform.ServerDataMap[clientID];
-				data.SequenceNumber = item.SequenceNumber;
+				net.ServerDataMap[clientID].SequenceNumber = item.SequenceNumber;
 			}
 		}
 	}
