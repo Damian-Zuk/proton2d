@@ -333,7 +333,7 @@ namespace proton {
 				if (key == Key::Delete)
 					m_SelectedEntity.Destroy();
 
-				if (key == Key::D && Input::IsKeyPressed(Key::LeftControl))
+				if (key == Key::D && Input::IsKeyPressed(Key::LeftControl) && !GetActiveScene()->IsSimulated())
 				{
 					Entity newEntity = scene->DuplicateEntity(m_SelectedEntity, Entity());
 					auto& transform = newEntity.GetTransform();

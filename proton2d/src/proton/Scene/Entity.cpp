@@ -272,13 +272,11 @@ namespace proton
 			{
 				auto& tc = current.GetComponent<TransformComponent>();
 				auto& rb = current.GetComponent<RigidbodyComponent>();
-				if (rb.AttachToParent)
-				{
-					glm::vec2 offset = position;
-					offset.x += tc.LocalPosition.x;
-					offset.y += tc.LocalPosition.y;
-					current.SetRigidbodyTransform(offset, tc.Rotation);
-				}
+
+				glm::vec2 offset = position;
+				offset.x += tc.LocalPosition.x;
+				offset.y += tc.LocalPosition.y;
+				current.SetRigidbodyTransform(offset, tc.Rotation);
 			}
 			auto& h = current.GetComponent<RelationshipComponent>();
 			current = Entity{ h.Next, m_Scene };
