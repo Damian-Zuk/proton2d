@@ -1,9 +1,10 @@
 {
+    "UUID": 1692178244510993355,
     "Tag": "TestFrame1",
     "Transform": {
         "Position": [
-            -28.91433,
-            4.03517,
+            -36.29253,
+            5.54385,
             0.0
         ],
         "Rotation": 0.0,
@@ -32,6 +33,7 @@
     ],
     "Entities": [
         {
+            "UUID": 5521481089688524595,
             "Tag": "Balls",
             "Transform": {
                 "Position": [
@@ -47,6 +49,187 @@
             },
             "Entities": [
                 {
+                    "UUID": 14596149196641209207,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            -2.64655,
+                            -1.37074,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Prefab": {
+                        "UUID": 5573556572364565067
+                    },
+                    "Network": {
+                        "SimulateOnClient": true,
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ServerVelocityWeight": 0.30000001192092896
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 12414504559682079817,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            3.10969,
+                            -1.44158,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Prefab": {
+                        "UUID": 5573556572364565067
+                    },
+                    "Network": {
+                        "SimulateOnClient": true,
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ServerVelocityWeight": 0.30000001192092896
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5862236366416448600,
+                    "Tag": "Ball",
+                    "Transform": {
+                        "Position": [
+                            3.05655,
+                            1.03802,
+                            0.101
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Prefab": {
+                        "UUID": 5573556572364565067
+                    },
+                    "Network": {
+                        "SimulateOnClient": true,
+                        "SyncMethod": "Interpolation",
+                        "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
+                        "ReconcileThreshold": 0.03999999910593033,
+                        "ReconcileMaxTime": 0.03999999910593033,
+                        "ServerVelocityWeight": 0.30000001192092896
+                    },
+                    "Sprite": {
+                        "Texture": "basketball.png",
+                        "FilterMode": 1,
+                        "Flip": [
+                            false,
+                            false
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 2,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "CircleCollider": {
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Radius": 1.0,
+                        "Friction": 0.5,
+                        "Restitution": 0.699999988079071,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 8492849030633898537,
                     "Tag": "Ball",
                     "Transform": {
                         "Position": [
@@ -64,11 +247,13 @@
                         "UUID": 5573556572364565067
                     },
                     "Network": {
+                        "SimulateOnClient": true,
                         "SyncMethod": "Interpolation",
                         "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
                         "ReconcileThreshold": 0.03999999910593033,
                         "ReconcileMaxTime": 0.03999999910593033,
-                        "ReconcileCooldownTime": 0.0
+                        "ServerVelocityWeight": 0.30000001192092896
                     },
                     "Sprite": {
                         "Texture": "basketball.png",
@@ -104,6 +289,7 @@
                     }
                 },
                 {
+                    "UUID": 5723520203068875079,
                     "Tag": "Ball",
                     "Transform": {
                         "Position": [
@@ -121,11 +307,13 @@
                         "UUID": 5573556572364565067
                     },
                     "Network": {
+                        "SimulateOnClient": true,
                         "SyncMethod": "Interpolation",
                         "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
                         "ReconcileThreshold": 0.03999999910593033,
                         "ReconcileMaxTime": 0.03999999910593033,
-                        "ReconcileCooldownTime": 0.0
+                        "ServerVelocityWeight": 0.30000001192092896
                     },
                     "Sprite": {
                         "Texture": "basketball.png",
@@ -161,6 +349,7 @@
                     }
                 },
                 {
+                    "UUID": 12760988971917993922,
                     "Tag": "Ball",
                     "Transform": {
                         "Position": [
@@ -178,11 +367,13 @@
                         "UUID": 5573556572364565067
                     },
                     "Network": {
+                        "SimulateOnClient": true,
                         "SyncMethod": "Interpolation",
                         "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
                         "ReconcileThreshold": 0.03999999910593033,
                         "ReconcileMaxTime": 0.03999999910593033,
-                        "ReconcileCooldownTime": 0.0
+                        "ServerVelocityWeight": 0.30000001192092896
                     },
                     "Sprite": {
                         "Texture": "basketball.png",
@@ -218,6 +409,7 @@
                     }
                 },
                 {
+                    "UUID": 16522013339396598283,
                     "Tag": "Ball",
                     "Transform": {
                         "Position": [
@@ -235,11 +427,13 @@
                         "UUID": 5573556572364565067
                     },
                     "Network": {
+                        "SimulateOnClient": true,
                         "SyncMethod": "Interpolation",
                         "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
                         "ReconcileThreshold": 0.03999999910593033,
                         "ReconcileMaxTime": 0.03999999910593033,
-                        "ReconcileCooldownTime": 0.0
+                        "ServerVelocityWeight": 0.30000001192092896
                     },
                     "Sprite": {
                         "Texture": "basketball.png",
@@ -275,6 +469,7 @@
                     }
                 },
                 {
+                    "UUID": 9750081567992004269,
                     "Tag": "Ball",
                     "Transform": {
                         "Position": [
@@ -292,11 +487,13 @@
                         "UUID": 5573556572364565067
                     },
                     "Network": {
+                        "SimulateOnClient": true,
                         "SyncMethod": "Interpolation",
                         "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
                         "ReconcileThreshold": 0.03999999910593033,
                         "ReconcileMaxTime": 0.03999999910593033,
-                        "ReconcileCooldownTime": 0.0
+                        "ServerVelocityWeight": 0.30000001192092896
                     },
                     "Sprite": {
                         "Texture": "basketball.png",
@@ -334,6 +531,7 @@
             ]
         },
         {
+            "UUID": 5112716431700157367,
             "Tag": "Walls",
             "Transform": {
                 "Position": [
@@ -349,6 +547,7 @@
             },
             "Entities": [
                 {
+                    "UUID": 1773608715315505895,
                     "Tag": "Wall",
                     "Transform": {
                         "Position": [
@@ -393,6 +592,7 @@
                     }
                 },
                 {
+                    "UUID": 14359885674159140304,
                     "Tag": "Wall",
                     "Transform": {
                         "Position": [
@@ -437,6 +637,7 @@
                     }
                 },
                 {
+                    "UUID": 3805326882639377003,
                     "Tag": "Wall",
                     "Transform": {
                         "Position": [
@@ -481,6 +682,7 @@
                     }
                 },
                 {
+                    "UUID": 11993108664537601768,
                     "Tag": "Wall",
                     "Transform": {
                         "Position": [
@@ -527,6 +729,7 @@
             ]
         },
         {
+            "UUID": 16596457412405440189,
             "Tag": "Bouncer",
             "Transform": {
                 "Position": [
@@ -541,11 +744,13 @@
                 ]
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.5,
                 "ReconcileMaxTime": 0.5,
-                "ReconcileCooldownTime": 1.0
+                "ServerVelocityWeight": 0.30000001192092896
             },
             "Rigidbody": {
                 "Type": 2,
@@ -554,6 +759,7 @@
             },
             "Entities": [
                 {
+                    "UUID": 15937879237103137291,
                     "Tag": "BouncerPart1",
                     "Transform": {
                         "Position": [
@@ -593,6 +799,7 @@
                     }
                 },
                 {
+                    "UUID": 13383190383099056429,
                     "Tag": "BouncerPart2",
                     "Transform": {
                         "Position": [

@@ -1,5 +1,5 @@
 {
-    "UUID": 12746910567661389313,
+    "UUID": 12032957847203058155,
     "Tag": "Wooden Box",
     "Transform": {
         "Position": [
@@ -17,11 +17,11 @@
         "UUID": 15395898022612884793
     },
     "Network": {
-        "SyncMethod": "Interpolation",
+        "SyncMethod": "Prediction",
         "CullDistance": 20.0,
-        "ReconcileThreshold": 0.02500000037252903,
-        "ReconcileMaxTime": 0.02500000037252903,
-        "ReconcileCooldownTime": 1.0
+        "ReconcileThreshold": 0.10000000149011612,
+        "ReconcileTime": 0.10000000149011612,
+        "ReconcileCooldownTime": 0.0
     },
     "Sprite": {
         "Texture": "box.png",
