@@ -20,6 +20,9 @@ namespace proton {
 		}
 		else if (loadStartScene)
 		{
+			if (m_IsMainInstance)
+				m_NetworkManager->ReadConfig();
+
 			Scene* scene = m_SceneManager->Load(m_ProjectSettings.m_StartScene);
 			m_SceneManager->SetActiveScene(scene);
 

@@ -149,11 +149,10 @@ namespace proton {
 				if (!rigidbody || !scene->IsPhysicsTick()) break;
 
 				const float lag = Server::s_FakeServerLag / 1000.0f;
-				
 				// Position
 				glm::vec2 serverVelocity = (lastAuthoritative.Position - prevAuthoritative.Position) / m_NetworkManager->m_TickTime;
 				glm::vec2 currentVelocity = { rigidbody->GetLinearVelocity().x, rigidbody->GetLinearVelocity().y };
-				glm::vec2 estimatedVelocity = (currentVelocity + serverVelocity) / 2.0f;
+				glm::vec2 estimatedVelocity = serverVelocity * netTransform.ServerVelocityWeight + currentVelocity * (1.0f - netTransform.ServerVelocityWeight);
 
 				predicted.Position = {
 					lastAuthoritative.Position.x + estimatedVelocity.x * lag,
@@ -191,7 +190,7 @@ namespace proton {
 					
 					// Calculate delta (add offset to prevent delta accumulation during reconciliation)
 					Transform delta = (current - lastTickTransform) + reconcileOffset;
-					reconcileOffset = Transform{}; // reset state
+					reconcileOffset = Transform{}; // reset offset state
 
 					// If delta is not zero, store it in the buffer
 					if (delta.IsNotZero())
@@ -210,8 +209,8 @@ namespace proton {
 					if (deltaIt != deltaBuffer.begin())
 						deltaBuffer.erase(deltaBuffer.begin(), deltaIt);
 					
-					// If not moving and have not received replication for some time, clear the delta buffer 
-					if (!bufferHasNewDeltas && replicationTimer > m_NetworkManager->m_TickTime * 10.0f)
+					// If not moving and not received replication for some time, clear the delta buffer 
+					if (!bufferHasNewDeltas && replicationTimer > m_NetworkManager->m_TickTime * 8.0f)
 						deltaBuffer.clear();
 
 					// Calculate predicted transform: apply deltas not processed by server yet
@@ -253,7 +252,7 @@ namespace proton {
 						}
 					}
 
-					if (entity == m_NetworkManager->GetLocalPlayerEntity()) _PT_CORE_TRACE("{} {:.6f}", recCount, positionError);
+					//if (entity == m_NetworkManager->GetLocalPlayerEntity()) _PT_CORE_TRACE("{} {:.6f}", recCount, positionError);
 
 					// Handle scale error
 					if (scaleError > s_ScaleReconcileThreshold)

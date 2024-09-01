@@ -653,6 +653,7 @@ namespace proton {
 		{
 			DrawComponentUI<NetworkComponent>("Network", [](NetworkComponent& component)
 			{
+				ImGui::Checkbox("Simulate on client", &component.SimulateOnClient);
 				ImGui::PushItemWidth(200.0f);
 				auto& netTransform = component.NetTransform;
 				auto& selectedMethod = netTransform.Method;
@@ -670,7 +671,6 @@ namespace proton {
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });
-				ImGui::Checkbox("Simulate on client", &component.SimulateOnClient);
 				ImGui::PushItemWidth(125.0f);
 				float cullDistance = netTransform.CullDistance;
 				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
@@ -678,6 +678,7 @@ namespace proton {
 				ImGui::DragFloat("Teleport Threshold", &netTransform.TeleportThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Max Time", &netTransform.ReconcileMaxTime, 0.001f);
+				ImGui::DragFloat("Server Velocity Weight", &netTransform.ServerVelocityWeight, 0.001f);
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });

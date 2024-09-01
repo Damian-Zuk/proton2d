@@ -26,22 +26,6 @@ namespace proton {
 			return false;
 		}
 
-		if (jsonObj.contains("server_ip"))
-		{
-			m_IpAddress = jsonObj.at("server_ip");
-		}
-		if (jsonObj.contains("port"))
-		{
-			m_Port = jsonObj.at("port");
-		}
-	#ifdef PROTON_DISTRIBUTION
-		if (jsonObj.contains("net_mode"))
-		{
-			NetMode mode = StringToNetMode(jsonObj.at("net_mode"));
-			Application::Get().GetGameInstance()->SetNetMode(mode);
-		}
-	#endif
-
 		m_StartScene = jsonObj.at("start_scene");
 
 		return true;
@@ -51,10 +35,6 @@ namespace proton {
 	{
 		json jsonObj;
 		jsonObj["start_scene"] = m_StartScene;
-		NetMode netMode = Application::Get().GetGameInstance()->GetNetMode();
-		jsonObj["net_mode"] = NetModeToString(netMode);
-		jsonObj["server_ip"] = m_IpAddress;
-		jsonObj["port"] = 8192;
 		std::ofstream configFile(m_Filepath);
 		configFile << jsonObj.dump(4);
 		configFile.close();

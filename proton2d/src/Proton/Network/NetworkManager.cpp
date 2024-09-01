@@ -6,12 +6,15 @@
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"
+#include "Proton/Utils/Utils.h"
 
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
 #ifndef STEAMNETWORKINGSOCKETS_OPENSOURCE
 #include <steam/steam_api.h>
 #endif
+
+#include <nlohmann/json.hpp>
 
 namespace proton {
 
@@ -33,6 +36,35 @@ namespace proton {
 			StopServer();
 		else
 			StopClient();
+	}
+
+	void NetworkManager::ReadConfig()
+	{
+		nlohmann::json jsonObj = jsonObj.parse(Utils::ReadFile("content/network.json"));
+
+		if (jsonObj.contains("client_name"))
+			m_ClientName = jsonObj["client_name"];
+
+		if (jsonObj.contains("net_mode"))
+			m_NetMode = StringToNetMode(jsonObj["net_mode"]);
+
+		if (jsonObj.contains("server_ip"))
+			m_IpAddress = jsonObj["server_ip"];
+
+		if (jsonObj.contains("port"))
+			m_Port = jsonObj["port"];
+	}
+
+	void NetworkManager::SaveConfig() const
+	{
+		nlohmann::json jsonObj;
+		std::ofstream configFile("content/network.json");
+		jsonObj["client_name"] = m_ClientName;
+		jsonObj["net_mode"] = NetModeToString(m_NetMode);
+		jsonObj["server_ip"] = m_IpAddress;
+		jsonObj["port"] = m_Port;
+		configFile << jsonObj.dump(4);
+		configFile.close();
 	}
 
 	void NetworkManager::OnUpdate(float ts)
@@ -165,6 +197,11 @@ namespace proton {
 	void NetworkManager::SetMaxServerConnections(uint32_t value)
 	{
 		m_MaxServerConnections = value;
+	}
+
+	void NetworkManager::SetLocalClientName(const std::string& name)
+	{
+		m_ClientName = name;
 	}
 
 	void NetworkManager::SetTickRate(uint16_t tickRate)

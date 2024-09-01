@@ -155,11 +155,13 @@ namespace proton {
 			auto& netTransform = net.NetTransform;
 			
 			jsonObj["Network"] = {
+				{ "SimulateOnClient", net.SimulateOnClient },
 				{ "SyncMethod", NetSyncMethodToString(netTransform.Method) },
 				{ "CullDistance", netTransform.CullDistance, },
 				{ "TeleportThreshold", netTransform.TeleportThreshold },
 				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
 				{ "ReconcileMaxTime", netTransform.ReconcileMaxTime },
+				{ "ServerVelocityWeight", netTransform.ServerVelocityWeight },
 			};
 		}
 
@@ -442,6 +444,9 @@ namespace proton {
 			auto& netTransform = net.NetTransform;
 			auto& netJson = jsonObj.at("Network");
 
+			if (netJson.contains("SimulateOnClient"))
+				net.SimulateOnClient = netJson["SimulateOnClient"];
+
 			if (netJson.contains("SyncMethod"))
 				netTransform.Method = StringToNetSyncMethod(netJson["SyncMethod"]);
 
@@ -456,6 +461,9 @@ namespace proton {
 
 			if (netJson.contains("ReconcileMaxTime"))
 				netTransform.ReconcileMaxTime = netJson["ReconcileMaxTime"];
+
+			if (netJson.contains("ServerVelocityWeight"))
+				netTransform.ServerVelocityWeight = netJson["ServerVelocityWeight"];
 		}
 
 		// Deserialize SpriteComponent

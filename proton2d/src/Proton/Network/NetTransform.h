@@ -58,6 +58,7 @@ namespace proton {
 		float TeleportThreshold = 5.0f;
 		float ReconcileThreshold = 0.1f;
 		float ReconcileMaxTime = 0.1f;
+		float ServerVelocityWeight = 0.3f;
 
 		// Internal state
 		std::vector<SequencedValue> DeltaBuffer;

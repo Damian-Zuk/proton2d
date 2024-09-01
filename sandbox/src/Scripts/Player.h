@@ -61,6 +61,7 @@ private:
 	PlayerState m_State = PlayerState_Idle;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
+	bool m_CanJump = false;
 
 	friend class MyGameMode;
 };

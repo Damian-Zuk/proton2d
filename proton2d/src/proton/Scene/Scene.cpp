@@ -59,7 +59,10 @@ namespace proton {
 		{
 			auto& component = view.get<ScriptComponent>(entity);
 			for (auto& script : component.Scripts)
-				delete script.second;
+			{
+				if (script.second)
+					delete script.second;
+			}
 		}
 	}
 

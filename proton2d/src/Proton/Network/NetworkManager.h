@@ -17,6 +17,9 @@ namespace proton {
 		NetworkManager(GameInstance* instance);
 		virtual ~NetworkManager();
 
+		void ReadConfig();
+		void SaveConfig() const;
+
 		void StartServer();
 		void StopServer();
 
@@ -28,10 +31,12 @@ namespace proton {
 		void SetIpAddress(const std::string& ip);
 		void SetTickRate(uint16_t tickRate);
 		void SetMaxServerConnections(uint32_t value);
+		void SetLocalClientName(const std::string& name);
 
 		NetMode GetNetMode() const { return m_NetMode; }
 		uint16_t GetPort() const { return m_Port; }
 		uint16_t GetTickrate() const { return m_TickRate; }
+		const std::string& GetLocalClientName() const { return m_ClientName; }
 		float GetTickTime() const { return m_TickTime; }
 		bool IsNetModeServer() const { return m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer; }
 		bool IsNetModeClient() const { return m_NetMode == NetMode::Client; }
@@ -74,6 +79,8 @@ namespace proton {
 		std::string m_IpAddress = "127.0.0.1";
 		uint16_t m_Port = 8192;
 		uint16_t m_TickRate = 64;
+
+		std::string m_ClientName = "Player";
 
 		// Server properties
 		uint32_t m_MaxServerConnections = 100;

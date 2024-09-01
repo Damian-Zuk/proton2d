@@ -35,6 +35,7 @@ namespace proton {
 		MessageType MessageType = MessageType::Handshake;
 		uint32_t EngineProtocolVersion;
 		uint32_t GameProtocolVersion;
+		char ClientName[32];
 	};
 
 	struct MessageHandshakeReply

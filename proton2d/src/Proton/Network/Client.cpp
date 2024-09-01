@@ -82,6 +82,8 @@ namespace proton {
 		MessageHandshake header;
 		header.EngineProtocolVersion = PROTON_NET_PROTOCOL_VERSION;
 		header.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
+		const auto& name = m_NetworkManager->GetLocalClientName();
+		strcpy_s(header.ClientName, name.substr(0, sizeof(MessageHandshake::ClientName) - 1).c_str());
 		NetworkStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(header);
 		SendBuffer(stream.GetBuffer());

@@ -101,12 +101,14 @@ void Player::OnUpdate(float ts)
 		PlayerActionState previous = m_ActionState;
 		m_ActionState.MoveRight = IsKeyPressed(Key::D);
 		m_ActionState.MoveLeft = IsKeyPressed(Key::A);
-		m_ActionState.Jump = IsKeyPressed(Key::W);
+		m_ActionState.Jump = (IsKeyPressed(Key::W) || IsKeyPressed(Key::Space));
 
 		// Network
 		if (IsRunningClient() && m_ActionState != previous)
 		{
+			
 			GetGameMode()->Client_SendPlayerAction([&](NetworkStreamWriter& stream) {
+				m_ActionState.Jump &= m_CanJump;
 				stream.WriteRaw(m_ActionState);
 			});
 		}
@@ -137,7 +139,8 @@ void Player::OnPhysicsUpdate(float ts)
 
 	if (!move)
 	{
-		m_Wheel->SetFixedRotation(true);
+		if (!IsOnHighSlope())
+			m_Wheel->SetFixedRotation(true);
 		m_Wheel->SetLinearVelocity({ 0.0f, m_Wheel->GetLinearVelocity().y });
 	}
 	else
@@ -173,8 +176,10 @@ void Player::OnPhysicsUpdate(float ts)
 		m_JumpTimer = 0.0f;
 	}
 
+	m_CanJump = IsGrounded() && m_JumpTimer >= s_JumpDelay;
+
 	// Player pressed a jump key
-	if (m_ActionState.Jump && IsGrounded() && m_JumpTimer >= s_JumpDelay)
+	if (m_ActionState.Jump && m_CanJump)
 	{
 		SetLinearVelocity(0.0f, 0.0f);
 		ApplyLinearImpulse({ 0.0f,  m_JumpForce });

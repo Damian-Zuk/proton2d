@@ -24,6 +24,7 @@
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
+#include "Proton/Utils/NickGenerator.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -217,9 +218,12 @@ namespace proton {
 
 		instance->m_EditorGameInstance = game;
 		instance->m_IsMainInstance = false;
-		instance->SetNetMode(netMode);
+
+		NetworkManager* netManager = instance->GetNetworkManager();
+		netManager->SetNetMode(netMode);
 		uint16_t tickrate = m_MainGameInstance.Instance->GetNetworkManager()->GetTickrate();
-		instance->GetNetworkManager()->SetTickRate(tickrate);
+		netManager->SetTickRate(tickrate);
+		netManager->SetLocalClientName(GenerateRandomNickname());
 
 		viewport->m_EditorGameInstance = game;
 		viewport->m_IsMainViewport = false;

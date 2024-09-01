@@ -95,7 +95,13 @@ namespace proton {
 		case MessageType::Handshake:
 		{
 			MessageHandshake handshake;
-			stream.ReadRaw(handshake);
+			
+			if (!stream.ReadRaw(handshake))
+			{
+				PT_CORE_WARN("Failed to read handshake message (size={}) from client (id={})", stream.GetTargetBuffer().Size, clientID);
+				m_Interface->CloseConnection(clientID, 0, "Failed to handshake", false);
+				break;
+			}
 
 			if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION || handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 			{
@@ -111,6 +117,7 @@ namespace proton {
 
 			auto& clientInfo = m_ConnectedClients[clientID];
 			clientInfo.Status = ConnectionStatus::Connected;
+			clientInfo.ClientName = handshake.ClientName;
 			OnClientConnected(clientID);
 
 			break;
@@ -188,7 +195,8 @@ namespace proton {
 
 	void Server::OnClientConnected(ClientID clientID)
 	{
-		PT_CORE_INFO("Client id={} connected", clientID);
+		ClientInfo& info = m_ConnectedClients[clientID];
+		PT_CORE_INFO("Client name='{}' id={} connected", clientID, info.ClientName);
 		m_NetStatistics->AllocateNetworkStatsBuffer(clientID);
 		m_NetReplicator->Server_OnClientConnected(clientID);
 
