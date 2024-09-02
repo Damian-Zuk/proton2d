@@ -58,10 +58,11 @@ private:
 	b2Body* m_Wheel = nullptr;
 
 	PlayerActionState m_ActionState;
+	PlayerActionState m_PreviousActionState;
 	PlayerState m_State = PlayerState_Idle;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
-	bool m_CanJump = false;
+	bool m_JumpOnNextTick = false;
 
 	friend class MyGameMode;
 };

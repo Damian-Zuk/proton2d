@@ -50,8 +50,8 @@ namespace proton {
 		
 	
 		bool HasAuthority() const;
-		bool IsRunningServer() const;
-		bool IsRunningClient() const;
+		bool IsNetModeServer() const;
+		bool IsNetModeClient() const;
 
 	public:
 		static inline const char __ClassName[] = "GameModeBase";

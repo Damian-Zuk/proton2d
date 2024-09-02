@@ -132,22 +132,16 @@ namespace proton {
 		SetReplicatedData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
 	}
 
-	bool EntityScript::IsRunningServer() const
+	bool EntityScript::IsNetModeServer() const
 	{
 		NetworkManager* netManager = GetNetworkManager();
 		return netManager->IsNetModeServer() && netManager->IsNetworkActive();
 	}
 
-	bool EntityScript::IsRunningClient() const
+	bool EntityScript::IsNetModeClient() const
 	{
 		NetworkManager* netManager = GetNetworkManager();
 		return netManager->IsNetModeClient() && netManager->IsNetworkActive();
-	}
-
-	bool EntityScript::HasNetworkPrediction() const
-	{
-		auto& net = GetComponent<NetworkComponent>();
-		return net.NetTransform.Method == NetSyncMethod::Prediction || net.NetTransform.Method == NetSyncMethod::Extrapolation;
 	}
 
 	bool EntityScript::HasAuthority() const

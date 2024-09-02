@@ -10,7 +10,7 @@ void TestFrame2Script::OnRegisterFields()
 
 bool TestFrame2Script::OnCreate()
 {
-	if (IsRunningClient())
+	if (IsNetModeClient())
 		return true;
 
 	m_BallSpawn = FindChildByTag("BallSpawn");
@@ -28,7 +28,7 @@ bool TestFrame2Script::OnCreate()
 
 void TestFrame2Script::OnUpdate(float ts)
 {
-	if (IsRunningClient())
+	if (IsNetModeClient())
 		return;
 
 	if (m_BallToDestroy)

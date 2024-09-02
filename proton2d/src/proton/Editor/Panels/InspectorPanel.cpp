@@ -678,7 +678,9 @@ namespace proton {
 				ImGui::DragFloat("Teleport Threshold", &netTransform.TeleportThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Max Time", &netTransform.ReconcileMaxTime, 0.001f);
-				ImGui::DragFloat("Server Velocity Weight", &netTransform.ServerVelocityWeight, 0.001f);
+				ImGui::DragFloat("Delta Weight", &netTransform.DeltaWeight, 0.001f);
+				if (selectedMethod == NetSyncMethod::Extrapolation)
+					ImGui::DragFloat("Server Velocity Weight", &netTransform.ServerVelocityWeight, 0.001f);
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });
@@ -699,7 +701,7 @@ namespace proton {
 					ImGui::Dummy({ 0, 5 });
 					float lastPos[] = { netTransform.LastAuthoritativeTransform.Position.x, netTransform.LastAuthoritativeTransform.Position.y };
 					float prevPos[] = { netTransform.PrevAuthoritativeTransform.Position.x, netTransform.PrevAuthoritativeTransform.Position.y };
-					float predPos[] = { netTransform.PredictedTransform.Position.x, netTransform.PredictedTransform.Position.x };
+					float predPos[] = { netTransform.PredictedTransform.Position.x, netTransform.PredictedTransform.Position.y };
 					ImGui::Dummy({ 0, 2 });
 					ImGui::Text("Position");
 					ImGui::DragFloat2("Last", lastPos);

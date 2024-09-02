@@ -54,6 +54,7 @@ namespace proton {
 			const auto& prevAuthoritative = netTransform.PrevAuthoritativeTransform;
 			const auto& reconcileThreshold = netTransform.ReconcileThreshold;
 			const auto& reconcileMaxTime = netTransform.ReconcileMaxTime;
+			const auto& deltaWeight = netTransform.DeltaWeight;
 			const auto& teleportThreshold = netTransform.TeleportThreshold;
 			const auto& replicationFlags = netTransform.ReplicationFlags;
 			auto& replicationTimer = netTransform.ReplicationTimer;
@@ -217,9 +218,9 @@ namespace proton {
 					predicted = lastAuthoritative;
 					for (const auto& delta : deltaBuffer)
 					{
-						predicted.Position += delta.Value.Position;
-						predicted.Scale += delta.Value.Scale;
-						predicted.Rotation += delta.Value.Rotation;
+						predicted.Position += delta.Value.Position * deltaWeight;
+						predicted.Scale += delta.Value.Scale * deltaWeight;
+						predicted.Rotation += delta.Value.Rotation * deltaWeight;
 					}
 
 					// Calculate errors (difference between current and predicted value)
@@ -229,7 +230,7 @@ namespace proton {
 					
 					static uint32_t recCount = 0;
 					// Handle position error
-					if (positionError > reconcileThreshold)
+					if (positionError > reconcileThreshold && reconcileTimer >= 0.0f)
 					{
 						if (!netTransform.IsReconciling(Components::Position))
 							recCount++;
@@ -404,6 +405,9 @@ namespace proton {
 			// Increment timers
 			replicationTimer += ts;
 			interpolationTimer += ts;
+		
+			if (reconcileTimer < 0.0f)
+				reconcileTimer = glm::min(reconcileTimer + ts, 0.0f);
 		}
 
 		// Send sequence numbers to server on network tick

@@ -88,10 +88,8 @@ namespace proton {
 		void SetReplicatedData(void* data, size_t size, const std::function<void()>& notifyFunction = nullptr);
 
 		bool HasAuthority() const;
-		bool IsRunningServer() const;
-		bool IsRunningClient() const;
-
-		bool HasNetworkPrediction() const;
+		bool IsNetModeServer() const;
+		bool IsNetModeClient() const;
 
 		// Other
 		static const size_t GetFieldSize(ScriptFieldType type);

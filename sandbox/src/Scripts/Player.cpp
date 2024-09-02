@@ -32,14 +32,12 @@ void Player::OnRegisterFields()
 	REPLICATED_DATA(m_Direction);
 	REPLICATED_DATA(m_State);
 	REPLICATED_FIELD(m_ClientID);
-	REPLICATED_FIELD(m_PlayerColor, [&]() {
-		SetPlayerColor(m_PlayerColor);
-	});
+	REPLICATED_FIELD(m_PlayerColor, [&](){ SetPlayerColor(m_PlayerColor); });
 }
 
 bool Player::OnCreate()
 {
-	// Network: Get local player ID
+	// Network setup
 	NetworkManager* networkManager = GetNetworkManager();
 	MyGameMode* gameMode = GetGameMode<MyGameMode>();
 	uint32_t localPlayerID = gameMode->GetLocalPlayerID();
@@ -50,11 +48,8 @@ bool Player::OnCreate()
 		gameMode->m_LocalPlayer = this;
 		GetScene()->SetPrimaryCameraEntity(*this);
 		
-		if (IsRunningClient())
-		{
+		if (IsNetModeClient())
 			networkManager->SetLocalPlayerEntity(*this);
-			//networkManager->Client_SetEntityInput(GetUUID(), &m_ActionState);
-		}
 	}
 	else
 	{
@@ -63,7 +58,7 @@ bool Player::OnCreate()
 		net.NetTransform.Method = NetSyncMethod::Interpolation;
 	}
 
-	if (IsRunningServer())
+	if (IsNetModeServer())
 	{
 		//GetNetworkManager()->Server_SetCustomMessageCallback(m_ClientID, [])
 
@@ -89,31 +84,13 @@ bool Player::OnCreate()
 
 	m_Wheel = FindChildByTag("Wheel").GetRuntimeBody();
 	m_Body = GetRuntimeBody();
+	m_JumpOnNextTick = false;
 
 	return true;
 }
 
 void Player::OnUpdate(float ts)
 {
-	// Input polling for local player
-	if (m_IsLocalPlayer)
-	{
-		PlayerActionState previous = m_ActionState;
-		m_ActionState.MoveRight = IsKeyPressed(Key::D);
-		m_ActionState.MoveLeft = IsKeyPressed(Key::A);
-		m_ActionState.Jump = (IsKeyPressed(Key::W) || IsKeyPressed(Key::Space));
-
-		// Network
-		if (IsRunningClient() && m_ActionState != previous)
-		{
-			
-			GetGameMode()->Client_SendPlayerAction([&](NetworkStreamWriter& stream) {
-				m_ActionState.Jump &= m_CanJump;
-				stream.WriteRaw(m_ActionState);
-			});
-		}
-	}
-	
 	SpriteAnimation& animation = GetSpriteAnimation();
 
 	if (m_State == PlayerState_Jump)
@@ -131,6 +108,14 @@ void Player::OnUpdate(float ts)
 
 void Player::OnPhysicsUpdate(float ts)
 {
+	if (m_IsLocalPlayer)
+	{
+		m_PreviousActionState = m_ActionState;
+		m_ActionState.MoveRight = IsKeyPressed(Key::D);
+		m_ActionState.MoveLeft = IsKeyPressed(Key::A);
+		m_ActionState.Jump = (IsKeyPressed(Key::W) || IsKeyPressed(Key::Space));
+	}
+
 	glm::vec2 velocity = GetLinearVelocity();
 
 	// Set player direction (right: 1.0, left: -1.0f)
@@ -147,7 +132,7 @@ void Player::OnPhysicsUpdate(float ts)
 		m_Wheel->SetFixedRotation(false);
 
 	// Network
-	if (IsRunningClient() && !HasNetworkPrediction())
+	if (IsNetModeClient() && !HasNetworkPrediction())
 		return;
 
 	// Set horizontal velocity (acceleration)
@@ -176,15 +161,23 @@ void Player::OnPhysicsUpdate(float ts)
 		m_JumpTimer = 0.0f;
 	}
 
-	m_CanJump = IsGrounded() && m_JumpTimer >= s_JumpDelay;
+	// Jump logic
+	bool canJump = IsGrounded() && m_JumpTimer >= s_JumpDelay;
 
-	// Player pressed a jump key
-	if (m_ActionState.Jump && m_CanJump)
+	if (m_JumpOnNextTick)
 	{
 		SetLinearVelocity(0.0f, 0.0f);
 		ApplyLinearImpulse({ 0.0f,  m_JumpForce });
 		m_JumpTimer = 0.0f;
 		m_State = PlayerState_Jump;
+		m_JumpOnNextTick = false;
+	}
+	else if (m_ActionState.Jump && canJump)
+	{
+		m_JumpOnNextTick = true; // delay jump on next tick
+		auto& netTransform = GetComponent<NetworkComponent>().NetTransform;
+		netTransform.StopReconcile(NetTransform::Components::Position);
+		netTransform.ReconcileTimer = -0.5f; // set reconcile on cooldown
 	}
 
 	// Player is in the air: Set jump or fall animation frame 
@@ -192,9 +185,7 @@ void Player::OnPhysicsUpdate(float ts)
 	{
 		// Modify vertical velocity to make jump feel less floaty
 		if (velocity.y < 0.5f && velocity.y > -10.0f)
-		{
 			m_Body->ApplyForceToCenter({ 0.0f, -m_FallModifier }, true);
-		}
 
 		m_State = PlayerState_Jump;
 	}
@@ -202,6 +193,15 @@ void Player::OnPhysicsUpdate(float ts)
 	// Set animation direction when sliding on high slope
 	if (IsOnHighSlope() && velocity.y < 0.0f)
 		m_Direction = velocity.x > 0.0f ? 1.0f : -1.0f;
+
+	// Network (sending player inputs to the server)
+	if (m_IsLocalPlayer && IsNetModeClient() && m_ActionState != m_PreviousActionState)
+	{
+		GetGameMode()->Client_SendPlayerAction([&](NetworkStreamWriter& stream) {
+			m_ActionState.Jump &= canJump; // make sure player can jump
+			stream.WriteRaw(m_ActionState);
+		});
+	}
 	
 	m_JumpTimer += ts;
 }

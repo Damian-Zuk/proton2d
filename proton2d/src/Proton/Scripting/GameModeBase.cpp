@@ -68,13 +68,13 @@ namespace proton {
         return netMode != NetMode::Client;
     }
 
-    bool GameModeBase::IsRunningServer() const
+    bool GameModeBase::IsNetModeServer() const
     {
         NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();
         return netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer;
     }
 
-    bool GameModeBase::IsRunningClient() const
+    bool GameModeBase::IsNetModeClient() const
     {
         return !HasAuthority();
     }

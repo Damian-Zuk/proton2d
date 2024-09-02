@@ -98,6 +98,14 @@ namespace proton {
 		}
 
 		void RemoveScript(const std::string& scriptClassName);
+
+		bool HasScript(const std::string& scriptClassName) const;
+		
+		template<typename TScriptClass>
+		bool HasScript() const
+		{
+			return HasScript(TScriptClass::__ScriptClassName);
+		}
 		
 		template<typename TScriptClass>
 		TScriptClass* As()
@@ -156,6 +164,8 @@ namespace proton {
 
 		// Network
 		bool IsNetworked() const;
+		NetSyncMethod GetNetSyncMethod() const;
+		bool HasNetworkPrediction() const;
 
 		// Operator overloads
 		operator uint32_t() const { return (uint32_t)m_Handle; }

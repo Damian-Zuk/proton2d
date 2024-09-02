@@ -17,7 +17,7 @@ bool TestFrame1Script::OnCreate()
 
 void TestFrame1Script::OnUpdate(float ts)
 {
-	if (IsRunningClient())
+	if (IsNetModeClient())
 		return;
 
 	if (m_Timer > m_Interval)

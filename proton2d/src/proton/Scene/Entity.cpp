@@ -21,6 +21,15 @@ namespace proton
 			RemoveComponent<ScriptComponent>();
 	}
 
+	bool Entity::HasScript(const std::string& scriptClassName) const
+	{
+		if (!HasComponent<ScriptComponent>())
+			return false;
+
+		auto& component = GetComponent<ScriptComponent>();
+		return component.Scripts.find(scriptClassName) != component.Scripts.end();
+	}
+
 	bool Entity::IsValid()
 	{
 		if (m_Handle == entt::null)
@@ -286,6 +295,24 @@ namespace proton
 	bool Entity::IsNetworked() const
 	{
 		return HasComponent<NetworkComponent>();
+	}
+
+	NetSyncMethod Entity::GetNetSyncMethod() const
+	{
+		if (HasComponent<NetworkComponent>())
+		{
+			return GetComponent<NetworkComponent>().NetTransform.Method;
+		}
+		return NetSyncMethod::None;
+	}
+
+	bool Entity::HasNetworkPrediction() const
+	{
+		if (!HasComponent<NetworkComponent>())
+			return false;
+
+		auto& net = GetComponent<NetworkComponent>();
+		return net.NetTransform.Method == NetSyncMethod::Prediction || net.NetTransform.Method == NetSyncMethod::Extrapolation;
 	}
 
 	void Entity::SetWorldPosition(const glm::vec3& position) const

@@ -60,8 +60,7 @@ namespace proton {
 			auto& component = view.get<ScriptComponent>(entity);
 			for (auto& script : component.Scripts)
 			{
-				if (script.second)
-					delete script.second;
+				delete script.second;
 			}
 		}
 	}
@@ -624,7 +623,10 @@ namespace proton {
 
 					instance->m_Initialized = true;
 					if (!instance->OnCreate())
+					{
+						PT_CORE_ERROR("Failed to initialize script {} for an entity {}", script.first, Entity(entity, this).GetUUID());
 						instance->m_FailedToInitialize = true;
+					}
 				}
 				
 				if (instance->m_FailedToInitialize)

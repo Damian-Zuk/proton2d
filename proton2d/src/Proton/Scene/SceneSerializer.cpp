@@ -161,6 +161,7 @@ namespace proton {
 				{ "TeleportThreshold", netTransform.TeleportThreshold },
 				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
 				{ "ReconcileMaxTime", netTransform.ReconcileMaxTime },
+				{ "DeltaWeight", netTransform.DeltaWeight },
 				{ "ServerVelocityWeight", netTransform.ServerVelocityWeight },
 			};
 		}
@@ -461,6 +462,9 @@ namespace proton {
 
 			if (netJson.contains("ReconcileMaxTime"))
 				netTransform.ReconcileMaxTime = netJson["ReconcileMaxTime"];
+
+			if (netJson.contains("DeltaWeight"))
+				netTransform.DeltaWeight = netJson["DeltaWeight"];
 
 			if (netJson.contains("ServerVelocityWeight"))
 				netTransform.ServerVelocityWeight = netJson["ServerVelocityWeight"];
