@@ -11,6 +11,57 @@
 
 namespace proton {
 
+	namespace Utils {
+
+		static GLenum ProtonImageFormatToGLDataFormat(ImageFormat format)
+		{
+			switch (format)
+			{
+			case ImageFormat::RGB8:  return GL_RGB;
+			case ImageFormat::RGBA8: return GL_RGBA;
+			}
+
+			PT_CORE_ASSERT(false);
+			return 0;
+		}
+
+		static GLenum ProtonImageFormatToGLInternalFormat(ImageFormat format)
+		{
+			switch (format)
+			{
+			case ImageFormat::RGB8:  return GL_RGB8;
+			case ImageFormat::RGBA8: return GL_RGBA8;
+			}
+
+			PT_CORE_ASSERT(false);
+			return 0;
+		}
+
+	}
+
+	Texture::Texture(const TextureSpecification& specification)
+		: m_Specification(specification), m_Width(m_Specification.Width), m_Height(m_Specification.Height)
+	{
+		m_InternalFormat = Utils::ProtonImageFormatToGLInternalFormat(m_Specification.Format);
+		m_DataFormat = Utils::ProtonImageFormatToGLDataFormat(m_Specification.Format);
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_Object_ID);
+		glTextureStorage2D(m_Object_ID, 1, m_InternalFormat, m_Width, m_Height);
+
+		glTextureParameteri(m_Object_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_Object_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTextureParameteri(m_Object_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_Object_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	Texture::Texture(uint32_t width, uint32_t height, uint32_t objectID)
+		: m_Width(width), m_Height(height), m_Object_ID(objectID),
+		m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)
+	{
+		m_IsFrameBufferTexture = true;
+	}
+
 	Texture::Texture(uint32_t width, uint32_t height, bool fillDataWhitePixels)
 		: m_Width(width), m_Height(height),
 		m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)
@@ -72,7 +123,8 @@ namespace proton {
 
 	Texture::~Texture()
 	{
-		glDeleteTextures(1, &m_Object_ID);
+		if (!m_IsFrameBufferTexture)
+			glDeleteTextures(1, &m_Object_ID);
 	}
 
 	void Texture::SetData(void* data, size_t size)

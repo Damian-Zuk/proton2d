@@ -5,13 +5,15 @@
 #include "Proton/Graphics/ResizableSprite.h"
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Graphics/SpriteAnimation.h"
+#include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Physics/PhysicsCommon.h"
+#include "Proton/Network/Common.h"
+#include "Proton/Network/NetTransform.h"
 
+#include "Proton/UI/UIText.h"
 #include <entt/entity/entity.hpp>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <box2d/b2_body.h>
 
 namespace proton {
@@ -26,13 +28,17 @@ namespace proton {
 		std::string Tag;
 	};
 
-	// Use Entity::SetWorldPosition to modify world position manually
 	struct TransformComponent
 	{
 		glm::vec3 WorldPosition { 0.0f, 0.0f, 0.0f };
 		glm::vec3 LocalPosition { 0.0f, 0.0f, 0.0f };
 		float Rotation { 0.0f };
 		glm::vec2 Scale { 1.0f, 1.0f };
+	};
+
+	struct PrefabComponent
+	{
+		UUID PrefabUUID;
 	};
 
 	struct RelationshipComponent
@@ -44,9 +50,16 @@ namespace proton {
 		entt::entity Parent { entt::null };
 	};
 
+	struct CameraComponent
+	{
+		Camera Camera;
+		glm::vec2 PositionOffset{ 0.0f, 0.0f };
+	};
+
 	struct SpriteComponent
 	{
-		SpriteComponent(const std::string& filepath = std::string())
+		SpriteComponent() = default;
+		SpriteComponent(const std::string& filepath)
 		{
 			if (filepath.size())
 				Sprite.SetTextureFromPath(filepath);
@@ -72,6 +85,32 @@ namespace proton {
 		float Fade = 0.005f;
 	};
 
+	struct TextComponent
+	{
+		Shared<Font> FontAsset = Font::GetDefault();
+
+		std::string TextString;
+		glm::vec4 Color{ 1.0f };
+		float Kerning = 0.0f;
+		float LineSpacing = 0.0f;
+		bool Hidden = false;
+	};
+
+	struct UIComponent
+	{
+		UIElement* Element;
+	};
+
+	struct UITextComponent
+	{
+		UIText UIText;
+	};
+
+	struct SpriteAnimationComponent
+	{
+		SpriteAnimation SpriteAnimation;
+	};
+
 	class EntityScript; // forward declaration
 
 	struct ScriptComponent
@@ -79,16 +118,12 @@ namespace proton {
 		std::unordered_map<std::string, EntityScript*> Scripts;
 	};
 
-	struct CameraComponent
-	{
-		Camera Camera;
-		glm::vec2 PositionOffset { 0.0f, 0.0f };
-	};
-
 	struct RigidbodyComponent
 	{
+		b2Body* RuntimeBody = nullptr;
 		b2BodyType Type = b2_staticBody;
 		bool FixedRotation = false;
+		bool AttachToParent = false; // Revolution Joint
 	};
 
 	struct BoxColliderComponent
@@ -99,6 +134,7 @@ namespace proton {
 		PhysicsContactCallback ContactCallback;
 		b2Filter Filter;
 		bool IsSensor = false;
+		bool AttachToParent = false;
 	};
 
 	struct CircleColliderComponent
@@ -108,10 +144,33 @@ namespace proton {
 		PhysicsMaterial Material;
 		PhysicsContactCallback ContactCallback;
 		bool IsSensor = false;
+		bool AttachToParent = false;
 	};
 
-	struct SpriteAnimationComponent
+	struct NetworkComponent
 	{
-		SpriteAnimation SpriteAnimation;
+		bool SimulateOnClient = true;
+		NetTransform NetTransform;
+			
+		struct ReplicatedScript
+		{
+			struct ReplicatedField
+			{
+				void* Data = nullptr;
+				size_t Size = 0;
+				std::function<void()> NotifyFunction;
+				// Server-only (store in serparate EnTT component?)
+				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
+			};
+			EntityScript* Script = nullptr;
+			std::vector<ReplicatedField> ReplicatedFields;
+		};
+		std::vector<ReplicatedScript> ReplicatedScripts;
+
+		bool WasReplicated = false;
+
+		// Server-only data (TODO: store as separate EnTT component)
+		std::unordered_map<ClientID, NetTransform::SequencedValue> ServerDataMap;
 	};
+
 }

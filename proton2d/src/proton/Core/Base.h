@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <bitset>
 
 #ifndef PROTON_DISTRIBUTION
 	#define PT_EDITOR
@@ -12,19 +13,6 @@
 
 #define PT_EXPAND_MACRO(x) x
 #define PT_STRINGIFY_MACRO(x) #x
-
-#ifdef PROTON_DEBUG
-	#if defined(PROTON_PLATFORM_WINDOWS)
-		#define PT_DEBUGBREAK() __debugbreak()
-	#elif defined(PROTON_PLATFORM_LINUX)
-		#include <signal.h>
-		#define PT_DEBUGBREAK() raise(SIGTRAP)
-	#endif
-	#define PT_ENABLE_ASSERTS
-#else
-	#define PT_DEBUGBREAK()
-	#define NDEBUG
-#endif
 
 #define PT_BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -46,5 +34,35 @@ namespace proton
 	constexpr Unique<T> MakeUnique(Types&&... args)
 	{
 		return std::make_unique<T>(std::forward<Types>(args)...);
+	}
+
+	template<typename T>
+	constexpr bool EnumHasAnyFlags(T value, T flags)
+	{
+		return ((__underlying_type(T))value & (__underlying_type(T))flags) != 0;
+	}
+
+	template<typename T>
+	constexpr bool EnumHasAllFlags(T value, T flags)
+	{
+		return ((__underlying_type(T))value & (__underlying_type(T))flags) == (__underlying_type(T))flags;
+	}
+
+	template<typename T>
+	constexpr bool EnumHasNoneFlags(T value, T flags)
+	{
+		return ((__underlying_type(T))value & (__underlying_type(T))flags) == 0;
+	}
+
+	template<typename T>
+	constexpr T EnumAddFlags(T value, T flags)
+	{
+		return (T)((__underlying_type(T))value | (__underlying_type(T))flags);
+	}
+
+	template<typename T>
+	constexpr T EnumRemoveFlags(T value, T flags)
+	{
+		return (T)((__underlying_type(T))value & ~(__underlying_type(T))flags);
 	}
 }

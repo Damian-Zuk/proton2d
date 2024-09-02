@@ -2,289 +2,328 @@
 #include "Proton/Graphics/ResizableSprite.h"
 #include "Proton/Scene/Components.h"
 #include "Proton/Utils/Utils.h"
+#include "Proton/Scene/Entity.h"
+#include "Proton/Graphics/Renderer/Renderer.h"
 
 namespace proton {
+
+	void ResizableSprite::Generate(const glm::vec2& transformScale)
+	{
+		if (m_TransformScale.x < 0.0f || m_TransformScale.y < 0.0f)
+			return;
+
+		m_TransformScale = transformScale;
+
+		m_CellCount = {
+			m_PatternSize.x > 2 ? std::max((uint32_t)ceil(m_TransformScale.x / m_CellScale), 2u) : m_PatternSize.x,
+			m_PatternSize.y > 2 ? std::max((uint32_t)ceil(m_TransformScale.y / m_CellScale), 2u) : m_PatternSize.y
+		};
+
+		m_PixelSize = {
+			m_TransformScale.x * m_CellScale * m_Spritesheet->m_TileSize.x,
+			m_TransformScale.y * m_CellScale * m_Spritesheet->m_TileSize.y
+		};
+
+		auto spritesheetIndexes = CalculateSpritesheetCellIndexPositions();
+		CalculateCellTransforms(spritesheetIndexes);
+	}
+
+	void ResizableSprite::Render(const glm::mat4& transform, const glm::vec4& color)
+	{
+		if (!m_Spritesheet || m_PixelSize.x == 0 || m_PixelSize.y == 0)
+			return;
+
+		for (const auto& tile : m_CellTransforms)
+		{
+			Renderer::DrawQuad(transform * tile.LocalTransform, m_Spritesheet->GetTexture(), tile.TextureCoords, color);
+		}
+	}
 
 	void ResizableSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
 	{
 		m_Spritesheet = spritesheet;
-		Generate();
+		Generate(m_TransformScale);
 	}
 
-	void ResizableSprite::Generate()
+	void ResizableSprite::SetCellScale(float cellScale)
 	{
-		if (m_Transform->Scale.x < 0.0f || m_Transform->Scale.y < 0.0f)
-		{
-			m_Width = 0; m_Height = 0;
-			m_Tilemap.clear();
-			return;
-		}
-
-		m_Width = std::max((uint32_t)ceil(m_Transform->Scale.x / m_TileScale), 2u);
-		m_Height = std::max((uint32_t)ceil(m_Transform->Scale.y / m_TileScale), 2u);
-
-		m_Tilemap.resize(m_Width);
-		for (auto& column : m_Tilemap)
-			column.resize(m_Height);
-
-		CalculateTileTransforms();
+		m_CellScale = cellScale < 0.01f ? 0.01f : cellScale;
+		Generate(m_TransformScale);
 	}
 
-	void ResizableSprite::SetTileScale(float tileScale)
+	void ResizableSprite::SetPositionOffset(const glm::uvec2& position)
 	{
-		m_TileScale = tileScale < 0.01f ? 0.01f : tileScale;
-		Generate();
+		if (position != m_PatternOffset)
+		{
+			m_PatternOffset = position;
+			Generate(m_TransformScale);
+		}
 	}
 
-	// Generate tile index positions
-	void ResizableSprite::DetermineTileIndexPositions(TilemapIndexPositions& tilemap)
+	void ResizableSprite::SetEdgesBitset(uint8_t edgesBitset)
 	{
-		tilemap.resize(m_Width);
-		for (auto& column : tilemap)
-			column.resize(m_Height);
-
-		uint16_t sx = m_PositionOffset.x, sy = m_PositionOffset.y;
-
-		// Fill whole tilemap with center slices
-		for (uint32_t y = 0; y < m_Height; y++)
-			for (uint32_t x = 0; x < m_Width; x++)
-				tilemap[x][y] = { sx + 1, sy + 1 };
-
-		// Top left corner
-		if (m_Edges & Edge_TopLeft)
+		if (edgesBitset != m_EdgesBitset)
 		{
-			tilemap[0][m_Height - 1] = { sx, sy + 2 };
+			m_EdgesBitset = edgesBitset;
+			Generate(m_TransformScale);
+		}
+	}
 
-			if (!(m_Edges & Edge_Left))
-				tilemap[0][m_Height - 1] = { sx + 1, sy + 2 };
+	std::vector<glm::uvec2> ResizableSprite::CalculateSpritesheetCellIndexPositions()
+	{
+		std::vector<glm::uvec2> cells;
 
-			if (!(m_Edges & Edge_Top))
-				tilemap[0][m_Height - 1] = { sx, sy + 2 - 1 };
+		uint16_t sx = m_PatternOffset.x, sy = m_PatternOffset.y;
+		cells.resize(m_CellCount.x * m_CellCount.y);
+		
+		if (m_PatternSize.x == 1)
+		{
+			// Fill whole cells with center slices
+			for (auto& cell : cells)
+				cell = { sx, sy + 1 };
+
+			if (m_EdgesBitset & Edge_TopLeft) // (0, 1)
+				cells[0] = { sx, sy + 2 };
+
+			if (m_EdgesBitset & Edge_BottomLeft) // (0, 0)
+				cells[m_CellCount.x - 1] = { sx, sy };
+
+			return cells;
 		}
 
-		// Top right corner
-		if (m_Edges & Edge_TopRight)
+		if (m_PatternSize.y == 1)
 		{
-			tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 2 };
+			// Fill whole cells with center slices
+			for (auto& cell : cells)
+				cell = { sx + 1 , sy };
 
-			if (!(m_Edges & Edge_Right))
-				tilemap[m_Width - 1][m_Height - 1] = { sx + 1, sy + 2 };
+			if (m_EdgesBitset & Edge_TopRight) // (0, 0)
+				cells[0] = { sx, sy };
 
-			if (!(m_Edges & Edge_Top))
-				tilemap[m_Width - 1][m_Height - 1] = { sx + 2, sy + 1 };
+			if (m_EdgesBitset & Edge_TopLeft) // (1, 0)
+				cells[m_CellCount.x - 1] = { sx + 2, sy };
+
+			return cells;
 		}
 
-		// Bottom left corner
-		if (m_Edges & Edge_BottomLeft)
+		// Fill whole cells with center slices
+		for (auto& cell : cells)
+			cell = { sx + 1, sy + 1 };
+
+		const uint32_t bottomLeftIndex = 0; // (0, 0)
+		const uint32_t bottomRightIndex = m_CellCount.x - 1; // (0, 1)
+		const uint32_t topRightIndex = m_CellCount.y * m_CellCount.x - 1; // (1, 0)
+		const uint32_t topLeftIndex = (m_CellCount.y - 1) * m_CellCount.x; // (1, 1)
+
+		// Bottom left corner (0, 0)
+		if (m_EdgesBitset & Edge_BottomLeft)
 		{
-			tilemap[0][0] = { sx, sy };
+			cells[bottomLeftIndex] = { sx, sy };
 
-			if (!(m_Edges & Edge_Left))
-				tilemap[0][0] = { sx + 1, sy };
+			if (!(m_EdgesBitset & Edge_Left))
+				cells[bottomLeftIndex] = { sx + 1, sy };
 
-			if (!(m_Edges & Edge_Bottom))
-				tilemap[0][0] = { sx, sy + 1 };
+			if (!(m_EdgesBitset & Edge_Bottom))
+				cells[bottomLeftIndex] = { sx, sy + 1 };
 		}
 
-		// Bottom right corner
-		if (m_Edges & Edge_BottomRight)
+		// Bottom right corner (0, 1)
+		if (m_EdgesBitset & Edge_BottomRight)
 		{
-			tilemap[m_Width - 1][0] = { sx + 2, sy };
+			cells[bottomRightIndex] = { sx + 2, sy };
 
-			if (!(m_Edges & Edge_Right))
-				tilemap[m_Width - 1][0] = { sx + 1, sy };
+			if (!(m_EdgesBitset & Edge_Right))
+				cells[bottomRightIndex] = { sx + 1, sy };
 
-			if (!(m_Edges & Edge_Bottom))
-				tilemap[m_Width - 1][0] = { sx + 2, sy + 1};
+			if (!(m_EdgesBitset & Edge_Bottom))
+				cells[bottomRightIndex] = { sx + 2, sy + 1};
+		}
+
+		// Top right corner (1, 0)
+		if (m_EdgesBitset & Edge_TopRight)
+		{
+			cells[topRightIndex] = { sx + 2, sy + 2 };
+
+			if (!(m_EdgesBitset & Edge_Right))
+				cells[topRightIndex] = { sx + 1, sy + 2 };
+
+			if (!(m_EdgesBitset & Edge_Top))
+				cells[topRightIndex] = { sx + 2, sy + 1 };
+		}
+
+		// Top left corner (1, 1)
+		if (m_EdgesBitset & Edge_TopLeft)
+		{
+			cells[topLeftIndex] = { sx, sy + 2 };
+
+			if (!(m_EdgesBitset & Edge_Left))
+				cells[topLeftIndex] = { sx + 1, sy + 2 };
+
+			if (!(m_EdgesBitset & Edge_Top))
+				cells[topLeftIndex] = { sx, sy + 1 };
 		}
 
 		// Left border
-		if (m_Edges & Edge_Left)
-			for (uint32_t y = 1; y < m_Height - 1; y++)
-				tilemap[0][y] = { sx, sy + 1 };
+		if (m_EdgesBitset & Edge_Left)
+			for (uint32_t y = 1; y < m_CellCount.y - 1; y++)
+				cells[y * m_CellCount.x] = { sx, sy + 1 };
 
 		// Right border
-		if (m_Edges & Edge_Right)
-			for (uint32_t y = 1; y < m_Height - 1; y++)
-				tilemap[m_Width - 1][y] = { sx + 2, sy + 1 };
+		if (m_EdgesBitset & Edge_Right)
+			for (uint32_t y = 1; y < m_CellCount.y - 1; y++)
+				cells[m_CellCount.x - 1 + y * m_CellCount.x] = { sx + 2, sy + 1 };
 
 		// Top border
-		if (m_Edges & Edge_Top)
-			for (uint32_t x = 1; x < m_Width - 1; x++)
-				tilemap[x][m_Height - 1] = { sx + 1, sy + 2 };
+		if (m_EdgesBitset & Edge_Top)
+			for (uint32_t x = 1; x < m_CellCount.x - 1; x++)
+				cells[x + (m_CellCount.y - 1) * m_CellCount.x] = {sx + 1, sy + 2};
 
 		// Bottom border
-		if (m_Edges & Edge_Bottom)
-			for (uint32_t x = 1; x < m_Width - 1; x++)
-				tilemap[x][0] = { sx + 1, sy };
+		if (m_EdgesBitset & Edge_Bottom)
+			for (uint32_t x = 1; x < m_CellCount.x - 1; x++)
+				cells[x] = { sx + 1, sy };
+
+		return cells;
 	}
 
-	void ResizableSprite::CalculateTileTransforms()
+	void ResizableSprite::CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes)
 	{
-		// width, height tile count (with fraction)
-		float width = (*m_Transform).Scale.x / m_TileScale;
-		float height = (*m_Transform).Scale.y / m_TileScale;
-		glm::uvec2 tileCount = { (uint32_t)ceil(width), (uint32_t)ceil(height) };
+		auto& cells = m_CellTransforms;
+		cells.resize(m_CellCount.x * m_CellCount.y);
+
+		float width = m_TransformScale.x / m_CellScale;
+		float height = m_TransformScale.y / m_CellScale;
+
+		if (m_PatternSize.x < 3)
+			width = (float)m_PatternSize.x;
+
+		if (m_PatternSize.y < 3)
+			height = (float)m_PatternSize.y;
 		
-		// Offset means the size of a cut of the penultimate tile
-		// If transform scale.x is for example: 4.85 and tilescale.x is 1.0
-		// then offset.x will be equal to 0.15
+		// Offset - clipping size
+		// e.g. For transform.scale.x = 4.85 and tilescale.x = 1.0
+		// offset.x (clipping size) will be equal to 0.15
 		glm::vec2 offset = {
 			fmod((1.0f - (width - (int)width)), 1.0f),
 			fmod((1.0f - (height - (int)height)), 1.0f)
 		};
 
-		// Fix offset values for sprites with width or height < 2.0
-		if (width < 2.0f)
+		// Offset for center clipping (when width or height < 2.0)
+		if (m_PatternSize.x > 2)
 		{
-			offset.x /= 2.0f;
+			if (width <= 1.0f)
+			{
+				m_CellCount.x = 2;
+				offset.x = 0.5f + (1.0f - width) / 2.0f;
+			} 
+			else if (width < 2.0f)
+				offset.x /= 2.0f;
 		}
-		if (width <= 1.0f)
+		if (m_PatternSize.y > 2)
 		{
-			tileCount.x = 2;
-			offset.x = 0.5f + (1.0f - width) / 2.0f;
-		}
-		if (height < 2.0f)
-		{
-			offset.y /= 2.0f;
-		}
-		if (height <= 1.0f)
-		{
-			tileCount.y = 2;
-			offset.y = 0.5f + (1.0f - height) / 2.0f;
+			if (height <= 1.0f)
+			{
+				m_CellCount.y = 2;
+				offset.y = 0.5f + (1.0f - height) / 2.0f;
+			}
+			else if (height < 2.0f)
+				offset.y /= 2.0f;
 		}
 
-		// Calculate texture coords offset
+		// Calculate offset for texture coords
 		glm::vec2 coordOffset = {
 			m_Spritesheet->m_TileScale.x * offset.x,
 			m_Spritesheet->m_TileScale.x * offset.y
 		};
 
-		// Generate spritesheet tile positions
-		TilemapIndexPositions spritesheetTilePositions;
-		DetermineTileIndexPositions(spritesheetTilePositions);
-
-		for (uint32_t y = 0; y < tileCount.y; y++)
+		for (uint32_t y = 0; y < m_CellCount.y; y++)
 		{
-			for (uint32_t x = 0; x < tileCount.x; x++)
+			for (uint32_t x = 0; x < m_CellCount.x; x++)
 			{
-				// Tile position (in spritesheet)
-				const glm::uvec2& tp = spritesheetTilePositions[x][y];
-				TextureCoords& coords = m_Tilemap[x][y].Coords;
-				coords = m_Spritesheet->GetTextureCoords(tp.x, tp.y);
+				const glm::uvec2& tp = spritesheetIndexes.at(x + y * m_CellCount.x);
+				TextureCoords& textureCoords = cells.at(x + y * m_CellCount.x).TextureCoords;
+				textureCoords = m_Spritesheet->GetTextureCoords(tp.x, tp.y);
 
-				glm::vec2 scale = { m_TileScale, m_TileScale };
+				// Default position, scale, coords values
+				glm::vec2 scale = { m_CellScale, m_CellScale };
 				glm::vec2 pos = {
-					(-width / 2.0f + x) * scale.x + 0.5f * m_TileScale,
-					(-height / 2.0f + y) * scale.y + 0.5f * m_TileScale
+					(-width / 2.0f + x) * scale.x + 0.5f * m_CellScale,
+					(-height / 2.0f + y) * scale.y + 0.5f * m_CellScale
 				};
-				// ^^^ Above are default position, scale, coords values
-				// If offset is != 0.0 then some tiles must be cut, code below VVV
 
-				// ========= X axis =========
-				// Width > 2.0
+				// Clip penultimate cells if offset is not 0
 				if (offset.x && width > 2.0f)
 				{
-					if (x == tileCount.x - 2) // One before last
+					// Penultimate clipping
+					if (x == m_CellCount.x - 2) // Penultimate
 					{
-						coords[1].x -= coordOffset.x;
-						coords[2].x -= coordOffset.x;
+						textureCoords[1].x -= coordOffset.x;
+						textureCoords[2].x -= coordOffset.x;
 						scale.x *= (1.0f - offset.x);
-						pos.x -= offset.x / 2.0f * m_TileScale;
+						pos.x -= offset.x / 2.0f * m_CellScale;
 					}
-					else if (x == tileCount.x - 1) // Last
+					else if (x == m_CellCount.x - 1) // Last
 					{
-						pos.x -= offset.x * m_TileScale;
+						pos.x -= offset.x * m_CellScale;
 					}
 				}
-				// Width < 2.0
 				if (offset.x && width < 2.0f)
 				{
+					// Center clipping
 					if (x == 0) // First
 					{
-						coords[1].x -= coordOffset.x;
-						coords[2].x -= coordOffset.x;
+						textureCoords[1].x -= coordOffset.x;
+						textureCoords[2].x -= coordOffset.x;
 						scale.x *= (1.0f - offset.x);
-						pos.x -= offset.x / 2.0f * m_TileScale;
+						pos.x -= offset.x / 2.0f * m_CellScale;
 					}
 					else // Second
 					{
-						coords[0].x += coordOffset.x;
-						coords[3].x += coordOffset.x;
+						textureCoords[0].x += coordOffset.x;
+						textureCoords[3].x += coordOffset.x;
 						scale.x *= (1.0f - offset.x);
-						pos.x -= offset.x * 1.5f * m_TileScale;
+						pos.x -= offset.x * 1.5f * m_CellScale;
 					}
 				}
 
-				// ========= Y axis =========
-				// Height > 2.0
 				if (offset.y && height > 2.0f)
 				{
-					if (y == tileCount.y - 2) // One before last
+					// Penultimate clipping
+					if (y == m_CellCount.y - 2) // Penultimate
 					{
-						coords[0].y += coordOffset.y;
-						coords[1].y += coordOffset.y;
+						textureCoords[0].y += coordOffset.y;
+						textureCoords[1].y += coordOffset.y;
 						scale.y *= (1.0f - offset.y);
-						pos.y -= offset.y / 2.0f * m_TileScale;
+						pos.y -= offset.y / 2.0f * m_CellScale;
 					}
-					else if (y == tileCount.y - 1) // Last
+					else if (y == m_CellCount.y - 1) // Last
 					{
-						pos.y -= offset.y * m_TileScale;
+						pos.y -= offset.y * m_CellScale;
 					}
 				}
-				// Height < 2.0
 				else if (offset.y && height < 2.0f)
 				{
+					// Center clipping
 					if (y == 0) // First
 					{
-						coords[2].y -= coordOffset.y;
-						coords[3].y -= coordOffset.y;
+						textureCoords[2].y -= coordOffset.y;
+						textureCoords[3].y -= coordOffset.y;
 						scale.y *= (1.0f - offset.y);
-						pos.y -= offset.y / 2.0f * m_TileScale;
+						pos.y -= offset.y / 2.0f * m_CellScale;
 					}
 					else // Second
 					{
-						coords[0].y += coordOffset.y;
-						coords[1].y += coordOffset.y;
+						textureCoords[0].y += coordOffset.y;
+						textureCoords[1].y += coordOffset.y;
 						scale.y *= (1.0f - offset.y);
-						pos.y -= offset.y * 1.5f * m_TileScale;
+						pos.y -= offset.y * 1.5f * m_CellScale;
 					}
 				}
 
-				// Store glm::mat4 tile transform matrix
-				m_Tilemap[x][y].LocalTransform = Math::GetTransform(
-					{ pos.x, pos.y, 0 }, { scale.x, scale.y }
-				);
+				// Store glm::mat4 cell transform matrix
+				cells.at(x + y * m_CellCount.x).LocalTransform = Math::GetTransform({ pos.x, pos.y, 0 }, { scale.x, scale.y });
 			}
 		}
-	}
-
-	void ResizableSprite::SetPositionOffset(const glm::uvec2& position)
-	{
-		if (position != m_PositionOffset)
-		{
-			m_PositionOffset = position;
-			CalculateTileTransforms();
-		}
-	}
-
-	void ResizableSprite::SetEdges(uint8_t edges)
-	{
-		if (edges != m_Edges)
-		{
-			m_Edges = edges;
-			CalculateTileTransforms();
-		}
-	}
-
-	Shared<Spritesheet> ResizableSprite::GetSpritesheet()
-	{
-		return m_Spritesheet;
-	}
-
-	uint8_t ResizableSprite::GetEdges() const
-	{
-		return m_Edges;
 	}
 
 }

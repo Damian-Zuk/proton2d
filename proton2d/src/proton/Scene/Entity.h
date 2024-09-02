@@ -6,6 +6,8 @@
 
 namespace proton {
 
+	class GameModeBase;
+
 	// Entity class wrapper for the EnTT ECS
 	class Entity
 	{
@@ -26,7 +28,17 @@ namespace proton {
 		TComponent& AddComponent(TArgs&& ...args) const
 		{
 			PT_CORE_ASSERT(!HasComponent<TComponent>(), "Entity already have component!");
-			return m_Scene->m_Registry.emplace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
+			auto& component = m_Scene->m_Registry.emplace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
+			m_Scene->OnComponentAdded<TComponent>(*this, component);
+			return component;
+		}
+
+		template<typename TComponent, typename... TArgs>
+		TComponent& AddOrReplaceComponent(TArgs&&... args)
+		{
+			auto& component = m_Scene->m_Registry.emplace_or_replace<TComponent>(m_Handle, std::forward<TArgs>(args)...);
+			m_Scene->OnComponentAdded<TComponent>(*this, component);
+			return component;
 		}
 
 		template <typename TComponent>
@@ -47,19 +59,18 @@ namespace proton {
 			return m_Scene->m_Registry.any_of<TComponents...>(m_Handle);
 		}
 
-		// Remove component from Entity
 		template <typename TComponent>
 		void RemoveComponent()
 		{
 			PT_CORE_ASSERT(HasComponent<TComponent>(), "Entity does not have a component!");
 
 			if (std::is_base_of<ScriptComponent, TComponent>::value)
-				TerminateScripts();
+				DestroyAllScripts();
 
 			if (std::is_base_of<CameraComponent, TComponent>::value
 				&& m_Scene->m_PrimaryCameraEntity == *this)
 			{
-				PT_CORE_WARN_FUNCSIG("Scene Primary Camera has been removed!");
+				PT_CORE_WARN("Scene Primary Camera has been removed!");
 				m_Scene->m_PrimaryCameraEntity = entt::null;
 				m_Scene->m_PrimaryCamera = nullptr;
 			}
@@ -67,7 +78,6 @@ namespace proton {
 			m_Scene->m_Registry.remove<TComponent>(m_Handle);
 		}
 
-		// Add script to Entity and return instance
 		template <typename TScriptClass>
 		EntityScript* AddScript() const
 		{
@@ -75,7 +85,7 @@ namespace proton {
 				AddComponent<ScriptComponent>();
 
 			auto& component = GetComponent<ScriptComponent>();
-			std::string className = TScriptClass::__ScriptClassName;
+			const std::string& className = TScriptClass::__ScriptClassName;
 			PT_CORE_ASSERT(component.Scripts.find(className) == component.Scripts.end(), "The script is already attached to an Entity!");
 
 			EntityScript*& scriptInstance = component.Scripts[className];
@@ -83,94 +93,79 @@ namespace proton {
 			scriptInstance->m_Handle = m_Handle;
 			scriptInstance->m_Scene = m_Scene;
 			scriptInstance->OnRegisterFields();
+
 			return scriptInstance;
 		}
 
-		// Definitions in EntityComponent.h
-
-		// AddComponent<ResizableSpriteComponent>
-		template<> ResizableSpriteComponent& AddComponent() const;
-
-		// AddComponent<RigidbodyComponent>
-		template<> RigidbodyComponent& AddComponent() const;
-
-		// AddComponent<BoxColliderComponent>
-		template<> BoxColliderComponent& AddComponent() const;
-
-		// AddComponent<SpriteAnimationComponent>
-		template<> SpriteAnimationComponent& AddComponent() const;
-
-
-		// Remove script from Entity
 		void RemoveScript(const std::string& scriptClassName);
 
-		// Get TransformComponent
-		TransformComponent& GetTransform();
-
-		// Set position relative to world center
-		// Updates World and Local position
-		void SetWorldPosition(const glm::vec3& position);
+		bool HasScript(const std::string& scriptClassName) const;
 		
-		// Set position relative to parent entity position
-		// Updates World and Local position
-		void SetLocalPosition(const glm::vec3& position);
+		template<typename TScriptClass>
+		bool HasScript() const
+		{
+			return HasScript(TScriptClass::__ScriptClassName);
+		}
+		
+		template<typename TScriptClass>
+		TScriptClass* As()
+		{
+			auto& component = GetComponent<ScriptComponent>();
+			EntityScript* base = component.Scripts.at(TScriptClass::__ScriptClassName);
+			return dynamic_cast<TScriptClass*>(base);
+		}
 
-		void SetRotationCenter(float angle);
+		template<typename TGameMode>
+		TGameMode* GetGameMode()
+		{
+			return m_Scene->GetGameMode()->As<TGameMode>();
+		}
 
-		void RotateCenter(float angle);
-
-		// Get pointer to scene
-		Scene* GetScene() { return m_Scene; }
-
-		// Get Entity unique identifier
-		UUID GetUUID() const;
-
-		// Get Entity tag stored in TagComponent
-		const std::string& GetTag() const;
-
-		// Check if Entity is valid
+		// Entity lifetime
 		bool IsValid();
-
-		// Destroy Entity and it's child entities
 		void Destroy();
 
-		// Add child Entity given as parameter
-		void AddChildEntity(Entity child, bool refreshChildWorldPosition = true);
+		// Scene hierarchy
+		Entity CreateChildEntity(const std::string& name) const;
+		void AddChildEntity(Entity child, bool refreshChildWorldPosition = true) const;
+		void DestroyChildEntities() const;
+		void PopHierarchy() const;
+		bool IsParentOf(Entity entity) const;
+		Entity GetParent() const;
+		Entity FindChildByTag(const std::string& name);
 
-		Entity CreateChildEntity(const std::string& name);
+		// Component getters
+		Scene* GetScene() const;
+		GameModeBase* GetGameMode() const;
+		UUID GetUUID() const;
+		const std::string& GetTag() const;
+		TransformComponent& GetTransform() const;
+		Sprite& GetSprite() const;
+		glm::vec4& GetColor() const;
+		SpriteAnimation& GetSpriteAnimation() const;
+		b2Body* GetRuntimeBody() const;
 
-		// Destroy all child entities
-		void DestroyChildEntities();
+		// Transform modifiers
+		void SetWorldPosition(const glm::vec3& position) const;
+		void SetWorldPosition(const glm::vec2& position) const;
+		void SetLocalPosition(const glm::vec3& position) const;
+		void SetLocalPosition(const glm::vec2& position) const;
+		void SetRotationCenter(float angle) const;
+		void RotateCenter(float angle) const;
 
-		// Detach Entity from parent Entity and move to scene root
-		void PopHierarchy();
+		// Box2D body related methods
+		bool IsRigidbodyInitialized() const;
+		glm::vec2 GetLinearVelocity() const;
+		void SetLinearVelocity(float x_mps, float y_mps) const;
+		void SetLinearVelocityX(float mps) const;
+		void SetLinearVelocityY(float mps) const;
+		void ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point = {0.0f, 0.0f}) const;
+		void SetRigidbodyTransform(const glm::vec2& position, float rotation) const;
 
-		// Check if Entity is parent of a given Entity
-		bool IsParentOf(Entity entity);
-
-		// ============== Box2D Rigidbody related ==============
-
-		// RigidbodyComponent required
-		b2Body* RetrieveRuntimeBody();
-
-		// RigidbodyComponent required
-		void SetLinearVelocity(float x_mps, float y_mps);
-
-		// RigidbodyComponent required
-		void SetLinearVelocityX(float mps);
-
-		// RigidbodyComponent required
-		void SetLinearVelocityY(float mps);
-
-		// RigidbodyComponent required
-		glm::vec2 GetLinearVelocity();
-
-		// RigidbodyComponent required
-		void ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point = {0.0f, 0.0f});
-
-		// ======================================================
-
-		SpriteAnimation* CreateSpriteAnimation();
+		// Network
+		bool IsNetworked() const;
+		NetSyncMethod GetNetSyncMethod() const;
+		bool HasNetworkPrediction() const;
 
 		// Operator overloads
 		operator uint32_t() const { return (uint32_t)m_Handle; }
@@ -180,12 +175,11 @@ namespace proton {
 		bool operator!=(const Entity& other) const { return !(other == *this); }
 
 	private:
-		void TerminateScripts();
+		void DestroyAllScripts();
 
 	private:
 		entt::entity m_Handle = entt::null;
 		Scene* m_Scene = nullptr;
-		b2Body* m_RuntimeBody = nullptr;
 
 		friend class Scene;
 		friend class SceneSerializer;
@@ -193,7 +187,10 @@ namespace proton {
 		friend class PhysicsWorld;
 		friend class PhysicsContactListener;
 		friend struct PhysicsContact;
+		friend class Server;
+		friend class NetReplicator;
 
+		friend class EditorLayer;
 		friend class InspectorPanel;
 		friend class SceneViewportPanel;
 	};

@@ -15,19 +15,20 @@ namespace proton {
 		Camera();
 		virtual ~Camera() = default;
 
+		void SetViewportSize(const glm::vec2& viewportSize);
 		void SetZoomLevel(float zoomLevel);
-		void SetAspectRatio(float aspectRatio);
-		float GetAspectRatio() const { return m_AspectRatio; }
-		float GetZoomLevel() const { return m_ZoomLevel; }
-		float GetOrthographicSize() const { return m_OrthographicSize; }
 
+		float GetZoomLevel() const { return m_ZoomLevel; }
+		float GetAspectRatio() const { return m_AspectRatio; }
+		float GetOrthographicSize() const { return m_OrthographicSize; }
 		const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
 		const OrthoProjection& GetOrthoProjection() const { return m_Projection; }
 
-		void RecalculateProjection();
 	private:
+		void RecalculateProjection();
 
 	private:
+		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 		
 		float m_AspectRatio;
@@ -37,6 +38,9 @@ namespace proton {
 		float m_OrthographicSize = 10.0f;
 		float m_OrthographicNear = -1.0f;
 		float m_OrthographicFar = 1.0f;
+
+		friend class InfoPanel;
+		friend class ResizableSprite;
 	};
 
 }

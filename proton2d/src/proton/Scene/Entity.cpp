@@ -1,6 +1,5 @@
 #include "ptpch.h"
 #include "Proton/Scene/Entity.h"
-#include "Proton/Scene/EntityComponent.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Physics/PhysicsWorld.h"
 
@@ -22,24 +21,21 @@ namespace proton
 			RemoveComponent<ScriptComponent>();
 	}
 
-	TransformComponent& Entity::GetTransform()
+	bool Entity::HasScript(const std::string& scriptClassName) const
 	{
-		return GetComponent<TransformComponent>();
-	}
+		if (!HasComponent<ScriptComponent>())
+			return false;
 
-	UUID Entity::GetUUID() const
-	{
-		return GetComponent<IDComponent>().ID;
-	}
-
-	const std::string& Entity::GetTag() const
-	{
-		return GetComponent<TagComponent>().Tag;
+		auto& component = GetComponent<ScriptComponent>();
+		return component.Scripts.find(scriptClassName) != component.Scripts.end();
 	}
 
 	bool Entity::IsValid()
 	{
 		if (m_Handle == entt::null)
+			return false;
+
+		if (!m_Scene)
 			return false;
 
 		if (!m_Scene->m_Registry.valid(m_Handle))
@@ -50,89 +46,19 @@ namespace proton
 		return true;
 	}
 
-	b2Body* Entity::RetrieveRuntimeBody()
-	{
-		auto& id = GetComponent<IDComponent>();
-		PT_CORE_ASSERT(HasComponent<RigidbodyComponent>(), "Entity does not have RigidbodyComponent!");
-		b2Body* body = m_Scene->GetRuntimeBody(id.ID);
-		m_RuntimeBody = body;
-		return body;
-	}
-
-	void Entity::SetLinearVelocity(float x_mps, float y_mps)
-	{
-		PT_CORE_ASSERT(m_RuntimeBody, "RuntimeBody was nullptr. Did you forget to call RetrieveRuntimeBody?");
-		m_RuntimeBody->SetLinearVelocity({ x_mps, y_mps });
-	}
-
-	void Entity::SetLinearVelocityX(float mps)
-	{
-		PT_CORE_ASSERT(m_RuntimeBody, "RuntimeBody was nullptr. Did you forget to call RetrieveRuntimeBody?");
-		m_RuntimeBody->SetLinearVelocity({ mps, m_RuntimeBody->GetLinearVelocity().y });
-	}
-
-	void Entity::SetLinearVelocityY(float mps)
-	{
-		PT_CORE_ASSERT(m_RuntimeBody, "RuntimeBody was nullptr. Did you forget to call RetrieveRuntimeBody?");
-		m_RuntimeBody->SetLinearVelocity({ m_RuntimeBody->GetLinearVelocity().x, mps });
-	}
-
-	glm::vec2 Entity::GetLinearVelocity()
-	{
-		PT_CORE_ASSERT(m_RuntimeBody, "RuntimeBody was nullptr. Did you forget to call RetrieveRuntimeBody?");
-		b2Vec2 velocity = m_RuntimeBody->GetLinearVelocity();
-		if (glm::abs(velocity.x) < 0.00001f) velocity.x = 0.0f;
-		if (glm::abs(velocity.y) < 0.00001f) velocity.y = 0.0f;
-		return glm::vec2{ velocity.x, velocity.y };
-	}
-
-	void Entity::ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point)
-	{
-		if (point.x == 0.0f && point.y == 0.0f)
-			m_RuntimeBody->ApplyLinearImpulseToCenter({ impulse.x, impulse.y }, true);
-		else
-			m_RuntimeBody->ApplyLinearImpulse({impulse.x, impulse.y }, {point.x, point.y}, true);
-	}
-
-	SpriteAnimation* Entity::CreateSpriteAnimation()
-	{
-		if (!HasComponent<SpriteAnimationComponent>())
-			return &AddComponent<SpriteAnimationComponent>().SpriteAnimation;
-		PT_CORE_WARN_FUNCSIG(" Entity '{}' already has SpriteAnimationComponent!", GetTag());
-		return &GetComponent<SpriteAnimationComponent>().SpriteAnimation;
-	}
-
-	void Entity::TerminateScripts()
-	{
-		for (auto& [scriptName, scriptInstance] : GetComponent<ScriptComponent>().Scripts)
-		{
-			if (m_Scene->m_SceneState != SceneState::Stop)
-				scriptInstance->OnDestroy();
-
-			delete scriptInstance;
-			scriptInstance = nullptr;
-		}
-	}
-
-	Entity Entity::CreateChildEntity(const std::string& name)
+	Entity Entity::CreateChildEntity(const std::string& name) const
 	{
 		Entity entity = m_Scene->CreateEntity(name);
 		AddChildEntity(entity, false);
 		return entity;
 	}
 
-	void Entity::Destroy()
-	{
-		m_Scene->DestroyEntity(*this);
-		m_Handle = entt::null;
-	}
-
-	void Entity::DestroyChildEntities()
+	void Entity::DestroyChildEntities() const
 	{
 		m_Scene->DestroyChildEntities(*this);
 	}
 
-	void Entity::AddChildEntity(Entity child, bool refreshChildWorldPosition)
+	void Entity::AddChildEntity(Entity child, bool refreshChildWorldPosition) const
 	{
 		auto& parentComponent = GetComponent<RelationshipComponent>();
 		auto& childComponent = child.GetComponent<RelationshipComponent>();
@@ -158,7 +84,7 @@ namespace proton
 			child.SetWorldPosition(child.GetTransform().WorldPosition);
 	}
 
-	void Entity::PopHierarchy()
+	void Entity::PopHierarchy() const
 	{
 		auto& rc = GetComponent<RelationshipComponent>();
 		if (rc.Parent != entt::null)
@@ -169,7 +95,7 @@ namespace proton
 
 			auto& parentRc = parent.GetComponent<RelationshipComponent>();
 			parentRc.ChildrenCount--;
-			if (parentRc.First == *this)
+			if (parentRc.First == m_Handle)
 				parentRc.First = rc.Next;
 
 			if (prev)
@@ -192,7 +118,7 @@ namespace proton
 		}
 	}
 
-	bool Entity::IsParentOf(Entity entity)
+	bool Entity::IsParentOf(Entity entity) const
 	{
 		auto& rc = GetComponent<RelationshipComponent>();
 		if (!rc.ChildrenCount)
@@ -214,35 +140,236 @@ namespace proton
 		return false;
 	}
 
-	void Entity::SetWorldPosition(const glm::vec3& position)
+	Entity Entity::GetParent() const
+	{
+		auto& rc = GetComponent<RelationshipComponent>();
+		return Entity{ rc.Parent, m_Scene };
+	}
+
+	Entity Entity::FindChildByTag(const std::string& name)
+	{
+		auto& rc = GetComponent<RelationshipComponent>();
+		if (!rc.ChildrenCount)
+			return Entity();
+
+		Entity current{ rc.First, m_Scene };
+		while (current)
+		{
+			if (current.GetComponent<TagComponent>().Tag == name)
+				return current;
+
+			current = Entity{ current.GetComponent<RelationshipComponent>().Next, m_Scene };
+		}
+		return Entity();
+	}
+
+	void Entity::Destroy()
+	{
+		m_Scene->DestroyEntity(*this);
+		m_Handle = entt::null;
+	}
+
+	Scene* Entity::GetScene() const
+	{
+		return m_Scene;
+	}
+
+	GameModeBase* Entity::GetGameMode() const
+	{
+		return m_Scene->GetGameMode();
+	}
+
+	UUID Entity::GetUUID() const
+	{
+		return GetComponent<IDComponent>().ID;
+	}
+
+	const std::string& Entity::GetTag() const
+	{
+		return GetComponent<TagComponent>().Tag;
+	}
+
+	TransformComponent& Entity::GetTransform() const
+	{
+		return GetComponent<TransformComponent>();
+	}
+
+	Sprite& Entity::GetSprite() const
+	{
+		return GetComponent<SpriteComponent>().Sprite;
+	}
+
+	glm::vec4& Entity::GetColor() const
+	{
+		if (HasComponent<SpriteComponent>())
+			return GetComponent<SpriteComponent>().Color;
+		
+		if (HasComponent<ResizableSpriteComponent>())
+			return GetComponent<ResizableSpriteComponent>().Color;
+
+		static glm::vec4 noColor { 0.0f };
+		return noColor;
+	}
+
+	SpriteAnimation& Entity::GetSpriteAnimation() const
+	{
+		return GetComponent<SpriteAnimationComponent>().SpriteAnimation;
+	}
+
+	b2Body* Entity::GetRuntimeBody() const
+	{
+		if (!HasComponent<RigidbodyComponent>())
+			return nullptr;
+
+		auto& rb = GetComponent<RigidbodyComponent>();
+		return rb.RuntimeBody;
+	}
+
+	void Entity::SetLinearVelocity(float x_mps, float y_mps) const
+	{
+		GetRuntimeBody()->SetLinearVelocity({x_mps, y_mps});
+	}
+
+	void Entity::SetLinearVelocityX(float mps) const
+	{
+		b2Body* body = GetRuntimeBody();
+		body->SetLinearVelocity({ mps, body->GetLinearVelocity().y });
+	}
+
+	void Entity::SetLinearVelocityY(float mps) const
+	{
+		b2Body* body = GetRuntimeBody();
+		body->SetLinearVelocity({ body->GetLinearVelocity().x, mps });
+	}
+
+	bool Entity::IsRigidbodyInitialized() const
+	{
+		return (bool)GetComponent<RigidbodyComponent>().RuntimeBody;
+	}
+
+	glm::vec2 Entity::GetLinearVelocity() const
+	{
+		b2Vec2 velocity = GetRuntimeBody()->GetLinearVelocity();
+		if (glm::abs(velocity.x) < 0.00001f) velocity.x = 0.0f;
+		if (glm::abs(velocity.y) < 0.00001f) velocity.y = 0.0f;
+		return glm::vec2{ velocity.x, velocity.y };
+	}
+
+	void Entity::ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point) const
+	{
+		b2Body* body = GetRuntimeBody();
+		if (point.x == 0.0f && point.y == 0.0f)
+			body->ApplyLinearImpulseToCenter({ impulse.x, impulse.y }, true);
+		else
+			body->ApplyLinearImpulse({impulse.x, impulse.y }, {point.x, point.y}, true);
+	}
+
+	void Entity::SetRigidbodyTransform(const glm::vec2& position, float rotation) const
+	{
+		b2Body* body = GetRuntimeBody();
+		if (!body)
+			return;
+
+		body->SetTransform({ position.x, position.y }, glm::radians(rotation));
+
+		auto& hierarhy = GetComponent<RelationshipComponent>();
+		Entity current{ hierarhy.First, m_Scene };
+
+		while (current)
+		{
+			if (current.HasComponent<RigidbodyComponent>())
+			{
+				auto& tc = current.GetComponent<TransformComponent>();
+				auto& rb = current.GetComponent<RigidbodyComponent>();
+
+				glm::vec2 offset = position;
+				offset.x += tc.LocalPosition.x;
+				offset.y += tc.LocalPosition.y;
+				current.SetRigidbodyTransform(offset, tc.Rotation);
+			}
+			auto& h = current.GetComponent<RelationshipComponent>();
+			current = Entity{ h.Next, m_Scene };
+		}
+	}
+
+	bool Entity::IsNetworked() const
+	{
+		return HasComponent<NetworkComponent>();
+	}
+
+	NetSyncMethod Entity::GetNetSyncMethod() const
+	{
+		if (HasComponent<NetworkComponent>())
+		{
+			return GetComponent<NetworkComponent>().NetTransform.Method;
+		}
+		return NetSyncMethod::None;
+	}
+
+	bool Entity::HasNetworkPrediction() const
+	{
+		if (!HasComponent<NetworkComponent>())
+			return false;
+
+		auto& net = GetComponent<NetworkComponent>();
+		return net.NetTransform.Method == NetSyncMethod::Prediction || net.NetTransform.Method == NetSyncMethod::Extrapolation;
+	}
+
+	void Entity::SetWorldPosition(const glm::vec3& position) const
 	{
 		m_Scene->SetEntityWorldPosition(*this, position);
 	}
 
-	void Entity::SetLocalPosition(const glm::vec3& position)
+	void Entity::SetWorldPosition(const glm::vec2& position) const
+	{
+		auto& transform = GetTransform();
+		m_Scene->SetEntityWorldPosition(*this, {position.x, position.y, transform.WorldPosition.z});
+	}
+
+	void Entity::SetLocalPosition(const glm::vec3& position) const
 	{
 		m_Scene->SetEntityLocalPosition(*this, position);
 	}
 
-	void Entity::SetRotationCenter(float angle)
+	void Entity::SetLocalPosition(const glm::vec2& position) const
 	{
-		if (m_RuntimeBody)
+		auto& transform = GetTransform();
+		m_Scene->SetEntityLocalPosition(*this, {position.x, position.y, transform.LocalPosition.z});
+	}
+
+	void Entity::SetRotationCenter(float angle) const
+	{
+		b2Body* body = GetRuntimeBody();
+		if (body)
 		{
-			m_RuntimeBody->SetTransform(m_RuntimeBody->GetPosition(), angle * b2_pi);
+			body->SetTransform(body->GetPosition(), angle * (b2_pi / 180.0f));
 			return;
 		}
 		GetTransform().Rotation = angle;
 	}
 
-	void Entity::RotateCenter(float angle)
+	void Entity::RotateCenter(float angle) const
 	{
-		if (m_RuntimeBody)
+		b2Body* body = GetRuntimeBody();
+		if (body)
 		{
-			m_RuntimeBody->SetTransform(m_RuntimeBody->GetPosition(),
-				m_RuntimeBody->GetAngle() + angle * b2_pi);
+			body->SetTransform(body->GetPosition(), body->GetAngle() + angle * (b2_pi / 180.0f));
 			return;
 		}
 		GetTransform().Rotation += angle;
+	}
+
+	void Entity::DestroyAllScripts()
+	{
+		auto& component = GetComponent<ScriptComponent>();
+		for (auto& [scriptName, scriptInstance] : component.Scripts)
+		{
+			if (m_Scene->m_State != SceneState::Stop)
+				scriptInstance->OnDestroy();
+
+			delete scriptInstance;
+		}
+		component.Scripts.clear();
 	}
 
 }

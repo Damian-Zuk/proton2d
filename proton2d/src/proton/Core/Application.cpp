@@ -1,7 +1,9 @@
 #include "ptpch.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Timer.h"
 #include "Proton/Core/Input.h"
+#include "Proton/Core/AssetManager.h"
 
 #include "Proton/Events/WindowEvents.h" 
 #include "Proton/Events/KeyEvents.h"
@@ -10,10 +12,16 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Scripting/GameModeBase.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
-	#include "Proton/Platform/Windows/WindowsWindow.h"
+#include "Proton/Platform/Windows/WindowsWindow.h"
+#endif
+
+#ifdef PT_EDITOR
+#include "Proton/Editor/EditorLayer.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Menu/EditorMenuBar.h"
 #endif
 
 namespace proton {
@@ -32,6 +40,10 @@ namespace proton {
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
 		m_Window->SetFullscreen(m_AppConfig.Fullscreen);
 		m_Window->SetVSync(m_AppConfig.VSync);
+
+	#ifdef PROTON_DISTRIBUTION
+		m_GameInstance = MakeUnique<GameInstance>();
+	#endif
 	}
 
 	Application::~Application()
@@ -48,72 +60,82 @@ namespace proton {
 	{
 		if (m_IsRunning)
 		{
-			PT_CORE_ERROR_FUNCSIG("Application is already running!");
+			PT_CORE_ERROR("Application is already running!");
 			return;
 		}
 
 		AssetManager::Init();
 		Renderer::Init();
-
-	#ifdef PT_EDITOR
-		m_EditorLayer = new EditorLayer();
-		PushOverlay(m_EditorLayer);
-	#endif
-
-		SceneManager::Init();
 		PrefabManager::Init();
 
-		PROFILE_BEGIN_SESSION("Proton-Runtime");
+	#ifdef PT_EDITOR
+		EditorLayer::s_Instance = new EditorLayer();
+		PushOverlay(EditorLayer::s_Instance); // EditorLayer::OnCreate()
+	#endif
 
-		if (OnCreate()) 
+		if (!OnCreate())
 		{
-			m_IsRunning = true;
-			// The game loop
-			while (m_IsRunning) 
+			PT_CORE_ERROR("Application initialization failed! Exiting.");
+			return;
+		}
+
+		m_IsRunning = true;
+
+	#ifdef PROTON_DISTRIBUTION
+		m_GameInstance->Init();
+		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+	#endif
+
+		PROFILE_BEGIN_SESSION("Proton-Runtime");
+		PROFILE_SCOPE("app_game_loop");
+
+		// Application loop
+		while (m_IsRunning) 
+		{
+			Timer timer;
+
+			if (!m_WindowMinimized) 
 			{
-				PROFILE_SCOPE("app_game_loop");
-				Timer timer;
-
-				if (!m_WindowMinimized) 
+			{
+				PROFILE_SCOPE("app_layers_update");
+				for (AppLayer* layer : m_AppLayers)
 				{
-				#ifndef PT_EDITOR
-					Renderer::Clear();
-				#endif
-					{
-						// Update application layers
-						PROFILE_SCOPE("app_layers_on_update");
-						for (AppLayer* layer : m_AppLayers)
-							layer->OnUpdate(m_FrameTime * m_TimeScale);
-					}
-
-				#ifdef PT_EDITOR
-					// Update and render Editor ImGui interface
-					{
-						PROFILE_SCOPE("imgui_render");
-					
-						m_EditorLayer->BeginImGuiRender();
-
-						for (AppLayer* layer : m_AppLayers)
-							layer->OnImGuiRender();
-
-						m_EditorLayer->EndImGuiRender();
-					}
-				#else
-					// Update active scene
-					Scene* scene = SceneManager::GetActiveScene();
-					if (scene)
-						scene->OnUpdate(m_FrameTime * m_TimeScale);
-				#endif
+					layer->OnUpdate(m_FrameTime * m_TimeScale);
 				}
-
-				// Update window
-				m_Window->OnUpdate();
-				
-				m_FrameTime = timer.Elapsed();
 			}
+
+			#ifdef PT_EDITOR
+			{
+				PROFILE_SCOPE("imgui_render");
+				EditorLayer* editorLayer = EditorLayer::Get();
+
+				editorLayer->BeginImGuiRender();
+				for (AppLayer* layer : m_AppLayers)
+				{
+					layer->OnImGuiRender();
+				}
+				editorLayer->EndImGuiRender();
+			}
+			#else // PROTON_DISTRIBUTION
+				m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);
+			#endif
+			}
+
+			// Update window
+			m_Window->OnUpdate();
+			m_FrameTime = timer.Elapsed();
 		}
 
 		PROFILE_END_SESSION();
+	}
+
+	GameInstance* Application::GetGameInstance()
+	{
+#ifdef PT_EDITOR
+		return EditorLayer::GetMainGameInstance();
+#else // PROTON_DISTRIBUTION
+		return s_Instance->m_GameInstance.get();
+#endif
 	}
 
 	void Application::PushLayer(AppLayer* layer)
@@ -133,8 +155,16 @@ namespace proton {
 		m_IsRunning = false;
 	}
 
+	static Timer s_AppTimer;
+
+	float Application::GetTotalTimeElapsed()
+	{
+		return s_AppTimer.Elapsed();
+	}	
+
 	void Application::OnEvent(Event& event)
 	{
+		PROFILE_FUNCTION();
 		EventDispatcher dispatcher(event);
 		
 		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)
@@ -150,7 +180,7 @@ namespace proton {
 			return true;
 		});
 
-	#ifndef PT_EDITOR
+	#ifdef PROTON_DISTRIBUTION
 		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e)
 		{
 			uint32_t width = e.GetWidth(), height = e.GetHeight();
@@ -159,7 +189,7 @@ namespace proton {
 				m_WindowMinimized = false;
 				Renderer::SetViewport(0, 0, width, height);
 
-				for (auto& kv : SceneManager::s_Instance->m_Scenes)
+				for (auto& kv : m_GameInstance->GetSceneManager()->m_Scenes)
 					kv.second->OnViewportResize(width, height);
 			}
 			else 
@@ -172,9 +202,17 @@ namespace proton {
 		for (AppLayer* layer : m_AppLayers)
 		{
 			if (event.Handled)
-				break;
+				return;
 			layer->OnEvent(event);
 		}
+
+	#ifdef PROTON_DISTRIBUTION
+		if (!event.Handled)
+		{
+			if (Scene* scene = m_GameInstance->GetActiveScene())
+				scene->GetGameMode()->OnEvent(event);
+		}
+	#endif
 	}
 
 }

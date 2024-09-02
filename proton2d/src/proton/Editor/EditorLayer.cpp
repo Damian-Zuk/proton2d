@@ -8,14 +8,23 @@
 #include "Proton/Editor/Panels/ContentBrowserPanel.h"
 #include "Proton/Editor/Panels/SettingsPanel.h"
 #include "Proton/Editor/Panels/InfoPanel.h"
+#include "Proton/Editor/Tools/EditorCamera.h"
+#include "Proton/Editor/Menu/EditorMenuBar.h"
 
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Window.h"
+#include "Proton/Core/Config.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Graphics/Renderer/Framebuffer.h"
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"
+#include "Proton/Scene/SceneManager.h"
+#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
+#include "Proton/Utils/NickGenerator.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 #include <backends/imgui_impl_opengl3.h>
@@ -28,6 +37,10 @@
 
 namespace proton {
 
+	EditorLayer* EditorLayer::s_Instance = nullptr;
+
+	static constexpr bool s_EnableViewports = false;
+
 	struct EditorPanels
 	{
 		SettingsPanel Settings;
@@ -36,20 +49,19 @@ namespace proton {
 		SceneHierarchyPanel SceneHiearchy;
 		ToolbarPanel Toolbar;
 		ContentBrowserPanel ContentBrowser;
-		SceneViewportPanel SceneViewport;
+
 	} static s_Panels;
 
 	struct EditorFonts
 	{
-		ImFont* FontAwesome = nullptr;
-		ImFont* SmallFont = nullptr;
+		ImFont* FontAwesome;
+		ImFont* SmallFont;
+
 	} static s_Fonts;
 
-	EditorLayer* EditorLayer::s_Instance = nullptr;
-
-	EditorLayer::EditorLayer()
+	EditorLayer* EditorLayer::Get()
 	{
-		EditorLayer::s_Instance = this;
+		return s_Instance;
 	}
 
 	void EditorLayer::OnCreate()
@@ -58,31 +70,41 @@ namespace proton {
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+
+		m_Config = MakeUnique<EditorConfig>();
+		m_MenuBar = MakeUnique<EditorMenuBar>();
+
 		SetupFonts();
 		SetupImGuiViewports();
 		SetupThemeStyle();
+		InitImGuiForGLFW();
 
-		// Initialize ImGui implementation for GLFW
-		InitializeImGui();
+		// Initialize main game instance
+ 		m_MainGameInstance.Instance = MakeUnique<GameInstance>();
+		m_MainGameInstance.Viewport = MakeUnique<SceneViewportPanel>();
+		m_MainGameInstance.ID = 0;
+		m_MainGameInstance.Instance->m_EditorGameInstance = &m_MainGameInstance;
+		m_MainGameInstance.Viewport->m_EditorGameInstance = &m_MainGameInstance;
 
-		// Store editor panels in vector
+		m_GameInstanceContext = &m_MainGameInstance;
+		m_MainGameInstance.Instance->Init();
+
+		m_MenuBar->OnCreate();
+
+		// Initialize editor panels
 		m_EditorPanels.push_back(&s_Panels.Settings);
 		m_EditorPanels.push_back(&s_Panels.Info);
 		m_EditorPanels.push_back(&s_Panels.Inspector);
 		m_EditorPanels.push_back(&s_Panels.SceneHiearchy);
 		m_EditorPanels.push_back(&s_Panels.Toolbar);
 		m_EditorPanels.push_back(&s_Panels.ContentBrowser);
-		m_EditorPanels.push_back(&s_Panels.SceneViewport);
 
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
 
-		// Check if cache directory exist
-		if (!std::filesystem::exists("editor/cache/"))
-		{
-			if (std::filesystem::create_directories("editor/cache/"))
-				PT_CORE_ERROR_FUNCSIG("Could not create cache directory!");
-		}
+		m_MainGameInstance.Viewport->OnCreate();
 	}
 
 	void EditorLayer::OnDestroy()
@@ -96,100 +118,312 @@ namespace proton {
 	{
 		for (auto& panel : m_EditorPanels)
 			panel->OnUpdate(ts);
+		
+		m_MainGameInstance.Viewport->OnUpdate(ts);
+
+		for (auto& game : m_GameInstances)
+			game->Viewport->OnUpdate(ts);
+
+		HandleGameInstanceCloseEvent();
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
-		//ImGui::ShowDemoWindow(); // Demo window for reference
-		
-		// DockSpace window flags
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_TabBarBorderSize, 0.0f);
-
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
+
 		ImGui::SetNextWindowPos(viewport->Pos);
 		ImGui::SetNextWindowSize(viewport->Size);
 		ImGui::SetNextWindowViewport(viewport->ID);
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		static bool dockspaceOpen = true;
-		ImGui::Begin("DockSpace", &dockspaceOpen, window_flags);
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar;
+		windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+		ImGui::Begin("DockSpace", NULL, windowFlags);
 		ImGui::PopStyleVar(3);
 
-		// DockSpace
 		ImGuiIO& io = ImGui::GetIO();
-		ImGuiStyle& style = ImGui::GetStyle();
-		float minWinSizeX = style.WindowMinSize.x;
-		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+			ImGui::DockSpace(dockspace_id);
 		}
 
-		style.WindowMinSize.x = minWinSizeX;
-
-		// Render editor panels
-		m_MenuBar.OnImGuiRender();
+		// Draw menu bar and editor panels
+		m_MenuBar->OnImGuiRender();
 
 		for (auto& panel : m_EditorPanels)
 			panel->OnImGuiRender();
 
-		ImGui::End(); // DockSpace
-		ImGui::PopStyleVar();
-	}
+		m_MainGameInstance.Viewport->OnImGuiRender();
 
+		for (auto& game : m_GameInstances)
+			game->Viewport->OnImGuiRender();
+
+		ImGui::End();
+	}
+	
 	void EditorLayer::OnEvent(Event& event)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		PROFILE_FUNCTION();
 
-		// Block events if viewport is not hovered by mouse
-		if (m_BlockEvents && !s_Panels.SceneViewport.m_MoveEditorCamera)
-		{
-			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
-			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
-			if (event.Handled)
-				return;
-		}
-		else if (event.IsInCategory(EventCategoryKeyboard) && io.WantTextInput)
+		ImGuiIO& io = ImGui::GetIO();
+		auto viewport = m_GameInstanceContext->Viewport.get();
+
+		// Block keyboard events if typing in ImGui input fields
+		// Block mouse events if viewport is not hovered by mouse, user is not dragging camera and ImGui wants to capture mouse
+		if ((event.IsInCategory(EventCategoryKeyboard) && io.WantTextInput) ||
+		    (event.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse && !viewport->m_IsViewportHovered && !viewport->m_Camera->m_IsDragging))
 		{
 			event.Handled = true;
 			return;
 		}
 
+		// Propagate event to other panels
 		for (auto& panel : m_EditorPanels)
+		{
 			panel->OnEvent(event);
+			if (event.Handled)
+				return;
+		}
+
+		viewport->OnEvent(event);
+		if (event.Handled)
+			return;
+
+		// Propagate event to game mode
+		if (Scene* scene = m_GameInstanceContext->Instance->GetActiveScene())
+		{
+			GameModeBase* gameMode = scene->GetGameMode();
+			gameMode->OnEvent(event);
+		}
 	}
 
-	SceneViewportPanel* EditorLayer::GetSceneViewportPanel()
+	GameInstance* EditorLayer::LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
 	{
-		return &s_Panels.SceneViewport;
+		uint32_t id = ++m_CurrentInstanceID;
+		m_GameInstances.push_back(MakeShared<EditorGameInstance>());
+
+		auto game = m_GameInstances.back().get();
+		game->Instance = MakeUnique<GameInstance>();
+		game->Viewport = MakeUnique<SceneViewportPanel>();
+		game->ID = id;
+
+		auto instance = game->Instance.get();
+		auto viewport = game->Viewport.get();
+
+		instance->m_EditorGameInstance = game;
+		instance->m_IsMainInstance = false;
+
+		NetworkManager* netManager = instance->GetNetworkManager();
+		netManager->SetNetMode(netMode);
+		uint16_t tickrate = m_MainGameInstance.Instance->GetNetworkManager()->GetTickrate();
+		netManager->SetTickRate(tickrate);
+		netManager->SetLocalClientName(GenerateRandomNickname());
+
+		viewport->m_EditorGameInstance = game;
+		viewport->m_IsMainViewport = false;
+		viewport->m_ImGuiWindowName = windowName;
+		viewport->OnCreate();
+
+		if (loadStartupScene)
+		{
+			instance->Init();
+			return instance;
+		}
+
+		instance->Init(false);
+		SceneManager* sceneManager = instance->GetSceneManager();
+		Scene* activeScene = GetActiveScene(true);
+		const std::string& filepath = activeScene->m_Filepath;
+
+		// Copy currently active scene to a new game instance
+		sceneManager->AddNewActiveScene(filepath, activeScene->IsSimulated() 
+			? m_SceneSimulationBackup.at(filepath)->CreateSceneCopy(instance)
+			: activeScene->CreateSceneCopy(instance));
+
+		return instance;
+	}
+
+	void EditorLayer::CloseGameInstance(uint32_t instanceID)
+	{
+		m_GameInstancesToClose.push_back(instanceID);
+
+		if (m_GameInstances.size() == 1)
+			m_CurrentInstanceID = 0;
+	}
+
+	void EditorLayer::HandleGameInstanceCloseEvent()
+	{
+		if (!m_GameInstancesToClose.size())
+			return;
+
+		m_GameInstances.erase(std::remove_if(m_GameInstances.begin(), m_GameInstances.end(),
+			[this](const Shared<EditorGameInstance>& instance) {
+				for (uint32_t id : m_GameInstancesToClose)
+				{
+					if (instance->ID == id)
+						return true;
+				}
+				return false;
+			}
+		));
+		m_GameInstancesToClose.clear();
+		m_GameInstanceContext = &m_MainGameInstance;
+	}
+
+	void EditorLayer::OnStartSimulationButton()
+	{
+		Scene* scene = GetActiveScene(true);
+
+		if (scene->GetSceneState() != SceneState::Stop)
+			return;
+
+		if (m_AutostartClient && m_MainGameInstance.Instance->GetNetMode() == NetMode::ListenServer)
+		{
+			auto instance = LaunchNewGameInstance(NetMode::Client, false, "Client " + std::to_string(m_CurrentInstanceID + 1));
+			instance->GetActiveScene()->BeginPlay();
+		}
+
+		scene->BeginPlay();
+	}
+
+	void EditorLayer::OnStopSimulationButton()
+	{
+		if (!m_GameInstanceContext->Viewport->IsMainViewport())
+		{
+			CloseGameInstance(m_GameInstanceContext->ID);
+			return;
+		}
+
+		if (m_MainGameInstance.Instance->GetNetMode() == NetMode::ListenServer)
+		{
+			m_GameInstances.clear();
+			m_CurrentInstanceID = 0;
+		}
+		Scene* scene = GetActiveScene(true);
+		scene->Stop();
+	}
+
+	void EditorLayer::OnPauseSimulationButton()
+	{
+		Scene* scene = GetActiveScene();
+		scene->Pause(!scene->IsPaused());
+	}
+
+	void EditorLayer::OnBeginSceneSimulation(Scene* scene)
+	{
+		if (!scene->m_GameInstance->IsMainInstance())
+			return;
+
+		m_SceneSimulationBackup[scene->m_Filepath] = scene->CreateSceneCopy();
+
+		SelectEntity(Entity{});
+	}
+
+	void EditorLayer::OnStopSceneSimulation(Scene* scene)
+	{
+		if (!scene->m_GameInstance->IsMainInstance())
+			return;
+
+		SelectEntity(Entity{});
+
+		Scene* activeScene = GetActiveScene(true);
+		bool isActiveScene = scene == activeScene;
+		std::string sceneFilepath = scene->m_Filepath;
+
+		// Restore scene state from backup
+		SceneManager* manager = GetMainGameInstance()->GetSceneManager();
+		manager->m_Scenes[sceneFilepath] = m_SceneSimulationBackup.at(sceneFilepath);
+		m_SceneSimulationBackup.erase(sceneFilepath);
+			
+		if (isActiveScene)
+			manager->SetActiveScene(sceneFilepath);
 	}
 
 	void EditorLayer::SetActiveScene(Scene* scene)
 	{
-		s_Instance->m_ActiveScene = scene;
-		for (auto& panel : s_Instance->m_EditorPanels)
-			panel->m_ActiveScene = scene;
-		
-		EditorLayer::SelectEntity({});
+		auto viewport = GetSceneViewportPanel(scene->m_GameInstance);
+		viewport->SetActiveScene(scene);
 	}
 
 	void EditorLayer::SelectEntity(Entity entity)
 	{
-		s_Instance->m_SelectedEntity = entity;
-		for (auto& panel : s_Instance->m_EditorPanels)
-			panel->m_SelectedEntity = entity;
+		if (!entity.IsValid()) // Handle unselect
+		{
+			Entity current = GetSelectedEntity();
+			if (!current.IsValid())
+				return;
+
+			auto viewport = GetSceneViewportPanel(current.m_Scene->m_GameInstance);
+			viewport->SetSelectedEntity(Entity{});
+			return;
+		}
+
+		auto viewport = GetSceneViewportPanel(entity.m_Scene->m_GameInstance);
+		viewport->SetSelectedEntity(entity);
 	}
 
-	EditorCamera* EditorLayer::GetCamera()
+	Entity EditorLayer::GetSelectedEntity(bool targetMainInstance)
 	{
-		return s_Panels.SceneViewport.m_Camera.get();
+		if (!targetMainInstance)
+		{
+			return s_Instance->m_GameInstanceContext->Viewport->GetSelectedEntity();
+		}
+		return s_Instance->m_MainGameInstance.Viewport->GetSelectedEntity();
+	}
+
+	Scene* EditorLayer::GetActiveScene(bool targetMainInstance)
+	{
+		if (!targetMainInstance)
+		{
+			return s_Instance->m_GameInstanceContext->Instance->GetActiveScene();
+		}
+		return s_Instance->m_MainGameInstance.Instance->GetActiveScene();
+	}
+
+	GameInstance* EditorLayer::GetMainGameInstance()
+	{
+		return s_Instance->m_MainGameInstance.Instance.get();
+	}
+
+	GameInstance* EditorLayer::GetFocusedGameInstance()
+	{
+		return s_Instance->m_GameInstanceContext->Instance.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetMainViewportPanel()
+	{
+		return s_Instance->m_MainGameInstance.Viewport.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetFocusedViewportPanel()
+	{
+		return s_Instance->m_GameInstanceContext->Viewport.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
+	{
+		return gameInstance->m_EditorGameInstance->Viewport.get();
+	}
+
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(Scene* scene)
+	{
+		return GetSceneViewportPanel(scene->m_GameInstance);
+	}
+
+	SceneHierarchyPanel* EditorLayer::GetSceneHierarchyPanel()
+	{
+		return &s_Panels.SceneHiearchy;
+	}
+
+	InspectorPanel* EditorLayer::GetInspectorPanel()
+	{
+		return &s_Panels.Inspector;
 	}
 
 	ImFont* EditorLayer::GetFontAwesome()
@@ -208,10 +442,12 @@ namespace proton {
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		// Main font
-		const EditorConfig::Font font = m_Config.EditorFonts["roboto"];
+		const auto& font = m_Config->EditorFonts["FiraCode"];
 		io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), font.FontSize);
+
 		// Small font
 		s_Fonts.SmallFont = io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), 14.0f);
+
 		// Font Awesome
 		static const ImWchar icons_ranges[] = { 0xE000, 0xF8FF, 0 };
 		s_Fonts.FontAwesome = io.Fonts->AddFontFromFileTTF("editor/content/font/FontAwesome.ttf", 18.0f, NULL, icons_ranges);
@@ -223,10 +459,11 @@ namespace proton {
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImGuiIO& io = ImGui::GetIO();
 
-		style.FrameRounding = 7.0f;
+		style.FrameRounding = 6.0f;
 		style.PopupRounding = 7.0f;
 		style.ScrollbarSize = 20.0f;
 		style.WindowBorderSize = 0.0f;
+		style.TabBarOverlineSize = 0.0f;
 
 		// Color styles
 		style.Colors[ImGuiCol_Border] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
@@ -235,6 +472,9 @@ namespace proton {
 		style.Colors[ImGuiCol_Button] = ImVec4(0.4f, 0.18f, 0.19f, 1.0f);
 		style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.5f, 0.18f, 0.19f, 1.0f);
 		style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.6f, 0.18f, 0.19f, 1.0f);
+
+		style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.4f, 0.18f, 0.19f, 1.0f);
+		style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.6f, 0.18f, 0.19f, 1.0f);
 
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.7f);
 		style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
@@ -246,30 +486,31 @@ namespace proton {
 		style.Colors[ImGuiCol_TitleBg] = ImVec4(0.23f, 0.23f, 0.22f, 1.0f);
 		style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.23f, 0.23f, 0.22f, 1.0f);
 
-		style.Colors[ImGuiCol_Tab] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
-		style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
-		style.Colors[ImGuiCol_TabHovered] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
-		style.Colors[ImGuiCol_TabActive] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+		style.Colors[ImGuiCol_Tab] = ImVec4(0.12f, 0.12f, 0.12f, 1.0f);
+		style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.12f, 0.12f, 0.12f, 1.0f);
+		style.Colors[ImGuiCol_TabHovered] = ImVec4(0.175f, 0.175f, 0.175f, 1.0f);
+		style.Colors[ImGuiCol_TabActive] = ImVec4(0.175f, 0.175f, 0.175f, 1.0f);
+
+		style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 	}
 
 	void EditorLayer::SetupImGuiViewports()
 	{
-		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
+		ImGuiIO& io = ImGui::GetIO();
 
-		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 		// Enable viewports (ImGui windows can be detached from main application window)
-		if (m_EnableViewports)
+		if (s_EnableViewports)
 			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (s_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 	}
 
-	void EditorLayer::InitializeImGui()
+	void EditorLayer::InitImGuiForGLFW()
 	{
 		auto window = (GLFWwindow*)Application::Get().GetWindow().GetNativeWindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -293,7 +534,7 @@ namespace proton {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	#ifdef PROTON_PLATFORM_WINDOWS
-		if (m_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (s_EnableViewports && io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
@@ -304,4 +545,4 @@ namespace proton {
 	}
 
 }
-#endif
+#endif // PT_EDITOR

@@ -6,7 +6,7 @@ namespace proton {
 
 	class Scene;
 
-	// Abstract class for all editor panels
+	// Interface
 	class EditorPanel
 	{
 	public:
@@ -16,10 +16,9 @@ namespace proton {
 		virtual void OnImGuiRender() = 0;
 		virtual void OnUpdate(float ts) {};
 		virtual void OnEvent(Event& event) {};
-	
-	protected:
-		Scene* m_ActiveScene = nullptr;
-		Entity m_SelectedEntity;
+
+		virtual Entity GetSelectedEntity(bool targetMainInstance = false);
+		virtual Scene* GetActiveScene(bool targetMainInstance = false);
 
 		friend class EditorLayer;
 	};

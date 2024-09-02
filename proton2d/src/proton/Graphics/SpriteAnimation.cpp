@@ -1,45 +1,44 @@
 #include "ptpch.h"
 #include "Proton/Graphics/SpriteAnimation.h"
+#include "Proton/Scene/Entity.h"
 
 namespace proton {
 
-    SpriteAnimation::SpriteAnimation(Sprite* sprite)
-        : m_Sprite(sprite)
-    {
-    }
-
-    void SpriteAnimation::SetSprite(Sprite* sprite)
-    {
-        m_Sprite = sprite;
-    }
-
-    void SpriteAnimation::AddAnimation(uint16_t index, uint16_t frameCount, AnimationPlayMode playmode)
+    void SpriteAnimation::Add(uint16_t index, uint16_t frameCount, AnimationPlayMode playmode)
     {
         m_Animations[index] = Animation{ frameCount, playmode };
         if (m_CurrentAnimationIndex == -1)
-            PlayAnimation(index);
+            Play(index);
     }
 
-    void SpriteAnimation::PlayAnimation(uint16_t index, uint16_t startFrame)
+    void SpriteAnimation::Play(uint16_t index, uint16_t startFrame)
     {
         PT_CORE_ASSERT(m_Animations.find(index) != m_Animations.end(), "Animation not found");
         if (index != m_CurrentAnimationIndex)
         {
+            if (m_CurrentAnimationIndex != -1 && m_AnimationSwtichTimer.Elapsed() < m_AnimationSwitchTimeThreshold)
+                return;
+
+            auto& sprite = m_OwningEntity->GetSprite();
+            sprite.SetTile(startFrame, index);
+
             m_CurrentAnimationIndex = index;
             m_CurrentAnimation = &m_Animations[index];
-            m_Sprite->SetTile(startFrame, index);
+            m_AnimationSwtichTimer.Reset();
         }
     }
 
     void SpriteAnimation::SetAnimationFrame(uint16_t frame)
     {
-        m_Sprite->SetTile(frame, m_CurrentAnimationIndex);
+        auto& sprite = m_OwningEntity->GetSprite();
+        sprite.SetTile(frame, m_CurrentAnimationIndex);
         m_CurrentFrame = frame;
     }
 
     void SpriteAnimation::SetMirrorFlip(bool mirror_x, bool mirror_y)
     {
-        m_Sprite->MirrorFlip(mirror_x, mirror_y);
+        auto& sprite = m_OwningEntity->GetSprite();
+        sprite.MirrorFlip(mirror_x, mirror_y);
     }
 
     void SpriteAnimation::Replay()
@@ -56,7 +55,7 @@ namespace proton {
 
     void SpriteAnimation::Update(float ts)
     {
-        if (!m_CurrentAnimation->FrameCount)
+        if (!m_CurrentAnimation || !m_CurrentAnimation->FrameCount)
             return;
 
         if (m_CurrentAnimation->PlayMode == AnimationPlayMode::PAUSED)
@@ -66,17 +65,18 @@ namespace proton {
 
         if (m_ElapsedTime >= m_FrameTime)
         {
+            auto& sprite = m_OwningEntity->GetSprite();
             if (m_CurrentAnimation->PlayMode == AnimationPlayMode::REPEAT)
             {
                 m_CurrentFrame %= m_CurrentAnimation->FrameCount;
-                m_Sprite->SetTile(m_CurrentFrame, m_Sprite->GetTilePos().y);
+                sprite.SetTile(m_CurrentFrame, sprite.GetTilePos().y);
             }
             else // if (m_PlayMode == AnimationPlayMode::PLAY_ONCE)
             {
                 if (m_CurrentFrame < m_CurrentAnimation->FrameCount)
-                    m_Sprite->SetTile(m_CurrentFrame, m_Sprite->GetTilePos().y);
+                    sprite.SetTile(m_CurrentFrame, sprite.GetTilePos().y);
                 else
-                    m_Sprite->SetTile(0, m_Sprite->GetTilePos().y);
+                    sprite.SetTile(0, sprite.GetTilePos().y);
             }
 
             m_ElapsedTime = 0.0f;
@@ -86,7 +86,18 @@ namespace proton {
 
     bool SpriteAnimation::FinishedPlaying()
     {
+        if (!m_CurrentAnimation)
+            return false;
         return m_CurrentFrame == m_CurrentAnimation->FrameCount;
+    }
+
+    AnimationPlayMode SpriteAnimation::GetCurrentAnimationPlayMode() const
+    {
+        if (m_CurrentAnimationIndex != -1)
+        {
+            return m_CurrentAnimation->PlayMode;
+        }
+        return AnimationPlayMode::PAUSED;
     }
 
     void SpriteAnimation::SetFPS(uint16_t fps)

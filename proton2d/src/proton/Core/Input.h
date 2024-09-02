@@ -4,6 +4,8 @@
 
 namespace proton {
 
+	class EntityScript;
+
 	class Input 
 	{
 	public:

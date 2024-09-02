@@ -4,6 +4,10 @@
 
 namespace proton {
 
+	// Forward declaration
+	class SceneManager;
+	class GameInstance;
+
 	class AppLayer
 	{
 	public:
@@ -14,6 +18,8 @@ namespace proton {
 		virtual void OnUpdate(float timestep) {}
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiRender() {}
+
+		friend class Application;
 	};
 
 }

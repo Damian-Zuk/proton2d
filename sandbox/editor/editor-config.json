@@ -1,7 +1,7 @@
 {
     "fonts": {
-        "roboto": {
-            "font_filepath": "editor/content/font/Roboto.ttf",
+        "FiraCode": {
+            "font_filepath": "editor/content/font/FiraCode-Regular.ttf",
             "font_size": 18.0
         }
     }

@@ -3,9 +3,15 @@
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Panels/SettingsPanel.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
-#include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Editor/Panels/InspectorPanel.h"
+#include "Proton/Editor/Tools/EditorCamera.h"
+
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Core/ProjectSettings.h"
+
+#include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/Server.h"
 
 #include "imgui.h"
 
@@ -16,18 +22,79 @@ namespace proton {
 	void SettingsPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Settings");
+		
+		// Get selected game instance
+		SceneViewportPanel* viewportPanel = EditorLayer::GetFocusedViewportPanel();
+		Scene* scene = GetActiveScene();
 
-		if (ImGui::TreeNodeEx("Editor", ImGuiTreeNodeFlags_DefaultOpen))
+		if (scene && ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			SceneViewportPanel* viewportPanel = EditorLayer::GetSceneViewportPanel();
 			ImGui::Dummy({ 0, 2 });
-			ImGui::Checkbox("Selection outline", &viewportPanel->m_ShowSelectionOutline);
-			ImGui::Checkbox("Selection collider", &viewportPanel->m_ShowSelectionCollider);
-			ImGui::Checkbox("Show colliders", &viewportPanel->m_ShowAllColliders);
-			ImGui::Checkbox("Runtime camera", &EditorLayer::GetCamera()->m_UseInRuntime);
+			
+			NetworkManager* networkManager = scene->m_GameInstance->GetNetworkManager();
+
+			constexpr char* netModesNames[] = { "Standalone", "Listen Server", "Dedicated Server", "Client"};
+			const NetMode netMode = scene->m_GameInstance->GetNetMode();
+
+			ImGui::PushItemWidth(200.0f);
+			if (ImGui::BeginCombo("Net Mode", netModesNames[(uint8_t)netMode]))
+			{
+				for (uint8_t i = 0; i < 4; i++)
+				{
+					bool selected = (uint8_t)netMode == i;
+					if (ImGui::Selectable(netModesNames[i], selected))
+					{
+						networkManager->SetNetMode((NetMode)i);
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+
+			ImGui::PushItemWidth(95.0f);
+
+			int tickRate = networkManager->m_TickRate;
+			if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
+			{
+				networkManager->SetTickRate(glm::max(tickRate, 1));
+			}
+
+			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer))
+			{
+				int maxConnections = networkManager->m_MaxServerConnections;
+				if (ImGui::DragInt("Max Connections", &maxConnections))
+					networkManager->m_MaxServerConnections = (uint32_t)glm::max(maxConnections, 0);
+
+				if (ImGui::DragFloat("Fake Lag (ms)", &Server::s_FakeServerLag, 0.1f, 0.0f, 500.0f, "%.0f"))
+				{
+					if (Server* server = networkManager->GetServer())
+						server->SetPacketFakeLag(Server::s_FakeServerLag);
+				}
+
+				ImGui::Checkbox("Autostart Client", &EditorLayer::Get()->m_AutostartClient);
+			}
+			ImGui::PopItemWidth();
+
+			if (netMode == NetMode::Client)
+				ImGui::Checkbox("Trace Entity Sync", &viewportPanel->m_TraceEntitySync);
+			
+			ImGui::Checkbox("Show Cull Distance", &viewportPanel->m_ShowCullDistance);
+
 			ImGui::TreePop();
 		}
 		ImGui::Dummy({ 0, 5 });
+
+		if (ImGui::TreeNodeEx("Game Viewport", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+			//ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
+			ImGui::Checkbox("Show Entity Collider", &viewportPanel->m_ShowSelectionCollider);
+			ImGui::Checkbox("Show All Colliders", &viewportPanel->m_ShowAllColliders);
+			ImGui::Checkbox("Simulation Freecam", &viewportPanel->m_Camera->m_UseInRuntime);
+			ImGui::TreePop();
+		}
+		ImGui::Dummy({ 0, 5 });
+
 		if (ImGui::TreeNodeEx("Application", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
@@ -41,12 +108,13 @@ namespace proton {
 
 			ImGui::PushItemWidth(100.0f);
 			float timeScale = Application::Get().m_TimeScale;
-			if (ImGui::DragFloat("Time scale", &timeScale, 0.01f, 0.0f)
+			if (ImGui::DragFloat("Time Scale", &timeScale, 0.01f, 0.0f)
 				&& timeScale >= 0.0f)
 			{
 				Application::Get().m_TimeScale = timeScale;
 			}
 			ImGui::PopItemWidth();
+
 			ImGui::TreePop();
 		}
 
@@ -55,4 +123,4 @@ namespace proton {
 
 }
 
-#endif PT_EDITOR
+#endif // PT_EDITOR

@@ -4,6 +4,12 @@
 
 #include <GLFW/glfw3.h>
 
+#ifdef PT_EDITOR
+#include "Proton/Editor/EditorLayer.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Scripting/EntityScript.h"
+#endif
+
 namespace proton {
 
     bool Input::IsKeyPressed(int keyCode)

@@ -10,120 +10,125 @@ class b2Body;
 
 namespace proton {
 
-	constexpr glm::vec4 DEFAULT_SCENE_SCREEN_CLEAR_COLOR = { 0.24f, 0.37f, 0.67f, 1.0f };
-
 	// Forward declaration
 	class Entity;
 	class PhysicsWorld;
+	class GameInstance;
+	class NetworkManager;
+	class GameModeBase;
 
 	enum class SceneState
 	{
 		Stop, Play, Paused
 	};
 
-	//
-	// Scene Class
-	// Wrapper for the Entity Registry (entt:registry) from the EnTT Entity Component System (ECS) library.
-	// Provides additional functionalities to manage entities on the scene.
-	//
+	////////////////////////////////////////////////////////////////////////////////////////
+	// Scene class (wrapper around entt:registry with functionalities to manage entities) 
+	////////////////////////////////////////////////////////////////////////////////////////
 	class Scene
 	{
 	public:
-		Scene(const std::string& name = "Unnamed scene");
+		Scene(const std::string& filepath = "", const std::string& gameModeClass = "");
+
 		virtual ~Scene();
 
-		// Initialize physics world, begin simulation. Set scene state to SceneState::Play.
-		// In Distribution build, this function is automaticlly being called
-		// by SceneManager::SetActiveScene function.
-		void BeginPlay();
+		Shared<Scene> CreateSceneCopy(GameInstance* gameInstance = nullptr);
 
-		// Pause the simulation. Set scene state to SceneState::Pause
-		void Pause(bool pause = true);
+		void BeginPlay(); // SceneState::Play
+		void Pause(bool pause = true); // SceneState::Pause
+		void Stop(); // SceneState::Stop
 		
-		// Create entitiy with random unique identifier (UUID)
 		Entity CreateEntity(const std::string& name = "Entity");
-
-		// Create entitiy with given identifier (UUID)
-		Entity CreateEntityWithUUID(UUID id, const std::string& name = "Entity");
-
-		// Destroy given entity
+		Entity CreateEntityWithUUID(UUID id, const std::string& name = "Entity", bool addToSceneRoot = true);
+		Entity DuplicateEntity(Entity entity, Entity attachTo);
 		void DestroyEntity(Entity entity, bool popHierachy = true);
-
-		// Destroy all entities on the scene
+		void DestroyChildEntities(Entity entity);
 		void DestroyAll();
 
-		// Find entity by its unique id (UUID)
+		void SetEntityLocalPosition(Entity entity, const glm::vec3& position, bool recalculateChildren = true);
+		void SetEntityWorldPosition(Entity entity, const glm::vec3& position, bool recalculateChildren = true);
+
 		Entity FindByID(UUID id);
-
-		// Find entity by tag (name) from TagComponent
 		Entity FindByTag(const std::string& tag);
-
-		void SetEntityLocalPosition(Entity entity, const glm::vec3& position);
-		void SetEntityWorldPosition(Entity entity, const glm::vec3& position);
-
-		// Find all entities that have given tag
 		std::vector<Entity> FindAllByTag(const std::string& tag);
 
-		// Get entities with given set of components
-		template<typename... Components>
-		auto GetAllEntitiesWith()
-		{
-			return m_Registry.view<Components...>();
-		}
+		Entity SpawnPrefab(const std::string& prefabPath);
 
-		// TODO: Add DuplicateEntity function
-
-		// Camera related methods
 		void SetPrimaryCameraEntity(Entity entity);
 		Entity GetPrimaryCameraEntity();
 		Camera& GetPrimaryCamera();
 		const glm::vec3& GetPrimaryCameraPosition();
 
-		// Cursor related methods
 		const glm::vec2& GetCursorWorldPosition();
 		bool IsCursorHoveringEntity(Entity entity);
 		std::vector<Entity> GetEntitiesOnCursorLocation();
 
-		// Get by UUID the Box2D body from physics world during game runtime. 
-		// Entity must have RigidbodyComponent.
-		b2Body* GetRuntimeBody(UUID id);
+		void EnablePhysics(bool enabled);
+		bool IsPhysicsEnabled() const;
+		bool IsPhysicsWorldInitialized() const;
+		bool IsPhysicsSimulated() const;
+		bool IsPhysicsTick() const { return m_IsPhysicsTick; }
+		float GetPhysicsTimestep() const { return m_PhysicsTimestep; }
 
-		// Set renderer screen clear color
+		bool IsSimulated() const { return m_State != SceneState::Stop; };
+		bool IsPaused() const { return m_State == SceneState::Paused; };
+		SceneState GetSceneState() const { return m_State; }
+		const std::string& GetFilepath() const;
+		uint32_t GetEntitiesCount() const;
+		uint32_t GetScriptedEntitiesCount() const;
+		uint32_t GetNetworkedEntitiesCount() const;
+
 		void SetScreenClearColor(const glm::vec4& color);
 
-		uint32_t GetEntitiesCount() const;
+		template<typename... Components>
+		auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
-		uint32_t GetScriptedEntitiesCount() const;
+		GameInstance* GetGameInstance() const { return m_GameInstance; }
+		NetworkManager* GetNetworkManager() const;
 
-		// Get scene filepath (relative to "content/scenes" directory)
-		const std::string& GetFilepath() const;
+		template<typename TGameMode>
+		GameModeBase* SetGameMode()
+		{
+			ReleaseGameMode();
+			m_GameModeClassName = TGameMode::__ClassName;
+			m_GameMode = new TGameMode();
+			m_GameMode->m_Scene = this;
+			return m_GameMode;
+		}
 
-		// SceneState::Play, SceneState::Play, SceneState::Stop
-		SceneState GetSceneState() const;
-
-		bool IsPhysicsEnabled() const;
-
-		bool IsPhysicsWorldInitialized() const;
+		void SetGameModeByClassName(const std::string& gameModeClassName);
+		GameModeBase* GetGameMode() const { return m_GameMode; }
 
 	private:
 		void OnUpdate(float ts);
+		void UpdateScripts(float ts, bool updatePhysics = false);
 		void RenderScene(const Camera& camera);
+		void RenderUI();
+
 		void OnViewportResize(uint32_t width, uint32_t height);
-		void DestroyChildEntities(Entity entity);
+		void ReleaseGameMode();
 
 		void CachePrimaryCameraPosition();
 		void CacheCursorWorldPosition();
 
-		void CalculateWorldPositions(bool isPhysicsSimulated);
+		void CalculateEntityWorldPosition(Entity entity, bool recalculateLocal = false);
+		void CalculateWorldPositions(bool recalculateLocal = false);
+
+		void BuildPhysicsWorld();
+
+		template<typename TComponent>
+		void OnComponentAdded(Entity entity, TComponent& component);
 
 	private:
-		// TODO: Add Scene UUID
-		SceneState m_SceneState = SceneState::Stop;
+		SceneState m_State = SceneState::Stop;
+		GameInstance* m_GameInstance = nullptr;
+		
+		GameModeBase* m_GameMode = nullptr;
+		std::string m_GameModeClassName = "GameModeBase";
 
 		// General
-		std::string m_SceneName;
-		std::string m_SceneFilepath = "<Unsaved scene>";
-		glm::vec4 m_ClearColor = DEFAULT_SCENE_SCREEN_CLEAR_COLOR;
+		std::string m_Filepath = "<Unsaved scene>";
+		glm::vec4 m_ClearColor;
 
 		// ECS
 		entt::registry m_Registry;
@@ -131,23 +136,39 @@ namespace proton {
 		std::vector<Entity> m_Root;
 
 		// Camera
+		glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 		entt::entity m_PrimaryCameraEntity = entt::null;
 		Camera* m_PrimaryCamera = nullptr;
-		Camera m_DefaultCamera; // pass this to Renderer if m_PrimaryCamera is nullptr
+		Camera m_DefaultCamera;
 
 		// Physics
 		bool m_EnablePhysics = true;
 		Unique<PhysicsWorld> m_PhysicsWorld;
+		float m_PhysicsTimestep = 0.01f;
+		float m_PhysicsTimer = 0.0f;
+		bool m_IsPhysicsTick = false;
 
 		// Cache
 		glm::vec3 m_PrimaryCameraPosition = { 0.0f, 0.0f, 0.0f };
 		glm::vec2 m_CursorWorldPosition = { 0.0f, 0.0f };
 
+		// Network
+		bool m_EnableNetworking = true; // If false, scene will run in NetMode::Standalone 
+		bool m_NetworkInitialized = false; // True if client has received any replication update from the server
+
 		friend class Application;
 		friend class Entity;
+		friend class EntityScript;
 		friend class SceneSerializer;
 		friend class SceneManager;
+		friend class PrefabManager;
 		friend class PhysicsWorld;
+		friend class GameInstance;
+		friend class GameModeBase;
+		friend class NetworkManager;
+		friend class NetTransformSystem;
+		friend class Server;
+		friend class Client;
 		
 		friend class EditorLayer;
 		friend class EditorCamera;

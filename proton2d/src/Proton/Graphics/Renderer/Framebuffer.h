@@ -5,6 +5,8 @@
 //
 #pragma once
 
+#include "Proton/Graphics/Renderer/Texture.h"
+
 namespace proton {
 
 	enum class FramebufferTextureFormat
@@ -27,9 +29,12 @@ namespace proton {
 		FramebufferTextureSpecification() = default;
 		FramebufferTextureSpecification(FramebufferTextureFormat format)
 			: TextureFormat(format) {}
+		FramebufferTextureSpecification(FramebufferTextureFormat format, TextureFilterMode filterMode)
+			: TextureFormat(format), FilterMode(filterMode) {}
 
 		FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
 		// TODO: filtering/wrap
+		TextureFilterMode FilterMode = TextureFilterMode::Linear;
 	};
 
 	struct FramebufferAttachmentSpecification

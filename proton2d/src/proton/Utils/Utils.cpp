@@ -32,58 +32,12 @@ namespace proton { namespace Utils {
 				in.close();
 			}
 			else
-				PT_CORE_ERROR_FUNCSIG("Could not read from file '{}'", filepath);
+				PT_CORE_ERROR("Could not read from file '{}'", filepath);
 		}
 		else
-			PT_CORE_ERROR_FUNCSIG("Could not open file '{}'", filepath);
+			PT_CORE_ERROR("Could not open file '{}'", filepath);
 
 		return result;
-	}
-
-	std::vector<std::string> ScanDirectory(const std::string& directory,
-		std::initializer_list<std::string> extensionFilter, bool returnWithExtensions)
-	{
-		std::vector<std::string> files;
-		for (const auto& entry : std::filesystem::directory_iterator(directory))
-		{
-			std::string filepath = entry.path().string();
-			std::string extension = filepath.substr(filepath.find("."));
-			for (const std::string& ext : extensionFilter)
-			{
-				if (extension == ext)
-				{
-					if (!returnWithExtensions)
-						filepath = filepath.substr(0, filepath.size() - extension.size());
-					files.push_back(filepath.substr(filepath.find_first_of(DIR_SLASH) + 1));
-					break;
-				}
-			}
-		}
-		return files;
-	}
-
-	std::vector<std::string> ScanDirectoryRecursive(const std::string& directory,
-		std::initializer_list<std::string> extensionFilter, bool returnWithExtensions)
-	{
-		std::vector<std::string> files;
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(directory)) {
-			if (entry.is_regular_file()) 
-			{
-				std::string filepath = entry.path().string();
-				std::string extension = filepath.substr(filepath.find("."));
-				for (const std::string& ext : extensionFilter)
-				{
-					if (extension == ext) 
-					{
-						if (!returnWithExtensions)
-							filepath = filepath.substr(0, filepath.size() - extension.size());
-						files.push_back(filepath.substr(filepath.find_first_of(DIR_SLASH) + 1));
-						break;
-					}
-				}
-			}
-		}
-		return files;
 	}
 
 	namespace Graphics {

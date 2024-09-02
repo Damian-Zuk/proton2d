@@ -3,6 +3,7 @@
 namespace proton {
 
 	class Scene;
+	class GameInstance;
 
 	/*
 	* SceneManager class methods use scene filepaths - "scenePath" 
@@ -12,41 +13,38 @@ namespace proton {
 	class SceneManager
 	{
 	public:
-		SceneManager() = default;
-		~SceneManager();
+		SceneManager(GameInstance* gameInstance);
+		virtual ~SceneManager() = default;
 
-		static Scene* Load(const std::string& scenePath, bool setActive = false);
-		static void Unload(const std::string& scenePath);
-		static bool IsLoaded(const std::string& scenePath);
+		void OnUpdate(float ts);
 
-		static Scene* SetActiveScene(const std::string& scenePath, bool autoLoad = true);
-		static Scene* GetActiveScene();
+		Scene* GetScene(const std::string& scenePath);
+		Scene* GetActiveScene();
+		Scene* SetActiveScene(const std::string& scenePath);
+		Scene* SetActiveScene(Scene* scene);
 
-		static Scene* GetScene(const std::string& scenePath);
+		void Add(const std::string& scenePath, const Shared<Scene> scene);
+		void AddNewActiveScene(const std::string& scenePath, const Shared<Scene> scene);
 
-		static void SaveSceneAs(const std::string& scenePath, const std::string& newSenePath);
-		static void SaveActiveSceneAs(const std::string& scenePath);
-		static void SaveActiveScene();
+		Scene* Load(const std::string& scenePath);
+		void Unload(const std::string& scenePath);
+		bool IsLoaded(const std::string& scenePath);
 
-		static const std::string& GetActiveSceneFilepath();
+		void SaveSceneAs(const std::string& scenePath, const std::string& newSenePath);
+		Scene* CreateEmptyScene(const std::string& scenePath = "<Unsaved scene>");
 
 	private:
-		static void Init();
-		// TODO: Remove
-		static Scene* EditorLoadFromCache(const std::string& scenePath);
-		static Scene* CreateEmptyScene(const std::string& scenePath, bool addToRegistry = true);
-
-		Scene* Deserialize(const std::string& scenePath, const std::string& fullFilepath);
-	private:
-		static SceneManager* s_Instance;
+		GameInstance* m_GameInstance = nullptr;
 
 		Scene* m_ActiveScene = nullptr;
-		std::map<std::string, Scene*> m_Scenes;
+		std::map<std::string, Shared<Scene>> m_Scenes;
 
 		friend class Application;
-		friend class ToolbarPanel;
+		friend class NetReplicator;
 
+		friend class EditorLayer;
 		friend class EditorMenuBar;
+		friend class ToolbarPanel;
 		friend class SceneViewportPanel;
 	};
 }

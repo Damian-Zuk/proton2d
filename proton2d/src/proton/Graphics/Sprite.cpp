@@ -1,6 +1,6 @@
 #include "ptpch.h"
 #include "Proton/Graphics/Sprite.h"
-#include "Proton/Assets/AssetManager.h"
+#include "Proton/Core/AssetManager.h"
 
 namespace proton {
 
@@ -24,8 +24,6 @@ namespace proton {
 
 	void Sprite::SetTexture(Shared<Texture> texture)
 	{
-		if (!texture)
-			return;
 		m_Texture = texture;
 		m_Spritesheet = nullptr;
 		m_PixelSize = { texture->GetWidth(), texture->GetHeight() };
@@ -42,7 +40,6 @@ namespace proton {
 
 	void Sprite::SetTile(uint32_t x, uint32_t y)
 	{
-		PT_CORE_ASSERT(m_Spritesheet, "Sprite doesn't have spritesheet attached!");
 		glm::uvec2 count = m_Spritesheet->GetTileCount();
 		x %= count.x; y %= count.y;
 		m_TilePos = { x, y };
@@ -67,7 +64,8 @@ namespace proton {
 
 	void Sprite::MirrorFlip(bool mirror_x, bool mirror_y)
 	{
-		m_MirrorFlipX = mirror_x, m_MirrorFlipY = mirror_y;
+		m_MirrorFlip.x = mirror_x;
+		m_MirrorFlip.y = mirror_y;
 	}
 
 	void Sprite::CalculateTextureCoords()

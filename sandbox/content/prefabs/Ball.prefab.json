@@ -1,0 +1,71 @@
+{
+    "UUID": 3573771516661169094,
+    "Tag": "Ball",
+    "Transform": {
+        "Position": [
+            -1.63793,
+            1.34796,
+            0.101
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
+    "Prefab": {
+        "UUID": 8825705037770810944
+    },
+    "Network": {
+        "SimulateOnClient": true,
+        "SyncMethod": "Interpolation",
+        "CullDistance": 20.0,
+        "TeleportThreshold": 4.0,
+        "ReconcileThreshold": 0.032999999821186066,
+        "ReconcileMaxTime": 0.06599999964237213,
+        "ServerVelocityWeight": 0.10000000149011612
+    },
+    "Sprite": {
+        "Texture": "basketball.png",
+        "FilterMode": 1,
+        "Flip": [
+            false,
+            false
+        ],
+        "Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ]
+    },
+    "Rigidbody": {
+        "Type": 2,
+        "FixedRotation": false,
+        "AttachToParent": false
+    },
+    "CircleCollider": {
+        "Offset": [
+            0.0,
+            0.0
+        ],
+        "Radius": 1.0,
+        "Friction": 0.5,
+        "Restitution": 0.75,
+        "RestitutionThreshold": 0.5,
+        "Density": 0.5,
+        "IsSensor": false,
+        "AttachToParent": false
+    },
+    "Scripts": [
+        {
+            "ClassName": "DynamicExtrapolation",
+            "Fields": [
+                {
+                    "FieldName": "m_Range",
+                    "Value": 2.0
+                }
+            ]
+        }
+    ]
+}

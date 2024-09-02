@@ -1,182 +1,144 @@
 #include "ptpch.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Scene.h"
-#include "Proton/Assets/SceneSerializer.h"
+#include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 
 #ifdef PT_EDITOR
 #include "Proton/Editor/EditorLayer.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
 #endif
 
 namespace proton {
 
-	SceneManager* SceneManager::s_Instance = nullptr;
-
-	SceneManager::~SceneManager()
+	SceneManager::SceneManager(GameInstance* gameInstance)
+		: m_GameInstance(gameInstance)
 	{
-		for (auto& [scenePath, scene] : m_Scenes)
-			delete scene;
 	}
 
-	void SceneManager::Init()
+	void SceneManager::OnUpdate(float ts)
 	{
-		if (!s_Instance)
+		m_ActiveScene->OnUpdate(ts);
+	}
+
+	Scene* SceneManager::GetScene(const std::string& scenePath)
+	{
+		return m_Scenes.at(scenePath).get();
+	}
+
+	Scene* SceneManager::GetActiveScene()
+	{
+		return m_ActiveScene;
+	}
+
+	Scene* SceneManager::SetActiveScene(const std::string& scenePath)
+	{
+		if (!IsLoaded(scenePath))
 		{
-			s_Instance = new SceneManager();
-		#ifdef PT_EDITOR
-			Scene* scene = CreateEmptyScene("<Unsaved scene>");
-			s_Instance->m_ActiveScene = scene;
-			EditorLayer::SetActiveScene(scene);
-		#endif
+			if (!Load(scenePath))
+			{
+				PT_CORE_ERROR("Scene '{}' not loaded!", scenePath);
+				return nullptr;
+			}
+		}
+		
+		Scene* scene = GetScene(scenePath);
+		SetActiveScene(scene);
+
+		return m_ActiveScene;
+	}
+
+	Scene* SceneManager::SetActiveScene(Scene* scene)
+	{
+		m_ActiveScene = scene;
+
+	#ifdef PT_EDITOR
+		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
+		viewport->SetActiveScene(scene, true);
+	#endif
+
+		if (scene)
+		{
+			Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
+		}
+		return scene;
+	}
+
+	void SceneManager::Add(const std::string& scenePath, const Shared<Scene> scene)
+	{
+		m_Scenes[scenePath] = scene;
+	}
+
+	void SceneManager::AddNewActiveScene(const std::string& scenePath, const Shared<Scene> scene)
+	{
+		m_Scenes[scenePath] = scene;
+		SetActiveScene(scene.get());
+	}
+
+	Scene* SceneManager::Load(const std::string& scenePath)
+	{
+		//PT_CORE_INFO("file='{}.scene.json'", scenePath);
+		auto scene = MakeShared<Scene>(scenePath);
+		SceneSerializer serializer(scene.get());
+		scene->m_GameInstance = m_GameInstance;
+
+		std::string filepath = "content/scenes/" + scenePath + ".scene.json";
+		if (!serializer.DeserializeFromFile(filepath))
+		{
+			PT_CORE_ERROR("Loading '{}' failed!", filepath);
+			return nullptr;
+		}
+		m_Scenes[scenePath] = scene;
+		return scene.get();
+	}
+
+	void SceneManager::Unload(const std::string& scenePath)
+	{
+		Scene* scene = GetScene(scenePath);
+		if (!scene)
+		{
+			PT_CORE_ERROR("scene='{}' not found", scenePath);
+			return;
+		}
+
+		PT_CORE_INFO("scene='{}'", scenePath);
+		bool active = scene == m_ActiveScene;
+		m_Scenes.erase(scenePath);
+
+		if (active)
+		{
+			if (m_Scenes.size())
+				SetActiveScene(m_Scenes.begin()->first);
+			else
+				SetActiveScene(nullptr);
 		}
 	}
 
 	bool SceneManager::IsLoaded(const std::string& scenePath)
 	{
-		return s_Instance->m_Scenes.find(scenePath) != s_Instance->m_Scenes.end();
-	}
-
-	Scene* SceneManager::Load(const std::string& scenePath, bool setActive)
-	{
-		if (scenePath != "<Unsaved scene>")
-			PT_CORE_INFO_FUNCSIG("file='{}.scene.json'", scenePath);
-		std::string filepath = "content/scenes/" + scenePath + ".scene.json";
-		Scene* scene = s_Instance->Deserialize(scenePath, filepath);
-		if (setActive)
-			SetActiveScene(scenePath);
-		return scene;
-	}
-
-	Scene* SceneManager::EditorLoadFromCache(const std::string& scenePath)
-	{
-		std::string filepath = "editor/cache/" + 
-			(scenePath == "<Unsaved scene>" ? "unsaved_scene" : scenePath) + ".scene.json";
-		std::replace(filepath.begin(), filepath.end(), '\\', '_');
-		return s_Instance->Deserialize(scenePath, filepath);
-	}
-
-	Scene* SceneManager::Deserialize(const std::string& scenePath, const std::string& fullFilepath)
-	{
-		Scene* scene = CreateEmptyScene(scenePath, false);
-		SceneSerializer serializer(scene);
-		if (!serializer.Deserialize(fullFilepath))
-		{
-			PT_CORE_ERROR_FUNCSIG("Loading '{}' failed!", fullFilepath);
-			return nullptr;
-		}
-		s_Instance->m_Scenes[scenePath] = scene;
-		return scene;
-	}
-
-	void SceneManager::Unload(const std::string& scenePath)
-	{
-		Scene* scene = s_Instance->m_Scenes.at(scenePath);
-		if (!scene)
-		{
-			PT_CORE_ERROR_FUNCSIG("scene='{}' not found", scenePath);
-			return;
-		}
-		bool isActive = scene == s_Instance->m_ActiveScene;
-		std::string name = scenePath;
-		delete scene;
-		s_Instance->m_Scenes.erase(scenePath);
-		if (scenePath != "<Unsaved scene>")
-		{
-			PT_CORE_INFO_FUNCSIG("scene='{}'", name);
-			if (isActive && s_Instance->m_Scenes.size())
-				SetActiveScene(s_Instance->m_Scenes.begin()->first);
-			else if (isActive)
-				EditorLayer::SetActiveScene(nullptr);
-		}
-	}
-
-	// TODO: Refactor this function
-	Scene* SceneManager::SetActiveScene(const std::string& scenePath, bool autoLoad)
-	{
-		if (autoLoad && !IsLoaded(scenePath))
-			Load(scenePath);
-
-		if (!IsLoaded(scenePath))
-		{
-			PT_CORE_ERROR_FUNCSIG("Scene '{}' not loaded!", scenePath);
-			return nullptr;
-		}
-		Scene* targetScene = s_Instance->m_Scenes.at(scenePath);
-#ifdef PT_EDITOR
-		// Remove unsaved scene if it's empty
-		if (IsLoaded("<Unsaved scene>"))
-		{
-			Scene* scene = GetScene("<Unsaved scene>");
-			if (!scene->GetEntitiesCount() && s_Instance->m_Scenes.size() > 1)
-				Unload("<Unsaved scene>");
-		}
-
-		s_Instance->m_ActiveScene = targetScene;
-		EditorLayer::SetActiveScene(targetScene);
-
-#else
-		s_Instance->m_ActiveScene = targetScene;
-		s_Instance->m_ActiveScene->BeginPlay();
-#endif
-		PT_CORE_INFO_FUNCSIG("scene='{}'", scenePath);
-
-		Renderer::SetClearColor(s_Instance->m_ActiveScene->m_ClearColor);
-		return s_Instance->m_ActiveScene;
+		return m_Scenes.find(scenePath) != m_Scenes.end();
 	}
 
 	void SceneManager::SaveSceneAs(const std::string& scenePath, const std::string& newScenePath)
 	{
 		if (!IsLoaded(scenePath))
 		{
-			PT_CORE_ERROR_FUNCSIG("Scene '{}' not loaded!", scenePath);
+			PT_CORE_ERROR("Scene '{}' not loaded!", scenePath);
 			return;
 		}
 
-		SceneSerializer serializer(s_Instance->m_Scenes.at(scenePath));
-		serializer.Serialize("content/scenes/" + newScenePath + ".scene.json");
+		SceneSerializer serializer(GetScene(scenePath));
+		serializer.SerializeToFile("content/scenes/" + newScenePath + ".scene.json");
 	}
 
-	void SceneManager::SaveActiveSceneAs(const std::string& scenePath)
+	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)
 	{
-		SaveSceneAs(s_Instance->m_ActiveScene->m_SceneFilepath, scenePath);
-	}
-
-	void SceneManager::SaveActiveScene()
-	{
-		std::string filepath = s_Instance->m_ActiveScene->m_SceneFilepath;
-		SaveSceneAs(filepath, filepath);
-	}
-
-	Scene* SceneManager::GetActiveScene()
-	{
-		return s_Instance->m_ActiveScene;
-	}
-
-	Scene* SceneManager::GetScene(const std::string& scenePath)
-	{
-		if (!IsLoaded(scenePath))
-		{
-			PT_CORE_ERROR_FUNCSIG("Scene not found!");
-			return nullptr;
-		}
-		return s_Instance->m_Scenes.at(scenePath);
-	}
-
-	const std::string& SceneManager::GetActiveSceneFilepath()
-	{
-		return s_Instance->m_ActiveScene->m_SceneFilepath;
-	}
-
-	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath, bool addToRegistry)
-	{
-		Scene* scene = new Scene();
-		scene->m_SceneFilepath = scenePath;
-		if (IsLoaded(scenePath))
-			delete s_Instance->m_Scenes.at(scenePath);
-		if (addToRegistry)
-			s_Instance->m_Scenes[scenePath] = scene;
-		return scene;
+		auto scene = MakeShared<Scene>(scenePath);
+		scene->m_GameInstance = m_GameInstance;
+		m_Scenes[scenePath] = scene;
+		return scene.get();
 	}
 
 }

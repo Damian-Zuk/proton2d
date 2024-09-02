@@ -5,33 +5,38 @@
 
 #include <imgui.h>
 
-
 namespace proton {
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Hierarchy");
-		if (!m_ActiveScene)
+
+		Scene* activeScene = GetActiveScene();
+
+		if (!activeScene)
 		{
 			ImGui::End();
 			return;
 		}
 
+		ImGui::Dummy(ImGui::GetWindowSize());
+		ImGui::SetCursorPos({ 0, 25 });
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (ImGui::AcceptDragDropPayload("Entity"))
-				m_EntityDragTarget.PopHierarchy();
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ENTITY"))
+			{
+				Entity dragTarget = *(Entity*)payload->Data;
+				dragTarget.PopHierarchy();
+			}
 			ImGui::EndDragDropTarget();
 		}
+		ImGui::Dummy({ 0, 2 });
 
-		// TODO: Change to Scene::GetEntitiesWithComponents
-		m_ActiveScene->m_Registry.view<RelationshipComponent>().each(
-			[&](entt::entity id, auto& relationship)
-			{
-				if (relationship.Parent == entt::null)
-					DrawEntityTreeNode(Entity{ id, m_ActiveScene });
-			});
 
+		for (Entity entity : activeScene->m_Root)
+		{
+			DrawEntityTreeNode(entity);
+		}
 
 		static Entity treeNodeHovered; // persist state
 		if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(1))
@@ -48,7 +53,7 @@ namespace proton {
 			if (!treeNodeHovered)
 			{
 				if (ImGui::MenuItem("Create Entity"))
-					EditorLayer::SelectEntity(m_ActiveScene->CreateEntity());
+					EditorLayer::SelectEntity(activeScene->CreateEntity());
 			}
 			else
 			{
@@ -57,7 +62,7 @@ namespace proton {
 			}
 			ImGui::EndPopup();
 		}
-		
+
 		m_TreeNodeHovered = Entity{};
 		ImGui::End();
 	}
@@ -65,35 +70,48 @@ namespace proton {
 
 	void SceneHierarchyPanel::DrawEntityTreeNode(Entity entity)
 	{
+		if (!entity.IsValid())
+			return;
+
 		auto& relationship = entity.GetComponent<RelationshipComponent>();
+		Scene* activeScene = GetActiveScene();
+		Entity selectedEntity = GetSelectedEntity();
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 
-		if (m_SelectedEntity == entity)
+		if (selectedEntity == entity)
 			flags |= ImGuiTreeNodeFlags_Selected;
 
 		if (relationship.First == entt::null)
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.0f);
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetComponent<TagComponent>().Tag.c_str());
+
+		bool isPrefab = entity.HasComponent<PrefabComponent>();
+
+		if (isPrefab) ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 225, 0, 255));
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetTag().c_str());
+		if (isPrefab) ImGui::PopStyleColor();
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
 		{
-			m_EntityDragTarget = entity;
 			if (ImGui::BeginDragDropSource())
 			{
-				ImGui::SetDragDropPayload("Entity", (void*)&m_EntityDragTarget, sizeof(Entity));
+				ImGui::SetDragDropPayload("SCENE_HIERARCHY_ENTITY", (void*)&entity, sizeof(Entity));
 				ImGui::EndDragDropSource();
 			}
 		}
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (m_EntityDragTarget && !m_EntityDragTarget.IsParentOf(entity) && ImGui::AcceptDragDropPayload("Entity"))
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ENTITY"))
 			{
-				m_EntityDragTarget.PopHierarchy();
-				entity.AddChildEntity(m_EntityDragTarget);
+				Entity dragTarget = *(Entity*)payload->Data;
+				if (!dragTarget.IsParentOf(entity))
+				{
+					dragTarget.PopHierarchy();
+					entity.AddChildEntity(dragTarget);
+				}
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -111,7 +129,7 @@ namespace proton {
 				auto current = relationship.First;
 				for (uint32_t i = 0; i < relationship.ChildrenCount; i++)
 				{
-					Entity e{ current, m_ActiveScene };
+					Entity e{ current, activeScene };
 					DrawEntityTreeNode(e);
 					current = e.GetComponent<RelationshipComponent>().Next;
 				}

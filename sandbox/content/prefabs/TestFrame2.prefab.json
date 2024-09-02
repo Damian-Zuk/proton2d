@@ -1,0 +1,675 @@
+{
+    "UUID": 15507025740130194731,
+    "Tag": "TestFrame2",
+    "Transform": {
+        "Position": [
+            -20.55876,
+            6.22621,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
+    "Prefab": {
+        "UUID": 5306419330787304281
+    },
+    "Scripts": [
+        {
+            "ClassName": "TestFrame2Script",
+            "Fields": [
+                {
+                    "FieldName": "m_Interval",
+                    "Value": 1.0
+                }
+            ]
+        }
+    ],
+    "Entities": [
+        {
+            "UUID": 8736345216724971373,
+            "Tag": "BallGroup",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "UUID": 17493635495663250999,
+            "Tag": "BallDespawn",
+            "Transform": {
+                "Position": [
+                    1.34447,
+                    -5.81193,
+                    0.102
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    2.5,
+                    1.0
+                ]
+            },
+            "Sprite": {
+                "Color": [
+                    0.8961,
+                    0.3181,
+                    0.3181,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 0,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    0.10000000149011612
+                ],
+                "Offset": [
+                    0.0,
+                    -0.30000001192092896
+                ],
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": true,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 5549876788439531059,
+            "Tag": "BallSpawn",
+            "Transform": {
+                "Position": [
+                    -0.6165,
+                    6.9997,
+                    0.102
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    2.5,
+                    1.0
+                ]
+            },
+            "Sprite": {
+                "Color": [
+                    0.33311,
+                    0.8961,
+                    0.3181,
+                    1.0
+                ]
+            }
+        },
+        {
+            "UUID": 14361732350806808561,
+            "Tag": "Walls",
+            "Transform": {
+                "Position": [
+                    -0.22003,
+                    -1.80913,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.2,
+                    0.2
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 9945372516559490408,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            -0.3994,
+                            9.352,
+                            0.6
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            2.5,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 3969303205934835826,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            1.57158,
+                            -4.5299,
+                            0.6
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            2.5,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 9929685602456655946,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            0.84786,
+                            8.45552,
+                            0.6
+                        ],
+                        "Rotation": 90.0,
+                        "Scale": [
+                            2.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 7268780695572175683,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            0.32121,
+                            -3.63078,
+                            0.6
+                        ],
+                        "Rotation": 90.0,
+                        "Scale": [
+                            2.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5083264774289584985,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            -1.65037,
+                            8.45125,
+                            0.6
+                        ],
+                        "Rotation": 90.0,
+                        "Scale": [
+                            2.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 14491276956146842972,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            2.81856,
+                            -3.63167,
+                            0.6
+                        ],
+                        "Rotation": 90.0,
+                        "Scale": [
+                            2.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 15320952207932349660,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            1.83152,
+                            -0.95243,
+                            0.6
+                        ],
+                        "Rotation": -60.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 11880256767427146725,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            -0.66318,
+                            -0.95229,
+                            0.6
+                        ],
+                        "Rotation": -60.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 9280194414120189764,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            -0.66406,
+                            2.4109,
+                            0.6
+                        ],
+                        "Rotation": 60.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 17230023251027205665,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            1.83211,
+                            2.41355,
+                            0.6
+                        ],
+                        "Rotation": 60.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 10144356576662526730,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            1.83358,
+                            5.77761,
+                            0.6
+                        ],
+                        "Rotation": -60.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5022107672066104247,
+                    "Tag": "Wall",
+                    "Transform": {
+                        "Position": [
+                            -0.66642,
+                            5.77761,
+                            0.6
+                        ],
+                        "Rotation": -60.0,
+                        "Scale": [
+                            4.0,
+                            0.2
+                        ]
+                    },
+                    "Sprite": {
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            1.0,
+                            1.0
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        }
+    ]
+}

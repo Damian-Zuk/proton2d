@@ -1,15 +1,23 @@
 #include "ptpch.h"
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/InspectorPanel.h"
+#include "Proton/Editor/Panels/SceneViewportPanel.h"
 #include "Proton/Editor/EditorLayer.h"
+
+#include "Proton/Core/Application.h"
+#include "Proton/Core/GameInstance.h"
+#include "Proton/Core/AssetManager.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
-#include "Proton/Utils/Utils.h"
-#include "Proton/Assets/AssetManager.h"
-#include "Proton/Scripting/ScriptFactory.h"
-#include "Proton/Scene/EntityComponent.h"
-#include "Proton/Scripting/EntityScript.h"
+#include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
+#include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/EntityScript.h"
 #include "Proton/Physics/PhysicsWorld.h"
+#include "Proton/Utils/Utils.h"
+#include "Proton/UI/UIText.h"
+
+#include "Proton/Network/NetworkManager.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -23,28 +31,54 @@ namespace proton {
 		return fullFilepath.substr(parentDir.size(), fullFilepath.size() - parentDir.size());;
 	}
 
+	static std::string UintToHex(uint64_t value) {
+		std::stringstream stream;
+		stream << std::hex << std::setw(16) << std::setfill('0') << value;
+		return stream.str();
+	}
+	
+	static bool DrawTreeNodeRemoveButton(const std::string& id)
+	{
+		ImGui::PushFont(EditorLayer::GetFontAwesome());
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.45f, 0.45f, 0.45f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.55f, 0.55f, 0.55f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.65f, 0.65f, 0.65f, 1.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 100.0f);
+		ImGui::SameLine(ImGui::GetContentRegionMax().x - 20.0f);
+		bool pressed = ImGui::Button((u8"\uF00D##" + id).c_str());
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+		ImGui::PopStyleVar();
+		return pressed;
+	}
+
 	void InspectorPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Inspector");
 
-		if (!m_ActiveScene) {
+		Scene* scene = GetActiveScene();
+		Entity selectedEntity = GetSelectedEntity();
+
+		if (!scene) {
 			ImGui::End();
 			return;
 		}
 
 		// Draw scene proporties if no entity is selected
-		if (!m_SelectedEntity.IsValid())
+		if (!selectedEntity.IsValid())
 		{
 			DrawSceneProporties();
 			ImGui::End();
 			return;
 		}
 
+		bool isPrefab = selectedEntity.HasComponent<PrefabComponent>();
+
 		char buffer[256];
-		strcpy_s(buffer, sizeof(buffer), m_SelectedEntity.GetTag().c_str());
+		strcpy_s(buffer, sizeof(buffer), selectedEntity.GetTag().c_str());
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 8, 5 });
 		if (ImGui::InputText("##tag", buffer, sizeof(buffer)))
-			m_SelectedEntity.GetComponent<TagComponent>().Tag = std::string(buffer);
+			selectedEntity.GetComponent<TagComponent>().Tag = std::string(buffer);
 		ImGui::PopStyleVar();
 		ImGui::SameLine();
 
@@ -58,13 +92,16 @@ namespace proton {
 		if (ImGui::BeginPopup("Add component"))
 		{
 			#define ADD_COMPONENT_POPUP_MENU_ITEM(component) \
-			if (!m_SelectedEntity.HasComponent<component>() && ImGui::MenuItem(#component)) \
-				m_SelectedEntity.AddComponent<component>()
+			if (!selectedEntity.HasComponent<component>() && ImGui::MenuItem(#component)) \
+				selectedEntity.AddComponent<component>()
 
 			ADD_COMPONENT_POPUP_MENU_ITEM(TransformComponent);
+			ADD_COMPONENT_POPUP_MENU_ITEM(NetworkComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(SpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(ResizableSpriteComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CircleRendererComponent);
+			ADD_COMPONENT_POPUP_MENU_ITEM(TextComponent);
+			ADD_COMPONENT_POPUP_MENU_ITEM(UITextComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(CameraComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(RigidbodyComponent);
 			ADD_COMPONENT_POPUP_MENU_ITEM(BoxColliderComponent);
@@ -76,14 +113,14 @@ namespace proton {
 			{
 				for (auto& [scriptName, addScriptFunction] : ScriptFactory::Get().m_ScriptRegistry)
 				{
-					if (m_SelectedEntity.HasComponent<ScriptComponent>())
+					if (selectedEntity.HasComponent<ScriptComponent>())
 					{
-						auto& component = m_SelectedEntity.GetComponent<ScriptComponent>();
+						auto& component = selectedEntity.GetComponent<ScriptComponent>();
 						if (component.Scripts.find(scriptName) != component.Scripts.end())
 							continue;
 					}
 					if (ImGui::MenuItem(scriptName.c_str()))
-						addScriptFunction(m_SelectedEntity);
+						addScriptFunction(selectedEntity);
 				}
 				ImGui::EndMenu();
 			}
@@ -99,14 +136,22 @@ namespace proton {
 		}
 		ImGui::PopFont();
 
-		if (ImGui::BeginPopup("Entity options")) {
-			if (ImGui::MenuItem("Create Prefab"))
+		if (ImGui::BeginPopup("Entity options")) 
+		{
+			if (ImGui::MenuItem(isPrefab ? "Save Prefab" : "Create Prefab"))
 			{
-				PrefabManager::CreatePrefabFromEntity(m_SelectedEntity);
+				PrefabManager::SaveEntityAsPrefab(selectedEntity);
 			}
+
+			if (isPrefab && ImGui::MenuItem("Detach Prefab"))
+			{
+				selectedEntity.RemoveComponent<PrefabComponent>();
+			}
+
+			ImGui::Separator();
 			if (ImGui::MenuItem("Delete Entity"))
 			{
-				m_SelectedEntity.Destroy();
+				selectedEntity.Destroy();
 				EditorLayer::SelectEntity({});
 				ImGui::EndPopup();
 				ImGui::End();
@@ -116,17 +161,20 @@ namespace proton {
 		}
 		ImGui::Columns(1);
 
+		ImGui::Dummy({ 1, 0 }); ImGui::SameLine();
+		ImGui::Text("UUID: %s", UintToHex(selectedEntity.GetUUID()).c_str());
+
 		ImGui::Dummy({ 0, 5 });
 
 		// ******************************************************
 		// Transform Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<TransformComponent>())
+		if (selectedEntity.HasComponent<TransformComponent>())
 		{
 			DrawComponentUI<TransformComponent>("Transform", [&](auto& component)
 			{
 				// Posittion
-				ImGui::Columns(2); ImGui::SetColumnWidth(0, 75.0f);
+				ImGui::Columns(2); ImGui::SetColumnWidth(0, 100.0f);
 				ImGui::Text("Position");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(75.0f);
@@ -141,33 +189,33 @@ namespace proton {
 
 				// Scale
 				ImGui::Columns(2);
-				ImGui::SetColumnWidth(0, 75.0f);
+				ImGui::SetColumnWidth(0, 100.0f);
 				ImGui::Text("Scale");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(75.0f);
 				if (ImGui::DragFloat("##S_X", &component.Scale.x, 0.01f, 0.0f, 0.0f, "%.3f"))
 				{
-					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
+					if (selectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
-						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
-						nsc.ResizableSprite.Generate();
+						auto& nsc = selectedEntity.GetComponent<ResizableSpriteComponent>();
+						nsc.ResizableSprite.Generate(component.Scale);
 					}
 				}
 				ImGui::SameLine();
 				ImGui::PushItemWidth(75.0f);
 				if(ImGui::DragFloat("##S_Y", &component.Scale.y, 0.01f, 0.0f, 0.0f, "%.3f"))
 				{
-					if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
+					if (selectedEntity.HasComponent<ResizableSpriteComponent>())
 					{
-						auto& nsc = m_SelectedEntity.GetComponent<ResizableSpriteComponent>();
-						nsc.ResizableSprite.Generate();
+						auto& nsc = selectedEntity.GetComponent<ResizableSpriteComponent>();
+						nsc.ResizableSprite.Generate(component.Scale);
 					}
 				}
 				ImGui::Columns(1);
 
 				// Rotation 
 				ImGui::Columns(2);
-				ImGui::SetColumnWidth(0, 75.0f);
+				ImGui::SetColumnWidth(0, 100.0f);
 				ImGui::Text("Rotation");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(75.0f);
@@ -178,9 +226,85 @@ namespace proton {
 		}
 
 		// ******************************************************
+		// Script Component UI
+		// ******************************************************
+		if (selectedEntity.HasComponent<ScriptComponent>())
+		{
+			auto& component = selectedEntity.GetComponent<ScriptComponent>();
+			for (auto& [scriptClassName, scriptInstance] : component.Scripts)
+			{
+				if (!scriptInstance)
+					continue;
+
+				ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
+					| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
+
+				std::string label = scriptClassName + " (Script)";
+				bool opened = ImGui::TreeNodeEx(label.c_str(), treeNodeFlags, label.c_str());
+
+				bool removeScript = DrawTreeNodeRemoveButton(scriptClassName);
+
+				if (opened)
+				{
+					ImGui::Dummy({ 0.0f, 3.0f });
+					for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
+					{
+						if (!fieldData.ShowInEditor)
+							continue;
+
+						switch (fieldData.Type)
+						{
+						case ScriptFieldType::Float:
+							ImGui::DragFloat(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+						case ScriptFieldType::Float2:
+							ImGui::DragFloat2(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+						case ScriptFieldType::Float3:
+							ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+						case ScriptFieldType::Float4:
+							if (fieldName.find("Color") != fieldName.npos || fieldName.find("color") != fieldName.npos)
+								ImGui::ColorEdit4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue);
+							else
+								ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
+							break;
+
+						case ScriptFieldType::Int:
+							ImGui::DragInt(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+						case ScriptFieldType::Int2:
+							ImGui::DragInt2(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+						case ScriptFieldType::Int3:
+							ImGui::DragInt3(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+						case ScriptFieldType::Int4:
+							ImGui::DragInt4(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
+							break;
+
+						case ScriptFieldType::Bool:
+							ImGui::Checkbox(fieldName.c_str(), (bool*)fieldData.InstanceFieldValue);
+							break;
+						}
+					}
+					scriptInstance->OnImGuiRender();
+					ImGui::TreePop();
+				}
+
+				if (removeScript)
+				{
+					selectedEntity.RemoveScript(scriptClassName);
+					break;
+				}
+				ImGui::Dummy({ 0.0f, 5.0f });
+			}
+		}
+
+		// ******************************************************
 		// Sprite Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<SpriteComponent>())
+		if (selectedEntity.HasComponent<SpriteComponent>())
 		{
 			DrawComponentUI<SpriteComponent>("Sprite", [&](auto& component)
 			{
@@ -206,7 +330,7 @@ namespace proton {
 							if (spritesheet)
 							{
 								sprite = Sprite(spritesheet);
-								auto& scale = m_SelectedEntity.GetTransform().Scale;
+								auto& scale = selectedEntity.GetTransform().Scale;
 								float ratio = sprite.GetAspectRatio();
 								if (scale.x / scale.y != ratio)
 									scale.x = scale.y * ratio;
@@ -227,7 +351,7 @@ namespace proton {
 							if (texture)
 							{
 								sprite = Sprite(texture);
-								auto& scale = m_SelectedEntity.GetTransform().Scale;
+								auto& scale = selectedEntity.GetTransform().Scale;
 								float ratio = sprite.GetAspectRatio();
 								if (scale.x / scale.y != ratio)
 									scale.x = scale.y * ratio;
@@ -252,9 +376,9 @@ namespace proton {
 					// Mirror flip
 					ImGui::Text("Mirror Flip");
 					ImGui::SameLine();
-					ImGui::Checkbox("X##Flip", &sprite.m_MirrorFlipX);
+					ImGui::Checkbox("X##Flip", &sprite.m_MirrorFlip.x);
 					ImGui::SameLine();
-					ImGui::Checkbox("Y##Flip", &sprite.m_MirrorFlipY);
+					ImGui::Checkbox("Y##Flip", &sprite.m_MirrorFlip.y);
 					ImGui::Dummy({ 0, 1 });
 
 					// Texture filter mode
@@ -310,7 +434,7 @@ namespace proton {
 		// ******************************************************
 		// ResizableSpriteComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<ResizableSpriteComponent>())
+		if (selectedEntity.HasComponent<ResizableSpriteComponent>())
 		{
 			DrawComponentUI<ResizableSpriteComponent>("ResizableSprite", [&](auto& component)
 				{
@@ -341,47 +465,51 @@ namespace proton {
 					if (ImGui::IsItemClicked())
 						AssetManager::ReloadAssetsList();
 
-					float tileScale = sprite.m_TileScale;
+					float tileScale = sprite.m_CellScale;
 					if (ImGui::DragFloat("Tile Scale", &tileScale, 0.001f))
 					{
-						sprite.SetTileScale(tileScale);
+						sprite.SetCellScale(tileScale);
 					}
-					ImGui::DragInt2("Tile Offset", (int*)glm::value_ptr(sprite.m_PositionOffset));
+					ImGui::InputInt2("Pattern Offset", (int*)glm::value_ptr(sprite.m_PatternOffset));
+					ImGui::InputInt2("Pattern Size", (int*)glm::value_ptr(sprite.m_PatternSize));
 					ImGui::Dummy({ 0.0f, 3.0f });
 
 					// Toggle sprite edges texture
-					unsigned int edges = (unsigned int)sprite.m_Edges;
+					unsigned int bitset = (unsigned int)sprite.m_EdgesBitset;
 					ImGui::Text("Toggle edge and corner texture:");
-					ImGui::CheckboxFlags("##tb_top_left", &edges, Edge_TopLeft);
+					ImGui::CheckboxFlags("##tb_top_left", &bitset, Edge_TopLeft);
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_top", &edges, Edge_Top);
+					ImGui::CheckboxFlags("##tb_top", &bitset, Edge_Top);
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_top_right", &edges, Edge_TopRight);
+					ImGui::CheckboxFlags("##tb_top_right", &bitset, Edge_TopRight);
 							
-					ImGui::CheckboxFlags("##tb_left", &edges, Edge_Left);
+					ImGui::CheckboxFlags("##tb_left", &bitset, Edge_Left);
 					ImGui::SameLine(); 
 					ImGui::Dummy({ 24.0f, 0.0f }); 
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_right", &edges, Edge_Right);
+					ImGui::CheckboxFlags("##tb_right", &bitset, Edge_Right);
 
-					ImGui::CheckboxFlags("##tb_bottom_left", &edges, Edge_BottomLeft);
+					ImGui::CheckboxFlags("##tb_bottom_left", &bitset, Edge_BottomLeft);
 					ImGui::SameLine();
-					ImGui::CheckboxFlags("##tb_bottom", &edges, Edge_Bottom);
+					ImGui::CheckboxFlags("##tb_bottom", &bitset, Edge_Bottom);
 					ImGui::SameLine(); 
-					ImGui::CheckboxFlags("##tb_bottom_right", &edges, Edge_BottomRight);
+					ImGui::CheckboxFlags("##tb_bottom_right", &bitset, Edge_BottomRight);
 
-					sprite.SetEdges((uint8_t)edges);
+					sprite.SetEdgesBitset((uint8_t)bitset);
 					ImGui::Dummy({ 0, 3.0f });
 
 					// Tint color control
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
+					
+					//if (ImGui::Button("Regenerate"))
+					//	sprite.Generate(selectedEntity.GetTransform().Scale);
 			});
 		}
 
 		// ******************************************************
 		// Circle Renderer Component UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<CircleRendererComponent>())
+		if (selectedEntity.HasComponent<CircleRendererComponent>())
 		{
 			DrawComponentUI<CircleRendererComponent>("CircleRenderer", [&](auto& component)
 				{
@@ -391,16 +519,58 @@ namespace proton {
 				});
 		}
 
+
+		// ******************************************************
+		// Text Component UI
+		// ******************************************************
+		if (selectedEntity.HasComponent<TextComponent>())
+		{
+			DrawComponentUI<TextComponent>("Text", [&](auto& component)
+				{
+					static char textBuffer[2048] = "/0";
+					strcpy_s(textBuffer, component.TextString.c_str());
+
+					if (ImGui::InputTextMultiline("Text String", textBuffer, 2048))
+						component.TextString = textBuffer;
+
+					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+					ImGui::DragFloat("Kerning", &component.Kerning, 0.025f);
+					ImGui::DragFloat("Line Spacing", &component.LineSpacing, 0.025f);
+					ImGui::Checkbox("Hidden", &component.Hidden);
+				});
+		}
+
+		// ******************************************************
+		// UI Text Component UI
+		// ******************************************************
+		if (selectedEntity.HasComponent<UITextComponent>())
+		{
+			DrawComponentUI<UITextComponent>("UI Text", [&](auto& component)
+				{
+					UIText& uiText = component.UIText;
+					static char textBuffer[2048] = "/0";
+					strcpy_s(textBuffer, uiText.m_TextString.c_str());
+
+					if (ImGui::InputTextMultiline("Text String", textBuffer, 2048))
+						uiText.m_TextString = textBuffer;
+
+					ImGui::ColorEdit4("Color", glm::value_ptr(uiText.m_Color));
+					ImGui::DragFloat("Kerning", &uiText.m_Kerning, 0.025f);
+					ImGui::DragFloat("Line Spacing", &uiText.m_LineSpacing, 0.025f);
+					ImGui::Checkbox("Hidden", &uiText.m_Hidden);
+				});
+		}
+
 		// ******************************************************
 		// CameraComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<CameraComponent>())
+		if (selectedEntity.HasComponent<CameraComponent>())
 		{
 			DrawComponentUI<CameraComponent>("Camera", [&](auto& component)
 				{
-					bool isPrimary = m_ActiveScene->m_PrimaryCameraEntity == m_SelectedEntity.m_Handle;
+					bool isPrimary = scene->m_PrimaryCameraEntity == selectedEntity.m_Handle;
 					if (ImGui::Checkbox("Set as primary", &isPrimary) && isPrimary)
-						m_ActiveScene->SetPrimaryCameraEntity(m_SelectedEntity);
+						scene->SetPrimaryCameraEntity(selectedEntity);
 
 					float zoom = component.Camera.GetZoomLevel();
 					if (ImGui::DragFloat("Zoom Level", &zoom, 0.01f))
@@ -412,7 +582,7 @@ namespace proton {
 		// ******************************************************
 		// RigidbodyComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<RigidbodyComponent>())
+		if (selectedEntity.HasComponent<RigidbodyComponent>())
 		{
 			DrawComponentUI<RigidbodyComponent>("Rigidbody", [](auto& component)
 			{
@@ -435,6 +605,7 @@ namespace proton {
 				}
 
 				ImGui::Dummy({ 0.0f, 3.0f });
+				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
 				ImGui::Checkbox("Fixed rotation", &component.FixedRotation);
 			});
 		}
@@ -442,10 +613,11 @@ namespace proton {
 		// ******************************************************
 		// BoxColliderComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<BoxColliderComponent>())
+		if (selectedEntity.HasComponent<BoxColliderComponent>())
 		{
 			DrawComponentUI<BoxColliderComponent>("BoxCollider", [](auto& component)
 			{
+				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
 				ImGui::DragFloat2("Size", glm::value_ptr(component.Size), 0.01f);
 				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
 				ImGui::DragFloat("Friction", &component.Material.Friction, 0.01f);
@@ -459,170 +631,214 @@ namespace proton {
 		// ******************************************************
 		// CircleColliderComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<CircleColliderComponent>())
+		if (selectedEntity.HasComponent<CircleColliderComponent>())
 		{
 			DrawComponentUI<CircleColliderComponent>("CircleCollider", [](auto& component)
-				{
-					ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
-					ImGui::DragFloat("Radius", &component.Radius, 0.001f);
-					ImGui::DragFloat("Friction", &component.Material.Friction, 0.01f);
-					ImGui::DragFloat("Restitution", &component.Material.Restitution, 0.01f);
-					ImGui::DragFloat("RestitutionThreshold", &component.Material.RestitutionThreshold, 0.01f);
-					ImGui::DragFloat("Density", &component.Material.Density, 0.01f);
-					ImGui::Checkbox("IsSensor", &component.IsSensor);
-				});
+			{
+				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
+				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset), 0.01f);
+				ImGui::DragFloat("Radius", &component.Radius, 0.001f);
+				ImGui::DragFloat("Friction", &component.Material.Friction, 0.01f);
+				ImGui::DragFloat("Restitution", &component.Material.Restitution, 0.01f);
+				ImGui::DragFloat("RestitutionThreshold", &component.Material.RestitutionThreshold, 0.01f);
+				ImGui::DragFloat("Density", &component.Material.Density, 0.01f);
+				ImGui::Checkbox("IsSensor", &component.IsSensor);
+			});
 		}
 
 		// ******************************************************
-		// Script Component UI
+		// NetworkComponent UI
 		// ******************************************************
-		if (m_SelectedEntity.HasComponent<ScriptComponent>())
+		if (selectedEntity.HasComponent<NetworkComponent>())
 		{
-			auto& component = m_SelectedEntity.GetComponent<ScriptComponent>();
-			for (auto& [scriptClassName, scriptInstance] : component.Scripts)
+			DrawComponentUI<NetworkComponent>("Network", [](NetworkComponent& component)
 			{
-				if (!scriptInstance)
-					continue;
-							
-				ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
-					| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
-
-				bool keepScript = true;
-				bool opened = ImGui::CollapsingHeader((scriptClassName + " (Script)").c_str(), &keepScript, treeNodeFlags);
-
-				if (opened)
+				ImGui::Checkbox("Simulate on client", &component.SimulateOnClient);
+				ImGui::PushItemWidth(200.0f);
+				auto& netTransform = component.NetTransform;
+				auto& selectedMethod = netTransform.Method;
+				if (ImGui::BeginCombo("Sync Method", NetSyncMethodToString(selectedMethod).c_str()))
 				{
-					ImGui::Dummy({ 0.0f, 3.0f });
-					for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
+					for (uint8_t i = 0; i < 4; i++)
 					{
-						if (!fieldData.ShowInEditor)
-							continue;
+						auto current = (NetSyncMethod)i;
 
-						switch (fieldData.Type)
-						{
-						case ScriptFieldType::Float:
-							ImGui::DragFloat(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-						case ScriptFieldType::Float2:
-							ImGui::DragFloat2(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-						case ScriptFieldType::Float3:
-							ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-						case ScriptFieldType::Float4:
-							if (fieldName.find("Color") != fieldName.npos || fieldName.find("color") != fieldName.npos)
-								ImGui::ColorEdit4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue);
-							else
-								ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.InstanceFieldValue, 0.01f);
-							break;
-
-						case ScriptFieldType::Int:
-							ImGui::DragInt(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-						case ScriptFieldType::Int2:
-							ImGui::DragInt2(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-						case ScriptFieldType::Int3:
-							ImGui::DragInt3(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-						case ScriptFieldType::Int4:
-							ImGui::DragInt4(fieldName.c_str(), (int*)fieldData.InstanceFieldValue);
-							break;
-
-						case ScriptFieldType::Bool:
-							ImGui::Checkbox(fieldName.c_str(), (bool*)fieldData.InstanceFieldValue);
-							break;
-						}
+						if (ImGui::Selectable(NetSyncMethodToString(current).c_str(), selectedMethod == current))
+							selectedMethod = current;
 					}
-					scriptInstance->OnImGuiRender();
+					ImGui::EndCombo();
 				}
+				ImGui::PopItemWidth();
 
-				if (!keepScript)
+				ImGui::Dummy({ 0, 5 });
+				ImGui::PushItemWidth(125.0f);
+				float cullDistance = netTransform.CullDistance;
+				if (ImGui::DragFloat("Cull Distance", &cullDistance, 0.1f))
+					netTransform.CullDistance = glm::clamp(cullDistance, 0.0f, 1000.0f);
+				ImGui::DragFloat("Teleport Threshold", &netTransform.TeleportThreshold, 0.001f);
+				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
+				ImGui::DragFloat("Reconcile Max Time", &netTransform.ReconcileMaxTime, 0.001f);
+				ImGui::DragFloat("Delta Weight", &netTransform.DeltaWeight, 0.001f);
+				if (selectedMethod == NetSyncMethod::Extrapolation)
+					ImGui::DragFloat("Server Velocity Weight", &netTransform.ServerVelocityWeight, 0.001f);
+				ImGui::PopItemWidth();
+
+				ImGui::Dummy({ 0, 5 });
+				if (ImGui::TreeNode("Debug"))
 				{
-					m_SelectedEntity.RemoveScript(scriptClassName);
-					break;
+					ImGui::Dummy({ 0, 2 });
+					ImGui::Text("Replication Timer: %.3f", netTransform.ReplicationTimer);
+					ImGui::Text("Interpolation Timer: %.3f", netTransform.InterpolationTimer);
+					ImGui::Text("Reconcile Timer: %.3f", netTransform.ReconcileTimer);
+					ImGui::Text("Reconcile State: pos=%d, sca=%d, rot=%d",
+						netTransform.IsReconciling(NetTransform::Components::Position),
+						netTransform.IsReconciling(NetTransform::Components::Scale),
+						netTransform.IsReconciling(NetTransform::Components::Rotation));
+					ImGui::Text("Current Sequence Number: %d", netTransform.CurrentSequenceNumber);
+					ImGui::Text("Server Sequence Number: %d", netTransform.ServerSequenceNumber);
+					ImGui::Text("Delta Buffer Size: %d", netTransform.DeltaBuffer.size());
+
+					ImGui::Dummy({ 0, 5 });
+					float lastPos[] = { netTransform.LastAuthoritativeTransform.Position.x, netTransform.LastAuthoritativeTransform.Position.y };
+					float prevPos[] = { netTransform.PrevAuthoritativeTransform.Position.x, netTransform.PrevAuthoritativeTransform.Position.y };
+					float predPos[] = { netTransform.PredictedTransform.Position.x, netTransform.PredictedTransform.Position.y };
+					ImGui::Dummy({ 0, 2 });
+					ImGui::Text("Position");
+					ImGui::DragFloat2("Last", lastPos);
+					ImGui::DragFloat2("Previous", prevPos);
+					ImGui::DragFloat2("Predicted", predPos);
+
+					float lastScale[] = { netTransform.LastAuthoritativeTransform.Scale.x, netTransform.LastAuthoritativeTransform.Scale.y };
+					float prevScale[] = { netTransform.PrevAuthoritativeTransform.Scale.x, netTransform.PrevAuthoritativeTransform.Scale.y };
+					float predScale[] = { netTransform.PredictedTransform.Scale.x, netTransform.PredictedTransform.Scale.x };
+					ImGui::Dummy({ 0, 2 });
+					ImGui::Text("Scale");
+					ImGui::DragFloat2("Last", lastScale);
+					ImGui::DragFloat2("Previous", prevScale);
+					ImGui::DragFloat2("Predicted", predScale);
+
+					float prevRot = netTransform.PrevAuthoritativeTransform.Rotation;
+					float lastRot = netTransform.LastAuthoritativeTransform.Rotation;
+					float predRot = netTransform.PredictedTransform.Rotation;
+					ImGui::Dummy({ 0, 5 });
+					ImGui::Text("Rotation");
+					ImGui::DragFloat("Last", &lastRot);
+					ImGui::DragFloat("Previous", &prevRot);
+					ImGui::DragFloat("Predicted", &predRot);
+
+					ImGui::TreePop();
 				}
-				ImGui::Dummy({ 0.0f, 10.0f });
-			}
+			});
 		}
 
 		ImGui::End();
 	}
 
-
 	void InspectorPanel::DrawSceneProporties()
 	{
+		Scene* scene = GetActiveScene();
+		Entity selectedEntity = GetSelectedEntity();
+
 		ImGui::Text("Scene Proporties");
+		ImGui::Dummy({ 0.0f, 2.0f });
 		ImGui::Separator();
-		ImGui::Dummy({ 0.0f, 3.0f });
-
-		// Scene name
-		static char sceneName[256] = {0};
-		ImGui::Text("Scene Name");
-		strcpy_s(sceneName, m_ActiveScene->m_SceneName.c_str());
-		if (ImGui::InputText("##scene_name", sceneName, 256))
-			m_ActiveScene->m_SceneName = sceneName;
-
-		// Screen clear color
-		ImGui::Dummy({ 0.0f, 5.0f });
-		ImGui::Text("Background Color");
-		if (ImGui::ColorEdit4("##screen_clear_color", glm::value_ptr(m_ActiveScene->m_ClearColor)))
-			Renderer::SetClearColor(m_ActiveScene->m_ClearColor);
 		ImGui::Dummy({ 0.0f, 5.0f });
 
-		// Physics configuration
-		ImGui::Text("Physics Settings");
-		ImGui::Dummy({ 0.0f, 3.0f });
-		ImGui::Separator();
-		bool enablePhysics = m_ActiveScene->m_EnablePhysics;
-		if (ImGui::Checkbox("Enable Physics", &enablePhysics) && m_ActiveScene->m_SceneState == SceneState::Stop)
-			m_ActiveScene->m_EnablePhysics = enablePhysics;
-		if (m_ActiveScene->m_EnablePhysics) 
+		if (ImGui::TreeNodeEx("General", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::Dummy({ 0,5 });
-			ImGui::PushItemWidth(100.0f);
-			ImGui::DragFloat("World Gravity", &m_ActiveScene->m_PhysicsWorld->m_Gravity, 0.1f);
+			ImGui::Dummy({ 0, 2 });
+			const std::string& selectedGameMode = scene->m_GameModeClassName;
+			ImGui::PushItemWidth(210.0f);
+			if (ImGui::BeginCombo("GameMode Class", selectedGameMode.c_str()))
+			{
+				for (auto& [className, instanciateFunc] : ScriptFactory::Get().m_GameModeRegistry)
+				{
+					bool selected = selectedGameMode == className;
+					if (ImGui::Selectable(className.c_str(), selected))
+					{
+						scene->SetGameModeByClassName(className);
+					}
+				}
+				ImGui::EndCombo();
+			}
 
-			int* vi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsVelocityIterations;
-			int* pi = &m_ActiveScene->m_PhysicsWorld->m_PhysicsPositionIterations;
-			if (ImGui::DragInt("Velocity Iterations", vi))
-				*vi = glm::max(*vi, 1);
-			if (ImGui::DragInt("Position Iterations", pi))
-				*pi = glm::max(*pi, 1);
-
+			ImGui::Dummy({ 0.0f, 5.0f });
+			if (ImGui::ColorEdit4("Clear Color", glm::value_ptr(scene->m_ClearColor)))
+				Renderer::SetClearColor(scene->m_ClearColor);
 			ImGui::PopItemWidth();
+
+			ImGui::TreePop();
+		}
+		ImGui::Dummy({ 0, 5 });
+
+		if (ImGui::TreeNodeEx("Physics", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+
+			bool enablePhysics = scene->m_EnablePhysics;
+			if (ImGui::Checkbox("Enable Physics", &enablePhysics) && scene->m_State == SceneState::Stop)
+				scene->m_EnablePhysics = enablePhysics;
+
+			if (scene->m_EnablePhysics)
+			{
+				ImGui::Dummy({ 0,5 });
+				ImGui::PushItemWidth(100.0f);
+				ImGui::DragFloat("Physics Timestep", &scene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
+				ImGui::DragFloat("World Gravity", &scene->m_PhysicsWorld->m_Gravity, 0.1f);
+
+				int* vi = &scene->m_PhysicsWorld->m_PhysicsVelocityIterations;
+				int* pi = &scene->m_PhysicsWorld->m_PhysicsPositionIterations;
+				if (ImGui::DragInt("Velocity Iterations", vi))
+					*vi = glm::max(*vi, 1);
+				if (ImGui::DragInt("Position Iterations", pi))
+					*pi = glm::max(*pi, 1);
+
+				ImGui::PopItemWidth();
+			}
+
+			ImGui::TreePop();
+		}
+		ImGui::Dummy({ 0, 5 });
+
+		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+			ImGui::Checkbox("Enable Networking", &scene->m_EnableNetworking);
+
+			ImGui::TreePop();
 		}
 	}
-
 
 	template<typename T>
 	void InspectorPanel::DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction)
 	{
-		T& component = m_SelectedEntity.GetComponent<T>();
+		Entity selectedEntity = GetSelectedEntity();
+		T& component = selectedEntity.GetComponent<T>();
 
 		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth
 			| ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 		
-		size_t componentTypeID = typeid(T).hash_code();
-		bool canBeRemoved = !std::is_same<T, TagComponent>::value && !std::is_same<T, TransformComponent>::value;
-		bool keepComponent = true;
-		bool opened = true;
+		bool opened = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 
-		if (canBeRemoved)
-			opened = ImGui::CollapsingHeader((name + "##" + std::to_string(componentTypeID)).c_str(), &keepComponent, treeNodeFlags);
-		else
-			opened = ImGui::TreeNodeEx((void*)componentTypeID, treeNodeFlags, name.c_str());
+		bool removeComponent = false;
+		if (!std::is_same<T, TagComponent>::value && !std::is_same<T, TransformComponent>::value)
+		{
+			removeComponent = DrawTreeNodeRemoveButton(name);
+		}
+
+		NetworkComponent* networkComponent = nullptr;
+		if (selectedEntity.HasComponent<NetworkComponent>())
+			networkComponent = &selectedEntity.GetComponent<NetworkComponent>();
 
 		if (opened)
 		{
 			ImGui::Dummy({ 0.0f, 3.0f });
 			drawContentFunction(component);
-			if (!canBeRemoved)
-				ImGui::TreePop();
+			ImGui::TreePop();
 		}
 
-		if (!keepComponent)
-			m_SelectedEntity.RemoveComponent<T>();
+		if (removeComponent)
+			selectedEntity.RemoveComponent<T>();
 
 		ImGui::Dummy({ 0.0f, 3.0f });
 	}

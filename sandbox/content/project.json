@@ -1,0 +1,6 @@
+{
+    "start_scene": "level_00",
+    "net_mode": "ListenServer",
+    "server_ip": "127.0.0.1",
+    "port": 8192
+}

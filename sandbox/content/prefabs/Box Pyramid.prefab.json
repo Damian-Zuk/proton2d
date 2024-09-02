@@ -1,0 +1,631 @@
+{
+    "UUID": 4000466519925374387,
+    "Tag": "Box Pyramid",
+    "Transform": {
+        "Position": [
+            28.79095,
+            11.52457,
+            0.0
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
+    "Prefab": {
+        "UUID": 14944450881489412473
+    },
+    "Entities": [
+        {
+            "UUID": 15956564240441425674,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    0.07863,
+                    2.1713,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 12490884179637714223,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    -0.68853,
+                    0.66727,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 8606283815073242411,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    0.85065,
+                    0.66521,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 16147100750853465384,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    1.55992,
+                    -0.86262,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 17610493959700428190,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    0.03209,
+                    -0.85953,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 1973973220433888319,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    -1.48028,
+                    -0.84097,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 7869878572935656107,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    2.27539,
+                    -2.36365,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 13376977407273460225,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    0.74755,
+                    -2.36571,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 16946429929129236466,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    -0.77513,
+                    -2.36778,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 3032923340469725816,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    -2.29265,
+                    -2.35953,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileTime": 1.0,
+                "ReconcileCooldownTime": 1.0
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        }
+    ]
+}

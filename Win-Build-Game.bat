@@ -62,7 +62,8 @@ if "%configChoice%"=="1" (
 :: TODO: Build executable from source code here
 
 :: Get executable path
-set executablePath="bin\%buildConfiguration%-windows-x86_64\%projectName%\*.exe"
+set executableDirectory="bin\%buildConfiguration%-windows-x86_64\%projectName%"
+set executablePath="%executableDirectory%\%projectName%.exe"
 if not exist %executablePath% (
     echo "Error: Executable not compiled! Could not find %executablePath%"
     pause
@@ -122,6 +123,9 @@ copy "%projectName%\app-config.json" "%destination%\"
 
 :: Copy executable
 copy %executablePath% %destination%
+copy %executableDirectory%\GameNetworkingSockets.dll %destination%
+copy %executableDirectory%\libcrypto-3-x64.dll %destination%
+copy %executableDirectory%\libprotobuf.dll %destination%
 
 echo Building done.
 pause

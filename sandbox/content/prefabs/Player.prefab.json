@@ -1,10 +1,10 @@
 {
-    "UUID": 14561715589732361200,
+    "UUID": 11802964037896217699,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            2.02879,
-            -0.73059,
+            1.12061,
+            0.87915,
             0.1
         ],
         "Rotation": 0.0,
@@ -12,6 +12,18 @@
             2.5,
             2.5
         ]
+    },
+    "Prefab": {
+        "UUID": 9113612734354191392
+    },
+    "Network": {
+        "SimulateOnClient": true,
+        "SyncMethod": "Prediction",
+        "CullDistance": 20.0,
+        "TeleportThreshold": 4.0,
+        "ReconcileThreshold": 0.125,
+        "ReconcileMaxTime": 0.10000000149011612,
+        "ServerVelocityWeight": 0.25
     },
     "Sprite": {
         "Texture": "character.png",
@@ -37,28 +49,14 @@
     },
     "Rigidbody": {
         "Type": 2,
-        "FixedRotation": true
-    },
-    "BoxCollider": {
-        "Size": [
-            0.1599999964237213,
-            0.5899999737739563
-        ],
-        "Offset": [
-            0.0,
-            -0.07999999821186066
-        ],
-        "Friction": 0.0,
-        "Restitution": 0.0,
-        "RestitutionThreshold": 0.5,
-        "Density": 5.0,
-        "IsSensor": false
+        "FixedRotation": true,
+        "AttachToParent": false
     },
     "Camera": {
         "ZoomLevel": 1.5,
         "PositionOffset": [
             0.0,
-            1.7999999523162842
+            4.0
         ]
     },
     "Scripts": [
@@ -66,47 +64,199 @@
             "ClassName": "Player",
             "Fields": [
                 {
-                    "FieldName": "GravityModifier",
-                    "Value": -10.0
+                    "FieldName": "m_FallModifier",
+                    "Value": 100.0
                 },
                 {
-                    "FieldName": "JumpForce",
-                    "Value": 20.0
+                    "FieldName": "m_PlayerMaxSpeed",
+                    "Value": 8.0
                 },
                 {
-                    "FieldName": "PlayerAcceleration",
-                    "Value": 40.0
+                    "FieldName": "m_JumpForce",
+                    "Value": 25.0
                 },
                 {
-                    "FieldName": "PlayerMaxSpeed",
-                    "Value": 6.0
+                    "FieldName": "m_PlayerAcceleration",
+                    "Value": 100.0
+                },
+                {
+                    "FieldName": "m_ClientID",
+                    "Value": 0
+                },
+                {
+                    "FieldName": "m_PlayerColor",
+                    "Value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
                 }
             ]
+        }
+    ],
+    "Entities": [
+        {
+            "UUID": 17967303538789713731,
+            "Tag": "Body",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    -0.048,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.4,
+                    1.25
+                ]
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.0,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": false,
+                "AttachToParent": true
+            }
         },
         {
-            "ClassName": "ColorHueAnimation",
-            "Fields": [
-                {
-                    "FieldName": "Back and Forth",
-                    "Value": false
-                },
-                {
-                    "FieldName": "HueRangeP",
-                    "Value": 0.0
-                },
-                {
-                    "FieldName": "HueRangeQ",
-                    "Value": 1.0
-                },
-                {
-                    "FieldName": "Saturation",
-                    "Value": 0.699999988079071
-                },
-                {
-                    "FieldName": "Speed",
-                    "Value": 0.5
-                }
-            ]
+            "UUID": 3063270675458504363,
+            "Tag": "Wheel",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    -0.673,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.41,
+                    0.41
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "FixedRotation": false,
+                "AttachToParent": true
+            },
+            "CircleCollider": {
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Radius": 1.0,
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 25.0,
+                "IsSensor": false,
+                "AttachToParent": false
+            }
+        },
+        {
+            "UUID": 9000657111557589044,
+            "Tag": "Sensor_BottomLeft",
+            "Transform": {
+                "Position": [
+                    -0.185,
+                    -0.675,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.1,
+                    0.1
+                ]
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": true,
+                "AttachToParent": true
+            }
+        },
+        {
+            "UUID": 2598896572143638374,
+            "Tag": "Sensor_BottomRight",
+            "Transform": {
+                "Position": [
+                    0.184,
+                    -0.675,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.1,
+                    0.1
+                ]
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": true,
+                "AttachToParent": true
+            }
+        },
+        {
+            "UUID": 3010826965014872503,
+            "Tag": "Sensor_Bottom",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    -0.9,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.1,
+                    0.1
+                ]
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.5,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 0.5,
+                "IsSensor": true,
+                "AttachToParent": true
+            }
         }
     ]
 }

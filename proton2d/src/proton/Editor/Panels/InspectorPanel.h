@@ -1,9 +1,6 @@
 #pragma once
 #ifdef PT_EDITOR
-
 #include "Proton/Editor/Panels/EditorPanel.h"
-#include "Proton/Core/Base.h"
-#include "Proton/Scene/Entity.h"
 
 namespace proton {
 
@@ -19,6 +16,8 @@ namespace proton {
 		void DrawComponentUI(const std::string& name, const std::function<void(T&)>& drawContentFunction);
 
 		friend class EditorLayer;
+		friend class SceneViewportPanel;
+		friend class SettingsPanel;
 	};
 
 }

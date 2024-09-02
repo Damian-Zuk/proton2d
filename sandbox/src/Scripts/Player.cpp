@@ -2,96 +2,252 @@
 using namespace proton;
 
 #include "Player.h"
+#include "MyGameMode.h"
+
+#include "Proton/Graphics/Renderer/Renderer.h"
+
+#include <time.h>
 
 // Internal script parameters
-static constexpr float s_JumpDelay = 0.2f;
+static constexpr float s_JumpDelay = 0.1f;
 static constexpr float s_JumpFrameSwitchTime = 0.3f;
 static constexpr float s_LandAnimationDelay = 0.5f;
-static constexpr float s_LandAnimationCancelTime = 0.2f;
+
+enum SensorType : uint32_t
+{
+	Sensor_BottomLeft,
+	Sensor_BottomRight,
+	Sensor_Bottom,
+};
 
 void Player::OnRegisterFields()
 {
-	RegisterField(ScriptFieldType::Float, "PlayerMaxSpeed", &m_PlayerMaxSpeed);
-	RegisterField(ScriptFieldType::Float, "PlayerAcceleration", &m_PlayerAcceleration);
-	RegisterField(ScriptFieldType::Float, "JumpForce", &m_JumpForce);
-	RegisterField(ScriptFieldType::Float, "GravityModifier", &m_GravityModifier);
+	REGISTER_FIELD(Float, m_PlayerMaxSpeed);
+	REGISTER_FIELD(Float, m_PlayerAcceleration);
+	REGISTER_FIELD(Float, m_JumpForce);
+	REGISTER_FIELD(Float, m_FallModifier);
+	REGISTER_FIELD(Int, m_ClientID);
+	REGISTER_FIELD_NO_EDIT(Float4, m_PlayerColor);
+	
+	REPLICATED_DATA(m_Direction);
+	REPLICATED_DATA(m_State);
+	REPLICATED_FIELD(m_ClientID);
+	REPLICATED_FIELD(m_PlayerColor, [&](){ SetPlayerColor(m_PlayerColor); });
 }
 
 bool Player::OnCreate()
 {
-	// Set up animations
-	m_Animation = CreateSpriteAnimation();
-	m_Animation->AddAnimation(Idle, 10, AnimationPlayMode::REPEAT);
-	m_Animation->AddAnimation(Run,   8, AnimationPlayMode::REPEAT);
-	m_Animation->AddAnimation(Jump,  3, AnimationPlayMode::PAUSED);
-	m_Animation->AddAnimation(Land,  9, AnimationPlayMode::PLAY_ONCE);
-	m_Animation->SetFPS(8);
+	// Network setup
+	NetworkManager* networkManager = GetNetworkManager();
+	MyGameMode* gameMode = GetGameMode<MyGameMode>();
+	uint32_t localPlayerID = gameMode->GetLocalPlayerID();
+	m_IsLocalPlayer = m_ClientID == localPlayerID;
+	
+	if (m_IsLocalPlayer)
+	{
+		gameMode->m_LocalPlayer = this;
+		GetScene()->SetPrimaryCameraEntity(*this);
+		
+		if (IsNetModeClient())
+			networkManager->SetLocalPlayerEntity(*this);
+	}
+	else
+	{
+		// Set sync method to interpolation if not local player
+		auto& net = GetComponent<NetworkComponent>();
+		net.NetTransform.Method = NetSyncMethod::Interpolation;
+	}
 
-	// Foot sensor is used to detect if player is touching the ground
-	Entity footSensor = CreateChildEntity("FootSensor");
-	auto& bc = footSensor.AddComponent<BoxColliderComponent>();
-	bc.Size = { 0.38f, 0.38f };
-	bc.Offset = { 0.0f, -0.8f };
-	bc.IsSensor = true;
-	m_FootSensorContactCount = &bc.ContactCallback.ContactCount;
+	if (IsNetModeServer())
+	{
+		//GetNetworkManager()->Server_SetCustomMessageCallback(m_ClientID, [])
+
+		GetGameMode()->Server_SetPlayerActionCallback(m_ClientID, [&](NetworkStreamReader& stream) {
+			stream.ReadRaw(m_ActionState);
+		});
+	}
+
+	// Set up sprite animations
+	AddComponent<SpriteAnimationComponent>();
+	SpriteAnimation& animation = GetSpriteAnimation();
+
+	animation.Add(PlayerState_Idle, 10, AnimationPlayMode::REPEAT);
+	animation.Add(PlayerState_Run, 8, AnimationPlayMode::REPEAT);
+	animation.Add(PlayerState_Jump, 3, AnimationPlayMode::PAUSED);
+	animation.Add(PlayerState_Land, 9, AnimationPlayMode::PLAY_ONCE);
+	animation.SetFPS(12);
+
+	// Set physics sensors to following child entities
+	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
+	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
+	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
+
+	m_Wheel = FindChildByTag("Wheel").GetRuntimeBody();
+	m_Body = GetRuntimeBody();
+	m_JumpOnNextTick = false;
 
 	return true;
 }
 
 void Player::OnUpdate(float ts)
 {
-	// Poll key states for player movement
-	bool moveRight = Input::IsKeyPressed(Key::D);
-	bool moveLeft = Input::IsKeyPressed(Key::A);
-	bool jump = Input::IsKeyPressed(Key::W);
-	bool move = moveRight || moveLeft;
-	
+	SpriteAnimation& animation = GetSpriteAnimation();
+
+	if (m_State == PlayerState_Jump)
+	{
+		// Update jump animation frame
+		glm::vec2 velocity = GetLinearVelocity();
+		uint16_t frame = velocity.y > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
+		animation.SetAnimationFrame(frame);
+	}
+
+	// Play current animation
+	animation.Play(m_State);
+	animation.SetMirrorFlip(m_Direction < 0.0f);
+}
+
+void Player::OnPhysicsUpdate(float ts)
+{
+	if (m_IsLocalPlayer)
+	{
+		m_PreviousActionState = m_ActionState;
+		m_ActionState.MoveRight = IsKeyPressed(Key::D);
+		m_ActionState.MoveLeft = IsKeyPressed(Key::A);
+		m_ActionState.Jump = (IsKeyPressed(Key::W) || IsKeyPressed(Key::Space));
+	}
+
+	glm::vec2 velocity = GetLinearVelocity();
+
 	// Set player direction (right: 1.0, left: -1.0f)
-	m_Direction = moveRight ? 1.0f : (moveLeft ? -1.0f : m_Direction);
+	m_Direction = m_ActionState.MoveRight ? 1.0f : (m_ActionState.MoveLeft ? -1.0f : m_Direction);
+	bool move = m_ActionState.MoveLeft || m_ActionState.MoveRight;
+
+	if (!move)
+	{
+		if (!IsOnHighSlope())
+			m_Wheel->SetFixedRotation(true);
+		m_Wheel->SetLinearVelocity({ 0.0f, m_Wheel->GetLinearVelocity().y });
+	}
+	else
+		m_Wheel->SetFixedRotation(false);
+
+	// Network
+	if (IsNetModeClient() && !HasNetworkPrediction())
+		return;
 
 	// Set horizontal velocity (acceleration)
-	SetLinearVelocityX(!move ? 0.0f : glm::clamp(
-		GetLinearVelocity().x + m_PlayerAcceleration * m_Direction * ts,
-		-m_PlayerMaxSpeed, m_PlayerMaxSpeed));
-	
+	if (!IsOnHighSlope())
+	{
+		float maxSpeed = m_PlayerMaxSpeed * (m_State == PlayerState_Run ? 1.0f : 0.8f);
+		float newVelocity = velocity.x + m_PlayerAcceleration * 10.0f * m_Direction * ts;
+
+		SetLinearVelocityX(!move ? 0.0f : glm::clamp(newVelocity, -maxSpeed, maxSpeed));
+	}
+
 	// Set player state to Run when key is pressed and player is not in the air
-	if (move && m_State != Jump && m_JumpTimer >= s_LandAnimationCancelTime)
-		m_State = Run;
+	if (move && m_State != PlayerState_Jump)
+		m_State = PlayerState_Run;
+
 	// Set player state to Idle when stopped running or landing animation finished playing
-	else if (m_State == Run || (m_State == Land && m_Animation->FinishedPlaying()))
-		m_State = Idle;
+	else if (m_State == PlayerState_Run || (m_State == PlayerState_Land && GetSpriteAnimation().FinishedPlaying()))
+		m_State = PlayerState_Idle;
 
 	// Start landing animation
-	if (m_State == Jump && IsTouchingGround())
+	if (m_State == PlayerState_Jump && IsGrounded())
 	{
-		m_State = m_JumpTimer >= s_LandAnimationDelay ? Land : Idle;
+		m_State = m_JumpTimer >= s_LandAnimationDelay ? PlayerState_Land : PlayerState_Idle;
+		if (glm::abs(velocity.x) > 5.0f)
+			m_State = PlayerState_Run;
 		m_JumpTimer = 0.0f;
 	}
 
-	// Player pressed a jump key
-	if (jump && IsTouchingGround() && m_JumpTimer >= s_JumpDelay)
+	// Jump logic
+	bool canJump = IsGrounded() && m_JumpTimer >= s_JumpDelay;
+
+	if (m_JumpOnNextTick)
 	{
+		SetLinearVelocity(0.0f, 0.0f);
 		ApplyLinearImpulse({ 0.0f,  m_JumpForce });
 		m_JumpTimer = 0.0f;
-		m_State = Jump;
+		m_State = PlayerState_Jump;
+		m_JumpOnNextTick = false;
+	}
+	else if (m_ActionState.Jump && canJump)
+	{
+		m_JumpOnNextTick = true; // delay jump on next tick
+		auto& netTransform = GetComponent<NetworkComponent>().NetTransform;
+		netTransform.StopReconcile(NetTransform::Components::Position);
+		netTransform.ReconcileTimer = -0.5f; // set reconcile on cooldown
 	}
 
 	// Player is in the air: Set jump or fall animation frame 
-	float velocity = GetLinearVelocity().y;
-	if (!IsTouchingGround())
+	if (!IsGrounded())
 	{
 		// Modify vertical velocity to make jump feel less floaty
-		if (velocity > 0.0f && velocity < 0.05f)
-			ApplyLinearImpulse({ 0.0f,  m_GravityModifier });
+		if (velocity.y < 0.5f && velocity.y > -10.0f)
+			m_Body->ApplyForceToCenter({ 0.0f, -m_FallModifier }, true);
 
-		// Update jump animation frame
-		uint16_t frame = velocity > 0.0f ? (m_JumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
-		m_Animation->SetAnimationFrame(frame);
-		m_State = Jump;
+		m_State = PlayerState_Jump;
 	}
 
-	// Update animation and timer
-	m_Animation->PlayAnimation(m_State);
-	m_Animation->SetMirrorFlip(m_Direction < 0.0f);
+	// Set animation direction when sliding on high slope
+	if (IsOnHighSlope() && velocity.y < 0.0f)
+		m_Direction = velocity.x > 0.0f ? 1.0f : -1.0f;
+
+	// Network (sending player inputs to the server)
+	if (m_IsLocalPlayer && IsNetModeClient() && m_ActionState != m_PreviousActionState)
+	{
+		GetGameMode()->Client_SendPlayerAction([&](NetworkStreamWriter& stream) {
+			m_ActionState.Jump &= canJump; // make sure player can jump
+			stream.WriteRaw(m_ActionState);
+		});
+	}
+	
 	m_JumpTimer += ts;
+}
+
+bool Player::IsGrounded() const
+{
+	return CheckSensor(Sensor_Bottom);
+}
+
+bool Player::IsOnHighSlope() const
+{
+	return !CheckSensor(Sensor_Bottom) && (CheckSensor(Sensor_BottomLeft) || CheckSensor(Sensor_BottomRight));
+}
+
+void Player::SetPlayerColor(const glm::vec4& color)
+{
+	auto& spriteColor = GetComponent<SpriteComponent>().Color;
+	spriteColor = color;
+	m_PlayerColor = color;
+}
+
+// --------- Editor ---------
+void Player::OnImGuiRender()
+{
+#ifdef PT_EDITOR
+	ImGui::Dummy({ 0, 5 });
+	char buffer[128];
+
+	if (ImGui::ColorEdit4("Color", glm::value_ptr(m_PlayerColor)))
+		SetPlayerColor(m_PlayerColor);
+
+	const auto& color = GetComponent<SpriteComponent>().Color;
+	std::string colorStr = fmt::format("{:.3f}, {:.3f}, {:.3f}, {:.3f}", color.r, color.g, color.b, color.a);
+	strcpy_s(buffer, colorStr.c_str());
+	ImGui::InputText("Color", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
+	
+	if (IsRigidbodyInitialized())
+	{
+		auto vel = GetLinearVelocity();
+		std::string velocity = fmt::format("{:.3f}, {:.3f}", vel.x, vel.y);
+		strcpy_s(buffer, velocity.c_str());
+		ImGui::InputText("Velocity", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
+		
+		ImGui::Text("Gravity scale: %f", m_Body->GetGravityScale());
+	}
+
+	ImGui::Text("Is local player: %d", m_IsLocalPlayer);
+#endif
 }

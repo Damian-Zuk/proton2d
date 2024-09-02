@@ -1,13 +1,13 @@
 #include <Proton.h>
 
-#include "MainLayer.h"
+#define GAME_NET_PROTOCOL_VERSION 1
 
 class Sandbox : public proton::Application
 {
 public:
-	virtual bool OnCreate() override
+	virtual bool OnCreate() override 
 	{
-		PushLayer(new MainLayer());
+		proton::NetworkManager::SetGameProtocolVersion(GAME_NET_PROTOCOL_VERSION);
 		return true;
 	}
 };

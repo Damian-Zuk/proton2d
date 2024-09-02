@@ -1,0 +1,1876 @@
+{
+    "GameModeClass": "MyGameMode",
+    "EnablePhysics": true,
+    "GravityForce": 9.800000190734863,
+    "VelocityIterations": 2,
+    "PositionIterations": 6,
+    "ScreenClearColor": [
+        0.20795752108097076,
+        0.24136096239089966,
+        0.2895752787590027,
+        1.0
+    ],
+    "EnableNetworking": true,
+    "Entities": [
+        {
+            "UUID": 7237620364551866148,
+            "Tag": "Balls",
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "UUID": 12402014902206306287,
+            "Tag": "Spawn Points",
+            "Transform": {
+                "Position": [
+                    3.76592,
+                    2.18079,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 6669721361522134344,
+                    "Tag": "PlayerSpawn3",
+                    "Transform": {
+                        "Position": [
+                            3.5,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 18277456767722596498,
+                    "Tag": "PlayerSpawn2",
+                    "Transform": {
+                        "Position": [
+                            1.0,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 779781961570109279,
+                    "Tag": "PlayerSpawn1",
+                    "Transform": {
+                        "Position": [
+                            -1.5,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 4228852946507038501,
+                    "Tag": "PlayerSpawn0",
+                    "Transform": {
+                        "Position": [
+                            -4.0,
+                            -1.0,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 13169798382823687644,
+            "Tag": "Terrain",
+            "Transform": {
+                "Position": [
+                    3.72639,
+                    11.69317,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 12379424859158186847,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            43.8861,
+                            -4.55849,
+                            0.061
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            50.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 50,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.8399999737739563
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 18144928035304173614,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            9.94472,
+                            -14.58601,
+                            0.069
+                        ],
+                        "Rotation": -20.0,
+                        "Scale": [
+                            4.92,
+                            2.49
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 5,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 52,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.9100000262260437
+                        ],
+                        "Offset": [
+                            0.0,
+                            -0.07000000029802322
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 12620259618982116208,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            -7.5196,
+                            -14.66566,
+                            0.073
+                        ],
+                        "Rotation": 35.8,
+                        "Scale": [
+                            3.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 52,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.8999999761581421
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 8550948480518090155,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            53.11548,
+                            -10.08875,
+                            0.062
+                        ],
+                        "Rotation": -31.0,
+                        "Scale": [
+                            2.04,
+                            11.28
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 12,
+                        "TileScale": 1.0,
+                        "Edges": 99,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.9599999785423279
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 6708694409942740429,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            0.42061,
+                            -14.06144,
+                            0.068
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            15.45,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 16,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 53,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9769999980926514,
+                            0.8700000047683716
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5227670715635369126,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            -10.79817,
+                            -4.74154,
+                            0.064
+                        ],
+                        "Rotation": -29.0,
+                        "Scale": [
+                            5.19,
+                            1.12
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 6,
+                        "Height": 2,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.5600000023841858
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 17555960388265391369,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            2.01067,
+                            -15.69318,
+                            0.061
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            100.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 100,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.8299999833106995
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        },
+        {
+            "UUID": 13942381985595828420,
+            "Tag": "Platforms",
+            "Transform": {
+                "Position": [
+                    31.46098,
+                    3.58408,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "Entities": [
+                {
+                    "UUID": 3007435424673390572,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -19.70722,
+                            10.43954,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 13146020068327689235,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -19.80722,
+                            10.33954,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 16719429767912738689,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -13.45064,
+                            11.30004,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 2529770266885463432,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -6.25189,
+                            12.79079,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 17341176469556730770,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -0.23841,
+                            12.34769,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 1464736126453825277,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            4.71457,
+                            11.68625,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 3603024484487047851,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            9.79232,
+                            10.18264,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 8027553422626148304,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            5.26316,
+                            8.67904,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 3675876468455697046,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            0.45329,
+                            7.42496,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 15317229742542547143,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -3.82633,
+                            6.51399,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 10233571590513274659,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -16.11882,
+                            3.79151,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5857844717938067874,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -11.75533,
+                            4.10584,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 2492904719425019241,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -21.27245,
+                            2.81078,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 11816592502642558201,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -17.8088,
+                            0.92332,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 12724582092860176050,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -12.00176,
+                            -0.58319,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 3398972106684417846,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -15.67896,
+                            -2.18107,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 7747976720086357925,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            11.87519,
+                            -2.66605,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 6525235965119567660,
+                    "Tag": "IcePlatform",
+                    "Transform": {
+                        "Position": [
+                            6.59077,
+                            -2.68956,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 6757255791680570769,
+                    "Tag": "IcePlatform",
+                    "Transform": {
+                        "Position": [
+                            0.90903,
+                            -2.72419,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 4953613793628883540,
+                    "Tag": "RedPlatform",
+                    "Transform": {
+                        "Position": [
+                            -4.73871,
+                            -2.68067,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "None",
+                        "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
+                        "ReconcileThreshold": 0.5,
+                        "ReconcileMaxTime": 0.5
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            1
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "RedPlatform",
+                            "Fields": [
+                                {
+                                    "FieldName": "m_VanishAfter",
+                                    "Value": 0.33000001311302185
+                                },
+                                {
+                                    "FieldName": "m_VanishTime",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "UUID": 9516934985344138499,
+                    "Tag": "RedPlatform",
+                    "Transform": {
+                        "Position": [
+                            -9.94308,
+                            -2.68659,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "Network": {
+                        "SyncMethod": "None",
+                        "CullDistance": 20.0,
+                        "TeleportThreshold": 5.0,
+                        "ReconcileThreshold": 0.5,
+                        "ReconcileMaxTime": 0.5
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            1
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    },
+                    "Scripts": [
+                        {
+                            "ClassName": "RedPlatform",
+                            "Fields": [
+                                {
+                                    "FieldName": "m_VanishAfter",
+                                    "Value": 0.33000001311302185
+                                },
+                                {
+                                    "FieldName": "m_VanishTime",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "UUID": 3753027485747496673,
+                    "Tag": "GrassPlatform",
+                    "Transform": {
+                        "Position": [
+                            -20.68505,
+                            -2.76374,
+                            0.0
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            3.0,
+                            1.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 1,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            3,
+                            2
+                        ],
+                        "PatternSize": [
+                            3,
+                            1
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.30000001192092896
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 0.5,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
+        }
+    ]
+}

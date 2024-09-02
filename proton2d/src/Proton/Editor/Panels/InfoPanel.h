@@ -12,6 +12,8 @@ namespace proton {
 		virtual void OnImGuiRender() override;
 
 	private:
+		void DrawNetworkStats();
+
 		float m_FrameTime = 0.0f;
 		float m_FrameTimeDisplay = 0.0f;
 		float m_AvgFrameTime = 0.0f;

@@ -17,27 +17,27 @@ public:
 	virtual bool OnCreate() override
 	{
 		if (HasComponent<SpriteComponent>())
-			m_Sprite = &GetComponent<SpriteComponent>();
+			GetComponent<SpriteComponent>().Color = glm::vec4{ 1.0f };
 
 		if (HasComponent<ResizableSpriteComponent>())
-			m_ResizableSprite = &GetComponent<ResizableSpriteComponent>();
+			GetComponent<ResizableSpriteComponent>().Color = glm::vec4{ 1.0f };
 
 		if (HasComponent<CircleRendererComponent>())
-			m_CircleRenderer = &GetComponent<CircleRendererComponent>();
-
+			GetComponent<CircleRendererComponent>().Color = glm::vec4{ 1.0f };
+		
 		return true;
 	}
 
 	virtual void OnUpdate(float ts) override
 	{
-		if (m_Sprite)
-			UpdateHue(ts, m_Sprite->Color);
+		if (HasComponent<SpriteComponent>())
+			UpdateHue(ts, GetComponent<SpriteComponent>().Color);
 
-		if (m_ResizableSprite)
-			UpdateHue(ts, m_ResizableSprite->Color);
+		if (HasComponent<ResizableSpriteComponent>())
+			UpdateHue(ts, GetComponent<ResizableSpriteComponent>().Color);
 
-		if (m_CircleRenderer)
-			UpdateHue(ts, m_CircleRenderer->Color);
+		if (HasComponent<CircleRendererComponent>())
+			UpdateHue(ts, GetComponent<CircleRendererComponent>().Color);
 	}
 
 	void UpdateHue(float ts, glm::vec4& colorRGBA)
@@ -75,10 +75,5 @@ private:
 	float m_Saturation = 0.8f;
 	float m_HueRangeP = 0.0f;
 	float m_HueRangeQ = 1.0f;
-	
 	float m_Direction = 1.0f;
-
-	SpriteComponent* m_Sprite = nullptr;
-	ResizableSpriteComponent* m_ResizableSprite = nullptr;
-	CircleRendererComponent* m_CircleRenderer = nullptr;
 };

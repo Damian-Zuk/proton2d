@@ -25,7 +25,6 @@ namespace proton {
 		b2Contact* Contact;
 
 		bool OtherCompare(Entity* entity);
-
 		bool OtherCompare(EntityScript* script);
 	};
 
@@ -33,17 +32,10 @@ namespace proton {
 	{
 		uint32_t ContactCount = 0;
 
-		std::function<void(PhysicsContact contact)> 
-			OnBegin = nullptr;
-
-		std::function<void(PhysicsContact contact)>
-			OnEnd = nullptr;
-
-		std::function<void(PhysicsContact contact, const b2Manifold* oldManifold)>
-			OnPreSolve = nullptr;
-
-		std::function<void(PhysicsContact contact, const b2ContactImpulse* impulse)>
-			OnPostSolve = nullptr;
+		std::function<void(PhysicsContact contact)> OnBegin;
+		std::function<void(PhysicsContact contact)> OnEnd;
+		std::function<void(PhysicsContact contact, const b2Manifold* oldManifold)> OnPreSolve;
+		std::function<void(PhysicsContact contact, const b2ContactImpulse* impulse)> OnPostSolve;
 	};
 
 }
