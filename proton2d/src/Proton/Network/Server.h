@@ -47,7 +47,8 @@ namespace proton {
 		Entity GetClientEntity(ClientID clientID);
 		void SetClientEntity(ClientID clientID, Entity entity);
 
-		void SetEntityInput(ClientID clientID, Entity entity, uint64_t* inputStatePtr);
+		// ClientID == 0 -> send message to all clients
+		void SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate);
 
 		void SetPacketFakeLag(float latencyMs);
 
@@ -55,7 +56,7 @@ namespace proton {
 		bool IsRunning() const { return m_Running; }
 
 	private:
-		// Game server functionality (main thread)
+		// Game server functionality (executed on main thread)
 		void OnTick();
 		void OnNetworkMessage(ISteamNetworkingMessage* message);
 
@@ -66,12 +67,10 @@ namespace proton {
 		void OnClientConnected(ClientID clientID);
 		void OnClientDisconnected(ClientID clientID);
 		
-		void SetClientActionCallback(uint32_t clientID, NetworkStreamReaderDelegate function);
-		
 		void OnEntitySpawned(Scene* scene, UUID entityUUID);
 		void OnEntityDespawned(Scene* scene, UUID entityUUID);
 
-		// Network thread and server lower-level server functionality
+		// Network thread and lower-level server functionality
 		void NetworkThreadFunction(); 
 
 		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
@@ -85,7 +84,8 @@ namespace proton {
 		void SendBufferToAllClients(Buffer buffer, ClientID excludeClientID = 0, bool reliable = true);
 
 	private:
-		static Server* s_Instance;
+		// Can only have one server instance per-process
+		inline static Server* s_Instance = nullptr;
 
 		GameInstance* m_GameInstance;
 		NetworkManager* m_NetworkManager;
@@ -105,7 +105,7 @@ namespace proton {
 		bool m_Running = false;
 		uint16_t m_Port;
 
-		// Buffer for writting messages using BufferStreamWriter
+		// Buffer for writting network messages
 		Buffer m_ScratchBuffer;
 
 		// Connections
@@ -113,14 +113,12 @@ namespace proton {
 		std::queue<std::pair<ClientID, ConnectionStatus>> m_ConnectionStatusChangeQueue;
 		std::mutex m_ConnectionStatusChangeQueueMutex;
 
-		// Queue for messages processing
+		// Queue for message processing
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_MessageQueueMutex;
 
+		// Client entity mapping
 		std::unordered_map<ClientID, Entity> m_ClientToEntityMap;
-
-		// Player action callbacks
-		std::unordered_map<uint32_t, NetworkStreamReaderDelegate> m_PlayerActionCallbacks;
 
 		// Debug
 		inline static float s_FakeServerLag = 50.0f;
@@ -128,7 +126,7 @@ namespace proton {
 		friend class NetworkManager;
 		friend class NetReplicator;
 		friend class NetStatistics;
-		friend class NetTransformSystem; // TODO: remove
+		friend class NetTransformSystem;
 		friend class GameModeBase;
 		friend class Scene;
 	

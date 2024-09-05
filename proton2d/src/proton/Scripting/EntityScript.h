@@ -91,6 +91,9 @@ namespace proton {
 		bool IsNetModeServer() const;
 		bool IsNetModeClient() const;
 
+		void Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate) const;
+		void Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate) const;
+
 		// Other
 		static const size_t GetFieldSize(ScriptFieldType type);
 		virtual const std::string& GetScriptClassName() = 0; // Defined by ENTITY_SCRIPT_CLASS macro

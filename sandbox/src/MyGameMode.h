@@ -2,6 +2,12 @@
 
 class Player;
 
+enum class GameMessageType : uint16_t
+{
+	PlayerInput = 0,
+	PlayerNick = 0
+};
+
 class MyGameMode : public GameModeBase
 {
 public:
@@ -14,17 +20,15 @@ public:
 	virtual void Server_OnClientConnected(ClientID clientID) override;
 	virtual void Server_OnClientDisconnected(ClientID clientID) override;
 
-	virtual void Client_OnConnected(ClientID clientID) override;
-
-	uint32_t GetLocalPlayerID() const;
+	virtual void Client_OnCustomMessage(NetworkStreamReader& stream) override;
+	virtual void Server_OnCustomMessage(ClientID clientID, NetworkStreamReader& stream) override;
 
 private:
-	std::map<uint32_t, Player*> m_RemotePlayers;
-	
-	Player* m_LocalPlayer;
-	ClientID m_LocalClientID = 0;
+	Player* m_LocalPlayer = nullptr;
 
-	uint32_t m_NewColorIndex = 1;
+	// Server stuff
+	uint32_t m_NewPlayerColorIndex = 1;
+	std::map<uint32_t, Player*> m_RemotePlayers;
 
 	friend class Player;
 };

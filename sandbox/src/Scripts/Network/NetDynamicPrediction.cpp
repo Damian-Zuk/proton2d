@@ -58,9 +58,7 @@ void NetDynamicPrediction::OnUpdate(float ts)
 
 	if (Entity localPlayer = GetNetworkManager()->GetLocalPlayerEntity())
 	{
-		auto& transform = GetComponent<TransformComponent>();
 		auto& netTransform = GetComponent<NetworkComponent>().NetTransform;
-
 		if (netTransform.Method == NetSyncMethod::Prediction)
 		{
 			m_PredictionTimer += ts;
@@ -68,7 +66,7 @@ void NetDynamicPrediction::OnUpdate(float ts)
 			{
 				// Interpolate from current to last authoritative transform
 				netTransform.Method = NetSyncMethod::Interpolation;
-				netTransform.PrevAuthoritativeTransform = NetTransform::Transform::Get(&transform);
+				netTransform.PrevAuthoritativeTransform = NetTransform::Transform::Get(&GetTransform());
 				netTransform.InterpolationTimer = 0.0f;
 			}
 		}
