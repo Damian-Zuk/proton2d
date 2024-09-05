@@ -48,6 +48,9 @@ void MyGameMode::OnEvent(Event& event)
 {
 	EventDispatcher(event).Dispatch<KeyPressedEvent>([&](auto& keyEvent)
 	{
+		if (!HasAuthority())
+			return false;
+
 		Scene* scene = GetScene();
 		const auto& cursor = scene->GetCursorWorldPosition();
 
@@ -90,8 +93,8 @@ void MyGameMode::Server_OnClientConnected(ClientID clientID)
 	player->SetWorldPosition(spawnTransform.WorldPosition);
 
 	// Set player color
-	player->SetPlayerColor(PlayerColors[m_NewColorIndex]);
-	m_NewColorIndex = (m_NewColorIndex + 1) % 10;
+	player->SetPlayerColor(PlayerColors[m_NewPlayerColorIndex]);
+	m_NewPlayerColorIndex = (m_NewPlayerColorIndex + 1) % 10;
 	
 	m_RemotePlayers[clientID] = player;
 
@@ -107,13 +110,32 @@ void MyGameMode::Server_OnClientDisconnected(ClientID clientID)
 	m_RemotePlayers.erase(clientID);
 }
 
-void MyGameMode::Client_OnConnected(ClientID clientID)
+void MyGameMode::Client_OnCustomMessage(NetworkStreamReader& stream)
 {
-	m_LocalClientID = clientID;
+	GameMessageType msgType;
+	stream.ReadRaw(msgType);
+
+	switch (msgType)
+	{
+	case GameMessageType::PlayerNick:
+	{
+		break;
+	}
+	}
 }
 
-uint32_t MyGameMode::GetLocalPlayerID() const
+void MyGameMode::Server_OnCustomMessage(ClientID clientID, NetworkStreamReader& stream)
 {
-	return m_LocalClientID;
-}
+	GameMessageType msgType;
+	stream.ReadRaw(msgType);
 
+	switch (msgType)
+	{
+	case GameMessageType::PlayerInput:
+	{
+		Player* remotePlayer = Server_GetClientEntity(clientID).As<Player>();
+		stream.ReadRaw(remotePlayer->m_InputState);
+		break;
+	}
+	}
+}

@@ -22,9 +22,6 @@ namespace proton {
 
 		// [Client -> Server]
 		EntitySequence,
-		EntityInput,
-
-		PlayerAction, // Delete me
 
 		// [Client <-> Server]
 		CustomMessage
@@ -96,17 +93,6 @@ namespace proton {
 			UUID EnittyUUID;
 			uint16_t SequenceNumber;
 		};
-	};
-
-	struct MessageEntityInput
-	{
-		MessageType MessageType = MessageType::EntityInput;
-		uint32_t EntityCount = 0;
-	};
-
-	struct NetMassagePlayerAction
-	{
-		MessageType MessageType = MessageType::PlayerAction;
 	};
 
 	std::string MessageTypeToString(MessageType packetType);

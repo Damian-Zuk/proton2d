@@ -61,6 +61,14 @@ namespace proton {
 		m_Running = false;
 	}
 
+	void Client::SendCustomMessage(const NetworkStreamWriterDelegate& delegate)
+	{
+		NetworkStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(MessageType::CustomMessage);
+		delegate(stream);
+		SendBuffer(stream.GetBuffer());
+	}
+
 	void Client::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
@@ -86,14 +94,6 @@ namespace proton {
 		strcpy_s(header.ClientName, name.substr(0, sizeof(MessageHandshake::ClientName) - 1).c_str());
 		NetworkStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(header);
-		SendBuffer(stream.GetBuffer());
-	}
-
-	void Client::SendPlayerAction(NetworkStreamWriterDelegate sendFunction)
-	{
-		NetworkStreamWriter stream(m_ScratchBuffer);
-		stream.WriteRaw(MessageType::PlayerAction);
-		sendFunction(stream);
 		SendBuffer(stream.GetBuffer());
 	}
 
@@ -131,9 +131,9 @@ namespace proton {
 			if (!scene->m_NetworkInitialized)
 			{
 				// First replication update
-				GameModeBase* gameMode = scene->GetGameMode();
-				gameMode->Client_OnConnected(m_LocalClientID);
 				scene->m_NetworkInitialized = true;
+				GameModeBase* gameMode = scene->GetGameMode();
+				gameMode->Client_OnConnected();
 			}
 			break;
 		}
@@ -147,6 +147,15 @@ namespace proton {
 		case MessageType::EntityDespawn:
 		{
 			m_NetReplicator->Client_OnEntityDespawnMessage(stream);
+			break;
+		}
+		///////////////////////////////////////////////////////////////////////////////////////
+		case MessageType::CustomMessage:
+		{
+			stream.SkipBytes(sizeof(MessageType::CustomMessage));
+			Scene* scene = m_GameInstance->GetActiveScene();
+			GameModeBase* gameMode = scene->GetGameMode();
+			gameMode->Client_OnCustomMessage(stream);
 			break;
 		}
 		///////////////////////////////////////////////////////////////////////////////////////

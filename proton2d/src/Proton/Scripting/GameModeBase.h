@@ -15,9 +15,12 @@ namespace proton {
 	class GameInstance;
 	class NetworkManager;
 	
-	// Scene Game Mode Script Base
+	// Scene Game Mode Script Base Class
 	class GameModeBase
 	{
+	public:
+		static inline const char __ClassName[] = "GameModeBase";
+
 	public:
 		virtual bool OnCreate() { return true; }
 		virtual void OnUpdate(float ts) {}
@@ -37,24 +40,28 @@ namespace proton {
 			return dynamic_cast<TGameMode*>(this);
 		}
 
-		// Networking methods
-
-		virtual void Server_OnClientConnected(ClientID clientID) {}
-		virtual void Server_OnClientDisconnected(ClientID clientID) {}
-		void Server_SetClientEntity(ClientID clientID, Entity entity) const;
-		void Server_SetPlayerActionCallback(ClientID clientID, NetworkStreamReaderDelegate function);
-
-		virtual void Client_OnConnected(ClientID clientID) {}
-		virtual void Client_OnDisconnected() {}
-		void Client_SendPlayerAction(NetworkStreamWriterDelegate function);
+		// ----------------- Networking Methods -----------------
 		
+		virtual void Client_OnConnected() {}
+		virtual void Server_OnClientConnected(ClientID clientID) {}
+
+		virtual void Client_OnConnectionFailed(NetConnectionEndCode code) {};
+
+		virtual void Client_OnDisconnected() {}
+		virtual void Server_OnClientDisconnected(ClientID clientID) {}
+		
+		virtual void Client_OnCustomMessage(NetworkStreamReader& stream) {};
+		virtual void Server_OnCustomMessage(ClientID clientID, NetworkStreamReader& stream) {};
+
+		void Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate);
+		void Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate);
+
+		void Server_SetClientEntity(ClientID clientID, Entity entity) const;
+		Entity Server_GetClientEntity(ClientID clientID) const;
 	
 		bool HasAuthority() const;
 		bool IsNetModeServer() const;
 		bool IsNetModeClient() const;
-
-	public:
-		static inline const char __ClassName[] = "GameModeBase";
 
 	private:
 		Scene* m_Scene;

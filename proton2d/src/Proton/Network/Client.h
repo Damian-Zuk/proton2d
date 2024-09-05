@@ -30,19 +30,20 @@ namespace proton {
 		void ConnectToServer(const std::string& serverAddress);
 		void Disconnect();
 		void Shutdown();
+
+		void SendCustomMessage(const NetworkStreamWriterDelegate& delegate);
 	
 		bool IsRunning() const { return m_Running; }
 		ConnectionStatus GetConnectionStatus() const { return m_ConnectionStatus; }
 		const std::string& GetConnectionDebugMessage() const { return m_ConnectionDebugMessage; }
 
 	private:
-		// Game client functionality (main thread)
+		// Game client functionality (executed main thread)
 		void OnUpdate(float ts);
 		void SendHandshake();
 		void OnNetworkMessage(ISteamNetworkingMessage* message);
-		void SendPlayerAction(NetworkStreamWriterDelegate sendFunction);
 		
-		// Network thread and client lower-level functionality
+		// Network thread and lower-level client functionality
 		void NetworkThreadFunction();
 		
 		static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info);
@@ -80,7 +81,7 @@ namespace proton {
 		// Preallocated buffer for writting network messages
 		Buffer m_ScratchBuffer;
 
-		// Message queue
+		// Queue for message processing
 		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_QueueMutex;
 

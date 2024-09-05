@@ -19,8 +19,8 @@ namespace proton {
 			return "MessageType::EntityDespawn";
 		case MessageType::EntityReplicate:
 			return "MessageType::EntityReplicate";
-		case MessageType::PlayerAction:
-			return "MessageType::PlayerAction";
+		case MessageType::CustomMessage:
+			return "MessageType::CustomMessage";
 		}
 		return "MessageType::<Invalid>";
 	}

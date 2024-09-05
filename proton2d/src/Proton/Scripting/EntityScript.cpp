@@ -144,6 +144,16 @@ namespace proton {
 		return netManager->IsNetModeClient() && netManager->IsNetworkActive();
 	}
 
+	void EntityScript::Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate) const
+	{
+		GetNetworkManager()->Client_SendCustomMessage(delegate);
+	}
+
+	void EntityScript::Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate) const
+	{
+		GetNetworkManager()->Server_SendCustomMessage(clientID, delegate);
+	}
+
 	bool EntityScript::HasAuthority() const
 	{
 		NetMode netMode = GetNetworkManager()->GetNetMode();

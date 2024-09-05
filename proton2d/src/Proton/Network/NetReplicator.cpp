@@ -15,12 +15,11 @@
 #include <Crc32.h>
 
 #ifdef _MSC_VER
-	#include <intrin.h>
-	static inline int CountSetBits(int n) {
+	static inline uint32_t CountSetBits(uint32_t n) {
 		return __popcnt(n);
 	}
 #elif defined(__GNUC__)
-	static inline int CountSetBits(int n) {
+	static inline uint32_t CountSetBits(uint32_t n) {
 		return __builtin_popcount(n);
 	}
 #else
@@ -97,9 +96,9 @@ namespace proton {
 			const auto& flags = item.TransformFlags; 
 			
 			// Calculate NetTransform payload size that will be read from stream based on the flags from item header
-			const uint64_t netTransformPayloadSize = CountSetBits((int)flags) * sizeof(float);
+			const uint64_t netTransformPayloadSize = CountSetBits((uint8_t)flags & 0x1F) * sizeof(float);
 
-			// Validate if transform values does not exceed remaining message buffer size
+			// Validate that transform values does not exceed remaining message buffer size
 			if (netTransformPayloadSize > remainingBufferSize)
 			{
 				PT_THROW_ERROR("Failed to read payload: item.TransformFlags does not match remaining message buffer size ({} bytes)", remainingBufferSize);

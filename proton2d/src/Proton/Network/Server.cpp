@@ -26,9 +26,6 @@
 
 namespace proton {
 
-	// Can only have one server instance per-process
-	Server* Server::s_Instance = nullptr;
-
 	Server::Server(GameInstance* gameInstance)
 		: m_GameInstance(gameInstance), m_NetworkManager(gameInstance->m_NetworkManager.get()),
 		m_NetReplicator(MakeUnique<NetReplicator>(this)),
@@ -129,19 +126,12 @@ namespace proton {
 			break;
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-		case MessageType::PlayerAction:
+		case MessageType::CustomMessage:
 		{
-			PROFILE_SCOPE("PacketType::PlayerAction");
-
-			stream.SkipBytes(sizeof(NetMassagePlayerAction));
-			if (m_PlayerActionCallbacks.find(clientID) != m_PlayerActionCallbacks.end())
-			{
-				NetworkStreamReaderDelegate& callback = m_PlayerActionCallbacks.at(clientID);
-				callback(stream);
-			}
-			else
-				PT_CORE_ERROR("PlayerActionCallback was not defined! client_id={}", clientID);
-
+			stream.SkipBytes(sizeof(MessageType::CustomMessage));
+			Scene* scene = GetClientEntity(clientID).GetScene();
+			GameModeBase* gameMode = scene->GetGameMode();
+			gameMode->Server_OnCustomMessage(clientID, stream);
 			break;
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,11 +235,6 @@ namespace proton {
 		m_Interface->SetConnectionName((HSteamNetConnection)clientID, name);
 	}
 
-	void Server::SetClientActionCallback(uint32_t clientID, NetworkStreamReaderDelegate function)
-	{
-		m_PlayerActionCallbacks[clientID] = function;
-	}
-
 	void Server::KickClient(ClientID clientID)
 	{
 		m_Interface->CloseConnection(clientID, 0, "Kicked by host", false);
@@ -263,6 +248,17 @@ namespace proton {
 	void Server::OnEntityDespawned(Scene* scene, UUID entityUUID)
 	{
 		m_NetReplicator->Server_AddDespawnedEntity(scene, entityUUID);
+	}
+
+	void Server::SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate)
+	{
+		NetworkStreamWriter stream(m_ScratchBuffer);
+		stream.WriteRaw(MessageType::CustomMessage);
+		delegate(stream);
+		if (clientID == 0)
+			SendBufferToAllClients(stream.GetBuffer());
+		else
+			SendBufferToClient(clientID, stream.GetBuffer());
 	}
 
 	void Server::SetPacketFakeLag(float latencyMs)

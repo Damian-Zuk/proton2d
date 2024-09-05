@@ -223,20 +223,28 @@ namespace proton {
 		m_LocalPlayerEntity = entity;
 	}
 
-	void NetworkManager::Client_SetOnCustomMessageCallback(uint16_t messageType, const NetworkStreamReaderDelegate& delegate)
+	void NetworkManager::Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate) const
 	{
+		PT_CORE_ASSERT(m_Client);
+		m_Client->SendCustomMessage(delegate);
 	}
 
-	void NetworkManager::Client_SendCustomMessage(const NetworkStreamWriter& delegate)
+	void NetworkManager::Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate) const
 	{
+		PT_CORE_ASSERT(m_Server);
+		m_Server->SendCustomMessage(clientID, delegate);
 	}
 
-	void NetworkManager::Server_SetOnCustomMessageCallback(uint16_t messageType, ClientID clientID, const NetworkStreamReaderDelegate& delegate)
+	void NetworkManager::Server_SetClientEntity(ClientID clientID, Entity entity) const
 	{
+		PT_CORE_ASSERT(m_Server);
+		m_Server->SetClientEntity(clientID, entity);
 	}
 
-	void NetworkManager::Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriter& delegate)
+	Entity NetworkManager::Server_GetClientEntity(ClientID clientID) const
 	{
+		PT_CORE_ASSERT(m_Server);
+		return m_Server->GetClientEntity(clientID);
 	}
 
 	void NetworkManager::SetGameProtocolVersion(uint32_t version)

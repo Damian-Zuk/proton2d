@@ -35,31 +35,24 @@ namespace proton {
         return m_Scene->m_GameInstance->GetNetworkManager();
     }
 
+    void GameModeBase::Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate)
+    {
+        GetNetworkManager()->Client_SendCustomMessage(delegate);
+    }
+
+    void GameModeBase::Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate)
+    {
+        GetNetworkManager()->Server_SendCustomMessage(clientID, delegate);
+    }
+
     void GameModeBase::Server_SetClientEntity(ClientID clientID, Entity entity) const
     {
         GetNetworkManager()->GetServer()->SetClientEntity(clientID, entity);
     }
 
-    void GameModeBase::Server_SetPlayerActionCallback(ClientID clientID, NetworkStreamReaderDelegate function)
+    Entity GameModeBase::Server_GetClientEntity(ClientID clientID) const
     {
-        Server* server = m_Scene->m_GameInstance->GetNetworkManager()->GetServer();
-        if (!server)
-        {
-            PT_CORE_ERROR("Server instance is not running");
-            return;
-        }
-        server->SetClientActionCallback(clientID, function);
-    }
-
-    void GameModeBase::Client_SendPlayerAction(NetworkStreamWriterDelegate function)
-    {
-        Client* client = m_Scene->m_GameInstance->GetNetworkManager()->GetClient();
-        if (!client)
-        {
-            PT_CORE_ERROR("Client instance is not running");
-            return;
-        }
-        client->SendPlayerAction(function);
+        return GetNetworkManager()->Server_GetClientEntity(clientID);
     }
 
     bool GameModeBase::HasAuthority() const

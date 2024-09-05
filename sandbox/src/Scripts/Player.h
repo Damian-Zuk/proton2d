@@ -8,20 +8,20 @@ enum PlayerState : uint16_t // animation index
 	PlayerState_Land = 3
 };
 
-struct PlayerActionState
+struct PlayerInputState
 {
 	bool MoveLeft = false;
 	bool MoveRight = false;
 	bool Jump = false;
 
-	bool operator==(const PlayerActionState& other) const 
+	bool operator==(const PlayerInputState& other) const 
 	{
 		return other.MoveLeft == MoveLeft
 			&& other.MoveRight == MoveRight
 			&& other.Jump == Jump;
 	}
 
-	bool operator!=(const PlayerActionState& other) const 
+	bool operator!=(const PlayerInputState& other) const 
 	{
 		return !(other == *this);
 	}
@@ -57,11 +57,13 @@ private:
 	b2Body* m_Body = nullptr;
 	b2Body* m_Wheel = nullptr;
 
-	PlayerActionState m_ActionState;
-	PlayerActionState m_PreviousActionState;
+	PlayerInputState m_InputState;
+	PlayerInputState m_PreviousInputState;
 	PlayerState m_State = PlayerState_Idle;
 	float m_Direction = 1.0f;
 	float m_JumpTimer = 0.0f;
+	bool m_CanJump = false;
+
 	bool m_JumpOnNextTick = false;
 
 	friend class MyGameMode;
