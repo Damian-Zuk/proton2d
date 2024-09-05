@@ -1,10 +1,10 @@
 {
-    "UUID": 12032957847203058155,
+    "UUID": 4769366708877019192,
     "Tag": "Wooden Box",
     "Transform": {
         "Position": [
-            -2.29265,
-            -2.35953,
+            -2.23765,
+            -2.46953,
             0.1
         ],
         "Rotation": 0.0,
@@ -17,11 +17,14 @@
         "UUID": 15395898022612884793
     },
     "Network": {
-        "SyncMethod": "Prediction",
+        "SimulateOnClient": true,
+        "SyncMethod": "Interpolation",
         "CullDistance": 20.0,
-        "ReconcileThreshold": 0.10000000149011612,
-        "ReconcileTime": 0.10000000149011612,
-        "ReconcileCooldownTime": 0.0
+        "TeleportThreshold": 5.0,
+        "ReconcileThreshold": 0.02500000037252903,
+        "ReconcileMaxTime": 0.30000001192092896,
+        "DeltaWeight": 0.75,
+        "ServerVelocityWeight": 0.30000001192092896
     },
     "Sprite": {
         "Texture": "box.png",
@@ -57,5 +60,20 @@
         "Density": 0.5,
         "IsSensor": false,
         "AttachToParent": false
-    }
+    },
+    "Scripts": [
+        {
+            "ClassName": "NetDynamicPrediction",
+            "Fields": [
+                {
+                    "FieldName": "PredictionTime",
+                    "Value": 3.0
+                },
+                {
+                    "FieldName": "SwitchCooldown",
+                    "Value": 0.5
+                }
+            ]
+        }
+    ]
 }

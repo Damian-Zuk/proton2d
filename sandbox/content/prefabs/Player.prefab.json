@@ -1,10 +1,10 @@
 {
-    "UUID": 11802964037896217699,
+    "UUID": 5549603061691364086,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            1.12061,
-            0.87915,
+            1.15562,
+            1.17504,
             0.1
         ],
         "Rotation": 0.0,
@@ -20,9 +20,10 @@
         "SimulateOnClient": true,
         "SyncMethod": "Prediction",
         "CullDistance": 20.0,
-        "TeleportThreshold": 4.0,
-        "ReconcileThreshold": 0.125,
+        "TeleportThreshold": 1.0,
+        "ReconcileThreshold": 0.20000000298023224,
         "ReconcileMaxTime": 0.10000000149011612,
+        "DeltaWeight": 1.0,
         "ServerVelocityWeight": 0.25
     },
     "Sprite": {
@@ -97,7 +98,7 @@
     ],
     "Entities": [
         {
-            "UUID": 17967303538789713731,
+            "UUID": 4099244496341215441,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -129,7 +130,7 @@
             }
         },
         {
-            "UUID": 3063270675458504363,
+            "UUID": 3713665813315135863,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -163,7 +164,7 @@
             }
         },
         {
-            "UUID": 9000657111557589044,
+            "UUID": 14362471024407287930,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -195,7 +196,7 @@
             }
         },
         {
-            "UUID": 2598896572143638374,
+            "UUID": 10557292486921295186,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -227,7 +228,7 @@
             }
         },
         {
-            "UUID": 3010826965014872503,
+            "UUID": 7700096409502490173,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [
