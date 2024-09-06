@@ -62,14 +62,14 @@
     },
     "Scripts": [
         {
-            "ClassName": "NetDynamicPrediction",
+            "ClassName": "DynamicExtrapolation",
             "Fields": [
                 {
                     "FieldName": "InterpolationThreshold",
                     "Value": 0.05000000074505806
                 },
                 {
-                    "FieldName": "SwitchCooldown",
+                    "FieldName": "SwitchCooldownTime",
                     "Value": 0.25
                 },
                 {

@@ -1,9 +1,9 @@
 #pragma once
 
-class NetDynamicPrediction : public EntityScript
+class DynamicExtrapolation : public EntityScript
 {
 public:
-	ENTITY_SCRIPT_CLASS(NetDynamicPrediction)
+	ENTITY_SCRIPT_CLASS(DynamicExtrapolation)
 
 	virtual void OnRegisterFields() override;
 	virtual bool OnCreate() override;
@@ -14,7 +14,7 @@ private:
 
 private:
 	float InterpolationThreshold = 0.05f;
-	float SwitchCooldown = 0.25f;
+	float SwitchCooldownTime = 0.25f;
 	bool AlphaVisualize = false;
 
 	float m_PredictionTimer = 0.0f;

@@ -18,8 +18,6 @@
 
 namespace proton {
 
-	static constexpr float s_StatsRefreshInterval = 0.2f;
-
 	static constexpr const char FontAwesome_Dice[] = u8"\uf522";
 
 	void SettingsPanel::OnImGuiRender()
@@ -117,19 +115,15 @@ namespace proton {
 
 				ImGui::Checkbox("Use Physics Tickrate", &networkManager->m_UsePhysicsTickrate);
 			}
-
-			if (viewportPanel->IsMainViewport())
+			
+			if (netMode != NetMode::Standalone)
 			{
-				ImGui::Dummy({ 0, 3 });
-				if (ImGui::Button("Save Configuration"))
-					networkManager->SaveConfig();
+				ImGui::Dummy({ 0, 5 });
+				ImGui::Separator();
 				ImGui::Dummy({ 0, 5 });
 			}
-			
-			ImGui::Separator();
-			ImGui::Dummy({ 0, 5 });
 
-			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer))
+			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 			{
 				ImGui::Checkbox("Autostart Client", &EditorLayer::Get()->m_AutostartClient);
 			}
@@ -137,7 +131,10 @@ namespace proton {
 			if (netMode == NetMode::Client)
 				ImGui::Checkbox("Trace Entity Synchronization", &viewportPanel->m_TraceEntitySync);
 			
-			ImGui::Checkbox("Trace Entity Cull Distance", &viewportPanel->m_ShowCullDistance);
+			if (netMode != NetMode::Standalone)
+			{
+				ImGui::Checkbox("Trace Entity Cull Distance", &viewportPanel->m_ShowCullDistance);
+			}
 
 			ImGui::TreePop();
 		}
@@ -158,9 +155,11 @@ namespace proton {
 		{
 			ImGui::Dummy({ 0, 2 });
 			Window& window = Application::Get().GetWindow();
+			
 			bool fullscreen = window.IsFullscreen();
 			if (ImGui::Checkbox("Fullscreen", &fullscreen))
 				window.SetFullscreen(fullscreen);
+			
 			bool vsync = Application::Get().GetWindow().IsVSync();
 			if (ImGui::Checkbox("VSync", &vsync))
 				window.SetVSync(vsync);

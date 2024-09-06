@@ -1,10 +1,10 @@
 {
-    "UUID": 4000466519925374387,
+    "UUID": 11604205614906839293,
     "Tag": "Box Pyramid",
     "Transform": {
         "Position": [
-            28.79095,
-            11.52457,
+            -13.21776,
+            0.79455,
             0.0
         ],
         "Rotation": 0.0,
@@ -16,14 +16,22 @@
     "Prefab": {
         "UUID": 14944450881489412473
     },
+    "Network": {
+        "SimulateOnClient": true,
+        "SyncMethod": "None",
+        "CullDistance": 20.0,
+        "TeleportThreshold": 5.0,
+        "ReconcileThreshold": 0.10000000149011612,
+        "ReconcileMaxTime": 0.10000000149011612
+    },
     "Entities": [
         {
-            "UUID": 15956564240441425674,
+            "UUID": 7729774319987897534,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    0.07863,
-                    2.1713,
+                    -0.05381,
+                    3.37847,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -36,11 +44,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -58,6 +67,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -73,18 +86,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 12490884179637714223,
+            "UUID": 15257135200840348886,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    -0.68853,
-                    0.66727,
+                    0.73085,
+                    1.8083,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -97,11 +129,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -119,6 +152,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -134,18 +171,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 8606283815073242411,
+            "UUID": 9515226410033698903,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    0.85065,
-                    0.66521,
+                    -0.81782,
+                    1.81597,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -158,11 +214,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -180,6 +237,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -195,18 +256,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 16147100750853465384,
+            "UUID": 2467597738487202946,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    1.55992,
-                    -0.86262,
+                    1.49752,
+                    0.28264,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -219,11 +299,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -241,6 +322,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -256,18 +341,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 17610493959700428190,
+            "UUID": 992195326050440578,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    0.03209,
-                    -0.85953,
+                    -0.05115,
+                    0.28264,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -280,11 +384,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -302,6 +407,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -317,18 +426,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 1973973220433888319,
+            "UUID": 3771632124366727587,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    -1.48028,
-                    -0.84097,
+                    -1.59982,
+                    0.28264,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -341,11 +469,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -363,6 +492,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -378,18 +511,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 7869878572935656107,
+            "UUID": 8614962436337661817,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    2.27539,
-                    -2.36365,
+                    -2.31282,
+                    -1.24303,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -402,11 +554,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -424,6 +577,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -439,18 +596,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 13376977407273460225,
+            "UUID": 3066439182960681582,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    0.74755,
-                    -2.36571,
+                    -0.77182,
+                    -1.24303,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -463,11 +639,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -485,6 +662,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -500,18 +681,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 16946429929129236466,
+            "UUID": 6856139277692842012,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    -0.77513,
-                    -2.36778,
+                    0.76152,
+                    -1.2507,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -524,11 +724,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -546,6 +747,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -561,18 +766,37 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "UUID": 3032923340469725816,
+            "UUID": 7398950723329952169,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
-                    -2.29265,
-                    -2.35953,
+                    2.28718,
+                    -1.25836,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -585,11 +809,12 @@
                 "UUID": 15395898022612884793
             },
             "Network": {
+                "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
-                "ReconcileTime": 1.0,
-                "ReconcileCooldownTime": 1.0
+                "ReconcileMaxTime": 0.30000001192092896
             },
             "Sprite": {
                 "Texture": "box.png",
@@ -607,6 +832,10 @@
             },
             "Rigidbody": {
                 "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -622,10 +851,454 @@
                 "Friction": 0.800000011920929,
                 "Restitution": 0.0,
                 "RestitutionThreshold": 0.5,
-                "Density": 0.5,
+                "Density": 1.0,
                 "IsSensor": false,
                 "AttachToParent": false
-            }
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "UUID": 16884708700987241144,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    3.07685,
+                    -2.78403,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SimulateOnClient": true,
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileMaxTime": 0.30000001192092896
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 1.0,
+                "IsSensor": false,
+                "AttachToParent": false
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "UUID": 17195220694398523403,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    1.55118,
+                    -2.78403,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SimulateOnClient": true,
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileMaxTime": 0.30000001192092896
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 1.0,
+                "IsSensor": false,
+                "AttachToParent": false
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "UUID": 9369900366068619248,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    0.02518,
+                    -2.7767,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SimulateOnClient": true,
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileMaxTime": 0.30000001192092896
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 1.0,
+                "IsSensor": false,
+                "AttachToParent": false
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "UUID": 9622056961852640110,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    -1.50082,
+                    -2.7847,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SimulateOnClient": true,
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileMaxTime": 0.30000001192092896
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 1.0,
+                "IsSensor": false,
+                "AttachToParent": false
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "UUID": 5886223674173701556,
+            "Tag": "Wooden Box",
+            "Transform": {
+                "Position": [
+                    -3.02682,
+                    -2.77736,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.5,
+                    1.5
+                ]
+            },
+            "Prefab": {
+                "UUID": 15395898022612884793
+            },
+            "Network": {
+                "SimulateOnClient": true,
+                "SyncMethod": "Interpolation",
+                "CullDistance": 20.0,
+                "TeleportThreshold": 5.0,
+                "ReconcileThreshold": 0.02500000037252903,
+                "ReconcileMaxTime": 0.30000001192092896
+            },
+            "Sprite": {
+                "Texture": "box.png",
+                "FilterMode": 1,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    0.92641,
+                    0.89214,
+                    0.54943,
+                    1.0
+                ]
+            },
+            "Rigidbody": {
+                "Type": 2,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
+                "FixedRotation": false,
+                "AttachToParent": false
+            },
+            "BoxCollider": {
+                "Size": [
+                    1.0,
+                    1.0
+                ],
+                "Offset": [
+                    0.0,
+                    0.0
+                ],
+                "Friction": 0.800000011920929,
+                "Restitution": 0.0,
+                "RestitutionThreshold": 0.5,
+                "Density": 1.0,
+                "IsSensor": false,
+                "AttachToParent": false
+            },
+            "Scripts": [
+                {
+                    "ClassName": "DynamicExtrapolation",
+                    "Fields": [
+                        {
+                            "FieldName": "InterpolationThreshold",
+                            "Value": 0.05000000074505806
+                        },
+                        {
+                            "FieldName": "SwitchCooldownTime",
+                            "Value": 0.25
+                        },
+                        {
+                            "FieldName": "AlphaVisualize",
+                            "Value": true
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

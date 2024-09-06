@@ -1,16 +1,17 @@
 #include <Proton.h>
+
 using namespace proton;
 
-#include "NetDynamicPrediction.h"
+#include "DynamicExtrapolation.h"
 
-void NetDynamicPrediction::OnRegisterFields()
+void DynamicExtrapolation::OnRegisterFields()
 {
 	REGISTER_FIELD(Float, InterpolationThreshold);
-	REGISTER_FIELD(Float, SwitchCooldown);
+	REGISTER_FIELD(Float, SwitchCooldownTime);
 	REGISTER_FIELD(Bool, AlphaVisualize);
 }
 
-bool NetDynamicPrediction::OnCreate()
+bool DynamicExtrapolation::OnCreate()
 {
 	if (!IsNetModeClient())
 		return true;
@@ -33,31 +34,31 @@ bool NetDynamicPrediction::OnCreate()
 	return true;
 }
 
-void NetDynamicPrediction::OnBeginPhysicsContact(const PhysicsContact& contact)
+void DynamicExtrapolation::OnBeginPhysicsContact(const PhysicsContact& contact)
 {
 	auto& netTransform = GetComponent<NetworkComponent>().NetTransform;
-	if (netTransform.Method == NetSyncMethod::Prediction)
+	if (netTransform.Method == NetSyncMethod::Extrapolation)
 		return;
 
 	Entity localPlayerEntity = GetNetworkManager()->GetLocalPlayerEntity();
+	
+	bool otherIsExtrapolated = contact.Other->HasScript<DynamicExtrapolation>()
+		&& contact.Other->HasNetworkPrediction();
 
-	bool otherHasDynamicPrediction = contact.Other->HasScript<NetDynamicPrediction>()
-		&& contact.Other->GetNetSyncMethod() == NetSyncMethod::Prediction;
-
-	if (otherHasDynamicPrediction || contact.Other->GetParent() == localPlayerEntity)
+	if (otherIsExtrapolated || contact.Other->GetParent() == localPlayerEntity)
 	{
 		if (netTransform.Method == NetSyncMethod::Interpolation)
 		{
-			netTransform.Method = NetSyncMethod::Prediction;
+			netTransform.Method = NetSyncMethod::Extrapolation;
 			netTransform.LastTickTransform = NetTransform::Transform::Get(&GetTransform());
 			m_PredictionTimer = 0.0f;
-			if (AlphaVisualize)
+			if (AlphaVisualize) 
 				GetColor().a = 1.0f;
 		}
 	}
 }
 
-void NetDynamicPrediction::OnUpdate(float ts)
+void DynamicExtrapolation::OnUpdate(float ts)
 {
 	if (!IsNetModeClient())
 		return;
@@ -66,10 +67,10 @@ void NetDynamicPrediction::OnUpdate(float ts)
 	{
 		auto& netTransform = GetComponent<NetworkComponent>().NetTransform;
 
-		if (netTransform.Method == NetSyncMethod::Prediction)
+		if (netTransform.Method == NetSyncMethod::Extrapolation)
 		{
 			m_PredictionTimer += ts;
-			if (m_PredictionTimer > SwitchCooldown)
+			if (m_PredictionTimer > SwitchCooldownTime)
 			{
 				const NetTransform::Transform current = NetTransform::Transform::Get(&GetTransform());
 				float distance = glm::distance(current.Position, netTransform.LastAuthoritativeTransform.Position);

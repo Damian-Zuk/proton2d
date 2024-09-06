@@ -7,6 +7,7 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
+#include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
 
 #include <imgui.h>
@@ -52,6 +53,10 @@ namespace proton {
 			{
 				if (ImGui::MenuItem("Project proporties"))
 					m_OpenProjectProporties = true;
+
+				if (ImGui::MenuItem("Save network config"))
+					EditorLayer::GetMainGameInstance()->GetNetworkManager()->SaveConfig();
+
 				ImGui::EndMenu();
 			}
 
