@@ -584,8 +584,10 @@ namespace proton {
 		// ******************************************************
 		if (selectedEntity.HasComponent<RigidbodyComponent>())
 		{
-			DrawComponentUI<RigidbodyComponent>("Rigidbody", [](auto& component)
+			DrawComponentUI<RigidbodyComponent>("Rigidbody", [scene, selectedEntity](auto& component)
 			{
+				b2Body* body = selectedEntity.GetRuntimeBody();
+
 				std::string bodyType = "Static";
 				if (component.Type == b2_dynamicBody)
 					bodyType = "Dynamic";
@@ -594,6 +596,7 @@ namespace proton {
 
 				if (ImGui::BeginCombo("Body Type", bodyType.c_str()))
 				{
+					b2BodyType prev = component.Type;
 					if (ImGui::Selectable("Static"))
 						component.Type = b2_staticBody;
 					else if (ImGui::Selectable("Dynamic"))
@@ -601,12 +604,65 @@ namespace proton {
 					else if (ImGui::Selectable("Kinematic"))
 						component.Type = b2_kinematicBody;
 
+					if (scene->IsSimulated() && body && prev != component.Type)
+						body->SetType(component.Type);
+
 					ImGui::EndCombo();
 				}
 
 				ImGui::Dummy({ 0.0f, 3.0f });
+
+				if (scene->IsSimulated() && body)
+				{
+					float linearDamping = body->GetLinearDamping();
+					if (ImGui::DragFloat("Linear Damping", &linearDamping, 0.01f))
+					{
+						body->SetLinearDamping(linearDamping);
+						component.LinearDamping = linearDamping;
+					}
+					
+					float angularDamping = body->GetAngularDamping();
+					if (ImGui::DragFloat("Angular Damping", &angularDamping, 0.01f))
+					{
+						body->SetAngularDamping(angularDamping);
+						component.AngularDamping = angularDamping;
+					}
+					
+					float gravityScale = body->GetGravityScale();
+					if (ImGui::DragFloat("Gravity Scale", &gravityScale, 0.01f))
+					{
+						body->SetGravityScale(gravityScale);
+						component.GravityScale = gravityScale;
+					}
+
+					ImGui::Dummy({ 0.0f, 3.0f });
+
+					bool fixedRotation = body->IsFixedRotation();
+					if (ImGui::Checkbox("Fixed rotation", &fixedRotation))
+					{
+						body->SetFixedRotation(fixedRotation);
+						component.FixedRotation = fixedRotation;
+					}
+
+					bool isBullet = body->IsBullet();
+					if (ImGui::Checkbox("Is Bullet", &isBullet))
+					{
+						body->SetBullet(isBullet);
+						component.IsBullet = isBullet;
+					}
+				}
+				else
+				{
+					ImGui::DragFloat("Linear Damping", &component.LinearDamping, 0.01f);
+					ImGui::DragFloat("Angular Damping", &component.AngularDamping, 0.01f);
+					ImGui::DragFloat("Gravity Scale", &component.GravityScale, 0.01f);
+					
+					ImGui::Dummy({ 0.0f, 3.0f });
+					ImGui::Checkbox("Fixed rotation", &component.FixedRotation);
+					ImGui::Checkbox("Is Bullet", &component.IsBullet);
+				}
+				
 				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
-				ImGui::Checkbox("Fixed rotation", &component.FixedRotation);
 			});
 		}
 
@@ -678,9 +734,6 @@ namespace proton {
 				ImGui::DragFloat("Teleport Threshold", &netTransform.TeleportThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Threshold", &netTransform.ReconcileThreshold, 0.001f);
 				ImGui::DragFloat("Reconcile Max Time", &netTransform.ReconcileMaxTime, 0.001f);
-				ImGui::DragFloat("Delta Weight", &netTransform.DeltaWeight, 0.001f);
-				if (selectedMethod == NetSyncMethod::Extrapolation)
-					ImGui::DragFloat("Server Velocity Weight", &netTransform.ServerVelocityWeight, 0.001f);
 				ImGui::PopItemWidth();
 
 				ImGui::Dummy({ 0, 5 });
@@ -783,7 +836,10 @@ namespace proton {
 			{
 				ImGui::Dummy({ 0,5 });
 				ImGui::PushItemWidth(100.0f);
-				ImGui::DragFloat("Physics Timestep", &scene->m_PhysicsTimestep, 0.000025f, 0.001f, 0.1f, "%.3f");
+				
+				if (ImGui::DragFloat("Physics Tickrate", &scene->m_PhysicsTickrate, 1.0f, 32.0f, 256.0f, "%.0f"))
+					scene->SetPhysicsTickrate(scene->m_PhysicsTickrate);
+				
 				ImGui::DragFloat("World Gravity", &scene->m_PhysicsWorld->m_Gravity, 0.1f);
 
 				int* vi = &scene->m_PhysicsWorld->m_PhysicsVelocityIterations;

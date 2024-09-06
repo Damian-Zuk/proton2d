@@ -1,6 +1,10 @@
 {
-    "client_name": "Admin1337",
+    "client_name": "TomatoTwist85",
+    "debug_fake_lag": 50.0,
+    "max_server_connections": 100,
     "net_mode": "ListenServer",
+    "port": 8192,
     "server_ip": "127.0.0.1",
-    "port": 8192
+    "tickrate": 64,
+    "use_physics_tickrate": true
 }

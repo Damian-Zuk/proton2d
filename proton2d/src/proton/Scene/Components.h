@@ -122,12 +122,17 @@ namespace proton {
 	{
 		b2Body* RuntimeBody = nullptr;
 		b2BodyType Type = b2_staticBody;
+		float LinearDamping = 0.0f;
+		float AngularDamping = 0.0f;
+		float GravityScale = 1.0f;
+		bool IsBullet = false;
 		bool FixedRotation = false;
-		bool AttachToParent = false; // Revolution Joint
+		bool AttachToParent = false; // Revolute Joint
 	};
 
 	struct BoxColliderComponent
 	{
+		b2Fixture* RuntimeFixture = nullptr;
 		glm::vec2 Size { 1.0f, 1.0f };
 		glm::vec2 Offset { 0.0f, 0.0f };
 		PhysicsMaterial Material;
@@ -139,6 +144,7 @@ namespace proton {
 
 	struct CircleColliderComponent
 	{
+		b2Fixture* RuntimeFixture = nullptr;
 		glm::vec2 Offset = { 0.0f, 0.0f };
 		float Radius = 1.0f;
 		PhysicsMaterial Material;
@@ -159,7 +165,7 @@ namespace proton {
 				void* Data = nullptr;
 				size_t Size = 0;
 				std::function<void()> NotifyFunction;
-				// Server-only (store in serparate EnTT component?)
+				// Server-only (todo: store in serparate EnTT component)
 				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
 			};
 			EntityScript* Script = nullptr;
@@ -169,7 +175,7 @@ namespace proton {
 
 		bool WasReplicated = false;
 
-		// Server-only data (TODO: store as separate EnTT component)
+		// Server-only (todo: store in separate EnTT component)
 		std::unordered_map<ClientID, NetTransform::SequencedValue> ServerDataMap;
 	};
 

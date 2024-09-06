@@ -5,8 +5,9 @@ using namespace proton;
 
 void NetDynamicPrediction::OnRegisterFields()
 {
-	REGISTER_FIELD(Float, PredictionTime); 
+	REGISTER_FIELD(Float, InterpolationThreshold);
 	REGISTER_FIELD(Float, SwitchCooldown);
+	REGISTER_FIELD(Bool, AlphaVisualize);
 }
 
 bool NetDynamicPrediction::OnCreate()
@@ -25,6 +26,9 @@ bool NetDynamicPrediction::OnCreate()
 		auto& cc = GetComponent<CircleColliderComponent>();
 		cc.ContactCallback.OnBegin = [&](PhysicsContact contact) { OnBeginPhysicsContact(contact); };
 	}
+
+	if (AlphaVisualize)
+		GetColor().a = 0.7f;
 
 	return true;
 }
@@ -47,6 +51,8 @@ void NetDynamicPrediction::OnBeginPhysicsContact(const PhysicsContact& contact)
 			netTransform.Method = NetSyncMethod::Prediction;
 			netTransform.LastTickTransform = NetTransform::Transform::Get(&GetTransform());
 			m_PredictionTimer = 0.0f;
+			if (AlphaVisualize)
+				GetColor().a = 1.0f;
 		}
 	}
 }
@@ -59,15 +65,24 @@ void NetDynamicPrediction::OnUpdate(float ts)
 	if (Entity localPlayer = GetNetworkManager()->GetLocalPlayerEntity())
 	{
 		auto& netTransform = GetComponent<NetworkComponent>().NetTransform;
+
 		if (netTransform.Method == NetSyncMethod::Prediction)
 		{
 			m_PredictionTimer += ts;
-			if (m_PredictionTimer > PredictionTime)
+			if (m_PredictionTimer > SwitchCooldown)
 			{
-				// Interpolate from current to last authoritative transform
-				netTransform.Method = NetSyncMethod::Interpolation;
-				netTransform.PrevAuthoritativeTransform = NetTransform::Transform::Get(&GetTransform());
-				netTransform.InterpolationTimer = 0.0f;
+				const NetTransform::Transform current = NetTransform::Transform::Get(&GetTransform());
+				float distance = glm::distance(current.Position, netTransform.LastAuthoritativeTransform.Position);
+			
+				if (distance < InterpolationThreshold)
+				{
+					// Interpolate from current to last authoritative transform
+					netTransform.Method = NetSyncMethod::Interpolation;
+					netTransform.PrevAuthoritativeTransform = current;
+					netTransform.InterpolationTimer = 0.0f;
+					if (AlphaVisualize)
+						GetColor().a = 0.7f;
+				}
 			}
 		}
 	}

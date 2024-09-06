@@ -232,7 +232,7 @@ namespace proton {
 		if (m_GameMode)
 			m_GameMode->OnCreate();
 
-		m_PhysicsTimer = 0.0f;
+		m_PhysicsTimeAccumulator = 0.0f;
 	}
 
 
@@ -530,6 +530,13 @@ namespace proton {
 		ScriptFactory::Get().InstantiateGameMode(this, gameModeClassName);
 	}
 
+	void Scene::CachePositions()
+	{
+		CalculateWorldPositions();
+		CachePrimaryCameraPosition();
+		CacheCursorWorldPosition();
+	}
+
 	void Scene::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();
@@ -538,13 +545,10 @@ namespace proton {
 
 		if (m_State == SceneState::Play)
 		{
+			// Do not update simulation until first replication update
 			if (m_EnableNetworking && !m_NetworkInitialized && isNetModeClient)
 			{
-				// Do not update simulation until first replication update
-				CalculateWorldPositions();
-				CachePrimaryCameraPosition();
-				CacheCursorWorldPosition();
-
+				CachePositions();
 				Camera& camera = GetPrimaryCamera();
 				RenderScene(camera);
 				return;
@@ -554,21 +558,21 @@ namespace proton {
 		if (m_State == SceneState::Play && IsPhysicsSimulated())
 		{
 			m_PhysicsWorld->ProcessCreatedEntities();
-			m_PhysicsTimer += ts;
+			m_PhysicsTimeAccumulator += ts;
 			m_IsPhysicsTick = false;
 			
-			while (m_PhysicsTimer >= m_PhysicsTimestep)
+			while (m_PhysicsTimeAccumulator >= m_PhysicsTimestep)
 			{
-				UpdateScripts(m_PhysicsTimestep, true);
+				ScriptsFixedUpdate(m_PhysicsTimestep);
 				m_PhysicsWorld->Update(m_PhysicsTimestep);
-				m_PhysicsTimer -= m_PhysicsTimestep;
+
+				m_PhysicsTimeAccumulator -= m_PhysicsTimestep;
 				m_IsPhysicsTick = true;
 			}
 		}
 
-		CalculateWorldPositions();
-		CachePrimaryCameraPosition();
-		CacheCursorWorldPosition();
+		// Cache positions after physics update
+		CachePositions();
 
 		if (m_State == SceneState::Play)
 		{
@@ -581,7 +585,7 @@ namespace proton {
 			if (m_GameMode)
 				m_GameMode->OnUpdate(ts);
 
-			UpdateScripts(ts);
+			ScriptsUpdate(ts);
 
 			auto view = m_Registry.view<SpriteAnimationComponent>();
 			for (auto entity : view)
@@ -596,7 +600,12 @@ namespace proton {
 		RenderUI();
 	}
 
-	void Scene::UpdateScripts(float ts, bool updatePhysics)
+	void Scene::ScriptsFixedUpdate(float ts)
+	{
+		ScriptsUpdate(ts, true);
+	}
+
+	void Scene::ScriptsUpdate(float ts, bool fixedUpdate)
 	{
 		PROFILE_FUNCTION();
 
@@ -632,8 +641,8 @@ namespace proton {
 				if (instance->m_FailedToInitialize)
 					continue;
 
-				if (updatePhysics)
-					instance->OnPhysicsUpdate(ts);
+				if (fixedUpdate)
+					instance->OnFixedUpdate(ts);
 				else
 					instance->OnUpdate(ts);
 			}
@@ -954,11 +963,6 @@ namespace proton {
 		return m_Filepath;
 	}
 
-	bool Scene::IsPhysicsEnabled() const
-	{
-		return m_EnablePhysics;
-	}
-
 	bool Scene::IsPhysicsWorldInitialized() const
 	{
 		return m_PhysicsWorld->IsInitialized();
@@ -967,6 +971,12 @@ namespace proton {
 	bool Scene::IsPhysicsSimulated() const
 	{
 		return IsPhysicsEnabled() && IsPhysicsWorldInitialized();
+	}
+
+	void Scene::SetPhysicsTickrate(float tickrate)
+	{
+		m_PhysicsTickrate = tickrate;
+		m_PhysicsTimestep = 1.0f / tickrate;
 	}
 
 	template<typename TComponent>

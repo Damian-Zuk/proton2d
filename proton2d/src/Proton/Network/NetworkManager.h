@@ -17,8 +17,8 @@ namespace proton {
 		NetworkManager(GameInstance* instance);
 		virtual ~NetworkManager();
 
-		void ReadConfig();
 		void SaveConfig() const;
+		void ReadConfig();
 
 		void StartServer();
 		void StopServer();
@@ -35,7 +35,7 @@ namespace proton {
 
 		NetMode GetNetMode() const { return m_NetMode; }
 		uint16_t GetPort() const { return m_Port; }
-		uint16_t GetTickrate() const { return m_TickRate; }
+		uint16_t GetTickrate() const { return m_Tickrate; }
 		const std::string& GetLocalClientName() const { return m_ClientName; }
 		float GetTickTime() const { return m_TickTime; }
 		bool IsNetModeServer() const { return m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer; }
@@ -76,19 +76,19 @@ namespace proton {
 
 		// General
 		NetMode m_NetMode = NetMode::ListenServer;
+		std::string m_ClientName = "Player";
 		std::string m_IpAddress = "127.0.0.1";
 		uint16_t m_Port = 8192;
-		uint16_t m_TickRate = 64;
-
-		std::string m_ClientName = "Player";
+		uint16_t m_Tickrate = 64;
 
 		// Server properties
 		uint32_t m_MaxServerConnections = 100;
 
 		// Tickrate timer
-		float m_TickTime = 1.0f / m_TickRate;
+		float m_TickTime = 1.0f / m_Tickrate;
 		float m_TickElapsed = 0.0f;
 		bool m_IsNetworkTick = false;
+		bool m_UsePhysicsTickrate = true;
 
 		// True if server is running or client is connected/connecting to the server
 		bool m_IsNetworkActive = false;

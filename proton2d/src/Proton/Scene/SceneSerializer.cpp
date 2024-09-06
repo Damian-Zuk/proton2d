@@ -161,8 +161,6 @@ namespace proton {
 				{ "TeleportThreshold", netTransform.TeleportThreshold },
 				{ "ReconcileThreshold", netTransform.ReconcileThreshold },
 				{ "ReconcileMaxTime", netTransform.ReconcileMaxTime },
-				{ "DeltaWeight", netTransform.DeltaWeight },
-				{ "ServerVelocityWeight", netTransform.ServerVelocityWeight },
 			};
 		}
 
@@ -247,6 +245,10 @@ namespace proton {
 			auto& rb = entity.GetComponent<RigidbodyComponent>();
 			jsonObj["Rigidbody"] = {
 				{ "Type", rb.Type },
+				{ "LinearDamping", rb.LinearDamping },
+				{ "AngularDamping", rb.AngularDamping },
+				{ "GravityScale", rb.GravityScale },
+				{ "IsBullet", rb.IsBullet },
 				{ "FixedRotation", rb.FixedRotation },
 				{ "AttachToParent", rb.AttachToParent }
 			};
@@ -462,12 +464,6 @@ namespace proton {
 
 			if (netJson.contains("ReconcileMaxTime"))
 				netTransform.ReconcileMaxTime = netJson["ReconcileMaxTime"];
-
-			if (netJson.contains("DeltaWeight"))
-				netTransform.DeltaWeight = netJson["DeltaWeight"];
-
-			if (netJson.contains("ServerVelocityWeight"))
-				netTransform.ServerVelocityWeight = netJson["ServerVelocityWeight"];
 		}
 
 		// Deserialize SpriteComponent
@@ -606,17 +602,32 @@ namespace proton {
 			component.Color = { c[0], c[1], c[2], c[3] };
 		}
 
-
 		// Deserialize RigidbodyComponent
 		if (jsonObj.contains("Rigidbody"))
 		{
 			auto& rb = entity.AddComponent<RigidbodyComponent>();
-			const json& jsonRb = jsonObj.at("Rigidbody");
-			rb.Type = jsonRb.at("Type");
-			rb.FixedRotation = jsonRb.at("FixedRotation");
+			const json& jsonRb = jsonObj["Rigidbody"];
+			
+			if (jsonRb.contains("Type"))
+				rb.Type = jsonRb["Type"];
+
+			if (jsonRb.contains("LinearDamping"))
+				rb.LinearDamping = jsonRb["LinearDamping"];
+
+			if (jsonRb.contains("AngularDamping"))
+				rb.AngularDamping = jsonRb["AngularDamping"];
+
+			if (jsonRb.contains("GravityScale"))
+				rb.GravityScale = jsonRb["GravityScale"];
+
+			if (jsonRb.contains("IsBullet"))
+				rb.IsBullet = jsonRb["IsBullet"];
+
+			if (jsonRb.contains("FixedRotation"))
+				rb.FixedRotation = jsonRb["FixedRotation"];
 			
 			if (jsonRb.contains("AttachToParent"))
-				rb.AttachToParent = jsonRb.at("AttachToParent");
+				rb.AttachToParent = jsonRb["AttachToParent"];
 		}
 
 		// Deserialize scripts

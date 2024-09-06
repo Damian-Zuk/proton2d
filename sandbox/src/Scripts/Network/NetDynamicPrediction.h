@@ -13,9 +13,9 @@ private:
 	void OnBeginPhysicsContact(const PhysicsContact& contact);
 
 private:
-	float PredictionTime = 3.0f;
-	float SwitchCooldown = 0.5f;
+	float InterpolationThreshold = 0.05f;
+	float SwitchCooldown = 0.25f;
+	bool AlphaVisualize = false;
 
 	float m_PredictionTimer = 0.0f;
-	float m_CooldownTimer = 0.0f;
 };

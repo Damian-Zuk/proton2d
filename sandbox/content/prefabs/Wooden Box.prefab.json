@@ -1,10 +1,10 @@
 {
-    "UUID": 4769366708877019192,
+    "UUID": 9463624388273157342,
     "Tag": "Wooden Box",
     "Transform": {
         "Position": [
-            -2.23765,
-            -2.46953,
+            0.73085,
+            1.8083,
             0.1
         ],
         "Rotation": 0.0,
@@ -42,6 +42,10 @@
     },
     "Rigidbody": {
         "Type": 2,
+        "LinearDamping": 0.0,
+        "AngularDamping": 0.0,
+        "GravityScale": 1.0,
+        "IsBullet": false,
         "FixedRotation": false,
         "AttachToParent": false
     },
@@ -57,7 +61,7 @@
         "Friction": 0.800000011920929,
         "Restitution": 0.0,
         "RestitutionThreshold": 0.5,
-        "Density": 0.5,
+        "Density": 1.0,
         "IsSensor": false,
         "AttachToParent": false
     },
@@ -66,12 +70,8 @@
             "ClassName": "NetDynamicPrediction",
             "Fields": [
                 {
-                    "FieldName": "PredictionTime",
-                    "Value": 3.0
-                },
-                {
-                    "FieldName": "SwitchCooldown",
-                    "Value": 0.5
+                    "FieldName": "InterpolationThreshold",
+                    "Value": 0.05000000074505806
                 }
             ]
         }

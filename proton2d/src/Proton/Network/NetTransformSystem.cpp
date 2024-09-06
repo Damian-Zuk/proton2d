@@ -54,7 +54,6 @@ namespace proton {
 			const auto& prevAuthoritative = netTransform.PrevAuthoritativeTransform;
 			const auto& reconcileThreshold = netTransform.ReconcileThreshold;
 			const auto& reconcileMaxTime = netTransform.ReconcileMaxTime;
-			const auto& deltaWeight = netTransform.DeltaWeight;
 			const auto& teleportThreshold = netTransform.TeleportThreshold;
 			const auto& replicationFlags = netTransform.ReplicationFlags;
 			auto& replicationTimer = netTransform.ReplicationTimer;
@@ -153,7 +152,8 @@ namespace proton {
 				// Position
 				glm::vec2 serverVelocity = (lastAuthoritative.Position - prevAuthoritative.Position) / m_NetworkManager->m_TickTime;
 				glm::vec2 currentVelocity = { rigidbody->GetLinearVelocity().x, rigidbody->GetLinearVelocity().y };
-				glm::vec2 estimatedVelocity = serverVelocity * netTransform.ServerVelocityWeight + currentVelocity * (1.0f - netTransform.ServerVelocityWeight);
+				constexpr float serverVelocityWeight = 0.3f;
+				glm::vec2 estimatedVelocity = serverVelocity * serverVelocityWeight  + currentVelocity * (1.0f - serverVelocityWeight);
 
 				predicted.Position = {
 					lastAuthoritative.Position.x + estimatedVelocity.x * lag,
@@ -197,7 +197,8 @@ namespace proton {
 					if (delta.IsNotZero())
 					{
 						// Sequence number is incremented on network tick
-						deltaBuffer.push_back({ (uint16_t)(currentSequenceNumber + 1), delta });
+						currentSequenceNumber++;
+						deltaBuffer.push_back({ (uint16_t)(currentSequenceNumber), delta });
 						bufferHasNewDeltas = true;
 						lastTickTransform = current;
 					}
@@ -218,9 +219,9 @@ namespace proton {
 					predicted = lastAuthoritative;
 					for (const auto& delta : deltaBuffer)
 					{
-						predicted.Position += delta.Value.Position * deltaWeight;
-						predicted.Scale += delta.Value.Scale * deltaWeight;
-						predicted.Rotation += delta.Value.Rotation * deltaWeight;
+						predicted.Position += delta.Value.Position;
+						predicted.Scale += delta.Value.Scale;
+						predicted.Rotation += delta.Value.Rotation;
 					}
 
 					// Calculate errors (difference between current and predicted value)
@@ -287,8 +288,8 @@ namespace proton {
 				// If is network tick and buffer has new deltas, increment and send sequence nummber
 				if (bufferHasNewDeltas && m_NetworkManager->IsNetworkTick())
 				{
-					currentSequenceNumber++;
-					m_SequenceNumbersToSend.push_back({ entity.GetUUID(), currentSequenceNumber });
+					
+					m_SequenceNumbersToSend.push_back({ entity.GetUUID(), (uint16_t)(currentSequenceNumber)});
 					bufferHasNewDeltas = false;
 				}
 

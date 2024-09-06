@@ -53,7 +53,7 @@ namespace proton {
 		virtual bool OnCreate() { return true; }
 		virtual void OnDestroy() {}
 		virtual void OnUpdate(float ts) {}
-		virtual void OnPhysicsUpdate(float ts) {}
+		virtual void OnFixedUpdate(float ts) {}
 
 		// Register your fields (variables) in this method.
 		// Supported variable types are contained in ScriptFieldType enum.

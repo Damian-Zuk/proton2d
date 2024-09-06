@@ -37,10 +37,11 @@ namespace proton {
 
 	b2Body* PhysicsWorld::CreateRuntimeBody(Entity entity)
 	{
-		auto uuid = entity.GetUUID();
+		UUID uuid = entity.GetUUID();
 		if (m_RuntimeBodies.find(uuid) != m_RuntimeBodies.end())
 		{
-		//	PT_CORE_ASSERT(false, "Physics runtime body already exists!");
+			// PT_CORE_ASSERT(false, "Runtime body already exists!");
+			PT_CORE_WARN("Runtime body already exists! (tag={}, uuid={})", entity.GetTag(), uuid);
 			return nullptr;
 		}
 
@@ -51,6 +52,10 @@ namespace proton {
 		bodyDef.type = rb.Type;
 		bodyDef.position.Set(transform.WorldPosition.x, transform.WorldPosition.y);
 		bodyDef.angle = glm::radians(transform.Rotation);
+		bodyDef.linearDamping = rb.LinearDamping;
+		bodyDef.angularDamping = rb.AngularDamping;
+		bodyDef.gravityScale = rb.GravityScale;
+		bodyDef.bullet = rb.IsBullet;
 
 		b2Body* body = m_World->CreateBody(&bodyDef);
 		body->SetFixedRotation(rb.FixedRotation);
@@ -116,7 +121,7 @@ namespace proton {
 			fixtureDef.restitutionThreshold = bc.Material.RestitutionThreshold;
 			fixtureDef.density = bc.Material.Density;
 
-			body->CreateFixture(&fixtureDef);
+			bc.RuntimeFixture = body->CreateFixture(&fixtureDef);
 		}
 
 		// CircleColliderComponent
@@ -139,7 +144,7 @@ namespace proton {
 			fixtureDef.restitutionThreshold = cc.Material.RestitutionThreshold;
 			fixtureDef.density = cc.Material.Density;
 
-			body->CreateFixture(&fixtureDef);
+			cc.RuntimeFixture = body->CreateFixture(&fixtureDef);
 		}
 	}
 

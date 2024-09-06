@@ -18,7 +18,8 @@ static constexpr const char FontAwesome_Play[]   = u8"\uf04b";
 static constexpr const char FontAwesome_Pause[]  = u8"\uf04c";
 static constexpr const char FontAwesome_Resume[] = u8"\uf051";
 static constexpr const char FontAwesome_Stop[]   = u8"\uf04d";
-static constexpr const char FontAwesome_Rocket[] = u8"\uf135";
+static constexpr const char FontAwesome_Rocket[] = u8"\uf135"; 
+static constexpr const char FontAwesome_Dice[]   = u8"\uf522";
 
 namespace proton {
 
@@ -176,12 +177,9 @@ namespace proton {
 					props.ClientNickname = buffer;
 
 				ImGui::SameLine();
-
 				ImGui::PushFont(EditorLayer::GetFontAwesome());
-				if (ImGui::Button(u8"\uF522", ImVec2(40, 25)))
-				{
+				if (ImGui::Button(FontAwesome_Dice, ImVec2(40, 25)))
 					props.ClientNickname = GenerateRandomNickname();
-				}
 				ImGui::PopFont();
 
 				if (netMode == NetMode::Client)

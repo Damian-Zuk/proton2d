@@ -64,11 +64,14 @@ namespace proton {
 		std::vector<Entity> GetEntitiesOnCursorLocation();
 
 		void EnablePhysics(bool enabled);
-		bool IsPhysicsEnabled() const;
 		bool IsPhysicsWorldInitialized() const;
 		bool IsPhysicsSimulated() const;
+		bool IsPhysicsEnabled() const { return m_EnablePhysics; }
 		bool IsPhysicsTick() const { return m_IsPhysicsTick; }
+		float GetPhysicsTickrate() const { return m_PhysicsTickrate; }
 		float GetPhysicsTimestep() const { return m_PhysicsTimestep; }
+
+		void SetPhysicsTickrate(float tickrate);
 
 		bool IsSimulated() const { return m_State != SceneState::Stop; };
 		bool IsPaused() const { return m_State == SceneState::Paused; };
@@ -101,16 +104,17 @@ namespace proton {
 
 	private:
 		void OnUpdate(float ts);
-		void UpdateScripts(float ts, bool updatePhysics = false);
+		void ScriptsFixedUpdate(float ts);
+		void ScriptsUpdate(float ts, bool fixedUpdate = false);
 		void RenderScene(const Camera& camera);
 		void RenderUI();
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 		void ReleaseGameMode();
 
+		void CachePositions();
 		void CachePrimaryCameraPosition();
 		void CacheCursorWorldPosition();
-
 		void CalculateEntityWorldPosition(Entity entity, bool recalculateLocal = false);
 		void CalculateWorldPositions(bool recalculateLocal = false);
 
@@ -144,8 +148,11 @@ namespace proton {
 		// Physics
 		bool m_EnablePhysics = true;
 		Unique<PhysicsWorld> m_PhysicsWorld;
-		float m_PhysicsTimestep = 0.01f;
-		float m_PhysicsTimer = 0.0f;
+		
+		// Physics timestep
+		float m_PhysicsTickrate = 120;
+		float m_PhysicsTimestep = 1.0f / m_PhysicsTickrate;
+		float m_PhysicsTimeAccumulator = 0.0f;
 		bool m_IsPhysicsTick = false;
 
 		// Cache

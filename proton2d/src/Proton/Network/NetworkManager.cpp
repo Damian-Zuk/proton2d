@@ -38,6 +38,22 @@ namespace proton {
 			StopClient();
 	}
 
+	void NetworkManager::SaveConfig() const
+	{
+		nlohmann::json jsonObj;
+		std::ofstream configFile("content/network.json");
+		jsonObj["client_name"] = m_ClientName;
+		jsonObj["net_mode"] = NetModeToString(m_NetMode);
+		jsonObj["server_ip"] = m_IpAddress;
+		jsonObj["port"] = m_Port;
+		jsonObj["tickrate"] = m_Tickrate;
+		jsonObj["use_physics_tickrate"] = m_UsePhysicsTickrate;
+		jsonObj["max_server_connections"] = m_MaxServerConnections;
+		jsonObj["debug_fake_lag"] = Server::s_FakeServerLag;
+		configFile << jsonObj.dump(4);
+		configFile.close();
+	}
+
 	void NetworkManager::ReadConfig()
 	{
 		nlohmann::json jsonObj = jsonObj.parse(Utils::ReadFile("content/network.json"));
@@ -53,18 +69,18 @@ namespace proton {
 
 		if (jsonObj.contains("port"))
 			m_Port = jsonObj["port"];
-	}
 
-	void NetworkManager::SaveConfig() const
-	{
-		nlohmann::json jsonObj;
-		std::ofstream configFile("content/network.json");
-		jsonObj["client_name"] = m_ClientName;
-		jsonObj["net_mode"] = NetModeToString(m_NetMode);
-		jsonObj["server_ip"] = m_IpAddress;
-		jsonObj["port"] = m_Port;
-		configFile << jsonObj.dump(4);
-		configFile.close();
+		if (jsonObj.contains("tickrate"))
+			m_Tickrate = jsonObj["tickrate"];
+
+		if (jsonObj.contains("use_physics_tickrate"))
+			m_UsePhysicsTickrate = jsonObj["use_physics_tickrate"];
+
+		if (jsonObj.contains("max_server_connections"))
+			m_MaxServerConnections = jsonObj["max_server_connections"];
+
+		if (jsonObj.contains("debug_fake_lag"))
+			Server::s_FakeServerLag = jsonObj["debug_fake_lag"];
 	}
 
 	void NetworkManager::OnUpdate(float ts)
@@ -72,14 +88,21 @@ namespace proton {
 		if (!m_IsNetworkActive)
 			return;
 
-		m_IsNetworkTick = false;
-		if (m_TickElapsed <= 0)
+		if (m_UsePhysicsTickrate)
 		{
-			m_IsNetworkTick = true;
-			m_TickElapsed = m_TickTime;
+			m_IsNetworkTick = m_GameInstance->GetActiveScene()->IsPhysicsTick();
 		}
 		else
-			m_TickElapsed -= ts;
+		{
+			m_IsNetworkTick = false;
+			if (m_TickElapsed <= 0)
+			{
+				m_IsNetworkTick = true;
+				m_TickElapsed = m_TickTime;
+			}
+			else
+				m_TickElapsed -= ts;
+		}
 
 		if (IsNetModeServer())
 		{
@@ -181,7 +204,7 @@ namespace proton {
 
 	void NetworkManager::SetNetworkPort(uint16_t port)
 	{
-		m_Port = port;
+		m_Port = (uint16_t)glm::clamp((int)port, 0, 65535);
 	}
 
 	void NetworkManager::SetNetMode(NetMode mode)
@@ -201,12 +224,12 @@ namespace proton {
 
 	void NetworkManager::SetLocalClientName(const std::string& name)
 	{
-		m_ClientName = name;
+		m_ClientName = name.substr(0, 31);
 	}
 
 	void NetworkManager::SetTickRate(uint16_t tickRate)
 	{
-		m_TickRate = tickRate;
+		m_Tickrate = tickRate;
 		m_TickTime = 1.0f / tickRate;
 	}
 

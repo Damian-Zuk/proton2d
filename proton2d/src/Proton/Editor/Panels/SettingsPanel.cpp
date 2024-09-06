@@ -9,6 +9,7 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/ProjectSettings.h"
+#include "Proton/Utils/NickGenerator.h"
 
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/Server.h"
@@ -18,6 +19,8 @@
 namespace proton {
 
 	static constexpr float s_StatsRefreshInterval = 0.2f;
+
+	static constexpr const char FontAwesome_Dice[] = u8"\uf522";
 
 	void SettingsPanel::OnImGuiRender()
 	{
@@ -51,15 +54,43 @@ namespace proton {
 			}
 			ImGui::PopItemWidth();
 
-			ImGui::PushItemWidth(95.0f);
-
-			int tickRate = networkManager->m_TickRate;
-			if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
+			if (netMode != NetMode::Standalone)
 			{
-				networkManager->SetTickRate(glm::max(tickRate, 1));
+				ImGui::PushItemWidth(200.0f);
+				if (netMode != NetMode::DedicatedServer)
+				{
+					static char clientNameBuffer[32];
+					strcpy_s(clientNameBuffer, networkManager->m_ClientName.substr(0, 31).c_str());
+					if (ImGui::InputText("Nick", clientNameBuffer, 32))
+						networkManager->SetLocalClientName(clientNameBuffer);
+
+					ImGui::SameLine();
+					ImGui::PushFont(EditorLayer::GetFontAwesome());
+					if (ImGui::Button(FontAwesome_Dice, ImVec2(40, 25)))
+						networkManager->SetLocalClientName(GenerateRandomNickname());
+					ImGui::PopFont();
+				}
+				ImGui::PopItemWidth();
+
+				ImGui::PushItemWidth(200.0f);
+				if (netMode == NetMode::Client)
+				{
+					static char ipBuffer[64];
+					strcpy_s(ipBuffer, networkManager->m_IpAddress.c_str());
+					if (ImGui::InputText("IP Address", ipBuffer, 64))
+						networkManager->m_IpAddress = ipBuffer;
+				}
+				ImGui::PopItemWidth();
+
+				ImGui::PushItemWidth(95.0f);
+				int portValue = networkManager->m_Port;
+				if (ImGui::DragInt("Network Port", &portValue, 1.0f, 0, 65535))
+					networkManager->SetNetworkPort(portValue);
+				ImGui::PopItemWidth();
 			}
 
-			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer))
+			ImGui::PushItemWidth(95.0f);
+			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 			{
 				int maxConnections = networkManager->m_MaxServerConnections;
 				if (ImGui::DragInt("Max Connections", &maxConnections))
@@ -70,31 +101,59 @@ namespace proton {
 					if (Server* server = networkManager->GetServer())
 						server->SetPacketFakeLag(Server::s_FakeServerLag);
 				}
-
-				ImGui::Checkbox("Autostart Client", &EditorLayer::Get()->m_AutostartClient);
 			}
 			ImGui::PopItemWidth();
 
-			if (netMode == NetMode::Client)
-				ImGui::Checkbox("Trace Entity Sync", &viewportPanel->m_TraceEntitySync);
+			if (netMode != NetMode::Standalone)
+			{
+				if (!networkManager->m_UsePhysicsTickrate)
+				{
+					int tickRate = networkManager->m_Tickrate;
+					ImGui::PushItemWidth(95.0f);
+					if (ImGui::DragInt("Tick Rate (hz)", &tickRate, 1, 1, 256))
+						networkManager->SetTickRate(glm::max(tickRate, 1));
+					ImGui::PopItemWidth();
+				}
+
+				ImGui::Checkbox("Use Physics Tickrate", &networkManager->m_UsePhysicsTickrate);
+			}
+
+			if (viewportPanel->IsMainViewport())
+			{
+				ImGui::Dummy({ 0, 3 });
+				if (ImGui::Button("Save Configuration"))
+					networkManager->SaveConfig();
+				ImGui::Dummy({ 0, 5 });
+			}
 			
-			ImGui::Checkbox("Show Cull Distance", &viewportPanel->m_ShowCullDistance);
+			ImGui::Separator();
+			ImGui::Dummy({ 0, 5 });
+
+			if ((netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer))
+			{
+				ImGui::Checkbox("Autostart Client", &EditorLayer::Get()->m_AutostartClient);
+			}
+
+			if (netMode == NetMode::Client)
+				ImGui::Checkbox("Trace Entity Synchronization", &viewportPanel->m_TraceEntitySync);
+			
+			ImGui::Checkbox("Trace Entity Cull Distance", &viewportPanel->m_ShowCullDistance);
 
 			ImGui::TreePop();
 		}
-		ImGui::Dummy({ 0, 5 });
 
+		ImGui::Dummy({ 0, 10 });
 		if (ImGui::TreeNodeEx("Game Viewport", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			//ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
+			ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
 			ImGui::Checkbox("Show Entity Collider", &viewportPanel->m_ShowSelectionCollider);
 			ImGui::Checkbox("Show All Colliders", &viewportPanel->m_ShowAllColliders);
 			ImGui::Checkbox("Simulation Freecam", &viewportPanel->m_Camera->m_UseInRuntime);
 			ImGui::TreePop();
 		}
-		ImGui::Dummy({ 0, 5 });
 
+		ImGui::Dummy({ 0, 10 });
 		if (ImGui::TreeNodeEx("Application", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });

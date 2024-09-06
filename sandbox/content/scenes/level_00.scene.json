@@ -66,6 +66,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -124,6 +128,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -182,6 +190,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -240,6 +252,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -298,6 +314,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -356,6 +376,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -381,8 +405,8 @@
                     "Tag": "GrassPlatform",
                     "Transform": {
                         "Position": [
-                            9.79232,
-                            10.18264,
+                            10.59032,
+                            9.95464,
                             0.0
                         ],
                         "Rotation": 0.0,
@@ -414,6 +438,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -439,8 +467,8 @@
                     "Tag": "GrassPlatform",
                     "Transform": {
                         "Position": [
-                            5.26316,
-                            8.67904,
+                            6.28916,
+                            8.47004,
                             0.0
                         ],
                         "Rotation": 0.0,
@@ -472,6 +500,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -497,8 +529,8 @@
                     "Tag": "GrassPlatform",
                     "Transform": {
                         "Position": [
-                            0.45329,
-                            7.42496,
+                            0.71929,
+                            7.53896,
                             0.0
                         ],
                         "Rotation": 0.0,
@@ -530,6 +562,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -555,8 +591,8 @@
                     "Tag": "GrassPlatform",
                     "Transform": {
                         "Position": [
-                            -3.82633,
-                            6.51399,
+                            -4.32033,
+                            6.98899,
                             0.0
                         ],
                         "Rotation": 0.0,
@@ -588,6 +624,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -646,6 +686,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -704,6 +748,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -762,6 +810,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -820,6 +872,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -878,6 +934,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -936,6 +996,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -994,6 +1058,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1052,6 +1120,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1110,6 +1182,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1178,6 +1254,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1261,6 +1341,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1334,6 +1418,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1410,6 +1498,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1468,6 +1560,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1526,6 +1622,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1584,6 +1684,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1642,6 +1746,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1700,6 +1808,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1731,12 +1843,12 @@
                         ],
                         "Rotation": 0.0,
                         "Scale": [
-                            100.0,
+                            500.0,
                             3.0
                         ]
                     },
                     "ResizableSprite": {
-                        "Width": 100,
+                        "Width": 500,
                         "Height": 3,
                         "TileScale": 1.0,
                         "Edges": 255,
@@ -1758,6 +1870,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -1785,8 +1901,8 @@
             "Tag": "Spawn Points",
             "Transform": {
                 "Position": [
-                    3.76592,
-                    2.18079,
+                    3.31376,
+                    1.80879,
                     0.1
                 ],
                 "Rotation": 0.0,
@@ -1801,8 +1917,8 @@
                     "Tag": "PlayerSpawn3",
                     "Transform": {
                         "Position": [
-                            3.5,
-                            -1.0,
+                            3.81151,
+                            -0.01933,
                             0.1
                         ],
                         "Rotation": 0.0,
@@ -1817,8 +1933,8 @@
                     "Tag": "PlayerSpawn2",
                     "Transform": {
                         "Position": [
-                            1.0,
-                            -1.0,
+                            1.31151,
+                            -0.01933,
                             0.1
                         ],
                         "Rotation": 0.0,
@@ -1833,8 +1949,8 @@
                     "Tag": "PlayerSpawn1",
                     "Transform": {
                         "Position": [
-                            -1.5,
-                            -1.0,
+                            -1.18849,
+                            -0.01933,
                             0.1
                         ],
                         "Rotation": 0.0,
@@ -1849,8 +1965,8 @@
                     "Tag": "PlayerSpawn0",
                     "Transform": {
                         "Position": [
-                            -4.0,
-                            -1.0,
+                            -3.68849,
+                            -0.01933,
                             0.1
                         ],
                         "Rotation": 0.0,
@@ -1879,13 +1995,29 @@
             }
         },
         {
-            "UUID": 13557465532534246639,
-            "Tag": "Box Pyramid (P)",
+            "UUID": 13959622637432332777,
+            "Tag": "Boxes",
             "Transform": {
                 "Position": [
-                    -15.02846,
-                    0.84515,
+                    0.0,
+                    0.0,
                     0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "UUID": 6862468770628249852,
+            "Tag": "Ball",
+            "Transform": {
+                "Position": [
+                    19.50503,
+                    4.14779,
+                    0.101
                 ],
                 "Rotation": 0.0,
                 "Scale": [
@@ -1894,7 +2026,7 @@
                 ]
             },
             "Prefab": {
-                "UUID": 14944450881489412473
+                "UUID": 8825705037770810944
             }
         }
     ]

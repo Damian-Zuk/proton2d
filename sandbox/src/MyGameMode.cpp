@@ -134,7 +134,8 @@ void MyGameMode::Server_OnCustomMessage(ClientID clientID, NetworkStreamReader& 
 	case GameMessageType::PlayerInput:
 	{
 		Player* remotePlayer = Server_GetClientEntity(clientID).As<Player>();
-		stream.ReadRaw(remotePlayer->m_InputState);
+		if (!stream.ReadRaw(remotePlayer->m_InputState))
+			PT_ERROR("Failed to read player input! (client_id={})", clientID);
 		break;
 	}
 	}
