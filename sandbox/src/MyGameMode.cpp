@@ -42,6 +42,16 @@ bool MyGameMode::OnCreate()
 
 void MyGameMode::OnUpdate(float ts)
 {
+	if (Entity sampleText = FindByTag("SampleText"))
+	{
+		if (sampleText.HasComponent<TextComponent>())
+		{
+			auto& text = sampleText.GetComponent<TextComponent>();
+			auto& transform = sampleText.GetTransform();
+			//PT_CORE_TRACE("{}", text.FontAsset->CalculateTextSize(&text, transform.Scale.x));
+		}
+	}
+
 }
 
 void MyGameMode::OnEvent(Event& event)

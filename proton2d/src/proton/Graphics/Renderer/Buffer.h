@@ -1,7 +1,7 @@
 //
 // This file contains functionalities for managing Vertex and Index buffers in OpenGL.
 // It also provides a nice way for defining vertex buffer layout via BufferLayout class.
-// From Hazel Engine Renderer OpenGL API:
+// Adapted from Hazel Engine Renderer OpenGL API:
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLBuffer.h
 // 
 #pragma once

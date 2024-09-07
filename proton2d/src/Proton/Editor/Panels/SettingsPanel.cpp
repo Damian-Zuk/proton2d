@@ -123,9 +123,10 @@ namespace proton {
 				ImGui::Dummy({ 0, 5 });
 			}
 
+			// Editor network settings
 			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 			{
-				ImGui::Checkbox("Autostart Client", &EditorLayer::Get()->m_AutostartClient);
+				ImGui::Checkbox("Editor Autostart Client", &EditorLayer::Get()->m_AutostartClient);
 			}
 
 			if (netMode == NetMode::Client)
@@ -143,10 +144,10 @@ namespace proton {
 		if (ImGui::TreeNodeEx("Game Viewport", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			ImGui::Checkbox("Selection Outline", &viewportPanel->m_ShowSelectionOutline);
-			ImGui::Checkbox("Show Entity Collider", &viewportPanel->m_ShowSelectionCollider);
-			ImGui::Checkbox("Show All Colliders", &viewportPanel->m_ShowAllColliders);
-			ImGui::Checkbox("Simulation Freecam", &viewportPanel->m_Camera->m_UseInRuntime);
+			ImGui::Checkbox("Selection Outline (F1)", &viewportPanel->m_ShowSelectionOutline);
+			ImGui::Checkbox("Show Entity Collider (F2)", &viewportPanel->m_ShowSelectionCollider);
+			ImGui::Checkbox("Show All Colliders (F3)", &viewportPanel->m_ShowAllColliders);
+			ImGui::Checkbox("Simulation Freecam (F4)", &viewportPanel->m_Camera->m_UseInRuntime);
 			ImGui::TreePop();
 		}
 

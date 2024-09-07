@@ -597,7 +597,6 @@ namespace proton {
 
 		Camera& camera = GetPrimaryCamera();
 		RenderScene(camera);
-		RenderUI();
 	}
 
 	void Scene::ScriptsFixedUpdate(float ts)
@@ -738,26 +737,7 @@ namespace proton {
 		{
 			auto [transform, text] = textView.get<TransformComponent, TextComponent>(entity);
 			if (!text.Hidden)
-				Renderer::DrawString(text.TextString, Math::GetTransform(transform.WorldPosition, transform.Scale, transform.Rotation), text);
-		}
-
-		Renderer::EndScene();
-	}
-
-	void Scene::RenderUI()
-	{
-		PROFILE_FUNCTION();
-
-		Renderer::BeginScene(GetPrimaryCamera().GetAspectRatio());
-
-		auto view = m_Registry.view<TransformComponent, UITextComponent>();
-		for (auto entity : view)
-		{
-			auto [transform, ui] = view.get<TransformComponent, UITextComponent>(entity);
-			if (ui.UIText.IsHidden())
-				continue;
-
-			ui.UIText.Draw(&transform);
+				Renderer::DrawString(text.TextString, transform.WorldPosition, transform.Scale, transform.Rotation, text);
 		}
 
 		Renderer::EndScene();
@@ -864,11 +844,11 @@ namespace proton {
 		auto& transform = entity.GetComponent<TransformComponent>();
 
 		// Apply entity rotation to point (mouse position)
-		// so we can easliy check after if point is inside rectangle
+		// so we can easily check after if point is inside rectangle
 		float sinus = sin(glm::radians(-transform.Rotation));
 		float cosinus = cos(glm::radians(-transform.Rotation));
 		glm::vec2 point = GetCursorWorldPosition();
-		if (transform.Rotation)
+		if (transform.Rotation != 0.0f)
 		{
 			glm::vec2 rotationCenter = { transform.WorldPosition.x, transform.WorldPosition.y };
 			point -= rotationCenter;
@@ -878,16 +858,28 @@ namespace proton {
 			};
 		}
 
-		// Check if point is inside entity bounding box
-		const glm::vec3& position = transform.WorldPosition;
-		const glm::vec2& scale = transform.Scale;
-		return point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
-			&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f;
+		if (m_Registry.any_of<TextComponent>(entity))
+		{
+			// Handle entities with TextComponent separately
+			auto& textComponent = m_Registry.get<TextComponent>(entity);
+			glm::vec2 textSize = textComponent.FontAsset->CalculateTextSize(&textComponent, transform.Scale);
+			const glm::vec3& textPosition = transform.WorldPosition;
+
+			return point.x >= textPosition.x - textSize.x / 2.0f && point.x <= textPosition.x + textSize.x / 2.0f
+				&& point.y >= textPosition.y - textSize.y / 2.0f && point.y <= textPosition.y + textSize.y / 2.0f;
+		}
+		else
+		{
+			// Other entitites
+			const glm::vec3& position = transform.WorldPosition;
+			const glm::vec2& scale = transform.Scale;
+			return point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
+				&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f;
+		}
 	}
 
 	std::vector<Entity> Scene::GetEntitiesOnCursorLocation()
 	{
-		// TODO: Optimize / refactor
 		const glm::vec2& mousePos = GetCursorWorldPosition();
 		auto view = m_Registry.view<TransformComponent>();
 		std::vector<Entity> entities;
@@ -895,13 +887,13 @@ namespace proton {
 		for (auto entity : view)
 		{
 			auto& transform = view.get<TransformComponent>(entity);
-
-			// Apply entity rotation to point (mouse position)
-			// so we can easliy check after if point is inside rectangle
+			
 			float sinus = sin(glm::radians(-transform.Rotation));
 			float cosinus = cos(glm::radians(-transform.Rotation));
+			
+			// Apply entity rotation to a point (mouse position) so we can easily check if the point is inside the rectangle
 			glm::vec2 point = mousePos;
-			if (transform.Rotation)
+			if (transform.Rotation != 0.0f)
 			{
 				glm::vec2 rotationCenter = { transform.WorldPosition.x, transform.WorldPosition.y };
 				point -= rotationCenter;
@@ -911,15 +903,33 @@ namespace proton {
 				};
 			}
 
-			// Check if point is inside entity bounding box
-			const glm::vec3& position = transform.WorldPosition;
-			const glm::vec2& scale = transform.Scale;
-			if (point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
-				&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f)
+			if (m_Registry.any_of<TextComponent>(entity))
 			{
-				entities.emplace_back(Entity{ entity, this });
+				// Handle entities with TextComponent separately
+				auto& textComponent = m_Registry.get<TextComponent>(entity);
+				glm::vec2 textSize = textComponent.FontAsset->CalculateTextSize(&textComponent, transform.Scale);
+				const glm::vec3& textPosition = transform.WorldPosition;
+
+				// Check if the point (mouse position) is inside the text bounding box
+				if (point.x >= textPosition.x - textSize.x / 2.0f && point.x <= textPosition.x + textSize.x / 2.0f
+					&& point.y >= textPosition.y - textSize.y / 2.0f && point.y <= textPosition.y + textSize.y / 2.0f)
+				{
+					entities.emplace_back(Entity{ entity, this });
+				}
+			}
+			else
+			{
+				// Check if the point is inside entity bounding box (non-text entities)
+				const glm::vec3& position = transform.WorldPosition;
+				const glm::vec2& scale = transform.Scale;
+				if (point.x >= position.x - scale.x / 2.0f && point.x <= position.x + scale.x / 2.0f
+					&& point.y >= position.y - scale.y / 2.0f && point.y <= position.y + scale.y / 2.0f)
+				{
+					entities.emplace_back(Entity{ entity, this });
+				}
 			}
 		}
+
 		return entities;
 	}
 
@@ -1034,16 +1044,6 @@ namespace proton {
 
 	template<>
 	void Scene::OnComponentAdded<TextComponent>(Entity entity, TextComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<UIComponent>(Entity entity, UIComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<UITextComponent>(Entity entity, UITextComponent& component)
 	{
 	}
 

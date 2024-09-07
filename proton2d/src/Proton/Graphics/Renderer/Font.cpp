@@ -1,9 +1,10 @@
-// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Font.cpp
+// Adapted from: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Font.cpp
 #include "ptpch.h"
 #include "Proton/Graphics/Renderer/Font.h"
 #include "Proton/Graphics/Renderer/Texture.h"
-
 #include "Proton/Graphics/Renderer/MSDFData.h"
+
+#include "Proton/Scene/Components.h"
 
 #undef INFINITE
 #include "msdf-atlas-gen.h"
@@ -138,6 +139,82 @@ namespace proton
 
 		msdfgen::destroyFont(font);
 		msdfgen::deinitializeFreetype(ft);
+	}
+
+	glm::vec2 Font::CalculateTextSize(const std::string& string, const glm::vec2& scale, float kerning, float lineSpacing)
+	{
+		// Total width and height of the text
+		float totalWidth = 0.0f;
+		float totalHeight = 0.0f;
+
+		float lineWidth = 0.0f; // Width of the current line of text
+		int lineCount = 1;      // Number of lines of text (starts with 1)
+
+		// Get font metrics
+		const auto& fontGeometry = m_Data->FontGeometry;
+		const auto& metrics = fontGeometry.getMetrics();
+
+		// Scaling factors for width and height
+		float scaleX = glm::abs(scale.x) * 0.85f;
+		float scaleY = glm::abs(scale.y) * 0.55f;
+
+		float maxAscender = metrics.ascenderY * scaleY;
+		float maxDescender = metrics.descenderY * scaleY;
+
+		for (size_t i = 0; i < string.size(); i++)
+		{
+			const char& character = string[i];
+
+			// Handle new line character
+			if (character == '\n')
+			{
+				// Start a new line
+				totalWidth = glm::max(totalWidth, lineWidth); // Update total width if the current line is wider
+				lineWidth = 0.0f;  // Reset line width for the new line
+				lineCount++;       // Increment the line count
+				continue;
+			}
+
+			// Get the glyph geometry for the character
+			const msdf_atlas::GlyphGeometry* glyph = fontGeometry.getGlyph(character);
+			if (!glyph)
+			{
+				// Handle missing glyphs (e.g., space, special characters) by adding a space width
+				const msdf_atlas::GlyphGeometry* spaceGlyph = fontGeometry.getGlyph(' ');
+				float spaceAdvance = spaceGlyph ? spaceGlyph->getAdvance() : 0.3f; // Rough estimate for space if missing
+				lineWidth += scaleX * spaceAdvance;
+				continue;
+			}
+
+			// Get the advance width of the glyph and apply kerning
+			float advance = glyph->getAdvance() * scaleX + kerning;  // Apply kerning here carefully
+			lineWidth += advance;
+
+			// Update max ascender and descender based on the glyph's actual bounds
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+			maxAscender = glm::max(maxAscender, (float)pt * scaleY);
+			maxDescender = glm::min(maxDescender, (float)pb * scaleY);
+		}
+
+		// Finalize total width for the last line
+		totalWidth = glm::max(totalWidth, lineWidth);
+
+		// Calculate total height based on number of lines and max ascender/descender values
+		totalHeight = (maxAscender - maxDescender) * lineCount + (lineCount - 1) * lineSpacing;
+
+		// Adjust height to consider baseline shift (ascender height minus descender height) for each line
+		return glm::vec2(totalWidth, totalHeight);
+	}
+
+	glm::vec2 Font::CalculateTextSize(TextComponent* textComponent, const glm::vec2& scale)
+	{
+		// If text is hidden, return zero size
+		if (textComponent->Hidden)
+			return glm::vec2(0.0f, 0.0f);
+
+		return CalculateTextSize(textComponent->TextString, scale, textComponent->Kerning, textComponent->LineSpacing);
 	}
 
 	Font::~Font()

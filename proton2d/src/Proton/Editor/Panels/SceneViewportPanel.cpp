@@ -290,7 +290,7 @@ namespace proton {
 
 				for (auto& entity : scene->GetEntitiesOnCursorLocation())
 				{
-					if (!entity.HasAnyComponent<SpriteComponent, ResizableSpriteComponent,
+					if (!entity.HasAnyComponent<SpriteComponent, ResizableSpriteComponent, TextComponent,
 						CircleRendererComponent, BoxColliderComponent, CircleColliderComponent>())
 						continue;
 
@@ -316,14 +316,18 @@ namespace proton {
 
 			KeyCode key = e.GetKeyCode();
 
-			if (key == Key::F3)
-				m_ShowAllColliders = !m_ShowAllColliders;
-
 			if (key == Key::F1)
 				m_ShowSelectionOutline = !m_ShowSelectionOutline;
 
 			if (key == Key::F2)
 				m_ShowSelectionCollider = !m_ShowSelectionCollider;
+
+			if (key == Key::F3)
+				m_ShowAllColliders = !m_ShowAllColliders;
+
+			if (key == Key::F4)
+				m_Camera->m_UseInRuntime = !m_Camera->m_UseInRuntime;
+
 
 			if (m_SelectedEntity)
 			{
@@ -404,16 +408,36 @@ namespace proton {
 	static void DrawSelectionOutline(Entity entity, glm::vec4 color, float ts)
 	{
 		auto& transform = entity.GetComponent<TransformComponent>();
-		glm::vec3 position = { transform.WorldPosition.x, transform.WorldPosition.y, 0.21f };
-		glm::vec3 scale = { transform.Scale.x + 0.07f, transform.Scale.y + 0.07f, 1.0f };
-		glm::mat4 transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
-
-		if (entity.HasComponent<SpriteComponent>())
-		{
-			auto& sprite = entity.GetComponent<SpriteComponent>();
-			scale.x *= sprite.Sprite.GetAspectRatio();
-		}
 		static float dashOffset = 0.0f;
+		glm::mat4 transformMatrix;
+
+		if (entity.HasComponent<TextComponent>())
+		{
+			auto& textComponent = entity.GetComponent<TextComponent>();
+
+			float fontSize = transform.Scale.x;
+			glm::vec2 textSize = textComponent.FontAsset->CalculateTextSize(&textComponent, transform.Scale);
+			glm::vec3 position = {
+				transform.WorldPosition.x,
+				transform.WorldPosition.y,
+				0.21f
+			};
+
+			glm::vec3 scale = { textSize.x + 0.1f, textSize.y + 0.1f, 1.0f };
+			transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
+		}
+		else
+		{
+			glm::vec3 position = { transform.WorldPosition.x, transform.WorldPosition.y, 0.21f };
+			glm::vec3 scale = { transform.Scale.x + 0.07f, transform.Scale.y + 0.07f, 1.0f };
+			transformMatrix = Math::GetTransform(position, scale, transform.Rotation);
+
+			if (entity.HasComponent<SpriteComponent>())
+			{
+				auto& sprite = entity.GetComponent<SpriteComponent>();
+				scale.x *= sprite.Sprite.GetAspectRatio();
+			}
+		}
 		dashOffset += 0.4f * ts;
 		Renderer::DrawDashedRect(transformMatrix, color, 2.0f, dashOffset);
 	}

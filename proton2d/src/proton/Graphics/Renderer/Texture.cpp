@@ -1,6 +1,6 @@
 //
 // This file provides functionalities for managing OpenGL textures.
-// From Hazel Engine Renderer OpenGL API:
+// Adapted from Hazel Engine Renderer OpenGL API:
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLTexture.cpp
 //
 #include "ptpch.h"

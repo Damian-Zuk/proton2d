@@ -1,6 +1,6 @@
 //
 // This file provides functionalities for managing framebuffers in OpenGL.
-// From Hazel Engine Renderer OpenGL API:
+// Adapted from Hazel Engine Renderer OpenGL API:
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLFramebuffer.h
 //
 #pragma once

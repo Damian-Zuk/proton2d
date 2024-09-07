@@ -1,6 +1,6 @@
 // 
 // Basic 2D Batch Renderer
-// Architecture and Code based upon Hazel 2D Renderer:
+// Adapted from Hazel 2D Renderer:
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.cpp
 //
 #include "ptpch.h"
@@ -510,6 +510,39 @@ namespace proton {
 		data.CircleIndexCount += 6;
 	}
 
+	static glm::vec2 getScaleFromMat4(const glm::mat4& matrix) {
+		// Extract the X and Y basis vectors
+		glm::vec2 scaleX(matrix[0][0], matrix[0][1]);  // X basis vector
+		glm::vec2 scaleY(matrix[1][0], matrix[1][1]);  // Y basis vector
+
+		// Compute the scale by taking the length of each basis vector
+		return glm::vec2(glm::length(scaleX), glm::length(scaleY));
+	}
+
+	void Renderer::DrawString(const std::string& string, Shared<Font> font, const glm::vec3& position, const glm::vec2& scale, float rotation, const TextParams& textParams)
+	{
+		glm::vec2 totalTextSize = font->CalculateTextSize(string, scale, textParams.Kerning, textParams.LineSpacing);
+
+		glm::vec3 textOffset = glm::vec3(-totalTextSize.x / 2.0f * (scale.x >= 0.0f ? 1.0f : -1.0f), -totalTextSize.y / 2.0f * (scale.y >= 0.0f ? 1.0f : -1.0f), 0.0f);
+
+		glm::mat4 transform = glm::translate(glm::mat4{ 1.0f }, position)
+			* glm::translate(glm::mat4(1.0f), textOffset)
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3{ 0.0f, 0.0f, 1.0f})
+			* glm::scale(glm::mat4(1.0f), glm::vec3{ scale.x, scale.y, 1.0f });
+
+		DrawString(string, font, transform, textParams);
+	}
+
+	void Renderer::DrawString(const std::string& string, const glm::vec3& position, const glm::vec2& scale, float rotation, const TextComponent& component)
+	{
+		DrawString(string, component.FontAsset, position, scale, rotation, { component.Kerning, component.LineSpacing, component.Color });
+	}
+
+	void Renderer::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component)
+	{
+		DrawString(string, component.FontAsset, transform, { component.Kerning, component.LineSpacing, component.Color });
+	}
+
 	void Renderer::DrawString(const std::string& string, Shared<Font> font, const glm::mat4& transform, const TextParams& textParams)
 	{
 		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
@@ -616,11 +649,6 @@ namespace proton {
 				x += fsScale * advance + textParams.Kerning;
 			}
 		}
-	}
-
-	void Renderer::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component)
-	{
-		DrawString(string, component.FontAsset, transform, { component.Color, component.Kerning, component.LineSpacing });
 	}
 
 	void Renderer::SetLineWidth(float width)

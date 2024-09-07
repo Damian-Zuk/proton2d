@@ -1,6 +1,6 @@
 //
 // This file provides functionalities for creation, binding, and data handling of OpenGL uniform buffers.
-// From Hazel Renderer OpenGL API: 
+// Adapted from Hazel Renderer OpenGL API: 
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLUniformBuffer.h
 //
 #pragma once

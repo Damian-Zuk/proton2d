@@ -13,13 +13,41 @@
     "EnableNetworking": true,
     "Entities": [
         {
-            "UUID": 6862468770628249852,
-            "Tag": "Ball",
+            "UUID": 10061319273039018859,
+            "Tag": "SampleText",
             "Transform": {
                 "Position": [
-                    10.88923,
-                    9.24628,
-                    0.101
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    0.5,
+                    0.5
+                ]
+            },
+            "Text": {
+                "TextString": "This is a test",
+                "Kerning": 0.0,
+                "LineSpacing": 0.0,
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Hidden": false
+            }
+        },
+        {
+            "UUID": 11604205614906839293,
+            "Tag": "Box Pyramid",
+            "Transform": {
+                "Position": [
+                    -13.21776,
+                    0.79455,
+                    0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
@@ -28,574 +56,8 @@
                 ]
             },
             "Prefab": {
-                "UUID": 8825705037770810944
+                "UUID": 14944450881489412473
             }
-        },
-        {
-            "UUID": 13959622637432332777,
-            "Tag": "Boxes",
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "UUID": 7237620364551866148,
-            "Tag": "Balls",
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "UUID": 12402014902206306287,
-            "Tag": "Spawn Points",
-            "Transform": {
-                "Position": [
-                    3.31376,
-                    1.80879,
-                    0.1
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Entities": [
-                {
-                    "UUID": 6669721361522134344,
-                    "Tag": "PlayerSpawn3",
-                    "Transform": {
-                        "Position": [
-                            3.81151,
-                            -0.01933,
-                            0.1
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
-                        ]
-                    }
-                },
-                {
-                    "UUID": 18277456767722596498,
-                    "Tag": "PlayerSpawn2",
-                    "Transform": {
-                        "Position": [
-                            1.31151,
-                            -0.01933,
-                            0.1
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
-                        ]
-                    }
-                },
-                {
-                    "UUID": 779781961570109279,
-                    "Tag": "PlayerSpawn1",
-                    "Transform": {
-                        "Position": [
-                            -1.18849,
-                            -0.01933,
-                            0.1
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
-                        ]
-                    }
-                },
-                {
-                    "UUID": 4228852946507038501,
-                    "Tag": "PlayerSpawn0",
-                    "Transform": {
-                        "Position": [
-                            -3.68849,
-                            -0.01933,
-                            0.1
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "UUID": 13169798382823687644,
-            "Tag": "Terrain",
-            "Transform": {
-                "Position": [
-                    3.72639,
-                    11.69317,
-                    0.0
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Entities": [
-                {
-                    "UUID": 12379424859158186847,
-                    "Tag": "Block",
-                    "Transform": {
-                        "Position": [
-                            43.8861,
-                            -4.55849,
-                            0.061
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            50.0,
-                            3.0
-                        ]
-                    },
-                    "ResizableSprite": {
-                        "Width": 50,
-                        "Height": 3,
-                        "TileScale": 1.0,
-                        "Edges": 255,
-                        "Offset": [
-                            0,
-                            0
-                        ],
-                        "PatternSize": [
-                            3,
-                            3
-                        ],
-                        "Color": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "Spritesheet": "level-sheet.png"
-                    },
-                    "Rigidbody": {
-                        "Type": 0,
-                        "LinearDamping": 0.0,
-                        "AngularDamping": 0.0,
-                        "GravityScale": 1.0,
-                        "IsBullet": false,
-                        "FixedRotation": false,
-                        "AttachToParent": false
-                    },
-                    "BoxCollider": {
-                        "Size": [
-                            0.9900000095367432,
-                            0.8399999737739563
-                        ],
-                        "Offset": [
-                            0.0,
-                            0.0
-                        ],
-                        "Friction": 0.5,
-                        "Restitution": 0.0,
-                        "RestitutionThreshold": 0.5,
-                        "Density": 1.0,
-                        "IsSensor": false,
-                        "AttachToParent": false
-                    }
-                },
-                {
-                    "UUID": 18144928035304173614,
-                    "Tag": "Block",
-                    "Transform": {
-                        "Position": [
-                            9.94472,
-                            -14.58601,
-                            0.069
-                        ],
-                        "Rotation": -20.0,
-                        "Scale": [
-                            4.92,
-                            2.49
-                        ]
-                    },
-                    "ResizableSprite": {
-                        "Width": 5,
-                        "Height": 3,
-                        "TileScale": 1.0,
-                        "Edges": 52,
-                        "Offset": [
-                            0,
-                            0
-                        ],
-                        "PatternSize": [
-                            3,
-                            3
-                        ],
-                        "Color": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "Spritesheet": "level-sheet.png"
-                    },
-                    "Rigidbody": {
-                        "Type": 0,
-                        "LinearDamping": 0.0,
-                        "AngularDamping": 0.0,
-                        "GravityScale": 1.0,
-                        "IsBullet": false,
-                        "FixedRotation": false,
-                        "AttachToParent": false
-                    },
-                    "BoxCollider": {
-                        "Size": [
-                            0.9900000095367432,
-                            0.9100000262260437
-                        ],
-                        "Offset": [
-                            0.0,
-                            -0.07000000029802322
-                        ],
-                        "Friction": 0.5,
-                        "Restitution": 0.0,
-                        "RestitutionThreshold": 0.5,
-                        "Density": 1.0,
-                        "IsSensor": false,
-                        "AttachToParent": false
-                    }
-                },
-                {
-                    "UUID": 12620259618982116208,
-                    "Tag": "Block",
-                    "Transform": {
-                        "Position": [
-                            -7.5196,
-                            -14.66566,
-                            0.073
-                        ],
-                        "Rotation": 35.8,
-                        "Scale": [
-                            3.0,
-                            3.0
-                        ]
-                    },
-                    "ResizableSprite": {
-                        "Width": 3,
-                        "Height": 3,
-                        "TileScale": 1.0,
-                        "Edges": 52,
-                        "Offset": [
-                            0,
-                            0
-                        ],
-                        "PatternSize": [
-                            3,
-                            3
-                        ],
-                        "Color": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "Spritesheet": "level-sheet.png"
-                    },
-                    "Rigidbody": {
-                        "Type": 0,
-                        "LinearDamping": 0.0,
-                        "AngularDamping": 0.0,
-                        "GravityScale": 1.0,
-                        "IsBullet": false,
-                        "FixedRotation": false,
-                        "AttachToParent": false
-                    },
-                    "BoxCollider": {
-                        "Size": [
-                            0.9399999976158142,
-                            0.8999999761581421
-                        ],
-                        "Offset": [
-                            0.0,
-                            0.0
-                        ],
-                        "Friction": 0.5,
-                        "Restitution": 0.0,
-                        "RestitutionThreshold": 0.5,
-                        "Density": 1.0,
-                        "IsSensor": false,
-                        "AttachToParent": false
-                    }
-                },
-                {
-                    "UUID": 8550948480518090155,
-                    "Tag": "Block",
-                    "Transform": {
-                        "Position": [
-                            53.11548,
-                            -10.08875,
-                            0.062
-                        ],
-                        "Rotation": -31.0,
-                        "Scale": [
-                            2.04,
-                            11.28
-                        ]
-                    },
-                    "ResizableSprite": {
-                        "Width": 3,
-                        "Height": 12,
-                        "TileScale": 1.0,
-                        "Edges": 99,
-                        "Offset": [
-                            0,
-                            0
-                        ],
-                        "PatternSize": [
-                            3,
-                            3
-                        ],
-                        "Color": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "Spritesheet": "level-sheet.png"
-                    },
-                    "Rigidbody": {
-                        "Type": 0,
-                        "LinearDamping": 0.0,
-                        "AngularDamping": 0.0,
-                        "GravityScale": 1.0,
-                        "IsBullet": false,
-                        "FixedRotation": false,
-                        "AttachToParent": false
-                    },
-                    "BoxCollider": {
-                        "Size": [
-                            0.9399999976158142,
-                            0.9599999785423279
-                        ],
-                        "Offset": [
-                            0.0,
-                            0.0
-                        ],
-                        "Friction": 0.5,
-                        "Restitution": 0.0,
-                        "RestitutionThreshold": 0.5,
-                        "Density": 1.0,
-                        "IsSensor": false,
-                        "AttachToParent": false
-                    }
-                },
-                {
-                    "UUID": 6708694409942740429,
-                    "Tag": "Block",
-                    "Transform": {
-                        "Position": [
-                            0.42061,
-                            -14.06144,
-                            0.068
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            15.45,
-                            3.0
-                        ]
-                    },
-                    "ResizableSprite": {
-                        "Width": 16,
-                        "Height": 3,
-                        "TileScale": 1.0,
-                        "Edges": 53,
-                        "Offset": [
-                            0,
-                            0
-                        ],
-                        "PatternSize": [
-                            3,
-                            3
-                        ],
-                        "Color": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "Spritesheet": "level-sheet.png"
-                    },
-                    "Rigidbody": {
-                        "Type": 0,
-                        "LinearDamping": 0.0,
-                        "AngularDamping": 0.0,
-                        "GravityScale": 1.0,
-                        "IsBullet": false,
-                        "FixedRotation": false,
-                        "AttachToParent": false
-                    },
-                    "BoxCollider": {
-                        "Size": [
-                            0.9769999980926514,
-                            0.8700000047683716
-                        ],
-                        "Offset": [
-                            0.0,
-                            0.0
-                        ],
-                        "Friction": 0.5,
-                        "Restitution": 0.0,
-                        "RestitutionThreshold": 0.5,
-                        "Density": 1.0,
-                        "IsSensor": false,
-                        "AttachToParent": false
-                    }
-                },
-                {
-                    "UUID": 5227670715635369126,
-                    "Tag": "Block",
-                    "Transform": {
-                        "Position": [
-                            -10.79817,
-                            -4.74154,
-                            0.064
-                        ],
-                        "Rotation": -29.0,
-                        "Scale": [
-                            5.19,
-                            1.12
-                        ]
-                    },
-                    "ResizableSprite": {
-                        "Width": 6,
-                        "Height": 2,
-                        "TileScale": 1.0,
-                        "Edges": 255,
-                        "Offset": [
-                            0,
-                            0
-                        ],
-                        "PatternSize": [
-                            3,
-                            3
-                        ],
-                        "Color": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "Spritesheet": "level-sheet.png"
-                    },
-                    "Rigidbody": {
-                        "Type": 0,
-                        "LinearDamping": 0.0,
-                        "AngularDamping": 0.0,
-                        "GravityScale": 1.0,
-                        "IsBullet": false,
-                        "FixedRotation": false,
-                        "AttachToParent": false
-                    },
-                    "BoxCollider": {
-                        "Size": [
-                            0.9399999976158142,
-                            0.5600000023841858
-                        ],
-                        "Offset": [
-                            0.0,
-                            0.0
-                        ],
-                        "Friction": 0.5,
-                        "Restitution": 0.0,
-                        "RestitutionThreshold": 0.5,
-                        "Density": 1.0,
-                        "IsSensor": false,
-                        "AttachToParent": false
-                    }
-                },
-                {
-                    "UUID": 17555960388265391369,
-                    "Tag": "Block",
-                    "Transform": {
-                        "Position": [
-                            2.01067,
-                            -15.69318,
-                            0.061
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            500.0,
-                            3.0
-                        ]
-                    },
-                    "ResizableSprite": {
-                        "Width": 500,
-                        "Height": 3,
-                        "TileScale": 1.0,
-                        "Edges": 255,
-                        "Offset": [
-                            0,
-                            0
-                        ],
-                        "PatternSize": [
-                            3,
-                            3
-                        ],
-                        "Color": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "Spritesheet": "level-sheet.png"
-                    },
-                    "Rigidbody": {
-                        "Type": 0,
-                        "LinearDamping": 0.0,
-                        "AngularDamping": 0.0,
-                        "GravityScale": 1.0,
-                        "IsBullet": false,
-                        "FixedRotation": false,
-                        "AttachToParent": false
-                    },
-                    "BoxCollider": {
-                        "Size": [
-                            0.9900000095367432,
-                            0.8299999833106995
-                        ],
-                        "Offset": [
-                            0.0,
-                            0.0
-                        ],
-                        "Friction": 0.5,
-                        "Restitution": 0.0,
-                        "RestitutionThreshold": 0.5,
-                        "Density": 1.0,
-                        "IsSensor": false,
-                        "AttachToParent": false
-                    }
-                }
-            ]
         },
         {
             "UUID": 13942381985595828420,
@@ -2026,12 +1488,12 @@
             ]
         },
         {
-            "UUID": 11604205614906839293,
-            "Tag": "Box Pyramid",
+            "UUID": 13169798382823687644,
+            "Tag": "Terrain",
             "Transform": {
                 "Position": [
-                    -13.21776,
-                    0.79455,
+                    3.72639,
+                    11.69317,
                     0.0
                 ],
                 "Rotation": 0.0,
@@ -2040,18 +1502,451 @@
                     1.0
                 ]
             },
-            "Prefab": {
-                "UUID": 14944450881489412473
-            }
+            "Entities": [
+                {
+                    "UUID": 12379424859158186847,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            43.8861,
+                            -4.55849,
+                            0.061
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            50.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 50,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.8399999737739563
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 18144928035304173614,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            9.94472,
+                            -14.58601,
+                            0.069
+                        ],
+                        "Rotation": -20.0,
+                        "Scale": [
+                            4.92,
+                            2.49
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 5,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 52,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.9100000262260437
+                        ],
+                        "Offset": [
+                            0.0,
+                            -0.07000000029802322
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 12620259618982116208,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            -7.5196,
+                            -14.66566,
+                            0.073
+                        ],
+                        "Rotation": 35.8,
+                        "Scale": [
+                            3.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 52,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.8999999761581421
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 8550948480518090155,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            53.11548,
+                            -10.08875,
+                            0.062
+                        ],
+                        "Rotation": -31.0,
+                        "Scale": [
+                            2.04,
+                            11.28
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 3,
+                        "Height": 12,
+                        "TileScale": 1.0,
+                        "Edges": 99,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.9599999785423279
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 6708694409942740429,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            0.42061,
+                            -14.06144,
+                            0.068
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            15.45,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 16,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 53,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9769999980926514,
+                            0.8700000047683716
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 5227670715635369126,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            -10.79817,
+                            -4.74154,
+                            0.064
+                        ],
+                        "Rotation": -29.0,
+                        "Scale": [
+                            5.19,
+                            1.12
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 6,
+                        "Height": 2,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9399999976158142,
+                            0.5600000023841858
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                },
+                {
+                    "UUID": 17555960388265391369,
+                    "Tag": "Block",
+                    "Transform": {
+                        "Position": [
+                            2.01067,
+                            -15.69318,
+                            0.061
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            500.0,
+                            3.0
+                        ]
+                    },
+                    "ResizableSprite": {
+                        "Width": 500,
+                        "Height": 3,
+                        "TileScale": 1.0,
+                        "Edges": 255,
+                        "Offset": [
+                            0,
+                            0
+                        ],
+                        "PatternSize": [
+                            3,
+                            3
+                        ],
+                        "Color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "Spritesheet": "level-sheet.png"
+                    },
+                    "Rigidbody": {
+                        "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
+                        "FixedRotation": false,
+                        "AttachToParent": false
+                    },
+                    "BoxCollider": {
+                        "Size": [
+                            0.9900000095367432,
+                            0.8299999833106995
+                        ],
+                        "Offset": [
+                            0.0,
+                            0.0
+                        ],
+                        "Friction": 0.5,
+                        "Restitution": 0.0,
+                        "RestitutionThreshold": 0.5,
+                        "Density": 1.0,
+                        "IsSensor": false,
+                        "AttachToParent": false
+                    }
+                }
+            ]
         },
         {
-            "UUID": 11954588680306466647,
-            "Tag": "Ball",
+            "UUID": 12402014902206306287,
+            "Tag": "Spawn Points",
             "Transform": {
                 "Position": [
-                    14.92604,
-                    10.28208,
-                    0.101
+                    3.31376,
+                    1.80879,
+                    0.1
                 ],
                 "Rotation": 0.0,
                 "Scale": [
@@ -2059,84 +1954,103 @@
                     1.0
                 ]
             },
-            "Prefab": {
-                "UUID": 8825705037770810944
-            }
+            "Entities": [
+                {
+                    "UUID": 6669721361522134344,
+                    "Tag": "PlayerSpawn3",
+                    "Transform": {
+                        "Position": [
+                            3.81151,
+                            -0.01933,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 18277456767722596498,
+                    "Tag": "PlayerSpawn2",
+                    "Transform": {
+                        "Position": [
+                            1.31151,
+                            -0.01933,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 779781961570109279,
+                    "Tag": "PlayerSpawn1",
+                    "Transform": {
+                        "Position": [
+                            -1.18849,
+                            -0.01933,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "UUID": 4228852946507038501,
+                    "Tag": "PlayerSpawn0",
+                    "Transform": {
+                        "Position": [
+                            -3.68849,
+                            -0.01933,
+                            0.1
+                        ],
+                        "Rotation": 0.0,
+                        "Scale": [
+                            1.0,
+                            1.0
+                        ]
+                    }
+                }
+            ]
         },
         {
-            "UUID": 14730315803633774614,
-            "Tag": "Ball",
+            "UUID": 7237620364551866148,
+            "Tag": "Balls",
             "Transform": {
                 "Position": [
-                    17.18486,
-                    8.95905,
-                    0.101
+                    0.0,
+                    0.0,
+                    0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
                     1.0,
                     1.0
                 ]
-            },
-            "Prefab": {
-                "UUID": 8825705037770810944
             }
         },
         {
-            "UUID": 15994919318258382870,
-            "Tag": "Ball",
+            "UUID": 13959622637432332777,
+            "Tag": "Boxes",
             "Transform": {
                 "Position": [
-                    12.37679,
-                    12.5409,
-                    0.101
+                    0.0,
+                    0.0,
+                    0.0
                 ],
                 "Rotation": 0.0,
                 "Scale": [
                     1.0,
                     1.0
                 ]
-            },
-            "Prefab": {
-                "UUID": 8825705037770810944
-            }
-        },
-        {
-            "UUID": 9394792254078353060,
-            "Tag": "Ball",
-            "Transform": {
-                "Position": [
-                    18.92738,
-                    12.05687,
-                    0.101
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Prefab": {
-                "UUID": 8825705037770810944
-            }
-        },
-        {
-            "UUID": 17689177567632955407,
-            "Tag": "Ball",
-            "Transform": {
-                "Position": [
-                    18.92738,
-                    5.53855,
-                    0.101
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "Prefab": {
-                "UUID": 8825705037770810944
             }
         }
     ]

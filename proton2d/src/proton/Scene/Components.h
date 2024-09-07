@@ -96,16 +96,6 @@ namespace proton {
 		bool Hidden = false;
 	};
 
-	struct UIComponent
-	{
-		UIElement* Element;
-	};
-
-	struct UITextComponent
-	{
-		UIText UIText;
-	};
-
 	struct SpriteAnimationComponent
 	{
 		SpriteAnimation SpriteAnimation;

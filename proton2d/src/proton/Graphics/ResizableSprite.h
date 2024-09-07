@@ -22,6 +22,8 @@ namespace proton {
 		TextureCoords TextureCoords;
 	};
 
+	// TODO: This need to optimized by creating GLSL shader
+	// instead of rendering on the CPU
 	class ResizableSprite
 	{
 	public:

@@ -199,6 +199,7 @@ namespace proton {
 
 	void NetworkManager::SetIpAddress(const std::string& ip)
 	{
+		// TODO: Validate ip address
 		m_IpAddress = ip;
 	}
 

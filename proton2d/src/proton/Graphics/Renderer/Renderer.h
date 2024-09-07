@@ -1,6 +1,6 @@
 // 
 // Basic 2D Batch Renderer
-// Architecture and Code based upon Hazel 2D Renderer:
+// Adapted from Hazel 2D Renderer:
 // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Renderer/Renderer2D.h
 // 
 #pragma once
@@ -39,10 +39,14 @@ namespace proton {
 
 		struct TextParams
 		{
-			glm::vec4 Color{ 1.0f };
 			float Kerning = 0.0f;
 			float LineSpacing = 0.0f;
+			glm::vec4 Color{ 1.0f };
 		};
+
+		static void DrawString(const std::string& string, Shared<Font> font, const glm::vec3& position, const glm::vec2& scale, float rotation, const TextParams& textParams);
+		static void DrawString(const std::string& string, const glm::vec3& position, const glm::vec2& scale, float rotation, const TextComponent& component);
+
 		static void DrawString(const std::string& string, Shared<Font> font, const glm::mat4& transform, const TextParams& textParams);
 		static void DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component);
 

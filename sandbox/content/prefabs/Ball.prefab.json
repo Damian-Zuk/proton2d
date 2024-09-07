@@ -1,10 +1,10 @@
 {
-    "UUID": 6862468770628249852,
+    "UUID": 17689177567632955407,
     "Tag": "Ball",
     "Transform": {
         "Position": [
-            19.50503,
-            4.14779,
+            18.92738,
+            5.53855,
             0.101
         ],
         "Rotation": 0.0,
@@ -66,7 +66,7 @@
             "Fields": [
                 {
                     "FieldName": "InterpolationThreshold",
-                    "Value": 0.05000000074505806
+                    "Value": 0.10000000149011612
                 },
                 {
                     "FieldName": "SwitchCooldownTime",

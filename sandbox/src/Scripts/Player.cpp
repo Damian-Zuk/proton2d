@@ -40,9 +40,7 @@ bool Player::OnCreate()
 	{
 		GetGameMode<MyGameMode>()->m_LocalPlayer = this;
 		GetScene()->SetPrimaryCameraEntity(*this);
-
-		if (IsNetModeClient())
-			networkManager->SetLocalPlayerEntity(*this);
+		networkManager->SetLocalPlayerEntity(*this);
 	}
 	else
 	{
@@ -51,7 +49,7 @@ bool Player::OnCreate()
 		net.NetTransform.Method = NetSyncMethod::Interpolation;
 	}
 
-	// Set up sprite animations
+	// Setup sprite animations
 	AddComponent<SpriteAnimationComponent>();
 	SpriteAnimation& animation = GetSpriteAnimation();
 
@@ -61,7 +59,7 @@ bool Player::OnCreate()
 	animation.Add(PlayerState_Land, 9, AnimationPlayMode::PLAY_ONCE);
 	animation.SetFPS(12);
 
-	// Set physics sensors to following child entities
+	// Setup physics sensors (child entities)
 	SetPhysicsSensor(Sensor_Bottom, "Sensor_Bottom");
 	SetPhysicsSensor(Sensor_BottomLeft, "Sensor_BottomLeft");
 	SetPhysicsSensor(Sensor_BottomRight, "Sensor_BottomRight");
@@ -106,6 +104,16 @@ void Player::OnFixedUpdate(float ts)
 		m_InputState.MoveRight = IsKeyPressed(Key::D);
 		m_InputState.MoveLeft = IsKeyPressed(Key::A);
 		m_InputState.Jump = IsKeyPressed(Key::Space) || IsKeyPressed(Key::W);
+
+		// Network (sending player input to the server)
+		if (IsNetModeClient() && m_InputState != m_PreviousInputState)
+		{
+			Client_SendCustomMessage([&](NetworkStreamWriter& stream) {
+				m_InputState.Jump &= isGrounded; // make sure player can jump
+				stream.WriteRaw(GameMessageType::PlayerInput);
+				stream.WriteRaw(m_InputState);
+			});
+		}
 	}
 
 	// Set player direction (right: 1.0, left: -1.0f)
@@ -116,6 +124,8 @@ void Player::OnFixedUpdate(float ts)
 		return;
 	
 	bool move = m_InputState.MoveLeft || m_InputState.MoveRight;
+
+	// Set wheel fixed rotation when not moving
 	if (!move)
 	{
 		if (!IsOnHighSlope())
@@ -129,7 +139,7 @@ void Player::OnFixedUpdate(float ts)
 	// Get player linear velocity
 	glm::vec2 velocity = GetLinearVelocity();
 
-	// Set horizontal velocity (acceleration)
+	// Set player horizontal velocity
 	if (!IsOnHighSlope())
 	{
 		// Modify max speed because of linear damping (when in air there is no damping)
@@ -143,7 +153,7 @@ void Player::OnFixedUpdate(float ts)
 		m_Body->ApplyForceToCenter({ m_Direction * 100.0f, 0.0f }, true);
 	}
 
-	// Set player state to Run when key is pressed and player is not in the air
+	// Set player state to Run when key is pressed and player is not jumping
 	if (move && m_State != PlayerState_Jump)
 		m_State = PlayerState_Run;
 
@@ -195,16 +205,6 @@ void Player::OnFixedUpdate(float ts)
 		m_Direction = velocity.x > 0.0f ? 1.0f : -1.0f;
 	
 	m_LastJumpTimer += ts;
-
-	// Network (sending player inputs to the server)
-	if (IsNetModeClient() && m_IsLocalPlayer && m_InputState != m_PreviousInputState)
-	{
-		Client_SendCustomMessage([&](NetworkStreamWriter& stream) {
-			stream.WriteRaw(GameMessageType::PlayerInput);
-			m_InputState.Jump &= isGrounded;
-			stream.WriteRaw(m_InputState);
-		});
-	}
 }
 
 void Player::SetPlayerColor(const glm::vec4& color)
@@ -214,12 +214,11 @@ void Player::SetPlayerColor(const glm::vec4& color)
 	m_PlayerColor = color;
 }
 
-// --------- Editor ---------
 void Player::OnImGuiRender()
 {
 #ifdef PT_EDITOR
 	ImGui::Dummy({ 0, 5 });
-	char buffer[128];
+	static char buffer[128];
 
 	if (ImGui::ColorEdit4("Color", glm::value_ptr(m_PlayerColor)))
 		SetPlayerColor(m_PlayerColor);
