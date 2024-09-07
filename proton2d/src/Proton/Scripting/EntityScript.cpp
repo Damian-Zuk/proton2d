@@ -7,13 +7,17 @@
 
 #ifdef PT_EDITOR
 	#include "Proton/Editor/EditorLayer.h"
+	#include <imgui.h>
 #endif
 
 namespace proton {
 
-	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, bool showInEditor)
+	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, size_t size, bool showInEditor)
 	{
-		m_ScriptFields[name] = { type, field, showInEditor };
+		m_ScriptFields[name] = { type, field, size };
+	#ifdef PT_EDITOR
+		m_EditorScriptField[name] = { showInEditor };
+	#endif
 	}
 
 	void EntityScript::SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName)
@@ -68,6 +72,10 @@ namespace proton {
 		GameInstance* focusedInstance = EditorLayer::Get()->GetFocusedGameInstance();
 		if (GetScene() != focusedInstance->GetActiveScene())
 			return false;
+		
+		const auto& io = ImGui::GetIO();
+		if (io.WantTextInput)
+			return false;
 	#endif
 		return Input::IsKeyPressed(key);
 	}
@@ -78,58 +86,19 @@ namespace proton {
 		GameInstance* focusedInstance = EditorLayer::Get()->GetFocusedGameInstance();
 		if (GetScene() != focusedInstance->GetActiveScene())
 			return false;
+
+		const auto& io = ImGui::GetIO();
+		if (io.WantCaptureMouse)
+			return false;
 	#endif
 		return Input::IsMouseButtonPressed(button);
 	}
 
 	// ------------------------------- Networking -------------------------------
 
-	using ReplicatedScript = NetworkComponent::ReplicatedScript;
-	using ReplicatedField = ReplicatedScript::ReplicatedField;
-
-	static bool CompareByClassName(const ReplicatedScript& a, const  ReplicatedScript& b) {
-		return a.Script->GetScriptClassName() < b.Script->GetScriptClassName();
-	}
-
-	void EntityScript::SetReplicatedData(void* data, size_t size, const std::function<void()>& notifyFunction)
-	{
-		if (!HasComponent<NetworkComponent>())
-		{
-			PT_CORE_ERROR("Entity: ({}, {}) missing NetworkComponent)", GetUUID(), GetTag());
-			return;
-		}
-
-		auto& net = GetComponent<NetworkComponent>();
-		auto& repScripts = net.ReplicatedScripts;
-
-		auto scriptRepInfo = std::find_if(repScripts.begin(), repScripts.end(),
-			[this](const auto& repInfo) { return repInfo.Script == this; });
-
-		if (scriptRepInfo == repScripts.end())
-		{
-			ReplicatedScript newEntry;
-			newEntry.Script = this;
-			newEntry.ReplicatedFields.push_back(ReplicatedField{ data, size, notifyFunction });
-			
-			auto insertPosition = std::lower_bound(repScripts.begin(), repScripts.end(), newEntry, CompareByClassName);
-			repScripts.insert(insertPosition, newEntry);
-			return;
-		}
-
-		scriptRepInfo->ReplicatedFields.push_back(ReplicatedField{ data, size, notifyFunction });
-	}
-
 	NetworkManager* EntityScript::GetNetworkManager() const
 	{
 		return GetScene()->GetGameInstance()->GetNetworkManager();
-	}
-
-	void EntityScript::SetReplicatedField(const std::string& name, const std::function<void()>& notifyFunction)
-	{
-		PT_CORE_ASSERT(m_ScriptFields.find(name) != m_ScriptFields.end(), "Script field not found");
-
-		ScriptField* scriptField = &m_ScriptFields.at(name);
-		SetReplicatedData(scriptField->InstanceFieldValue, GetFieldSize(scriptField->Type), notifyFunction);
 	}
 
 	bool EntityScript::IsNetModeServer() const
@@ -160,34 +129,49 @@ namespace proton {
 		return netMode != NetMode::Client;
 	}
 
-	// ------------------------------- Script Fields -------------------------------
+	using ReplicatedScript = NetworkComponent::ReplicatedScript;
+	using ReplicatedField = ReplicatedScript::ReplicatedField;
 
-	const size_t EntityScript::GetFieldSize(ScriptFieldType type)
+	static bool CompareByClassName(const ReplicatedScript& a, const  ReplicatedScript& b) {
+		return a.Script->GetScriptClassName() < b.Script->GetScriptClassName();
+	}
+
+	void EntityScript::SetReplicatedData(void* data, size_t size, const std::function<void()>& notifyFunction)
 	{
-		switch (type)
+		SetReplicatedField(ScriptField{ ScriptFieldType::Data, data, size }, notifyFunction);
+	}
+
+	void EntityScript::SetReplicatedField(const std::string& fieldName, const std::function<void()>& notifyFunction)
+	{
+		SetReplicatedField(m_ScriptFields[fieldName], notifyFunction);
+	}
+
+	void EntityScript::SetReplicatedField(const ScriptField& field, const std::function<void()>& notifyFunction)
+	{
+		if (!HasComponent<NetworkComponent>())
 		{
-		case ScriptFieldType::Float:
-			return sizeof(float);
-		case ScriptFieldType::Float2:
-			return sizeof(glm::vec2);
-		case ScriptFieldType::Float3:
-			return sizeof(glm::vec3);
-		case ScriptFieldType::Float4:
-			return sizeof(glm::vec4);
-		case ScriptFieldType::Int:
-			return sizeof(int);
-		case ScriptFieldType::Int2:
-			return sizeof(glm::ivec2);
-		case ScriptFieldType::Int3:
-			return sizeof(glm::ivec3);
-		case ScriptFieldType::Int4:
-			return sizeof(glm::ivec4);
-		case ScriptFieldType::Bool:
-			return sizeof(bool);
-		default:
-			PT_CORE_ASSERT("Unexpected value type!");
-			return 0;
+			PT_CORE_ERROR("Entity: ({}, {}) missing NetworkComponent)", GetUUID(), GetTag());
+			return;
 		}
+
+		auto& net = GetComponent<NetworkComponent>();
+		auto& repScripts = net.ReplicatedScripts;
+
+		auto scriptRepInfo = std::find_if(repScripts.begin(), repScripts.end(),
+			[this](const auto& repInfo) { return repInfo.Script == this; });
+
+		if (scriptRepInfo == repScripts.end())
+		{
+			ReplicatedScript newEntry;
+			newEntry.Script = this;
+			newEntry.ReplicatedFields.push_back(ReplicatedField{ field, notifyFunction });
+
+			auto insertPosition = std::lower_bound(repScripts.begin(), repScripts.end(), newEntry, CompareByClassName);
+			repScripts.insert(insertPosition, newEntry);
+			return;
+		}
+
+		scriptRepInfo->ReplicatedFields.push_back(ReplicatedField{ field, notifyFunction });
 	}
 
 	void EntityScript::SetFieldValueData(const std::string& fieldName, void* valuePtr)
@@ -197,32 +181,43 @@ namespace proton {
 		switch (field.Type)
 		{
 		case ScriptFieldType::Float:
-			*(float*)field.InstanceFieldValue = *(float*)valuePtr;
+			*(float*)field.ValuePtr = *(float*)valuePtr;
 			break;
 		case ScriptFieldType::Float2:
-			*(glm::vec2*)field.InstanceFieldValue = *(glm::vec2*)valuePtr;
+			*(glm::vec2*)field.ValuePtr = *(glm::vec2*)valuePtr;
 			break;
 		case ScriptFieldType::Float3:
-			*(glm::vec3*)field.InstanceFieldValue = *(glm::vec3*)valuePtr;
+			*(glm::vec3*)field.ValuePtr = *(glm::vec3*)valuePtr;
 			break;
 		case ScriptFieldType::Float4:
-			*(glm::vec4*)field.InstanceFieldValue = *(glm::vec4*)valuePtr;
+			*(glm::vec4*)field.ValuePtr = *(glm::vec4*)valuePtr;
 			break;
+
 		case ScriptFieldType::Int:
-			*(int*)field.InstanceFieldValue = *(int*)valuePtr;
+			*(int*)field.ValuePtr = *(int*)valuePtr;
 			break;
 		case ScriptFieldType::Int2:
-			*(glm::ivec2*)field.InstanceFieldValue = *(glm::ivec2*)valuePtr;
+			*(glm::ivec2*)field.ValuePtr = *(glm::ivec2*)valuePtr;
 			break;
 		case ScriptFieldType::Int3:
-			*(glm::ivec3*)field.InstanceFieldValue = *(glm::ivec3*)valuePtr;
+			*(glm::ivec3*)field.ValuePtr = *(glm::ivec3*)valuePtr;
 			break;
 		case ScriptFieldType::Int4:
-			*(glm::ivec4*)field.InstanceFieldValue = *(glm::ivec4*)valuePtr;
+			*(glm::ivec4*)field.ValuePtr = *(glm::ivec4*)valuePtr;
 			break;
+
 		case ScriptFieldType::Bool:
-			*(bool*)field.InstanceFieldValue = *(bool*)valuePtr;
+			*(bool*)field.ValuePtr = *(bool*)valuePtr;
 			break;
+
+		case ScriptFieldType::String:
+			*(std::string*)field.ValuePtr = *(std::string*)valuePtr;
+			break;
+
+		case ScriptFieldType::Data:
+			memcpy(valuePtr, field.ValuePtr, field.Size);
+			break;
+
 		default:
 			PT_CORE_ASSERT("Unexpected value type!");
 			break;

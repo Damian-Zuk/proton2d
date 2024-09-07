@@ -6,8 +6,8 @@ using namespace proton;
 
 void ParallaxBackground::OnRegisterFields()
 {
-	RegisterField(ScriptFieldType::Float, "ParallaxFactor", &m_ParallaxFactor);
-	RegisterField(ScriptFieldType::Float, "PositionOffset", &m_PositionOffset);
+	REGISTER_FIELD(Float, m_ParallaxFactor);
+	REGISTER_FIELD(Float, m_PositionOffset);
 }
 
 bool ParallaxBackground::OnCreate()

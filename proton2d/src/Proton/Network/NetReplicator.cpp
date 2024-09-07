@@ -229,11 +229,24 @@ namespace proton {
 					auto& field = script.ReplicatedFields[fieldIndex];
 					
 					// Read field value from the replication message
-					if (!stream.ReadData((char*)field.Data, field.Size))
+					if (field.Field.Type == ScriptFieldType::String)
 					{
-						PT_THROW_ERROR("Failed to read script field data: Stream buffer of memory (i={}, j={})", i, j);
-						DUMP_PAYLOAD_ITEM_HEADER();
-						return;
+						std::string* stringPtr = (std::string*)field.Field.ValuePtr;
+						if (!stream.ReadString(*stringPtr))
+						{
+							PT_THROW_ERROR("Failed to read script field data (string): Stream buffer of memory (i={}, j={})", i, j);
+							DUMP_PAYLOAD_ITEM_HEADER();
+							return;
+						}
+					}
+					else
+					{
+						if (!stream.ReadData((char*)field.Field.ValuePtr, field.Field.Size))
+						{
+							PT_THROW_ERROR("Failed to read script field data: Stream buffer of memory (i={}, j={})", i, j);
+							DUMP_PAYLOAD_ITEM_HEADER();
+							return;
+						}
 					}
 
 					// Call notify function (if defined)
@@ -665,7 +678,16 @@ namespace proton {
 
 					if (!forceReplication)
 					{
-						uint32_t checksum = crc32_bitwise(field.Data, field.Size);
+						uint32_t checksum = 0;
+						
+						if (field.Field.Type == ScriptFieldType::String)
+						{
+							std::string* stringPtr = (std::string*)(field.Field.ValuePtr);
+							checksum = crc32_bitwise(stringPtr->data(), stringPtr->size());
+						}
+						else
+							checksum = crc32_bitwise(field.Field.ValuePtr, field.Field.Size);
+						
 						auto& lastChecksum = field.ClientToChecksumMap[clientID];
 						if (checksum == lastChecksum)
 							continue; // Field value not changed, skip replication
@@ -674,8 +696,16 @@ namespace proton {
 
 					// Write field index
 					stream.WriteRaw((uint32_t)fieldIndex);
+					
 					// Write field data 
-					stream.WriteData((char*)field.Data, field.Size);
+					if (field.Field.Type == ScriptFieldType::String)
+					{
+						std::string* stringPtr = (std::string*)(field.Field.ValuePtr);
+						stream.WriteString(*stringPtr);
+					}
+					else
+						stream.WriteData((char*)field.Field.ValuePtr, field.Field.Size);
+					
 					fieldCount++;
 				}
 

@@ -5,7 +5,7 @@
 
 namespace proton {
 
-	using ClientID = uint32_t;
+	using ClientID = uint32_t; // HSteamNetConnection
 
 	enum class NetMode : uint8_t
 	{
@@ -27,6 +27,14 @@ namespace proton {
 	{
 		NetConnectionEndCode_ProtocolMismatch = 2001,
 		NetConnectionEndCode_MaxConnections = 2002
+	};
+
+	struct ClientInfo
+	{
+		ClientID ID;
+		ConnectionStatus Status;
+		std::string ClientName;
+		std::string ConnectionDesc;
 	};
 
 	std::string NetModeToString(NetMode netMode);

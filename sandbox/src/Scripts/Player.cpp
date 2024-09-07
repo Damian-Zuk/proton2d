@@ -21,13 +21,16 @@ void Player::OnRegisterFields()
 	REGISTER_FIELD(Float, m_FallModifier);
 	REGISTER_FIELD(Float, m_PlayerSpeed);
 	REGISTER_FIELD(Float, m_PlayerAcceleration);
-	REGISTER_FIELD(Int, m_ClientID);
 	REGISTER_FIELD_NO_EDIT(Float4, m_PlayerColor);
+	REGISTER_FIELD(String, m_PlayerNick);
+	REGISTER_FIELD(Int, m_ClientID);
 	
+	REPLICATED_FIELD(m_ClientID);
+	REPLICATED_FIELD(m_PlayerColor, [&]() { SetPlayerColor(m_PlayerColor); });
+	REPLICATED_FIELD(m_PlayerNick, [&]() { SetPlayerNick(m_PlayerNick); });
+
 	REPLICATED_DATA(m_Direction);
 	REPLICATED_DATA(m_State);
-	REPLICATED_FIELD(m_ClientID);
-	REPLICATED_FIELD(m_PlayerColor, [&](){ SetPlayerColor(m_PlayerColor); });
 }
 
 bool Player::OnCreate()
@@ -214,6 +217,17 @@ void Player::SetPlayerColor(const glm::vec4& color)
 	m_PlayerColor = color;
 }
 
+void Player::SetPlayerNick(const std::string& nick)
+{
+	if (Entity entity = FindChildByTag("Text_PlayerName"))
+	{
+		auto& text = entity.GetComponent<TextComponent>();
+		text.TextString = nick;
+		text.Color = m_PlayerColor;
+		m_PlayerNick = nick;
+	}
+}
+
 void Player::OnImGuiRender()
 {
 #ifdef PT_EDITOR
@@ -226,7 +240,7 @@ void Player::OnImGuiRender()
 	const auto& color = GetComponent<SpriteComponent>().Color;
 	std::string colorStr = fmt::format("{:.3f}, {:.3f}, {:.3f}, {:.3f}", color.r, color.g, color.b, color.a);
 	strcpy_s(buffer, colorStr.c_str());
-	ImGui::InputText("Color", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputText("Color Float Values", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
 	
 	if (IsRigidbodyInitialized())
 	{
@@ -234,10 +248,8 @@ void Player::OnImGuiRender()
 		std::string velocity = fmt::format("{:.3f}, {:.3f}", vel.x, vel.y);
 		strcpy_s(buffer, velocity.c_str());
 		ImGui::InputText("Velocity", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
-		
-		ImGui::Text("Gravity scale: %f", m_Body->GetGravityScale());
 	}
 
-	ImGui::Text("Is local player: %d", m_IsLocalPlayer);
+	ImGui::Text("Is Local Player: %s", m_IsLocalPlayer ? "Yes" : "No");
 #endif
 }

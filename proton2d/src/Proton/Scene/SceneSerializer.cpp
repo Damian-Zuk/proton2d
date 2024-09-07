@@ -312,51 +312,55 @@ namespace proton {
 					switch (fieldData.Type)
 					{
 					case ScriptFieldType::Float:
-						fieldObj["Value"] = *(float*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = *(float*)fieldData.ValuePtr;
 						break;
 					case ScriptFieldType::Float2:
 					{
-						const glm::vec2& data = *(glm::vec2*)fieldData.InstanceFieldValue;
+						const glm::vec2& data = *(glm::vec2*)fieldData.ValuePtr;
 						fieldObj["Value"] = { data.x, data.y };
 						break;
 					}
 					case ScriptFieldType::Float3:
 					{
-						const glm::vec3& data = *(glm::vec3*)fieldData.InstanceFieldValue;
+						const glm::vec3& data = *(glm::vec3*)fieldData.ValuePtr;
 						fieldObj["Value"] = { data.x, data.y, data.z };
 						break;
 					}
 					case ScriptFieldType::Float4:
 					{
-						const glm::vec4& data = *(glm::vec4*)fieldData.InstanceFieldValue;
+						const glm::vec4& data = *(glm::vec4*)fieldData.ValuePtr;
 						fieldObj["Value"] = { data.x, data.y, data.z, data.a };
 						break;
 					}
 
 					case ScriptFieldType::Int:
-						fieldObj["Value"] = *(int*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = *(int*)fieldData.ValuePtr;
 						break;
 					case ScriptFieldType::Int2:
 					{
-						const glm::ivec2& data = *(glm::ivec2*)fieldData.InstanceFieldValue;
+						const glm::ivec2& data = *(glm::ivec2*)fieldData.ValuePtr;
 						fieldObj["Value"] = { data.x, data.y };
 						break;
 					}
 					case ScriptFieldType::Int3:
 					{
-						const glm::ivec3& data = *(glm::ivec3*)fieldData.InstanceFieldValue;
+						const glm::ivec3& data = *(glm::ivec3*)fieldData.ValuePtr;
 						fieldObj["Value"] = { data.x, data.y, data.z };
 						break;
 					}
 					case ScriptFieldType::Int4:
 					{
-						const glm::ivec4& data = *(glm::ivec4*)fieldData.InstanceFieldValue;
+						const glm::ivec4& data = *(glm::ivec4*)fieldData.ValuePtr;
 						fieldObj["Value"] = { data.x, data.y, data.z, data.a };
 						break;
 					}
 
 					case ScriptFieldType::Bool:
-						fieldObj["Value"] = *(bool*)fieldData.InstanceFieldValue;
+						fieldObj["Value"] = *(bool*)fieldData.ValuePtr;
+						break;
+
+					case ScriptFieldType::String:
+						fieldObj["Value"] = *(std::string*)fieldData.ValuePtr;
 						break;
 					}
 					scriptObj["Fields"].push_back(fieldObj);
@@ -655,33 +659,37 @@ namespace proton {
 							switch (scriptField.Type)
 							{
 							case ScriptFieldType::Float:
-								*(float*)scriptField.InstanceFieldValue = value;
+								*(float*)scriptField.ValuePtr = value;
 								break;
 							case ScriptFieldType::Float2:
-								*(glm::vec2*)scriptField.InstanceFieldValue = { value[0], value[1] };
+								*(glm::vec2*)scriptField.ValuePtr = { value[0], value[1] };
 								break;											
 							case ScriptFieldType::Float3:						
-								*(glm::vec3*)scriptField.InstanceFieldValue = { value[0], value[1], value[2] };
+								*(glm::vec3*)scriptField.ValuePtr = { value[0], value[1], value[2] };
 								break;											
 							case ScriptFieldType::Float4:						
-								*(glm::vec4*)scriptField.InstanceFieldValue = { value[0], value[1], value[2], value[3] };
+								*(glm::vec4*)scriptField.ValuePtr = { value[0], value[1], value[2], value[3] };
 								break;
 
 							case ScriptFieldType::Int:
-								*(int*)scriptField.InstanceFieldValue = value;
+								*(int*)scriptField.ValuePtr = value;
 								break;
 							case ScriptFieldType::Int2:
-								*(glm::ivec2*)scriptField.InstanceFieldValue = { value[0], value[1] };
+								*(glm::ivec2*)scriptField.ValuePtr = { value[0], value[1] };
 								break;
 							case ScriptFieldType::Int3:
-								*(glm::ivec3*)scriptField.InstanceFieldValue = { value[0], value[1], value[2] };
+								*(glm::ivec3*)scriptField.ValuePtr = { value[0], value[1], value[2] };
 								break;
 							case ScriptFieldType::Int4:
-								*(glm::ivec4*)scriptField.InstanceFieldValue = { value[0], value[1], value[2], value[3] };
+								*(glm::ivec4*)scriptField.ValuePtr = { value[0], value[1], value[2], value[3] };
 								break;
 
 							case ScriptFieldType::Bool:
-								*(bool*)scriptField.InstanceFieldValue = value;
+								*(bool*)scriptField.ValuePtr = value;
+								break;
+
+							case ScriptFieldType::String:
+								*(std::string*)scriptField.ValuePtr = value;
 								break;
 							}
 						}

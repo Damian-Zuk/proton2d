@@ -39,6 +39,7 @@ public:
 	virtual void OnImGuiRender();
 
 	void SetPlayerColor(const glm::vec4& color);
+	void SetPlayerNick(const std::string& nick);
 
 private:
 	bool IsOnHighSlope() const;
@@ -52,6 +53,7 @@ private:
 	float m_PlayerSpeed = 12.0f;
 	float m_PlayerAcceleration = 100.0f;
 	
+	std::string m_PlayerNick;
 	glm::vec4 m_PlayerColor { 1.0f };
 
 	// Internal state

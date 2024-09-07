@@ -16,14 +16,6 @@ namespace proton {
 
 	using ClientID = HSteamNetConnection;
 
-	struct ClientInfo
-	{
-		ClientID ID;
-		ConnectionStatus Status;
-		std::string ClientName;
-		std::string ConnectionDesc;
-	};
-
 	// Forward declarations
 	class NetworkManager;
 	class GameInstance;
@@ -40,6 +32,9 @@ namespace proton {
 
 		void Start(uint16_t port);
 		void Stop();
+
+		bool IsClientConnected(ClientID clientID) const;
+		const ClientInfo& GetClientInfo(ClientID clientID) const;
 
 		void SetClientName(ClientID clientID, const char* name);
 		void KickClient(ClientID clientID);

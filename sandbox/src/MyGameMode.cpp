@@ -22,7 +22,7 @@ static const glm::vec4 PlayerColors[] = {
 
 bool MyGameMode::OnCreate()
 {
-	if (HasAuthority())
+	if (HasAuthority() && !IsNetModeDedicatedServer())
 	{
 		// Check if player prefab is already on the scene
 		if (Entity player = FindByTag("Player"))
@@ -30,12 +30,16 @@ bool MyGameMode::OnCreate()
 			m_LocalPlayer = player.As<Player>();
 			return true;
 		}
+		else
+		{
+			m_LocalPlayer = SpawnPrefab("Player").As<Player>();
+		}
 		
 		// Spawn local player
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
-		m_LocalPlayer = SpawnPrefab("Player").As<Player>();
 		m_LocalPlayer->SetWorldPosition(spawnTransform.WorldPosition);
 		m_LocalPlayer->SetPlayerColor(COLOR_RED);
+		m_LocalPlayer->SetPlayerNick(GetNetworkManager()->GetLocalClientName());
 	}
 	return true;
 }
@@ -91,6 +95,7 @@ void MyGameMode::OnEvent(Event& event)
 void MyGameMode::Server_OnClientConnected(ClientID clientID)
 {
 	PT_TRACE("client_id={}", clientID);
+	NetworkManager* networkManager = GetNetworkManager();
 		
 	// Spawn Player object for connected client
 	Player* player = SpawnPrefab("Player").As<Player>();
@@ -104,6 +109,7 @@ void MyGameMode::Server_OnClientConnected(ClientID clientID)
 
 	// Set player color
 	player->SetPlayerColor(PlayerColors[m_NewPlayerColorIndex]);
+	player->SetPlayerNick(networkManager->Server_GetClientInfo(clientID).ClientName);
 	m_NewPlayerColorIndex = (m_NewPlayerColorIndex + 1) % 10;
 	
 	m_RemotePlayers[clientID] = player;
@@ -129,6 +135,19 @@ void MyGameMode::Client_OnCustomMessage(NetworkStreamReader& stream)
 	{
 	case GameMessageType::PlayerNick:
 	{
+		uint32_t entityCount;
+		stream.ReadRaw(entityCount);
+
+		for (uint32_t i = 0; i < entityCount; i++)
+		{
+			proton::UUID uuid;
+			stream.ReadRaw(uuid);
+		
+			if (Entity entity = FindByID(uuid))
+			{
+				Player* player = entity.As<Player>();
+			}
+		}
 		break;
 	}
 	}

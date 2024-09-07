@@ -27,8 +27,9 @@ namespace proton {
 		virtual void OnDestroy() {}
 		virtual void OnEvent(Event& event) {}
 
-		Entity FindByTag(const std::string& tag);
-		Entity SpawnPrefab(const std::string& prefab);
+		Entity FindByTag(const std::string& tag) const;
+		Entity FindByID(UUID uuid) const;
+		Entity SpawnPrefab(const std::string& prefab) const;
 
 		Scene* GetScene() const;
 		SceneManager* GetSceneManager() const;
@@ -60,8 +61,9 @@ namespace proton {
 		Entity Server_GetClientEntity(ClientID clientID) const;
 	
 		bool HasAuthority() const;
-		bool IsNetModeServer() const;
 		bool IsNetModeClient() const;
+		bool IsNetModeServer() const;
+		bool IsNetModeDedicatedServer() const;
 
 	private:
 		Scene* m_Scene;

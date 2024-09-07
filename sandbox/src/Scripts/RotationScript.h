@@ -8,7 +8,7 @@ public:
 
 	virtual void OnRegisterFields() override 
 	{
-		RegisterField(ScriptFieldType::Float, "RotationSpeed", &m_RotationSpeed);
+		REGISTER_FIELD(Float, m_RotationSpeed);
 	}
 
 	virtual void OnUpdate(float ts) override 

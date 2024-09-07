@@ -49,6 +49,8 @@ namespace proton {
 		void SetLocalPlayerEntity(Entity entity);
 		Entity GetLocalPlayerEntity() const { return m_LocalPlayerEntity; }
 
+		const ClientInfo& Server_GetClientInfo(ClientID clientID) const;
+
 		void Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate) const;
 		void Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate) const;
 

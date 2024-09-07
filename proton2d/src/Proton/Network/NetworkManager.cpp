@@ -247,6 +247,11 @@ namespace proton {
 		m_LocalPlayerEntity = entity;
 	}
 
+	const ClientInfo& NetworkManager::Server_GetClientInfo(ClientID clientID) const
+	{
+		return m_Server->GetClientInfo(clientID);
+	}
+
 	void NetworkManager::Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate) const
 	{
 		PT_CORE_ASSERT(m_Client);

@@ -64,6 +64,17 @@ namespace proton {
 		m_Running = false;
 	}
 
+	bool Server::IsClientConnected(ClientID clientID) const
+	{
+		return m_ConnectedClients.find(clientID) != m_ConnectedClients.end();
+	}
+
+	const ClientInfo& Server::GetClientInfo(ClientID clientID) const
+	{
+		PT_CORE_ASSERT(IsClientConnected(clientID), "Client not found");
+		return m_ConnectedClients.at(clientID);
+	}
+
 	void Server::OnTick()
 	{
 		PROFILE_FUNCTION();

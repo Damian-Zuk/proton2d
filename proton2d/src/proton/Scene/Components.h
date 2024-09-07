@@ -6,6 +6,7 @@
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Graphics/SpriteAnimation.h"
 #include "Proton/Graphics/Renderer/Font.h"
+#include "Proton/Scripting/ScriptField.h"
 #include "Proton/Physics/PhysicsCommon.h"
 #include "Proton/Network/Common.h"
 #include "Proton/Network/NetTransform.h"
@@ -152,9 +153,9 @@ namespace proton {
 		{
 			struct ReplicatedField
 			{
-				void* Data = nullptr;
-				size_t Size = 0;
+				ScriptField Field;
 				std::function<void()> NotifyFunction;
+				
 				// Server-only (todo: store in serparate EnTT component)
 				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
 			};

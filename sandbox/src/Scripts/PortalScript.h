@@ -7,7 +7,7 @@ public:
 
 	virtual void OnRegisterFields() override
 	{
-		RegisterField(ScriptFieldType::Int, "Target Level", &m_TargetLevel);
+		REGISTER_FIELD(Int, m_TargetLevel);
 	}
 
 	virtual bool OnCreate() override

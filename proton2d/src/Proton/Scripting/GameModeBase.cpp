@@ -10,14 +10,19 @@
 
 namespace proton {
 
-    Entity GameModeBase::FindByTag(const std::string& tag)
+    Entity GameModeBase::FindByTag(const std::string& tag) const
     {
         return m_Scene->FindByTag(tag);
     }
 
-    Entity GameModeBase::SpawnPrefab(const std::string& prefab)
+    Entity GameModeBase::SpawnPrefab(const std::string& prefab) const
     {
         return PrefabManager::Spawn(m_Scene, prefab);
+    }
+
+    Entity GameModeBase::FindByID(UUID uuid) const
+    {
+        return m_Scene->FindByID(uuid);
     }
 
     Scene* GameModeBase::GetScene() const
@@ -65,6 +70,12 @@ namespace proton {
     {
         NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();
         return netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer;
+    }
+
+    bool GameModeBase::IsNetModeDedicatedServer() const
+    {
+        NetMode netMode = GetScene()->GetGameInstance()->GetNetworkManager()->GetNetMode();
+        return netMode == NetMode::DedicatedServer;
     }
 
     bool GameModeBase::IsNetModeClient() const

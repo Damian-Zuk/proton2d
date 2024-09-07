@@ -197,7 +197,7 @@ namespace proton {
 				// Copy field values
 				for (auto& [fieldName, fieldData] : it.second->m_ScriptFields)
 				{
-					script->SetFieldValueData(fieldName, fieldData.InstanceFieldValue);
+					script->SetFieldValueData(fieldName, fieldData.ValuePtr);
 				}
 			}
 		}
@@ -325,7 +325,7 @@ namespace proton {
 				EntityScript* script = ScriptFactory::Get().AddScriptToEntity(newEntity, it.first);
 				for (auto& [fieldName, fieldData] : it.second->m_ScriptFields)
 				{
-					script->SetFieldValueData(fieldName, fieldData.InstanceFieldValue);
+					script->SetFieldValueData(fieldName, fieldData.ValuePtr);
 				}
 			}
 		}

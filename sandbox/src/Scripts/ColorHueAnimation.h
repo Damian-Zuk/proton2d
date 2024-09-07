@@ -7,11 +7,11 @@ public:
 
 	virtual void OnRegisterFields() override
 	{
-		RegisterField(ScriptFieldType::Bool, "Back and Forth", &m_BackAndForth);
-		RegisterField(ScriptFieldType::Float, "Speed", &m_Speed);
-		RegisterField(ScriptFieldType::Float, "Saturation", &m_Saturation);
-		RegisterField(ScriptFieldType::Float, "HueRangeP", &m_HueRangeP, false);
-		RegisterField(ScriptFieldType::Float, "HueRangeQ", &m_HueRangeQ, false);
+		REGISTER_FIELD(Bool, m_BackAndForth);
+		REGISTER_FIELD(Float, m_Speed);
+		REGISTER_FIELD(Float, m_Saturation);
+		REGISTER_FIELD_NO_EDIT(Float, m_HueRangeP);
+		REGISTER_FIELD_NO_EDIT(Float, m_HueRangeQ);
 	}
 
 	virtual bool OnCreate() override
