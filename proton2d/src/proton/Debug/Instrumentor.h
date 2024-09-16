@@ -3,7 +3,7 @@
 // From: https://gist.github.com/TheCherno/31f135eea6ee729ab5f26a6908eb3a5e
 //
 #pragma once
-#define PT_ENABLE_PROFILING 1
+#define PT_ENABLE_PROFILING 0
 
 #include <string>
 #include <chrono>

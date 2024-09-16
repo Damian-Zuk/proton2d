@@ -284,6 +284,12 @@ namespace proton {
 		return m_Server->GetClientEntity(clientID);
 	}
 
+	float NetworkManager::Client_GetCurrentLag() const
+	{
+		PT_CORE_ASSERT(m_Client);
+		return m_Client->GetCurrentLag();
+	}
+
 	void NetworkManager::SetGameProtocolVersion(uint32_t version)
 	{
 		NetworkManager::s_GameProtocolVersion = version;

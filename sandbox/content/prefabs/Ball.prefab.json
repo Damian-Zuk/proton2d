@@ -19,7 +19,7 @@
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
-        "CullDistance": 20.0,
+        "CullDistance": 30.0,
         "TeleportThreshold": 0.5,
         "ReconcileThreshold": 0.02500000037252903,
         "ReconcileMaxTime": 0.05000000074505806

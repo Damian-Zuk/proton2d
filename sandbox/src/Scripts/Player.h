@@ -64,6 +64,7 @@ private:
 	PlayerInputState m_PreviousInputState;
 	PlayerState m_State = PlayerState_Idle;
 
+	glm::vec2 m_LinearVelocity = { 0.0f, 0.0f };
 	float m_Direction = 1.0f;
 	float m_LastJumpTimer = 0.1f;
 	float m_OriginalLinearDamping = 0.0f;

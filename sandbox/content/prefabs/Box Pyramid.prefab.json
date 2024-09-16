@@ -1,10 +1,10 @@
 {
-    "UUID": 16074924100263925060,
+    "UUID": 11604205614906839293,
     "Tag": "Box Pyramid",
     "Transform": {
         "Position": [
-            -133.6776,
-            -4.19754,
+            -15.76196,
+            -4.29385,
             0.0
         ],
         "Rotation": 0.0,
@@ -19,14 +19,14 @@
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "None",
-        "CullDistance": 20.0,
+        "CullDistance": 30.0,
         "TeleportThreshold": 5.0,
         "ReconcileThreshold": 0.10000000149011612,
         "ReconcileMaxTime": 0.10000000149011612
     },
     "Entities": [
         {
-            "UUID": 13835748064716749810,
+            "UUID": 8198116323472517885,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -46,7 +46,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -115,7 +115,7 @@
             ]
         },
         {
-            "UUID": 1814807036525860734,
+            "UUID": 330300088358430281,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -135,7 +135,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -204,7 +204,7 @@
             ]
         },
         {
-            "UUID": 583931412952123163,
+            "UUID": 936212308706154361,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -224,7 +224,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -293,7 +293,7 @@
             ]
         },
         {
-            "UUID": 11841435419339752258,
+            "UUID": 3139253117844094557,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -313,7 +313,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -382,7 +382,7 @@
             ]
         },
         {
-            "UUID": 10669674081730246379,
+            "UUID": 2414184178049665446,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -402,7 +402,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -471,7 +471,7 @@
             ]
         },
         {
-            "UUID": 14301475432744217177,
+            "UUID": 10916663800844212727,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -491,7 +491,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -560,7 +560,7 @@
             ]
         },
         {
-            "UUID": 6665667994413624782,
+            "UUID": 4976540522339997349,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -580,7 +580,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -649,7 +649,7 @@
             ]
         },
         {
-            "UUID": 4725382018657886150,
+            "UUID": 2760781907591879848,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -669,7 +669,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -738,7 +738,7 @@
             ]
         },
         {
-            "UUID": 8058399748090690568,
+            "UUID": 15623579572640143797,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -758,7 +758,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -827,7 +827,7 @@
             ]
         },
         {
-            "UUID": 15637004827951863104,
+            "UUID": 14295540283147766439,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -847,7 +847,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -916,7 +916,7 @@
             ]
         },
         {
-            "UUID": 16754898970562381922,
+            "UUID": 5650381520585859007,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -936,7 +936,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -1005,7 +1005,7 @@
             ]
         },
         {
-            "UUID": 5408409778475154027,
+            "UUID": 9779524196795174423,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -1025,7 +1025,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -1094,7 +1094,7 @@
             ]
         },
         {
-            "UUID": 11093956168367262870,
+            "UUID": 18437960779852631115,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -1114,7 +1114,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -1183,7 +1183,7 @@
             ]
         },
         {
-            "UUID": 10904646184407506398,
+            "UUID": 16054286326579814253,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -1203,7 +1203,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896
@@ -1272,7 +1272,7 @@
             ]
         },
         {
-            "UUID": 14059020944394939071,
+            "UUID": 4239654012445714095,
             "Tag": "Wooden Box",
             "Transform": {
                 "Position": [
@@ -1292,7 +1292,7 @@
             "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
-                "CullDistance": 20.0,
+                "CullDistance": 30.0,
                 "TeleportThreshold": 5.0,
                 "ReconcileThreshold": 0.02500000037252903,
                 "ReconcileMaxTime": 0.30000001192092896

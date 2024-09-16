@@ -69,6 +69,13 @@ namespace proton {
 		SendBuffer(stream.GetBuffer());
 	}
 
+	float Client::GetCurrentLag() const
+	{
+		SteamNetConnectionRealTimeStatus_t realTime;
+		m_Interface->GetConnectionRealTimeStatus(m_Connection, &realTime, 0, NULL);
+		return (float)realTime.m_nPing / 1000.0f;
+	}
+
 	void Client::OnUpdate(float ts)
 	{
 		PROFILE_FUNCTION();

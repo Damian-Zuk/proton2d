@@ -1,10 +1,10 @@
 {
-    "UUID": 13855215348103576497,
+    "UUID": 9779524196795174423,
     "Tag": "Wooden Box",
     "Transform": {
         "Position": [
-            -0.10924,
-            1.47059,
+            1.49752,
+            0.28264,
             0.1
         ],
         "Rotation": 0.0,
@@ -19,7 +19,7 @@
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
-        "CullDistance": 20.0,
+        "CullDistance": 30.0,
         "TeleportThreshold": 5.0,
         "ReconcileThreshold": 0.02500000037252903,
         "ReconcileMaxTime": 0.30000001192092896
@@ -81,7 +81,7 @@
                 },
                 {
                     "FieldName": "AlphaVisualize",
-                    "Value": false
+                    "Value": true
                 }
             ]
         }

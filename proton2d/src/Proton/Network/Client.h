@@ -32,6 +32,9 @@ namespace proton {
 		void Shutdown();
 
 		void SendCustomMessage(const NetworkStreamWriterDelegate& delegate);
+
+		// Current ping (in seconds)
+		float GetCurrentLag() const;
 	
 		bool IsRunning() const { return m_Running; }
 		ConnectionStatus GetConnectionStatus() const { return m_ConnectionStatus; }

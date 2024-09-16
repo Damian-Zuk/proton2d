@@ -57,6 +57,9 @@ namespace proton {
 		void Server_SetClientEntity(ClientID clientID, Entity entity) const;
 		Entity Server_GetClientEntity(ClientID clientID) const;
 
+		// Returns current lag (in seconds)
+		float Client_GetCurrentLag() const;
+
 		// Call this function in Application::OnCreate function to set the game protocol version
 		static void SetGameProtocolVersion(uint32_t version);
 

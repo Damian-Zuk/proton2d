@@ -31,6 +31,7 @@ void Player::OnRegisterFields()
 
 	REPLICATED_DATA(m_Direction);
 	REPLICATED_DATA(m_State);
+	REPLICATED_DATA(m_LinearVelocity); // for jump animation
 }
 
 bool Player::OnCreate()
@@ -82,12 +83,14 @@ bool Player::IsOnHighSlope() const
 void Player::OnUpdate(float ts)
 {
 	SpriteAnimation& animation = GetSpriteAnimation();
+	
+	if (HasAuthority() || HasNetworkPrediction())
+		m_LinearVelocity = GetLinearVelocity();;
 
+	// Update jump animation frame
 	if (m_State == PlayerState_Jump)
 	{
-		// Update jump animation frame
-		glm::vec2 velocity = GetLinearVelocity();
-		uint16_t frame = velocity.y > 0.0f ? (m_LastJumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
+		uint16_t frame = m_LinearVelocity.y > 0.0f ? (m_LastJumpTimer < s_JumpFrameSwitchTime ? 0 : 1) : 2;
 		animation.SetAnimationFrame(frame);
 	}
 

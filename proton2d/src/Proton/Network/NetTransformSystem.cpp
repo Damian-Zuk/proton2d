@@ -149,7 +149,7 @@ namespace proton {
 				// Extrapolation supported only for rigidbodies
 				if (!rigidbody || !scene->IsPhysicsTick()) break;
 
-				const float lag = Server::s_FakeServerLag / 1000.0f + std::min(replicationTimer, m_NetworkManager->GetTickTime());
+				float lag = m_Client->GetCurrentLag() + std::min(replicationTimer, m_NetworkManager->GetTickTime());
 				constexpr float serverVelocityWeight = 0.2f;
 
 				// Position
