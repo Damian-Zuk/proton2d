@@ -1,10 +1,10 @@
 {
-    "UUID": 17689177567632955407,
+    "UUID": 12651109636105934841,
     "Tag": "Ball",
     "Transform": {
         "Position": [
-            18.92738,
-            5.53855,
+            51.57357,
+            -8.14026,
             0.101
         ],
         "Rotation": 0.0,
@@ -20,8 +20,8 @@
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
         "CullDistance": 20.0,
-        "TeleportThreshold": 0.25,
-        "ReconcileThreshold": 0.05000000074505806,
+        "TeleportThreshold": 0.5,
+        "ReconcileThreshold": 0.02500000037252903,
         "ReconcileMaxTime": 0.05000000074505806
     },
     "Sprite": {
@@ -71,6 +71,10 @@
                 {
                     "FieldName": "SwitchCooldownTime",
                     "Value": 0.25
+                },
+                {
+                    "FieldName": "Enable",
+                    "Value": true
                 },
                 {
                     "FieldName": "AlphaVisualize",

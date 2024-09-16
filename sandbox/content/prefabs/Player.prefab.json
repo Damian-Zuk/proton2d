@@ -1,10 +1,10 @@
 {
-    "UUID": 12749579464794007863,
+    "UUID": 5271754726611374758,
     "Tag": "Player",
     "Transform": {
         "Position": [
-            7.01314,
-            0.9927,
+            2.04352,
+            0.42461,
             0.1
         ],
         "Rotation": 0.0,
@@ -19,10 +19,10 @@
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Prediction",
-        "CullDistance": 20.0,
+        "CullDistance": 30.0,
         "TeleportThreshold": 1.0,
-        "ReconcileThreshold": 0.15000000596046448,
-        "ReconcileMaxTime": 0.10000000149011612
+        "ReconcileThreshold": 0.10000000149011612,
+        "ReconcileMaxTime": 0.20000000298023224
     },
     "Sprite": {
         "Texture": "character.png",
@@ -87,6 +87,10 @@
                     "Value": 8.0
                 },
                 {
+                    "FieldName": "m_PlayerNick",
+                    "Value": ""
+                },
+                {
                     "FieldName": "m_PlayerColor",
                     "Value": [
                         1.0,
@@ -100,7 +104,7 @@
     ],
     "Entities": [
         {
-            "UUID": 10144987025940434058,
+            "UUID": 16399030847919594413,
             "Tag": "Text_PlayerName",
             "Transform": {
                 "Position": [
@@ -128,7 +132,7 @@
             }
         },
         {
-            "UUID": 15004482352075826115,
+            "UUID": 18414531370196424098,
             "Tag": "Body",
             "Transform": {
                 "Position": [
@@ -160,7 +164,7 @@
             }
         },
         {
-            "UUID": 290289645846577969,
+            "UUID": 10137553383234732480,
             "Tag": "Wheel",
             "Transform": {
                 "Position": [
@@ -198,7 +202,7 @@
             }
         },
         {
-            "UUID": 16926961910947379351,
+            "UUID": 18429559288023327765,
             "Tag": "Sensor_BottomLeft",
             "Transform": {
                 "Position": [
@@ -230,7 +234,7 @@
             }
         },
         {
-            "UUID": 10094476320527299019,
+            "UUID": 2039367051653112588,
             "Tag": "Sensor_BottomRight",
             "Transform": {
                 "Position": [
@@ -262,7 +266,7 @@
             }
         },
         {
-            "UUID": 8056878355348841315,
+            "UUID": 1315917391761008597,
             "Tag": "Sensor_Bottom",
             "Transform": {
                 "Position": [

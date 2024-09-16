@@ -1,10 +1,10 @@
 {
-    "UUID": 9463624388273157342,
+    "UUID": 13855215348103576497,
     "Tag": "Wooden Box",
     "Transform": {
         "Position": [
-            0.73085,
-            1.8083,
+            -0.10924,
+            1.47059,
             0.1
         ],
         "Rotation": 0.0,
@@ -22,9 +22,7 @@
         "CullDistance": 20.0,
         "TeleportThreshold": 5.0,
         "ReconcileThreshold": 0.02500000037252903,
-        "ReconcileMaxTime": 0.30000001192092896,
-        "DeltaWeight": 0.75,
-        "ServerVelocityWeight": 0.30000001192092896
+        "ReconcileMaxTime": 0.30000001192092896
     },
     "Sprite": {
         "Texture": "box.png",
@@ -67,11 +65,23 @@
     },
     "Scripts": [
         {
-            "ClassName": "NetDynamicPrediction",
+            "ClassName": "DynamicExtrapolation",
             "Fields": [
                 {
                     "FieldName": "InterpolationThreshold",
                     "Value": 0.05000000074505806
+                },
+                {
+                    "FieldName": "SwitchCooldownTime",
+                    "Value": 0.25
+                },
+                {
+                    "FieldName": "Enable",
+                    "Value": true
+                },
+                {
+                    "FieldName": "AlphaVisualize",
+                    "Value": false
                 }
             ]
         }

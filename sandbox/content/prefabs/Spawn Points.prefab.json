@@ -1,0 +1,85 @@
+{
+    "UUID": 12402014902206306287,
+    "Tag": "Spawn Points",
+    "Transform": {
+        "Position": [
+            3.31376,
+            1.80879,
+            0.1
+        ],
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
+    "Prefab": {
+        "UUID": 14964778866578642001
+    },
+    "Entities": [
+        {
+            "UUID": 6669721361522134344,
+            "Tag": "PlayerSpawn3",
+            "Transform": {
+                "Position": [
+                    3.81151,
+                    -0.01933,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "UUID": 18277456767722596498,
+            "Tag": "PlayerSpawn2",
+            "Transform": {
+                "Position": [
+                    1.31151,
+                    -0.01933,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "UUID": 779781961570109279,
+            "Tag": "PlayerSpawn1",
+            "Transform": {
+                "Position": [
+                    -1.18849,
+                    -0.01933,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "UUID": 4228852946507038501,
+            "Tag": "PlayerSpawn0",
+            "Transform": {
+                "Position": [
+                    -3.68849,
+                    -0.01933,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        }
+    ]
+}
