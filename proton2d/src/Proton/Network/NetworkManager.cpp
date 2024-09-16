@@ -6,6 +6,7 @@
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"
+#include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Utils/Utils.h"
 
 #include <steam/steamnetworkingsockets.h>
@@ -111,7 +112,10 @@ namespace proton {
 		}
 		else
 		{
-			m_Client->OnUpdate(ts);
+			if (!m_Client->m_NetworkThreadFinished)
+				m_Client->OnUpdate(ts);
+			else
+				StopClient();
 		}
 	}
 
@@ -184,11 +188,16 @@ namespace proton {
 
 	void NetworkManager::StopClient()
 	{
-		m_Client->Disconnect();
+		if (!m_Client->m_NetworkThreadFinished)
+			m_Client->Disconnect();
 
 		// Wait for network thread to finish running
 		while (!m_Client->m_NetworkThreadFinished)
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+		Scene* scene = m_GameInstance->GetActiveScene();
+		GameModeBase* gameMode = scene->GetGameMode();
+		gameMode->Client_OnDisconnected(m_Client->m_ConnectionEndCode);
 
 		m_Client.reset();
 		s_NetworkServicesRunning--;
@@ -226,6 +235,11 @@ namespace proton {
 	void NetworkManager::SetLocalClientName(const std::string& name)
 	{
 		m_ClientName = name.substr(0, 31);
+	}
+
+	void NetworkManager::SetUsePhysicsTickrate(bool use)
+	{
+		m_UsePhysicsTickrate = use;
 	}
 
 	void NetworkManager::SetTickRate(uint16_t tickRate)

@@ -10,6 +10,7 @@
 #include "Proton/Utils/NickGenerator.h"
 
 #include "Proton/Network/NetworkManager.h"
+#include "Proton/Network/Server.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -196,10 +197,12 @@ namespace proton {
 			if (netMode != NetMode::Standalone)
 			{
 				ImGui::PushItemWidth(180.0f);
-				if (ImGui::DragInt("Tick Rate (hz)", &props.ServerTickrate, 1.0f, 1, 256))
-					props.ServerTickrate = std::clamp(props.ServerTickrate, 1, 256);
-				bool temp = false;
-				ImGui::Checkbox("Use Physics Tickrate", &temp);
+				if (!props.UsePhysicsTickrate)
+				{
+					if (ImGui::DragInt("Tick Rate (hz)", &props.Tickrate, 1.0f, 1, 256))
+						props.Tickrate = std::clamp(props.Tickrate, 1, 256);
+				}
+				ImGui::Checkbox("Use Physics Tickrate", &props.UsePhysicsTickrate);
 				ImGui::PopItemWidth();
 			}
 
@@ -226,26 +229,27 @@ namespace proton {
 			}
 
 			ImGui::Dummy({ 0, 5 });
+
+			bool buttonDisabled = (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer) && Server::s_Instance != nullptr;
+
+			if (buttonDisabled)
+				ImGui::Text("Server is already running!");
+
+			ImGui::BeginDisabled(buttonDisabled);
 			if (ImGui::Button("Launch", { 150, 0 }))
 			{
 				auto instance = EditorLayer::Get()->LaunchNewGameInstance(netMode, props.LoadStartupScene, props.WindowName);
 				auto netManager = instance->GetNetworkManager();
-
-				if (netMode == NetMode::Client)
-				{
-					netManager->SetIpAddress(props.ServerIp);
-					netManager->SetNetworkPort(props.Port);
-				}
-				else if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
-				{
-					netManager->SetTickRate(props.ServerTickrate);
-					netManager->SetNetworkPort(props.Port);
-				}
-
+				
+				netManager->SetIpAddress(props.ServerIp);
+				netManager->SetNetworkPort(props.Port);
+				netManager->SetTickRate(props.Tickrate);
+				netManager->SetUsePhysicsTickrate(props.UsePhysicsTickrate);
 
 				instance->GetActiveScene()->BeginPlay();
 				ImGui::CloseCurrentPopup();
 			}
+			ImGui::EndDisabled();
 			ImGui::SetItemDefaultFocus();
 			ImGui::SameLine();
 			if (ImGui::Button("Cancel", { 150, 0 })) { ImGui::CloseCurrentPopup(); }

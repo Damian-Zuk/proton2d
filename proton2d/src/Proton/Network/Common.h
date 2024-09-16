@@ -23,10 +23,16 @@ namespace proton {
 		FailedToConnect
 	};
 
-	enum NetConnectionEndCode
+	enum ConnectionEndCode : uint32_t
 	{
-		NetConnectionEndCode_ProtocolMismatch = 2001,
-		NetConnectionEndCode_MaxConnections = 2002
+		ConnectionEndCode_Kicked = 0,
+		ConnectionEndCode_Timeout = 1,
+		ConnectionEndCode_LostConnection = 2,
+		ConnectionEndCode_FailedToHandshake = 2001,
+		ConnectionEndCode_ProtocolMismatch = 2002,
+		ConnectionEndCode_MaxConnections = 2003,
+		ConnectionEndCode_ServerShutdown = 2004,
+		ConnectionEndCode_Disconnected = 2005,
 	};
 
 	struct ClientInfo

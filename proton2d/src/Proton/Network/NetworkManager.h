@@ -32,6 +32,7 @@ namespace proton {
 		void SetTickRate(uint16_t tickRate);
 		void SetMaxServerConnections(uint32_t value);
 		void SetLocalClientName(const std::string& name);
+		void SetUsePhysicsTickrate(bool use = true);
 
 		NetMode GetNetMode() const { return m_NetMode; }
 		uint16_t GetPort() const { return m_Port; }

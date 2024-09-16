@@ -73,6 +73,7 @@ namespace proton {
 
 		// Connection info
 		ConnectionStatus m_ConnectionStatus = ConnectionStatus::Disconnected;
+		ConnectionEndCode m_ConnectionEndCode = ConnectionEndCode_Timeout;
 		std::string m_ConnectionDebugMessage;
 		uint32_t m_LocalClientID = 0;
 

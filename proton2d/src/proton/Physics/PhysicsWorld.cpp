@@ -247,25 +247,29 @@ namespace proton {
 
 			if (!entityA)
 			{
-				PT_CORE_ERROR("Failed to create joint: Entity: {} not found!", info.EntityA_UUID);
+				PT_CORE_ERROR("Failed to create joint: Entity A: {} not found!", info.EntityA_UUID);
+				m_JointsCreateQueue.pop();
 				continue;
 			}
 
 			if (!entityB)
 			{
-				PT_CORE_ERROR("Failed to create joint: Entity: {} not found!", info.EntityB_UUID);
+				PT_CORE_ERROR("Failed to create joint: Entity B: {} not found!", info.EntityB_UUID);
+				m_JointsCreateQueue.pop();
 				continue;
 			}
 
 			if (!entityA.HasComponent<RigidbodyComponent>())
 			{
-				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityA_UUID, entityA.GetTag());
+				PT_CORE_ERROR("Failed to create joint: Entity A: {} ({}) has no RigidbodyComponent", info.EntityA_UUID, entityA.GetTag());
+				m_JointsCreateQueue.pop();
 				continue;
 			}
 
 			if (!entityB.HasComponent<RigidbodyComponent>())
 			{
-				PT_CORE_ERROR("Failed to create joint: Entity: {} ({}) has no RigidbodyComponent", info.EntityB_UUID, entityB.GetTag());
+				PT_CORE_ERROR("Failed to create joint: Entity B: {} ({}) has no RigidbodyComponent", info.EntityB_UUID, entityB.GetTag());
+				m_JointsCreateQueue.pop();
 				continue;
 			}
 

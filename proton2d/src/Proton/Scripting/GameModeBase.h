@@ -44,13 +44,11 @@ namespace proton {
 		}
 
 		// -------------------------- Networking  --------------------------
-
-		virtual void Client_OnConnectionFailed(NetConnectionEndCode code) {}
-		
+	
 		virtual void Client_OnConnected() {}
 		virtual void Server_OnClientConnected(ClientID clientID) {}
 
-		virtual void Client_OnDisconnected() {}
+		virtual void Client_OnDisconnected(ConnectionEndCode code) {}
 		virtual void Server_OnClientDisconnected(ClientID clientID) {}
 		
 		virtual void Client_OnCustomMessage(NetworkStreamReader& stream) {};

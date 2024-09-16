@@ -107,14 +107,14 @@ namespace proton {
 			if (!stream.ReadRaw(handshake))
 			{
 				PT_CORE_WARN("Failed to read handshake message (size={}) from client (id={})", stream.GetTargetBuffer().Size, clientID);
-				m_Interface->CloseConnection(clientID, 0, "Failed to handshake", false);
+				m_Interface->CloseConnection(clientID, ConnectionEndCode_FailedToHandshake, "Failed to handshake", false);
 				break;
 			}
 
 			if (handshake.EngineProtocolVersion != PROTON_NET_PROTOCOL_VERSION || handshake.GameProtocolVersion != NetworkManager::s_GameProtocolVersion)
 			{
-				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, NetConnectionEndCode_ProtocolMismatch);
-				m_Interface->CloseConnection(clientID, NetConnectionEndCode_ProtocolMismatch, "Failed to handshake", false);
+				PT_CORE_WARN("Handshake failed client_id={} error_code={}", clientID, ConnectionEndCode_ProtocolMismatch);
+				m_Interface->CloseConnection(clientID, ConnectionEndCode_ProtocolMismatch, "Failed to handshake", false);
 				break;
 			}
 
@@ -332,7 +332,7 @@ namespace proton {
 		PT_CORE_INFO("Closing connections...");
 		for (const auto& [clientID, clientInfo] : m_ConnectedClients)
 		{
-			m_Interface->CloseConnection(clientID, 0, "Server Shutdown", true);
+			m_Interface->CloseConnection(clientID, ConnectionEndCode_ServerShutdown, "Server Shutdown", true);
 		}
 
 		m_ConnectedClients.clear();
@@ -411,7 +411,7 @@ namespace proton {
 			// Check if connections limit exceeded
 			if (m_ConnectedClients.size() >= m_NetworkManager->m_MaxServerConnections)
 			{
-				m_Interface->CloseConnection(status->m_hConn, NetConnectionEndCode_MaxConnections, "Connections limit reached", false);
+				m_Interface->CloseConnection(status->m_hConn, ConnectionEndCode_MaxConnections, "Connections limit reached", false);
 				PT_CORE_WARN("Blocked connection from client {}: Connections limit ({}) reached", status->m_hConn, m_NetworkManager->m_MaxServerConnections);
 				break;
 			}

@@ -25,7 +25,8 @@ namespace proton {
 			
 			std::string ServerIp = "127.0.0.1";
 			int Port = 8192;
-			int ServerTickrate = 32;
+			int Tickrate = 120;
+			bool UsePhysicsTickrate = false;
 
 			bool LoadStartupScene = false;
 			std::string WindowName;

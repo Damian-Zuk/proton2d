@@ -127,6 +127,7 @@ namespace proton {
 	
 		friend class SettingsPanel;
 		friend class InfoPanel;
+		friend class ToolbarPanel;
 	};
 
 }

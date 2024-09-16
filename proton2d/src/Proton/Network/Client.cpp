@@ -54,6 +54,8 @@ namespace proton {
 
 		if (m_NetworkThread.joinable())
 			m_NetworkThread.join();
+
+		m_ConnectionEndCode = ConnectionEndCode_Disconnected;
 	}
 
 	void Client::Shutdown()
@@ -221,8 +223,11 @@ namespace proton {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 
-		m_Interface->CloseConnection(m_Connection, 0, nullptr, false);
-		m_ConnectionStatus = ConnectionStatus::Disconnected;
+		if (m_ConnectionStatus == ConnectionStatus::Connected)
+		{
+			m_Interface->CloseConnection(m_Connection, 0, nullptr, false);
+			m_ConnectionStatus = ConnectionStatus::Disconnected;
+		}
 
 		m_NetworkThreadFinished = true;
 	}
@@ -292,15 +297,18 @@ namespace proton {
 				// or some other transport problem. (info->m_info.m_eEndReason)
 				PT_CORE_ERROR("Could not connect to remote host. {}", m_ConnectionDebugMessage);
 				m_ConnectionStatus = ConnectionStatus::FailedToConnect;
+				m_ConnectionEndCode = ConnectionEndCode_Timeout;
 			}
 			else if (info->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
 			{
 				PT_CORE_ERROR("Lost connection with remote host. {}", m_ConnectionDebugMessage);
+				m_ConnectionEndCode = ConnectionEndCode_LostConnection;
 			}
 			else
 			{
 				// NOTE: We could check the reason code for a normal disconnection
 				PT_CORE_ERROR("Disconnected from host. {}", m_ConnectionDebugMessage);
+				m_ConnectionEndCode = (ConnectionEndCode)info->m_info.m_eEndReason;
 			}
 
 			// Clean up the connection. This is important!
