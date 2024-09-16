@@ -422,20 +422,26 @@ namespace proton {
 
 	void PhysicsContactListener::BeginContact(b2Contact* contact)
 	{
-		CALL_CONTACT_CALLBACK_FUNCTION(OnBegin);
-		if (callbackA)
-			callbackA->ContactCount++;
-		if (callbackB)
-			callbackB->ContactCount++;
+		if (contact->IsEnabled())
+		{
+			CALL_CONTACT_CALLBACK_FUNCTION(OnBegin);
+			if (callbackA)
+				callbackA->ContactCount++;
+			if (callbackB)
+				callbackB->ContactCount++;
+		}
 	}
 
 	void PhysicsContactListener::EndContact(b2Contact* contact)
 	{
-		CALL_CONTACT_CALLBACK_FUNCTION(OnEnd);
-		if (callbackA)
-			callbackA->ContactCount--;
-		if (callbackB)
-			callbackB->ContactCount--;
+		if (contact->IsEnabled())
+		{
+			CALL_CONTACT_CALLBACK_FUNCTION(OnEnd);
+			if (callbackA)
+				callbackA->ContactCount--;
+			if (callbackB)
+				callbackB->ContactCount--;
+		}
 	}
 
 	void PhysicsContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)

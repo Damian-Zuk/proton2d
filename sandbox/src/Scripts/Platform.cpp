@@ -24,12 +24,6 @@ bool RedPlatform::OnCreate()
 				m_PlayerSensor = *contact.Other;
 				return;
 			}
-
-			// Manually decrement player bottom sensor contact count
-			// TODO: Do this in PhysicsWorld callback
-			m_PlayerSensor = *contact.Other;
-			m_PlayerSensor.GetComponent<BoxColliderComponent>().ContactCallback.ContactCount--;
-			m_DecrementedSensor = true;
 		}
 	};
 
@@ -50,6 +44,15 @@ bool RedPlatform::OnCreate()
 	// OnPreSolve Contact Callback
 	collider.ContactCallback.OnPreSolve = [&](PhysicsContact contact, const b2Manifold* oldManifold) {
 		contact.Contact->SetEnabled(m_EnableCollision);
+		
+		if (contact.Other->GetTag() == "Sensor_Bottom")
+		{
+			// Manually decrement player bottom sensor contact count
+			// TODO: Do this in PhysicsWorld callback
+			m_PlayerSensor = *contact.Other;
+			m_PlayerSensor.GetComponent<BoxColliderComponent>().ContactCallback.ContactCount--;
+			m_DecrementedSensor = true;
+		}
 	};
 
 	return true;

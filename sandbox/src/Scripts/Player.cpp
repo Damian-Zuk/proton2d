@@ -233,23 +233,14 @@ void Player::OnImGuiRender()
 #ifdef PT_EDITOR
 	ImGui::Dummy({ 0, 5 });
 	static char buffer[128];
-
+#if 0
 	if (ImGui::ColorEdit4("Color", glm::value_ptr(m_PlayerColor)))
 		SetPlayerColor(m_PlayerColor);
-
 	const auto& color = GetComponent<SpriteComponent>().Color;
 	std::string colorStr = fmt::format("{:.3f}, {:.3f}, {:.3f}, {:.3f}", color.r, color.g, color.b, color.a);
 	strcpy_s(buffer, colorStr.c_str());
 	ImGui::InputText("Color Float Values", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
-	
-	if (IsRigidbodyInitialized())
-	{
-		auto vel = GetLinearVelocity();
-		std::string velocity = fmt::format("{:.3f}, {:.3f}", vel.x, vel.y);
-		strcpy_s(buffer, velocity.c_str());
-		ImGui::InputText("Velocity", buffer, strlen(buffer), ImGuiInputTextFlags_ReadOnly);
-	}
-
+#endif
 	ImGui::Text("Is Local Player: %s", m_IsLocalPlayer ? "Yes" : "No");
 #endif
 }

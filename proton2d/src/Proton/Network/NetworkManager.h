@@ -37,11 +37,11 @@ namespace proton {
 		uint16_t GetPort() const { return m_Port; }
 		uint16_t GetTickrate() const { return m_Tickrate; }
 		const std::string& GetLocalClientName() const { return m_ClientName; }
-		float GetTickTime() const { return m_TickTime; }
 		bool IsNetModeServer() const { return m_NetMode == NetMode::ListenServer || m_NetMode == NetMode::DedicatedServer; }
 		bool IsNetModeClient() const { return m_NetMode == NetMode::Client; }
 		bool IsNetworkActive() const { return m_IsNetworkActive; }
 		bool IsNetworkTick() const { return m_IsNetworkTick; }
+		float GetTickTime() const;
 
 		ConnectionStatus GetClientConnectionStatus() const;
 		uint32_t GetLocalClientID() const { return m_LocalClientID; }

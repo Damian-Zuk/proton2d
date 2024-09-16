@@ -51,6 +51,30 @@ namespace proton {
 		Entity FindByID(UUID id);
 		Entity FindByTag(const std::string& tag);
 		std::vector<Entity> FindAllByTag(const std::string& tag);
+		std::vector<Entity> FindAllWithScript(const std::string& className);
+
+		// TODO: Add UUID to script class and search by it instead of class name
+		template<typename TScriptClass>
+		std::vector<Entity> FindAllWithScript()
+		{
+			return FindAllWithScript(TScriptClass::__ScriptClassName);
+		}
+
+		// TODO: Add UUID to script class and search by it instead of class name
+		template<typename TScriptClass>
+		std::vector<TScriptClass*> FindAllScripts()
+		{
+			std::vector<TScriptClass*> entities;
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto entity : view)
+			{
+				auto& script = view.get<ScriptComponent>(entity);
+				auto it = script.Scripts.find(TScriptClass::__ScriptClassName);
+				if (it != script.Scripts.end())
+					entities.push_back(dynamic_cast<TScriptClass*>(it->second));
+			}
+			return entities;
+		}
 
 		Entity SpawnPrefab(const std::string& prefabPath);
 

@@ -39,8 +39,8 @@ namespace proton {
 			glm::vec2 Scale { 0.0f, 0.0f };
 			float Rotation = 0.0f;
 
-			bool IsZero() const;
-			bool IsNotZero() const;
+			bool IsNearZero() const;
+			bool IsNotNearZero() const;
 			static Transform Get(TransformComponent* component, bool localSpace = false);
 			Transform operator-(const Transform& other) const;
 			Transform operator+(const Transform& other) const;

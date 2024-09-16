@@ -12,11 +12,11 @@
 
 namespace proton {
 
-	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* field, size_t size, bool showInEditor)
+	void EntityScript::RegisterField(ScriptFieldType type, const std::string& name, void* valuePtr, size_t size, bool showInEditor)
 	{
-		m_ScriptFields[name] = { type, field, size };
+		m_ScriptFields[name] = { type, valuePtr, size };
 	#ifdef PT_EDITOR
-		m_EditorScriptField[name] = { showInEditor };
+		m_EditorScriptField[name] = EditorScriptField{ showInEditor };
 	#endif
 	}
 
@@ -215,7 +215,7 @@ namespace proton {
 			break;
 
 		case ScriptFieldType::Data:
-			memcpy(valuePtr, field.ValuePtr, field.Size);
+			//memcpy(valuePtr, field.ValuePtr, field.Size);
 			break;
 
 		default:

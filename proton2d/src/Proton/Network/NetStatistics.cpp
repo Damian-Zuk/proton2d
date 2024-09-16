@@ -84,7 +84,7 @@ namespace proton {
 		int in = (int)status.m_flInBytesPerSec;
 		int out = (int)status.m_flOutBytesPerSec;
 		int ping = status.m_nPing;
-		int replicated = m_ReplicationStats.RepEntitiesCount / m_ReplicationStats.RepPacketCount;
+		int replicated = m_ReplicationStats.RepEntitiesCount / m_ReplicationStats.RepMessageCount;
 		m_ReplicationStats = { 0 , 0 };
 
 		if (in == 0 && out == 0)
@@ -96,9 +96,9 @@ namespace proton {
 		if (!m_StatsLogsHeaderWritten)
 		{
 			// Write header to log file
-			logFile << "# scene=" << m_Server->m_GameInstance->GetActiveScene()->GetFilepath() << "\r\n";
-			logFile << "# tick_rate=" << m_Server->m_NetworkManager->m_Tickrate << "\r\n";
-			logFile << "# client_id; time_point; in_bps; out_bps; ping_ms; rep_count\r\n";
+			logFile << "# scene=" << m_Server->m_GameInstance->GetActiveScene()->GetFilepath();
+			logFile << "# tick_rate=" << m_Server->m_NetworkManager->m_Tickrate << '\n';
+			logFile << "# client_id; time_point; in_bps; out_bps; ping_ms; rep_count\n";
 			m_StatsLogsHeaderWritten = true;
 			timer.Reset();
 		}
@@ -108,7 +108,7 @@ namespace proton {
 			<< in << "; "
 			<< out << "; "
 			<< ping << "; "
-			<< replicated << "\r\n";
+			<< replicated << '\n';
 
 		logFile.close();
 	}

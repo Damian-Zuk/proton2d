@@ -36,6 +36,8 @@ namespace proton
 		return std::make_unique<T>(std::forward<Types>(args)...);
 	}
 
+	// Enum flags functions from Flax Engine: https://github.com/FlaxEngine/FlaxEngine
+
 	template<typename T>
 	constexpr bool EnumHasAnyFlags(T value, T flags)
 	{

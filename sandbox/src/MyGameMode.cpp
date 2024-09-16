@@ -2,23 +2,10 @@
 using namespace proton;
 
 #include "MyGameMode.h"
+
 #include "Scripts/Player.h"
-
-constexpr glm::vec4 COLOR_RED    { 1.000f, 0.356f, 0.065f, 1.0f };
-constexpr glm::vec4 COLOR_GREEN  { 0.526f, 1.000f, 0.065f, 1.0f };
-constexpr glm::vec4 COLOR_BLUE   { 0.209f, 0.431f, 0.987f, 1.0f };
-constexpr glm::vec4 COLOR_YELLOW { 0.987f, 1.000f, 0.065f, 1.0f };
-constexpr glm::vec4 COLOR_ORANGE { 1.000f, 0.679f, 0.294f, 1.0f };
-constexpr glm::vec4 COLOR_CYAN   { 0.065f, 0.793f, 1.000f, 1.0f };
-constexpr glm::vec4 COLOR_PURPLE { 0.478f, 0.065f, 1.000f, 1.0f };
-constexpr glm::vec4 COLOR_PINK   { 1.000f, 0.472f, 0.952f, 1.0f };
-constexpr glm::vec4 COLOR_BLACK  { 0.167f, 0.176f, 0.200f, 1.0f };
-constexpr glm::vec4 COLOR_WHITE  { 1.000f, 1.000f, 1.000f, 1.0f };
-
-static const glm::vec4 PlayerColors[] = {
-	COLOR_RED, COLOR_GREEN, COLOR_ORANGE, COLOR_YELLOW, COLOR_CYAN, 
-	COLOR_PURPLE, COLOR_PINK, COLOR_BLUE, COLOR_WHITE, COLOR_BLACK,
-};
+#include "Scripts/Network/DynamicExtrapolation.h"
+#include "Scripts/Misc/Colors.h"
 
 bool MyGameMode::OnCreate()
 {
@@ -26,14 +13,9 @@ bool MyGameMode::OnCreate()
 	{
 		// Check if player prefab is already on the scene
 		if (Entity player = FindByTag("Player"))
-		{
 			m_LocalPlayer = player.As<Player>();
-			return true;
-		}
 		else
-		{
 			m_LocalPlayer = SpawnPrefab("Player").As<Player>();
-		}
 		
 		// Spawn local player
 		auto& spawnTransform = FindByTag("PlayerSpawn0").GetTransform();
@@ -46,56 +28,14 @@ bool MyGameMode::OnCreate()
 
 void MyGameMode::OnUpdate(float ts)
 {
-	if (Entity sampleText = FindByTag("SampleText"))
-	{
-		if (sampleText.HasComponent<TextComponent>())
-		{
-			auto& text = sampleText.GetComponent<TextComponent>();
-			auto& transform = sampleText.GetTransform();
-			//PT_CORE_TRACE("{}", text.FontAsset->CalculateTextSize(&text, transform.Scale.x));
-		}
-	}
-
-}
-
-void MyGameMode::OnEvent(Event& event)
-{
-	EventDispatcher(event).Dispatch<KeyPressedEvent>([&](auto& keyEvent)
-	{
-		if (!HasAuthority())
-			return false;
-
-		Scene* scene = GetScene();
-		const auto& cursor = scene->GetCursorWorldPosition();
-
-		if (keyEvent.GetKeyCode() == Key::E)
-		{
-			Entity balls = scene->FindByTag("Balls");
-			if (!balls)
-				balls = scene->CreateEntity("Balls");
-			
-			Entity ball = scene->SpawnPrefab("Ball");
-			ball.SetWorldPosition(cursor);
-			balls.AddChildEntity(ball);
-		}
-		else if (keyEvent.GetKeyCode() == Key::R)
-		{
-			Entity boxes = scene->FindByTag("Boxes");
-			if (!boxes)
-				boxes = scene->CreateEntity("Boxes");
-			
-			Entity box = scene->SpawnPrefab("Wooden Box");
-			box.SetWorldPosition(cursor);
-			boxes.AddChildEntity(box);
-		}
-		return false;
-	});
 }
 
 void MyGameMode::Server_OnClientConnected(ClientID clientID)
 {
-	PT_TRACE("client_id={}", clientID);
-	NetworkManager* networkManager = GetNetworkManager();
+	static constexpr glm::vec4 PlayerColors[] = {
+		COLOR_RED, COLOR_GREEN, COLOR_ORANGE, COLOR_YELLOW, COLOR_CYAN,
+		COLOR_PURPLE, COLOR_PINK, COLOR_BLUE, COLOR_WHITE, COLOR_BLACK,
+	};
 		
 	// Spawn Player object for connected client
 	Player* player = SpawnPrefab("Player").As<Player>();
@@ -108,49 +48,26 @@ void MyGameMode::Server_OnClientConnected(ClientID clientID)
 	player->SetWorldPosition(spawnTransform.WorldPosition);
 
 	// Set player color
+	NetworkManager* networkManager = GetNetworkManager();
 	player->SetPlayerColor(PlayerColors[m_NewPlayerColorIndex]);
 	player->SetPlayerNick(networkManager->Server_GetClientInfo(clientID).ClientName);
 	m_NewPlayerColorIndex = (m_NewPlayerColorIndex + 1) % 10;
 	
 	m_RemotePlayers[clientID] = player;
-
 	Server_SetClientEntity(clientID, *player);
+	PT_TRACE("client_id={}", clientID);
 }
 
 void MyGameMode::Server_OnClientDisconnected(ClientID clientID)
 {
-	PT_TRACE("client_id={}", clientID);
-	
 	Player* player = m_RemotePlayers.at(clientID);
 	player->Destroy();
 	m_RemotePlayers.erase(clientID);
+	PT_TRACE("client_id={}", clientID);
 }
 
 void MyGameMode::Client_OnCustomMessage(NetworkStreamReader& stream)
 {
-	GameMessageType msgType;
-	stream.ReadRaw(msgType);
-
-	switch (msgType)
-	{
-	case GameMessageType::PlayerNick:
-	{
-		uint32_t entityCount;
-		stream.ReadRaw(entityCount);
-
-		for (uint32_t i = 0; i < entityCount; i++)
-		{
-			proton::UUID uuid;
-			stream.ReadRaw(uuid);
-		
-			if (Entity entity = FindByID(uuid))
-			{
-				Player* player = entity.As<Player>();
-			}
-		}
-		break;
-	}
-	}
 }
 
 void MyGameMode::Server_OnCustomMessage(ClientID clientID, NetworkStreamReader& stream)
@@ -168,4 +85,115 @@ void MyGameMode::Server_OnCustomMessage(ClientID clientID, NetworkStreamReader& 
 		break;
 	}
 	}
+}
+
+void MyGameMode::OnEvent(Event& event)
+{
+	EventDispatcher(event).Dispatch<KeyPressedEvent>([&](auto& keyEvent)
+		{
+			if (!HasAuthority())
+				return false;
+
+			Scene* scene = GetScene();
+			const auto& cursor = scene->GetCursorWorldPosition();
+
+			// Spawn Ball on E key
+			if (keyEvent.GetKeyCode() == Key::E)
+			{
+				Entity balls = scene->FindByTag("Balls");
+				if (!balls) balls = scene->CreateEntity("Balls");
+
+				Entity ball = scene->SpawnPrefab("Ball");
+				ball.SetWorldPosition(cursor);
+				balls.AddChildEntity(ball);
+			}
+			// Spawn Box on R key
+			else if (keyEvent.GetKeyCode() == Key::R)
+			{
+				Entity boxes = scene->FindByTag("Boxes");
+				if (!boxes) boxes = scene->CreateEntity("Boxes");
+
+				Entity box = scene->SpawnPrefab("Wooden Box");
+				box.SetWorldPosition(cursor);
+				boxes.AddChildEntity(box);
+			}
+			return false;
+		});
+}
+
+void MyGameMode::OnImGuiRender() // Debug
+{
+#ifdef PT_EDITOR
+	Scene* scene = GetScene();
+
+	ImGui::Text("Network");
+	ImGui::Dummy({ 0, 1 });
+	ImGui::SetNextItemWidth(200.0f);
+	ImGui::Separator();
+	ImGui::Dummy({ 0, 2 });
+	
+	static float cullDistance = 20.0f;
+	ImGui::PushItemWidth(100.0f);
+	ImGui::DragFloat("Cull Distance", &cullDistance); ImGui::SameLine();
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Set##cd"))
+	{
+		auto view = scene->GetAllEntitiesWith<NetworkComponent>();
+		for (auto e : view)
+		{
+			auto& net = view.get<NetworkComponent>(e);
+			net.NetTransform.CullDistance = cullDistance;
+		}
+	}
+
+	ImGui::Dummy({ 0, 5 });
+	ImGui::Text("Dynamic Extrapolation");
+	ImGui::Dummy({ 0, 1 });
+	ImGui::SetNextItemWidth(200.0f);
+	ImGui::Separator();
+	ImGui::Dummy({ 0, 2 });
+
+	static float interpolationThreshold = 0.05f;
+	ImGui::PushItemWidth(100.0f);
+	ImGui::DragFloat("Interpolation Threshold", &interpolationThreshold, 0.001f); ImGui::SameLine();
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Set##it"))
+	{
+		for (auto entity : scene->FindAllScripts<DynamicExtrapolation>())
+			entity->InterpolationThreshold = interpolationThreshold;
+	}
+
+	static float switchCooldownTime = 0.25f;
+	ImGui::PushItemWidth(100.0f);
+	ImGui::DragFloat("Switch Cooldown Time", &switchCooldownTime, 0.01f); ImGui::SameLine();
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Set##cdt"))
+	{
+		for (auto entity : scene->FindAllScripts<DynamicExtrapolation>())
+		{
+			entity->SwitchCooldownTime = switchCooldownTime;
+			PT_CORE_TRACE("{}", entity->GetTag());
+		}
+	}
+
+	static bool enableDynamic = true;
+	ImGui::PushItemWidth(100.0f);
+	ImGui::Checkbox("Enable", &enableDynamic); ImGui::SameLine();
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Set##en"))
+	{
+		for (auto entity : scene->FindAllScripts<DynamicExtrapolation>())
+			entity->Enable = enableDynamic;
+	}
+
+	static bool alphaVisualize = true;
+	ImGui::PushItemWidth(100.0f);
+	ImGui::Checkbox("Alpha Visualize", &alphaVisualize); ImGui::SameLine();
+	ImGui::PopItemWidth();
+	if (ImGui::Button("Set##av"))
+	{
+		for (auto entity : scene->FindAllScripts<DynamicExtrapolation>())
+			entity->AlphaVisualize = alphaVisualize;
+	}
+#endif
 }

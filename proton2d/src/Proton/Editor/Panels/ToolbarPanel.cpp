@@ -193,11 +193,19 @@ namespace proton {
 				ImGui::PopItemWidth();
 			}
 
-			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
-			{	
+			if (netMode != NetMode::Standalone)
+			{
 				ImGui::PushItemWidth(180.0f);
 				if (ImGui::DragInt("Tick Rate (hz)", &props.ServerTickrate, 1.0f, 1, 256))
 					props.ServerTickrate = std::clamp(props.ServerTickrate, 1, 256);
+				bool temp = false;
+				ImGui::Checkbox("Use Physics Tickrate", &temp);
+				ImGui::PopItemWidth();
+			}
+
+			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
+			{	
+				ImGui::PushItemWidth(180.0f);
 				ImGui::DragInt("Port", &props.Port, 1.0f, 0, 65535);
 				ImGui::PopItemWidth();
 			}

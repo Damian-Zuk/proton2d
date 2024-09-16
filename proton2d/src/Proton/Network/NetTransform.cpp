@@ -33,17 +33,17 @@ namespace proton {
 		return NetSyncMethod::None;
 	}
 
-	bool Transform::IsZero() const
+	bool Transform::IsNearZero() const
 	{
-		constexpr float epsilon = 1e-4f;
+		constexpr float epsilon = 1e-3f;
 		return glm::compMax(glm::abs(Position)) < epsilon
 			&& glm::compMax(glm::abs(Scale)) < epsilon
 			&& glm::abs(Rotation) < epsilon;
 	}
 
-	bool NetTransform::Transform::IsNotZero() const
+	bool NetTransform::Transform::IsNotNearZero() const
 	{
-		return !IsZero();
+		return !IsNearZero();
 	}
 
 	Transform Transform::Get(TransformComponent* component, bool localSpace)

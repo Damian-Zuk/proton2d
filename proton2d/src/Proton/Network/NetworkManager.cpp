@@ -234,6 +234,14 @@ namespace proton {
 		m_TickTime = 1.0f / tickRate;
 	}
 
+	float NetworkManager::GetTickTime() const
+	{
+		if (m_UsePhysicsTickrate)
+			return m_GameInstance->GetActiveScene()->m_PhysicsTimestep;
+
+		return m_TickTime;
+	}
+
 	ConnectionStatus NetworkManager::GetClientConnectionStatus() const
 	{
 		if (m_Client)

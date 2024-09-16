@@ -70,7 +70,7 @@ namespace proton {
 
 			// Try to get Box2D rigidbody (nullptr for non physics entity)
 			b2Body* rigidbody = entity.GetRuntimeBody();
-
+			
 			// Cull distance: put rigidbody to sleep when far away
 			if (rigidbody)
 			{
@@ -126,7 +126,7 @@ namespace proton {
 			case NetTransform::SyncMethod::Interpolation:
 			{
 				// Interpolate between two last authoritative transforms
-				float alpha = glm::clamp(interpolationTimer / m_NetworkManager->m_TickTime, 0.0f, 1.0f);
+				float alpha = glm::clamp(interpolationTimer / m_NetworkManager->GetTickTime(), 0.0f, 1.0f);
 				glm::vec2 interpolatedPosition = glm::mix(prevAuthoritative.Position, lastAuthoritative.Position, alpha);
 				float interpolatedRotation = glm::mix(prevAuthoritative.Rotation, lastAuthoritative.Rotation, alpha);
 				
@@ -140,6 +140,7 @@ namespace proton {
 					transform.Rotation = interpolatedRotation;
 					transform.Scale = glm::mix(prevAuthoritative.Scale, lastAuthoritative.Scale, alpha);
 				}
+				interpolationTimer += ts;
 				break;
 			}
 			////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,11 +149,13 @@ namespace proton {
 				// Extrapolation supported only for rigidbodies
 				if (!rigidbody || !scene->IsPhysicsTick()) break;
 
-				const float lag = Server::s_FakeServerLag / 1000.0f;
+				const float lag = Server::s_FakeServerLag / 1000.0f + std::min(replicationTimer, m_NetworkManager->GetTickTime());
+				constexpr float serverVelocityWeight = 0.2f;
+
 				// Position
-				glm::vec2 serverVelocity = (lastAuthoritative.Position - prevAuthoritative.Position) / m_NetworkManager->m_TickTime;
-				glm::vec2 currentVelocity = { rigidbody->GetLinearVelocity().x, rigidbody->GetLinearVelocity().y };
-				constexpr float serverVelocityWeight = 0.3f;
+				b2Vec2 linearVelocity = rigidbody->GetLinearVelocity();
+				glm::vec2 currentVelocity = { linearVelocity.x, linearVelocity.y };
+				glm::vec2 serverVelocity = (lastAuthoritative.Position - prevAuthoritative.Position) / m_NetworkManager->GetTickTime();
 				glm::vec2 estimatedVelocity = serverVelocity * serverVelocityWeight  + currentVelocity * (1.0f - serverVelocityWeight);
 
 				predicted.Position = {
@@ -171,8 +174,8 @@ namespace proton {
 
 				// Rotation
 				float currentAngularVelocity = rigidbody->GetAngularVelocity();
-				float serverAngularVelocity = (lastAuthoritative.Rotation - prevAuthoritative.Rotation) / m_NetworkManager->m_TickTime;
-				float estimatedAngularVelocity = (currentAngularVelocity + serverAngularVelocity) / 2.0f;
+				float serverAngularVelocity = (lastAuthoritative.Rotation - prevAuthoritative.Rotation) / m_NetworkManager->GetTickTime();
+				float estimatedAngularVelocity = serverAngularVelocity * serverVelocityWeight + currentAngularVelocity * (1.0f - serverVelocityWeight);
 
 				predicted.Rotation = lastAuthoritative.Rotation + estimatedAngularVelocity * lag;
 				
@@ -194,7 +197,7 @@ namespace proton {
 					reconcileOffset = Transform{}; // reset offset state
 
 					// If delta is not zero, store it in the buffer
-					if (delta.IsNotZero())
+					if (delta.IsNotNearZero())
 					{
 						// Sequence number is incremented on network tick
 						currentSequenceNumber++;
@@ -212,7 +215,7 @@ namespace proton {
 						deltaBuffer.erase(deltaBuffer.begin(), deltaIt);
 					
 					// If not moving and not received replication for some time, clear the delta buffer 
-					if (!bufferHasNewDeltas && replicationTimer > m_NetworkManager->m_TickTime * 8.0f)
+					if (!bufferHasNewDeltas && replicationTimer > m_NetworkManager->GetTickTime() * 16.0f)
 						deltaBuffer.clear();
 
 					// Calculate predicted transform: apply deltas not processed by server yet
@@ -229,15 +232,13 @@ namespace proton {
 					float scaleError = glm::distance(current.Scale, predicted.Scale);
 					float rotationError = glm::abs(current.Rotation - predicted.Rotation);
 					
-					static uint32_t recCount = 0;
+					//static uint32_t recCount = 0;
 					// Handle position error
 					if (positionError > reconcileThreshold && reconcileTimer >= 0.0f)
 					{
-						if (!netTransform.IsReconciling(Components::Position))
-							recCount++;
-
+						//if (!netTransform.IsReconciling(Components::Position)) recCount++;
 						// Reconcile instantly
-						if (positionError > teleportThreshold || reconcileMaxTime <= 0.0f)
+						if (positionError > teleportThreshold)
 						{
 							if (rigidbody)
 								entity.SetRigidbodyTransform(predicted.Position, current.Rotation);
@@ -253,43 +254,22 @@ namespace proton {
 							netTransform.StartReconcile(Components::Position);
 						}
 					}
-
 					//if (entity == m_NetworkManager->GetLocalPlayerEntity()) _PT_CORE_TRACE("{} {:.6f}", recCount, positionError);
 
 					// Handle scale error
 					if (scaleError > s_ScaleReconcileThreshold)
-					{
-						if (reconcileMaxTime > 0.0f) // Interpolated reconciliation
-						{
-							netTransform.StartReconcile(Components::Scale);
-						}
-						else // Reconcile instantly
-						{
-							transform.Scale = predicted.Scale;
-							lastTickTransform.Scale = predicted.Scale;
-						}
-					}
+						netTransform.StartReconcile(Components::Scale);
 
 					// Handle rotation error
 					if (rotationError > s_RotationReconcileThreshold)
-					{
-						if (reconcileMaxTime > 0.0f) // Interpolated reconciliation
-						{
-							netTransform.StartReconcile(Components::Rotation);
-						}
-						else // Reconcile instantly
-						{
-							entity.SetRotationCenter(predicted.Rotation);
-							lastTickTransform.Rotation = predicted.Rotation;
-						}
-					}
+						netTransform.StartReconcile(Components::Rotation);
 				}
 
 				// If is network tick and buffer has new deltas, increment and send sequence nummber
 				if (bufferHasNewDeltas && m_NetworkManager->IsNetworkTick())
 				{
 					
-					m_SequenceNumbersToSend.push_back({ entity.GetUUID(), (uint16_t)(currentSequenceNumber)});
+					m_SequenceNumbersToSend.push_back({ entity.GetUUID(), currentSequenceNumber});
 					bufferHasNewDeltas = false;
 				}
 
@@ -405,7 +385,6 @@ namespace proton {
 
 			// Increment timers
 			replicationTimer += ts;
-			interpolationTimer += ts;
 		
 			if (reconcileTimer < 0.0f)
 				reconcileTimer = glm::min(reconcileTimer + ts, 0.0f);
@@ -471,7 +450,7 @@ namespace proton {
 				}
 
 				auto& net = entity.GetComponent<NetworkComponent>();
-				net.ServerDataMap[clientID].SequenceNumber = item.SequenceNumber;
+				net.ClientDataMap[clientID].SequenceNumber = item.SequenceNumber;
 			}
 		}
 	}

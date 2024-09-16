@@ -11,7 +11,6 @@
 #include "Proton/Network/Common.h"
 #include "Proton/Network/NetTransform.h"
 
-#include "Proton/UI/UIText.h"
 #include <entt/entity/entity.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -147,6 +146,7 @@ namespace proton {
 	struct NetworkComponent
 	{
 		bool SimulateOnClient = true;
+		bool WasReplicated = false;
 		NetTransform NetTransform;
 			
 		struct ReplicatedScript
@@ -154,20 +154,18 @@ namespace proton {
 			struct ReplicatedField
 			{
 				ScriptField Field;
-				std::function<void()> NotifyFunction;
+				std::function<void()> NotifyFunction = nullptr;
 				
-				// Server-only (todo: store in serparate EnTT component)
-				std::unordered_map<ClientID, uint32_t> ClientToChecksumMap;
+				// Server-only data (todo: store in serparate EnTT component)
+				std::unordered_map<ClientID, uint32_t> ClientChecksumMap;
 			};
-			EntityScript* Script = nullptr;
 			std::vector<ReplicatedField> ReplicatedFields;
+			EntityScript* Script = nullptr;
 		};
 		std::vector<ReplicatedScript> ReplicatedScripts;
 
-		bool WasReplicated = false;
-
-		// Server-only (todo: store in separate EnTT component)
-		std::unordered_map<ClientID, NetTransform::SequencedValue> ServerDataMap;
+		// Server-only data (todo: store in separate EnTT component)
+		std::unordered_map<ClientID, NetTransform::SequencedValue> ClientDataMap;
 	};
 
 }

@@ -11,7 +11,6 @@
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Physics/PhysicsWorld.h"
-#include "Proton/UI/UIElement.h"
 
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Network/NetTransformSystem.h"
@@ -123,7 +122,7 @@ namespace proton {
 		Shared<Scene> newScene = MakeShared<Scene>(m_Filepath, m_GameModeClassName);
 		newScene->m_ClearColor = m_ClearColor;
 		newScene->m_EnablePhysics = m_EnablePhysics;
-		newScene->m_PhysicsTimestep = m_PhysicsTimestep;
+		newScene->SetPhysicsTickrate(m_PhysicsTickrate);
 
 		newScene->m_EnableNetworking = m_EnableNetworking;
 
@@ -668,13 +667,25 @@ namespace proton {
 
 	std::vector<Entity> Scene::FindAllByTag(const std::string& tag)
 	{
-		auto view = m_Registry.view<TagComponent>();
 		std::vector<Entity> entities;
-		entities.reserve(view.size());
+		auto view = m_Registry.view<TagComponent>();
 		for (auto entity : view) 
 		{
 			if (tag == view.get<TagComponent>(entity).Tag)
-				entities.emplace_back(Entity(entity, this));
+				entities.push_back(Entity(entity, this));
+		}
+		return entities;
+	}
+
+	std::vector<Entity> Scene::FindAllWithScript(const std::string& className)
+	{
+		std::vector<Entity> entities;
+		auto view = m_Registry.view<ScriptComponent>();
+		for (auto entity : view)
+		{
+			auto& script = view.get<ScriptComponent>(entity);
+			if (script.Scripts.find(className) != script.Scripts.end())
+				entities.push_back(Entity(entity, this));
 		}
 		return entities;
 	}
@@ -692,34 +703,85 @@ namespace proton {
 		Renderer::Clear();
 		Renderer::BeginScene(camera, m_PrimaryCameraPosition);
 
+		// Define camera bounds
+		const OrthoProjection& ortho = camera.GetOrthoProjection();
+		float cameraLeft = m_PrimaryCameraPosition.x + ortho.Left;
+		float cameraRight = m_PrimaryCameraPosition.x + ortho.Right;
+		float cameraBottom = m_PrimaryCameraPosition.y + ortho.Bottom;
+		float cameraTop = m_PrimaryCameraPosition.y + ortho.Top;
+
 		// Render entities with SpriteComponent
-		auto renderableSprite = m_Registry.view<SpriteComponent, TransformComponent>();
-		for (auto e : renderableSprite)
 		{
-			auto [transform, sprite] = renderableSprite.get<TransformComponent, SpriteComponent>(e);
-			
-			// Sprite mirror flip
-			glm::vec3 scale = {
-				transform.Scale.x * (sprite.Sprite.m_MirrorFlip.x ? -1.0f : 1.0f),
-				transform.Scale.y * (sprite.Sprite.m_MirrorFlip.y ? -1.0f : 1.0f), 1.0f
-			};
+			PROFILE_SCOPE("draw_sprites");
+			auto renderableSprite = m_Registry.view<SpriteComponent, TransformComponent>();
+			for (auto e : renderableSprite)
+			{
+				auto [transform, sprite] = renderableSprite.get<TransformComponent, SpriteComponent>(e);
+				
+				float cosRotation = std::abs(glm::cos(transform.Rotation));
+				float sinRotation = std::abs(glm::sin(transform.Rotation));
 
-			glm::mat4 transformMatrix = Math::GetTransform(transform.WorldPosition, scale, transform.Rotation);
+				float halfWidth = transform.Scale.x / 2.0f;
+				float halfHeight = transform.Scale.y / 2.0f;
+				float rotatedHalfWidth = halfWidth * cosRotation + halfHeight * sinRotation;
+				float rotatedHalfHeight = halfHeight * cosRotation + halfWidth * sinRotation;
 
-			if (sprite.Sprite)
-				Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color, sprite.TilingFactor);
-			else
-				Renderer::DrawQuad(transformMatrix, sprite.Color, sprite.TilingFactor);
+				float spriteLeft = transform.WorldPosition.x - rotatedHalfWidth;
+				float spriteRight = transform.WorldPosition.x + rotatedHalfWidth;
+				float spriteBottom = transform.WorldPosition.y - rotatedHalfHeight;
+				float spriteTop = transform.WorldPosition.y + rotatedHalfHeight;
+
+				if (spriteRight < cameraLeft || spriteLeft > cameraRight ||
+					spriteTop < cameraBottom || spriteBottom > cameraTop)
+				{
+					continue;
+				}
+
+				// Sprite mirror flip
+				glm::vec3 scale = {
+					transform.Scale.x * (sprite.Sprite.m_MirrorFlip.x ? -1.0f : 1.0f),
+					transform.Scale.y * (sprite.Sprite.m_MirrorFlip.y ? -1.0f : 1.0f), 1.0f
+				};
+
+				glm::mat4 transformMatrix = Math::GetTransform(transform.WorldPosition, scale, transform.Rotation);
+
+				if (sprite.Sprite)
+					Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color, sprite.TilingFactor);
+				else
+					Renderer::DrawQuad(transformMatrix, sprite.Color, sprite.TilingFactor);
+			}
 		}
 
 		// Render entities with ResizableSpriteComponent
-		auto renderableResizableSprite = m_Registry.view<TransformComponent, ResizableSpriteComponent>();
-		for (auto e : renderableResizableSprite)
 		{
-			auto [transform, rsc] = renderableResizableSprite.get<TransformComponent, ResizableSpriteComponent>(e);
-			auto& sprite = rsc.ResizableSprite;
+			PROFILE_SCOPE("draw_resizable_sprites");
+			auto renderableResizableSprite = m_Registry.view<TransformComponent, ResizableSpriteComponent>();
+			for (auto e : renderableResizableSprite)
+			{
+				auto [transform, rsc] = renderableResizableSprite.get<TransformComponent, ResizableSpriteComponent>(e);
+				auto& sprite = rsc.ResizableSprite;
 
-			sprite.Render(Math::GetTransform(transform.WorldPosition, glm::vec2{1.0f}, transform.Rotation), rsc.Color);
+				float cosRotation = std::abs(glm::cos(transform.Rotation));
+				float sinRotation = std::abs(glm::sin(transform.Rotation));
+
+				float halfWidth = transform.Scale.x / 2.0f;
+				float halfHeight = transform.Scale.y / 2.0f;
+				float rotatedHalfWidth = halfWidth * cosRotation + halfHeight * sinRotation;
+				float rotatedHalfHeight = halfHeight * cosRotation + halfWidth * sinRotation;
+
+				float spriteLeft = transform.WorldPosition.x - rotatedHalfWidth;
+				float spriteRight = transform.WorldPosition.x + rotatedHalfWidth;
+				float spriteBottom = transform.WorldPosition.y - rotatedHalfHeight;
+				float spriteTop = transform.WorldPosition.y + rotatedHalfHeight;
+
+				if (spriteRight < cameraLeft || spriteLeft > cameraRight ||
+					spriteTop < cameraBottom || spriteBottom > cameraTop)
+				{
+					continue;
+				}
+
+				sprite.Render(Math::GetTransform(transform.WorldPosition, glm::vec2{1.0f}, transform.Rotation), rsc.Color);
+			}
 		}
 
 		// Render Circles

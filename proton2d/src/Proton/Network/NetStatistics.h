@@ -28,7 +28,7 @@ namespace proton {
 		struct ReplicationStats
 		{
 			uint32_t RepEntitiesCount = 0;
-			uint32_t RepPacketCount = 0;
+			uint32_t RepMessageCount = 0;
 		};
 
 		NetStatistics(Server* server);

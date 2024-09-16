@@ -15,7 +15,6 @@
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Utils/Utils.h"
-#include "Proton/UI/UIText.h"
 
 #include "Proton/Network/NetworkManager.h"
 
@@ -653,6 +652,15 @@ namespace proton {
 				}
 				
 				ImGui::Checkbox("Attach to parent", &component.AttachToParent);
+
+				if (scene->IsSimulated() && body)
+				{
+					b2Vec2 linearvelocity = body->GetLinearVelocity();
+					float angularVelocity = body->GetAngularVelocity();
+					ImGui::Text("Linear Velocity: (%.3f, %.3f)", linearvelocity.x, linearvelocity.y);
+					ImGui::Text("Linear Velocity: %.3f", angularVelocity);
+					ImGui::Text("Is Awake: %s", body->IsAwake() ? "Yes" : "No");
+				}
 			});
 		}
 
@@ -787,7 +795,7 @@ namespace proton {
 		ImGui::Separator();
 		ImGui::Dummy({ 0.0f, 5.0f });
 
-		if (ImGui::TreeNodeEx("General", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::TreeNodeEx("GameMode", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
 			const std::string& selectedGameMode = scene->m_GameModeClassName;
@@ -804,16 +812,27 @@ namespace proton {
 				}
 				ImGui::EndCombo();
 			}
-
-			ImGui::Dummy({ 0.0f, 5.0f });
-			if (ImGui::ColorEdit4("Clear Color", glm::value_ptr(scene->m_ClearColor)))
-				Renderer::SetClearColor(scene->m_ClearColor);
 			ImGui::PopItemWidth();
+			ImGui::Dummy({ 0.0f, 5.0f });
+
+			// Custom render
+			scene->GetGameMode()->OnImGuiRender();
 
 			ImGui::TreePop();
 		}
-		ImGui::Dummy({ 0, 5 });
 
+		ImGui::Dummy({ 0, 10 });
+		if (ImGui::TreeNodeEx("Graphics", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Dummy({ 0, 2 });
+			ImGui::PushItemWidth(210.0f);
+			if (ImGui::ColorEdit4("Clear Color", glm::value_ptr(scene->m_ClearColor)))
+				Renderer::SetClearColor(scene->m_ClearColor);
+			ImGui::PopItemWidth();
+			ImGui::TreePop();
+		}
+
+		ImGui::Dummy({ 0, 10 });
 		if (ImGui::TreeNodeEx("Physics", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
@@ -844,8 +863,8 @@ namespace proton {
 
 			ImGui::TreePop();
 		}
-		ImGui::Dummy({ 0, 5 });
 
+		ImGui::Dummy({ 0, 10 });
 		if (ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });

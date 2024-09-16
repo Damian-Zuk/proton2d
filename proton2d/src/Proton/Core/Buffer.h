@@ -1,4 +1,4 @@
-// From: https://github.com/StudioCherno/Walnut/blob/dev/Walnut/Source/Walnut/Core/Buffer.h
+// Adapted from: https://github.com/StudioCherno/Walnut/blob/dev/Walnut/Source/Walnut/Core/Buffer.h
 #pragma once
 
 namespace proton {

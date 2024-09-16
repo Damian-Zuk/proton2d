@@ -40,12 +40,12 @@ namespace proton {
         return m_Scene->m_GameInstance->GetNetworkManager();
     }
 
-    void GameModeBase::Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate)
+    void GameModeBase::Client_SendCustomMessage(const NetworkStreamWriterDelegate& delegate) const
     {
         GetNetworkManager()->Client_SendCustomMessage(delegate);
     }
 
-    void GameModeBase::Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate)
+    void GameModeBase::Server_SendCustomMessage(ClientID clientID, const NetworkStreamWriterDelegate& delegate) const
     {
         GetNetworkManager()->Server_SendCustomMessage(clientID, delegate);
     }

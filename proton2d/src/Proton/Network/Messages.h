@@ -3,6 +3,8 @@
 #include "Proton/Core/UUID.h"
 #include "Proton/Network/NetTransform.h"
 
+#define MAX_CLIENT_NAME_LENGTH 32
+
 namespace proton {
 
 	enum class MessageType : uint16_t
@@ -32,7 +34,7 @@ namespace proton {
 		MessageType MessageType = MessageType::Handshake;
 		uint32_t EngineProtocolVersion;
 		uint32_t GameProtocolVersion;
-		char ClientName[32];
+		char ClientName[MAX_CLIENT_NAME_LENGTH];
 	};
 
 	struct MessageHandshakeReply
@@ -53,7 +55,6 @@ namespace proton {
 			uint64_t ParentUUID = 0;
 			glm::vec2 Position { 0.0f };
 			uint64_t PayloadSize = 0;
-			// If PrefabUUID == 0, then contains serialized Entity as json string
 		};
 	};
 
@@ -64,7 +65,7 @@ namespace proton {
 
 		struct PayloadItem
 		{
-			UUID EntityUUID;
+			UUID EntityUUID = 0;
 		};
 	};
 
@@ -75,11 +76,12 @@ namespace proton {
 
 		struct PayloadItem
 		{
-			UUID EntityUUID;
-			NetTransform::Components TransformFlags = NetTransform::Components::None;
+			using Components = NetTransform::Components;
+			UUID EntityUUID = 0;
+			Components TransformFlags = Components::None;
 			uint16_t TransformSequenceNumber = 0;
-			uint32_t ScriptCount;
-			uint64_t PayloadSize;
+			uint32_t ScriptCount = 0;
+			uint64_t PayloadSize = 0;
 		};
 	};
 
@@ -90,8 +92,8 @@ namespace proton {
 
 		struct PayloadItem
 		{
-			UUID EnittyUUID;
-			uint16_t SequenceNumber;
+			UUID EnittyUUID = 0;
+			uint16_t SequenceNumber = 0;
 		};
 	};
 

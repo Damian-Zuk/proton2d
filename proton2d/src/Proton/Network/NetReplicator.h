@@ -32,10 +32,7 @@ namespace proton {
 		void Server_ProcessDespawnedEntityQueue(Scene* scene);
 		void Server_SendAllSpawnedEntities(Scene* scene, ClientID clientID); // for late joining clients
 		void Server_SendAllDespawnedEntities(Scene* scene, ClientID clientID); // for late joining clients
-
-		// If `clientID` is 0, then send update to all clients otherwise to specific client
-		// If `forceReplication` is true, then replicate all components despite no changes
-		void Server_SendReplicationMessage(ClientID clientID = 0, bool forceReplication = false);
+		void Server_SendReplicationMessage(ClientID clientID, bool forceReplication = false);
 
 	private:
 		Client* m_Client = nullptr;

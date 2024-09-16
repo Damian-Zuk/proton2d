@@ -18,6 +18,7 @@ namespace proton {
 	struct
 	{
 		std::vector<Shared<json>> PersistentStorage;
+
 		std::unordered_map<std::string, json*> PathToJsonMap;
 		std::unordered_map<UUID, json*> UUIDToJsonMap;
 

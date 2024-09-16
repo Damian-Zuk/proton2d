@@ -4,15 +4,14 @@
 #include "Proton/Core/KeyCodes.h"
 
 // This macro registers script class inside ScriptFactory.
-// Script class must inherit from EntityScript base class.
+// Script must inherit from EntityScript base class.
 #define ENTITY_SCRIPT_CLASS(script_class) \
 	static inline const std::string __ScriptClassName = #script_class; \
+	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; } \
 	static inline const bool __RegisteredInFactory = \
 		proton::ScriptFactory::Get().RegisterScript([&](proton::Entity entity) { \
 			return entity.AddScript<script_class>(); \
 		}, #script_class); \
-	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; }
-
 
 #define REGISTER_FIELD(type, field) \
 	RegisterField(ScriptFieldType::type, #field, &field, sizeof(field), true);
@@ -34,12 +33,13 @@ namespace proton {
 	class NetworkManager;
 
 	// Base class for entity scripts.
-	// - Use ENTITY_SCRIPT_CLASS in derived classes for script class registration.
-	// - Implement OnCreate, OnDestroy, OnUpdate for entity behavior.
+	// - Use ENTITY_SCRIPT_CLASS for script class registration.
+	// - Implement OnCreate, OnDestroy, OnUpdate for Entity behavior.
 	// - Use OnRegisterFields method to register fields (variables) for serialization / editor view.
 	class EntityScript : public Entity
 	{
 	public:
+		// ENTITY_SCRIPT_CLASS(EntityScript)
 		virtual const std::string& GetScriptClassName() = 0; // Defined by ENTITY_SCRIPT_CLASS macro
 
 		virtual ~EntityScript() = default;
@@ -59,12 +59,9 @@ namespace proton {
 		// IMPORTANT: Ensure that your ImGui code is enclosed within #ifdef PT_EDITOR preprocessor directives.
 		virtual void OnImGuiRender() {}
 
-		// Use glm::value_ptr for FloatX and IntX field types.
-		// Supported variable types are listed inside ScriptFieldType enum.
-		void RegisterField(ScriptFieldType type, const std::string& name, void* field, size_t size, bool showInEditor = true);
-
 		// Scene
 		SceneManager* GetSceneManager() const;
+		NetworkManager* GetNetworkManager() const;
 		
 		// Physics
 		void SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName);
@@ -75,9 +72,7 @@ namespace proton {
 		bool IsKeyPressed(KeyCode key) const;
 		bool IsMouseButtonPressed(MouseCode button) const;
 		
-		// Networking
-		NetworkManager* GetNetworkManager() const;
-
+		// -------------------------- Networking  --------------------------
 		bool HasAuthority() const;
 		bool IsNetModeServer() const;
 		bool IsNetModeClient() const;
@@ -89,6 +84,9 @@ namespace proton {
 		void SetReplicatedField(const std::string& fieldName, const std::function<void()>& notifyFunction = nullptr);
 		void SetReplicatedField(const ScriptField& field, const std::function<void()>& notifyFunction = nullptr);
 		void SetReplicatedData(void* data, size_t size, const std::function<void()>& notifyFunction = nullptr);
+
+		// Supported variable types are listed inside ScriptFieldType enum.
+		void RegisterField(ScriptFieldType type, const std::string& name, void* valuePtr, size_t size, bool showInEditor = true);
 
 	private:
 		void SetFieldValueData(const std::string& fieldName, void* value);

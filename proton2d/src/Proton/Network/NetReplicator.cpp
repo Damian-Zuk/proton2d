@@ -14,6 +14,8 @@
 
 #include <Crc32.h>
 
+namespace proton {
+
 #ifdef _MSC_VER
 	static inline uint32_t CountSetBits(uint32_t n) {
 		return __popcnt(n);
@@ -35,8 +37,6 @@
 	}
 #endif
 
-namespace proton {
-
 	NetReplicator::NetReplicator(Client* client)
 		: m_Client(client)
 	{
@@ -55,10 +55,12 @@ namespace proton {
 		PROFILE_FUNCTION();
 		Scene* scene = m_Client->m_GameInstance->GetActiveScene();
 
+		//PT_CORE_TRACE("Processing Rep Message: size={}", stream.GetRemainingBufferSize());
+
 		MessageEntityReplicate header;
 		stream.ReadRaw(header); // if fails, then header.EntityCount is 0
 
-		// Loop for each entity stored in message payload
+		// Iterate over each entity stored in message payload
 		for (uint32_t entityIndex = 0; entityIndex < header.EntityCount; entityIndex++)
 		{
 			// ------------------------------------- Read entity payload header -------------------------------------
@@ -87,8 +89,8 @@ namespace proton {
 			// Validate if payload size stored in item header does not exceed message buffer size
 			if (item.PayloadSize > remainingBufferSize)
 			{
-				PT_THROW_ERROR("Failed to read payload: item.PayloadSize exceeds remaining message buffer size ({} bytes)", remainingBufferSize);
 				DUMP_PAYLOAD_ITEM_HEADER();
+				PT_THROW_ERROR("Failed to read payload: item.PayloadSize exceeds remaining message buffer size ({} bytes)", remainingBufferSize);
 				return;
 			}
 
@@ -101,8 +103,8 @@ namespace proton {
 			// Validate that transform values does not exceed remaining message buffer size
 			if (netTransformPayloadSize > remainingBufferSize)
 			{
-				PT_THROW_ERROR("Failed to read payload: item.TransformFlags does not match remaining message buffer size ({} bytes)", remainingBufferSize);
 				DUMP_PAYLOAD_ITEM_HEADER();
+				PT_THROW_ERROR("Failed to read payload: item.TransformFlags does not match remaining message buffer size ({} bytes)", remainingBufferSize);
 				return;
 			}
 
@@ -110,16 +112,16 @@ namespace proton {
 			Entity entity = scene->FindByID(item.EntityUUID);
 			if (!entity.IsValid())
 			{
-				PT_THROW_ERROR("Failed to find Entity {} (entity_index={}, entity_count={})", item.EntityUUID, entityIndex, header.EntityCount);
 				STREAM_NEXT_PAYLOAD_ITEM();
+				PT_THROW_ERROR("Failed to find Entity {} (entity_index={}, entity_count={})", item.EntityUUID, entityIndex, header.EntityCount);
 				continue;
 			}
 
 			// Make sure entity has NetworkComponent
 			if (!entity.HasComponent<NetworkComponent>())
 			{
-				PT_THROW_ERROR("Entity {} is missing NetworkComponent (entity_index={}, entity_count={})", item.EntityUUID, entityIndex, header.EntityCount);
 				STREAM_NEXT_PAYLOAD_ITEM();
+				PT_THROW_ERROR("Entity {} is missing NetworkComponent (entity_index={}, entity_count={})", item.EntityUUID, entityIndex, header.EntityCount);
 				continue;
 			}
 			auto& net = entity.GetComponent<NetworkComponent>();
@@ -132,7 +134,7 @@ namespace proton {
 			net.NetTransform.ReplicationFlags = flags;
 			using Components = NetTransform::Components;
 
-			// If any transform components is replicated, reset NetTransform::SyncState
+			// If any transform components is replicated, reset NetTransform timers
 			if (flags != Components::None)
 			{
 				prevTransform = lastTransform;
@@ -186,22 +188,22 @@ namespace proton {
 
 				if (!stream.ReadRaw(scriptIndex))
 				{
-					PT_THROW_ERROR("Failed to read script index: Stream out of memory (i={})", i);
 					DUMP_PAYLOAD_ITEM_HEADER();
+					PT_THROW_ERROR("Failed to read script index: Stream out of memory (i={})", i);
 					return;
 				}
 
 				if (!stream.ReadRaw(fieldCount))
 				{
-					PT_THROW_ERROR("Failed to read script field count: Stream out of memory (i={})", i);
 					DUMP_PAYLOAD_ITEM_HEADER();
+					PT_THROW_ERROR("Failed to read script field count: Stream out of memory (i={})", i);
 					return;
 				}
 
 				if (scriptIndex >= net.ReplicatedScripts.size())
 				{
-					PT_THROW_ERROR("Script index out of bounds: net.ReplicatedScripts[{}] but size is {}", scriptIndex, net.ReplicatedScripts.size());
 					DUMP_PAYLOAD_ITEM_HEADER(); STREAM_NEXT_PAYLOAD_ITEM();
+					PT_THROW_ERROR("Script index out of bounds: net.ReplicatedScripts[{}] but size is {}", scriptIndex, net.ReplicatedScripts.size());
 					break;
 				}
 				auto& script = net.ReplicatedScripts[scriptIndex];
@@ -213,15 +215,15 @@ namespace proton {
 					uint32_t fieldIndex;
 					if (!stream.ReadRaw(fieldIndex))
 					{
-						PT_THROW_ERROR("Failed to read script field index: Stream out of memory (i={}, j={})", i, j);
 						DUMP_PAYLOAD_ITEM_HEADER();
+						PT_THROW_ERROR("Failed to read script field index: Stream out of memory (i={}, j={})", i, j);
 						return;
 					}
 
 					if (fieldIndex >= script.ReplicatedFields.size())
 					{
-						PT_THROW_ERROR("Script field index out of bounds (net.ReplicatedScripts[{}], script.ReplicatedFields[{}])", scriptIndex, fieldIndex);
 						DUMP_PAYLOAD_ITEM_HEADER(); STREAM_NEXT_PAYLOAD_ITEM();
+						PT_THROW_ERROR("Script field index out of bounds (net.ReplicatedScripts[{}], script.ReplicatedFields[{}])", scriptIndex, fieldIndex);
 						success = false;
 						break;
 					}
@@ -234,8 +236,8 @@ namespace proton {
 						std::string* stringPtr = (std::string*)field.Field.ValuePtr;
 						if (!stream.ReadString(*stringPtr))
 						{
-							PT_THROW_ERROR("Failed to read script field data (string): Stream buffer of memory (i={}, j={})", i, j);
 							DUMP_PAYLOAD_ITEM_HEADER();
+							PT_THROW_ERROR("Failed to read script field data (string): Stream out of memory (i={}, j={})", i, j);
 							return;
 						}
 					}
@@ -243,8 +245,8 @@ namespace proton {
 					{
 						if (!stream.ReadData((char*)field.Field.ValuePtr, field.Field.Size))
 						{
-							PT_THROW_ERROR("Failed to read script field data: Stream buffer of memory (i={}, j={})", i, j);
 							DUMP_PAYLOAD_ITEM_HEADER();
+							PT_THROW_ERROR("Failed to read script field data: Stream out of memory (i={}, j={})", i, j);
 							return;
 						}
 					}
@@ -556,11 +558,7 @@ namespace proton {
 		Scene* scene = clientEntity ? clientEntity.m_Scene : m_Server->m_GameInstance->GetActiveScene();
 		
 		// Skip if scene is not simulated
-		if (scene->GetSceneState() == SceneState::Stop)
-			return;
-
-		// There is no need to replicate if no clients are connected
-		if (m_Server->GetConnectedClientsCount() == 0)
+		if (!scene->IsSimulated())
 			return;
 
 		// Get all entities with NetowrkComponent
@@ -580,7 +578,7 @@ namespace proton {
 			auto& net = view.get<NetworkComponent>(_entity);
 			auto& transform = entity.GetComponent<TransformComponent>();
 			auto& netTransform = net.NetTransform;
-			auto& clientTransformData = net.ServerDataMap[clientID];
+			auto& clientTransformData = net.ClientDataMap[clientID];
 
 			// Network cull distance
 			if (clientEntity)
@@ -604,7 +602,6 @@ namespace proton {
 			// Entity payload header
 			MessageEntityReplicate::PayloadItem itemHeader;
 			itemHeader.EntityUUID = entity.GetUUID();
-			itemHeader.ScriptCount = 0;
 			auto& flags = itemHeader.TransformFlags;
 
 			const uint64_t entityPayloadStart = stream.GetStreamPosition();
@@ -612,10 +609,8 @@ namespace proton {
 
 			////////////////////////////// NetTransform Serialization //////////////////////////////
 
-			bool hasRigidbodySimulated = net.SimulateOnClient && entity.HasComponent<RigidbodyComponent>();
-
-			// Current values are stored in TransformComponent and VelocityComponent
-			const auto& position = hasRigidbodySimulated ? transform.WorldPosition : transform.LocalPosition;
+			// Current values are stored in TransformComponent
+			const auto& position = transform.WorldPosition;
 			const auto& scale = transform.Scale;
 			const auto& rotation = transform.Rotation;
 
@@ -629,7 +624,7 @@ namespace proton {
 
 			if (!forceReplication)
 			{
-				constexpr float epsilon = 1e-5f;
+				constexpr float epsilon = 1e-3f;
 				#define REPLICATE_COMPONENT(current, previous, flag) \
 				if (glm::epsilonNotEqual(current, previous, epsilon)) { \
 					stream.WriteRaw(current); \
@@ -688,7 +683,7 @@ namespace proton {
 						else
 							checksum = crc32_bitwise(field.Field.ValuePtr, field.Field.Size);
 						
-						auto& lastChecksum = field.ClientToChecksumMap[clientID];
+						auto& lastChecksum = field.ClientChecksumMap[clientID];
 						if (checksum == lastChecksum)
 							continue; // Field value not changed, skip replication
 						lastChecksum = checksum;
@@ -721,6 +716,7 @@ namespace proton {
 					stream.SetStreamPosition(scriptPayloadItemStart); 
 				}
 			}
+			///////////////////////////////////////////////////////////////////////////////////////////
 
 			if (itemHeader.ScriptCount == 0)
 			{
@@ -749,11 +745,7 @@ namespace proton {
 		// Write replication message header
 		stream.WriteRawAt(0, msgHeader);
 
-		if (clientID == 0)
-			m_Server->SendBufferToAllClients(stream.GetBuffer());
-		else
-			m_Server->SendBufferToClient(clientID, stream.GetBuffer());
-
-		m_Server->m_NetStatistics->m_ReplicationStats.RepPacketCount++;
+		m_Server->SendBufferToClient(clientID, stream.GetBuffer());
+		m_Server->m_NetStatistics->m_ReplicationStats.RepMessageCount++;
 	}
 }

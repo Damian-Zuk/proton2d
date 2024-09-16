@@ -39,7 +39,7 @@ namespace proton {
 
 	EditorLayer* EditorLayer::s_Instance = nullptr;
 
-	static constexpr bool s_EnableViewports = false;
+	static const bool s_EnableViewports = false;
 
 	struct EditorPanels
 	{
@@ -198,8 +198,11 @@ namespace proton {
 		// Propagate event to game mode
 		if (Scene* scene = m_GameInstanceContext->Instance->GetActiveScene())
 		{
-			GameModeBase* gameMode = scene->GetGameMode();
-			gameMode->OnEvent(event);
+			if (scene->IsSimulated())
+			{
+				GameModeBase* gameMode = scene->GetGameMode();
+				gameMode->OnEvent(event);
+			}
 		}
 	}
 
@@ -221,8 +224,7 @@ namespace proton {
 
 		NetworkManager* netManager = instance->GetNetworkManager();
 		netManager->SetNetMode(netMode);
-		uint16_t tickrate = m_MainGameInstance.Instance->GetNetworkManager()->GetTickrate();
-		netManager->SetTickRate(tickrate);
+		netManager->SetTickRate(m_MainGameInstance.Instance->GetNetworkManager()->GetTickrate());
 		netManager->SetLocalClientName(GenerateRandomNickname());
 
 		viewport->m_EditorGameInstance = game;

@@ -125,6 +125,7 @@ namespace proton {
 
 			auto& clientInfo = m_ConnectedClients[clientID];
 			clientInfo.Status = ConnectionStatus::Connected;
+			handshake.ClientName[MAX_CLIENT_NAME_LENGTH - 1] = '\0';
 			clientInfo.ClientName = handshake.ClientName;
 			OnClientConnected(clientID);
 
@@ -324,7 +325,7 @@ namespace proton {
 		{
 			PollIncomingMessages();
 			PollConnectionStateChanges();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 
 		// Close all the connections

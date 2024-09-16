@@ -91,7 +91,7 @@ namespace proton {
 		header.EngineProtocolVersion = PROTON_NET_PROTOCOL_VERSION;
 		header.GameProtocolVersion = NetworkManager::s_GameProtocolVersion;
 		const auto& name = m_NetworkManager->GetLocalClientName();
-		strcpy_s(header.ClientName, name.substr(0, sizeof(MessageHandshake::ClientName) - 1).c_str());
+		strcpy_s(header.ClientName, name.substr(0, MAX_CLIENT_NAME_LENGTH - 1).c_str());
 		NetworkStreamWriter stream(m_ScratchBuffer);
 		stream.WriteRaw(header);
 		SendBuffer(stream.GetBuffer());
@@ -211,7 +211,7 @@ namespace proton {
 		{
 			PollIncomingMessages();
 			PollConnectionStateChanges();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 
 		m_Interface->CloseConnection(m_Connection, 0, nullptr, false);
@@ -247,6 +247,7 @@ namespace proton {
 			m_MessageQueue.push(incomingMessage);
 		}
 	}
+
 
 	void Client::PollConnectionStateChanges()
 	{

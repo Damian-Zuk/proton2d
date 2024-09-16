@@ -392,7 +392,6 @@ namespace proton {
 		};
 		glm::vec3 scale = { cc.Radius * transform.Scale.x, cc.Radius * transform.Scale.x, 1.0f };
 		glm::mat4 circleTransform = Math::GetTransform(position, scale, transform.Rotation);
-		Renderer::DrawCircle(circleTransform, COLOR_ORANGE);
 
 		circleTransform[3].z += 0.001f;
 		Renderer::DrawCircle(circleTransform, COLOR_RED,

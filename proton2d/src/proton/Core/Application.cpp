@@ -210,7 +210,10 @@ namespace proton {
 		if (!event.Handled)
 		{
 			if (Scene* scene = m_GameInstance->GetActiveScene())
-				scene->GetGameMode()->OnEvent(event);
+			{
+				if (scene->IsSimulated())
+					scene->GetGameMode()->OnEvent(event);
+			}
 		}
 	#endif
 	}
