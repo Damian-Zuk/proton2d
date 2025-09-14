@@ -659,7 +659,7 @@ namespace proton {
 					float angularVelocity = body->GetAngularVelocity();
 					ImGui::Text("Linear Velocity: (%.3f, %.3f)", linearvelocity.x, linearvelocity.y);
 					ImGui::Text("Linear Velocity: %.3f", angularVelocity);
-					ImGui::Text("Is Awake: %s", body->IsAwake() ? "Yes" : "No");
+					ImGui::Text("Awake: %s", body->IsAwake() ? "Yes" : "No");
 				}
 			});
 		}

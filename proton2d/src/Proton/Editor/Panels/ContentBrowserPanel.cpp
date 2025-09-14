@@ -68,7 +68,7 @@ namespace proton {
 
 		if (m_CurrentDirectory != m_ContentRoot)
 		{
-			if (DrawDirectoryItem("..", m_BackIcon.get()))
+			if (DrawDirectoryItem("..", "..", m_BackIcon.get()))
 			{
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
 				Update();
@@ -77,7 +77,7 @@ namespace proton {
 
 		for (auto& folder : m_Folders)
 		{
-			if (DrawDirectoryItem(folder, m_FolderIcon.get()))
+			if (DrawDirectoryItem(folder, folder.filename().string(), m_FolderIcon.get()))
 			{
 				m_CurrentDirectory /= folder.filename();
 				Update();
@@ -88,6 +88,7 @@ namespace proton {
 		{
 			Texture* icon = m_FileIcon.get();
 			std::string extension = file.extension().string();
+			std::string label = file.filename().string();
 			if (extension == ".json")
 			{
 				std::string protonExtension = file.stem().extension().string();
@@ -95,12 +96,14 @@ namespace proton {
 					icon = m_PrefabIcon.get();
 				else if (protonExtension == ".scene")
 					icon = m_SceneIcon.get();
+
+				label = file.filename().stem().stem().string();
 			}
 			else if (extension == ".png" || extension == ".jpg")
 				icon = m_ImageIcon.get();
 
 			bool clicked = false;
-			clicked = DrawDirectoryItem(file, icon);
+			clicked = DrawDirectoryItem(file, label, icon);
 		}
 
 		ImGui::Columns(1);
@@ -146,17 +149,15 @@ namespace proton {
 		return result;
 	}
 
-	bool ContentBrowserPanel::DrawDirectoryItem(const std::filesystem::path& path, Texture* icon)
+	bool ContentBrowserPanel::DrawDirectoryItem(const std::filesystem::path& path, const std::string& label, Texture* icon)
 	{
-		std::string filename = path.filename().string();
-
 		// Item icon
 		ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.2f, 0.2f, 0.2f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, { 0.25f, 0.25f, 0.25f, 1.0f });
 
 		ImTextureID textureID = (ImTextureID)(uint64_t)(icon->GetOpenGL_ID());
-		ImGui::PushID(filename.c_str());
+		ImGui::PushID(label.c_str());
 		ImGui::ImageButton(textureID, { m_IconSize, m_IconSize }, { 0, 1 }, { 1, 0 });
 		
 		if (icon == m_PrefabIcon.get() || icon == m_SceneIcon.get())
@@ -180,7 +181,7 @@ namespace proton {
 		if (icon == m_BackIcon.get())
 			ImGui::SetItemTooltip(m_CurrentDirectory.parent_path().filename().string().c_str());
 		else
-			ImGui::SetItemTooltip(filename.c_str());
+			ImGui::SetItemTooltip(label.c_str());
 
 		ImGui::PopStyleColor(3);
 		ImGui::PopID();
@@ -190,14 +191,14 @@ namespace proton {
 		// Item filename
 		ImGui::Dummy({ 0, 1 });
 		ImGui::PushFont(EditorLayer::GetSmallFont());
-		float textWidth = ImGui::CalcTextSize(filename.c_str()).x;
+		float textWidth = ImGui::CalcTextSize(label.c_str()).x;
 		if (textWidth < m_IconSize)
 		{
 			float x = ImGui::GetCursorPos().x;
 			float width = ImGui::GetContentRegionAvail().x;
 			ImGui::SetCursorPosX(x + (width - textWidth) * 0.5f);
 		}
-		ImGui::TextWrapped(filename.c_str());
+		ImGui::TextWrapped(label.c_str());
 		ImGui::PopFont();
 		ImGui::NextColumn();
 

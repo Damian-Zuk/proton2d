@@ -17,7 +17,7 @@ namespace proton {
 
 	private:
 		void Update();
-		bool DrawDirectoryItem(const std::filesystem::path& path, Texture* icon);
+		bool DrawDirectoryItem(const std::filesystem::path& path, const std::string& label, Texture* icon);
 
 	private:
 		float m_IconSize = 64.0f;

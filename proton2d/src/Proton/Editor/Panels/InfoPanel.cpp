@@ -115,7 +115,7 @@ namespace proton {
 
 		if (!networkManager->IsNetModeServer() || !networkManager->IsNetworkActive())
 		{
-			ImGui::Text("Stats not available: Server is not running.");
+			ImGui::Text("Server is not running.");
 			return;
 		}
 
@@ -123,7 +123,7 @@ namespace proton {
 
 		if (statsAll.empty())
 		{
-			ImGui::Text("Stats not available: No clients connected.");
+			ImGui::Text("No clients connected.");
 			selectedConn = 0;
 			return;
 		}
