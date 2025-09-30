@@ -79,4 +79,5 @@ namespace proton {
 		return os << e.ToString();
 	}
 
+	using EventCallbackFn = std::function<void(Event&)>;
 }

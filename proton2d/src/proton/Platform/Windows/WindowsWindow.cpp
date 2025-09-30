@@ -1,7 +1,3 @@
-//
-// Windows GLFW Window implementation
-// From: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/Windows/WindowsWindow.cpp
-//
 #include "ptpch.h"
 #include "Proton/Platform/Windows/WindowsWindow.h"
 #include "Proton/Events/WindowEvents.h"
@@ -20,17 +16,11 @@ namespace proton {
 		PT_CORE_ERROR("GLFW Error {}: {}", error, description);
 	}
 
-	WindowsWindow::WindowsWindow(const std::string& title, uint32_t width, uint32_t height)
+	WindowsWindow::WindowsWindow(const WindowSpecification& spec)
+		: Window(spec), m_PreviousWidth(spec.Width), m_PreviousHeight(spec.Height)
 	{
-		m_Data.Title = title;
-		m_Data.Width = width;
-		m_Data.Height = height;
-		m_Data.Fullscreen = false;
-		m_PreviousWidth = width;
-		m_PreviousHeight = height;
-
 		_PT_CORE_INFO("*********************************************************");
-		_PT_CORE_INFO("Creating window '{}' ({}x{})", title, width, height);
+		_PT_CORE_INFO("Creating window '{}' ({}x{})", spec.Title, spec.Width, spec.Height);
 
 		if (s_GLFWWindowCount == 0)
 		{
@@ -38,7 +28,7 @@ namespace proton {
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
-		m_Window = glfwCreateWindow((int)width, (int)height, m_Data.Title.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow((int)spec.Width, (int)spec.Height, spec.Title.c_str(), nullptr, nullptr);
 		++s_GLFWWindowCount;
 
 		// Context
@@ -53,8 +43,8 @@ namespace proton {
 
 		// Set window icon
 		int icon_width, icon_height, icon_channels;
-		unsigned char* iconImage = stbi_load("../resources/icon.png", &icon_width, &icon_height, &icon_channels, 0);
-		if (iconImage) {
+		if (unsigned char* iconImage = stbi_load("../resources/icon.png", &icon_width, &icon_height, &icon_channels, 0))
+		{
 			GLFWimage icon;
 			icon.width = icon_width;
 			icon.height = icon_height;
@@ -62,12 +52,14 @@ namespace proton {
 			glfwSetWindowIcon(m_Window, 1, &icon);
 		}
 
+		using WindowData = Window::WindowData;
+
 		// GLFW event callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.Width = width;
-				data.Height = height;
+				data.Spec.Width = width;
+				data.Spec.Height = height;
 
 				WindowResizeEvent event(width, height);
 				data.EventCallback(event);
@@ -183,39 +175,31 @@ namespace proton {
 		else
 			glfwSwapInterval(0);
 
-		m_Data.VSync = enabled;
-	}
-
-	bool WindowsWindow::IsVSync() const
-	{
-		return m_Data.VSync;
+		GetWindowSpecification().VSync = enabled;
 	}
 
 	void WindowsWindow::SetFullscreen(bool fullscreen)
 	{
-		if (fullscreen != m_Data.Fullscreen) 
+		auto& spec = GetWindowSpecification();
+
+		if (fullscreen != spec.Fullscreen)
 		{
-			m_Data.Fullscreen = fullscreen;
+			spec.Fullscreen = fullscreen;
 			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 			if (fullscreen)
 			{
-				m_PreviousWidth = m_Data.Width;
-				m_PreviousHeight = m_Data.Height;
+				m_PreviousWidth = spec.Width;
+				m_PreviousHeight = spec.Height;
 				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 				glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 			}
 			else
 			{
-				m_Data.Width = m_PreviousWidth;
-				m_Data.Height = m_PreviousWidth;
-				glfwSetWindowMonitor(m_Window, NULL, 100, 100, m_Data.Width, m_Data.Height, GLFW_DONT_CARE);
+				spec.Width = m_PreviousWidth;
+				spec.Height = m_PreviousWidth;
+				glfwSetWindowMonitor(m_Window, NULL, 100, 100, spec.Width, spec.Height, GLFW_DONT_CARE);
 			}
 		}
-	}
-
-	bool WindowsWindow::IsFullscreen() const
-	{
-		return m_Data.Fullscreen;
 	}
 
 }

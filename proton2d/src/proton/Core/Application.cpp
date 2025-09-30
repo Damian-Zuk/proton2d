@@ -33,13 +33,18 @@ namespace proton {
 		PT_CORE_ASSERT(!s_Instance, "Application already exists!");
 		Application::s_Instance = this;
 
+		WindowSpecification windowSpec;
+		windowSpec.Title = m_AppConfig.WindowTitle;
+		windowSpec.Width = m_AppConfig.WindowWidth;
+		windowSpec.Height = m_AppConfig.WindowHeight;
+		windowSpec.Fullscreen = m_AppConfig.Fullscreen;
+		windowSpec.VSync = m_AppConfig.VSync;
+
 	#ifdef PROTON_PLATFORM_WINDOWS
-		m_Window = MakeUnique<WindowsWindow>(m_AppConfig.WindowTitle, m_AppConfig.WindowWidth, m_AppConfig.WindowHeight);
+		m_Window = MakeUnique<WindowsWindow>(windowSpec);
 	#endif
 
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
-		m_Window->SetFullscreen(m_AppConfig.Fullscreen);
-		m_Window->SetVSync(m_AppConfig.VSync);
 
 	#ifdef PROTON_DISTRIBUTION
 		m_GameInstance = MakeUnique<GameInstance>();
