@@ -33,6 +33,11 @@ namespace proton {
 	//         Serialize Scene Function
 	// *****************************************
 
+	void SceneSerializer::SetScene(Scene* scene)
+	{
+		m_Scene = scene;
+	}
+
 	bool SceneSerializer::SerializeToFile(const std::string& filepath)
 	{
 		std::ofstream out(filepath);
@@ -63,7 +68,10 @@ namespace proton {
 		}
 
 		for (Entity entity : m_Scene->m_Root)
+		{
+			m_IsRootEntity = true;
 			jsonObj["Entities"].push_back(SerializeEntity(entity));
+		}
 
 		return jsonObj.dump(4);
 	}
@@ -114,38 +122,84 @@ namespace proton {
 	//       Serialize Entity Function
 	// *****************************************
 
+	void SceneSerializer::SerializeChildren(Entity entity, json& out)
+	{
+		bool restoreValue = m_IsParentPrefab;
+		m_IsParentPrefab |= entity.HasComponent<PrefabComponent>();
+
+		auto& relationship = entity.GetComponent<RelationshipComponent>();
+		if (relationship.ChildrenCount)
+		{
+			entt::entity current = relationship.First;
+			while (current != entt::null)
+			{
+				Entity child{ current, entity.m_Scene };
+				auto& rc = child.GetComponent<RelationshipComponent>();
+				m_IsRootEntity = false;
+				out["Entities"].push_back(SerializeEntity(child));
+				current = rc.Next;
+			}
+		}
+		m_IsParentPrefab = restoreValue;
+	}
+
 	json SceneSerializer::SerializeEntity(Entity entity)
 	{
-		json jsonObj;
-
-		bool isPrefab = entity.HasComponent<PrefabComponent>();
-
-		// Serialize IDComponent
-		auto& uuid = entity.GetUUID();
-		jsonObj["UUID"] = (uint64_t)uuid;
+		json out;
 
 		// Serialize TagComponent
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
-		jsonObj["Tag"] = tag;
+		auto& tag = entity.GetTag();
+		out["Tag"] = tag;
 
-		// Serialize TransformComponent
-		auto& transform = entity.GetComponent<TransformComponent>();
-		auto& position = transform.LocalPosition;
-		jsonObj["Transform"] = {
-			{ "Position", { round(position.x), round(position.y), round(position.z) } },
-			{ "Rotation", round(transform.Rotation) },
-			{ "Scale", { round(transform.Scale.x), round(transform.Scale.y) } }
-		};
-
-		if (isPrefab)
+		// Serialize IDComponent
+		auto& id = entity.GetComponent<IDComponent>();
+		if (Source == SourceType::SceneFile)
 		{
-			auto& pc = entity.GetComponent<PrefabComponent>();
-			jsonObj["Prefab"] = {
-				{ "UUID", (uint64_t)pc.PrefabUUID },
-			};
+			out["UUID"] = (uint64_t)id.ID;
+		}
+		else if (Source == SourceType::PrefabFile)
+		{
+			out["UUID"] = (uint64_t)(id.PrefabChildRefID != 0 ? id.PrefabChildRefID : id.ID);
+		}
 
-			if (!IsPrefabSerializer)
-				return jsonObj;
+		if (Source == SourceType::SceneFile && m_IsParentPrefab)
+		{
+			PT_CORE_VERIFY(id.PrefabChildRefID != 0);
+			out["PrefabChildRefUUID"] = (uint64_t)id.PrefabChildRefID;
+		}
+
+		bool isPrefabEntity = entity.HasComponent<PrefabComponent>();
+		if (isPrefabEntity)
+		{
+			// Serialize PrefabComponent
+			auto& pc = entity.GetComponent<PrefabComponent>();
+			out["PrefabUUID"] = (uint64_t)pc.PrefabUUID;
+			//out["Prefab"] = {
+			//	{ "UUID", (uint64_t)pc.PrefabUUID }
+			//};
+		}
+
+		if ((Source == SourceType::SceneFile && (!m_IsParentPrefab)) ||
+			(Source == SourceType::PrefabFile && (m_IsParentPrefab)))
+		{
+			// Serialize TransformComponent
+			auto& transform = entity.GetTransform();
+			auto& position = transform.LocalPosition;
+			out["Transform"] = {
+				{ "Position", { round(position.x), round(position.y), round(position.z) } },
+				{ "Rotation", round(transform.Rotation) },
+				{ "Scale", { round(transform.Scale.x), round(transform.Scale.y) } }
+			};
+		}
+
+		if (isPrefabEntity)
+		{
+			if (Source == SourceType::SceneFile || 
+				(Source == SourceType::PrefabFile && isPrefabEntity && m_IsParentPrefab))
+			{
+				SerializeChildren(entity, out);
+				return out;
+			}
 		}
 
 		// Serialize NetworkComponent
@@ -154,7 +208,7 @@ namespace proton {
 			auto& net = entity.GetComponent<NetworkComponent>();
 			auto& netTransform = net.NetTransform;
 			
-			jsonObj["Network"] = {
+			out["Network"] = {
 				{ "SimulateOnClient", net.SimulateOnClient },
 				{ "SyncMethod", NetSyncMethodToString(netTransform.Method) },
 				{ "CullDistance", netTransform.CullDistance, },
@@ -172,7 +226,7 @@ namespace proton {
 			auto& color = spriteComponent.Color;
 			if (sprite)
 			{
-				jsonObj["Sprite"] = {
+				out["Sprite"] = {
 					{ "Texture", GetFilepathRelative(s_TexturesPath, sprite.GetTexture()->GetPath())},
 					{ "FilterMode", sprite.GetTexture()->GetFilterMode() },
 					{ "Flip", { sprite.m_MirrorFlip.x, sprite.m_MirrorFlip.y } }
@@ -180,11 +234,11 @@ namespace proton {
 
 				if (sprite.m_Spritesheet)
 				{
-					jsonObj["Sprite"]["TilePos"] = { sprite.m_TilePos.x, sprite.m_TilePos.y }; 
-					jsonObj["Sprite"]["TileSize"] = { sprite.m_TileSize.x, sprite.m_TileSize.y };
+					out["Sprite"]["TilePos"] = { sprite.m_TilePos.x, sprite.m_TilePos.y }; 
+					out["Sprite"]["TileSize"] = { sprite.m_TileSize.x, sprite.m_TileSize.y };
 				}
 			}
-			jsonObj["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
+			out["Sprite"]["Color"] = { round(color.r), round(color.g), round(color.b), round(color.a) };
 		}
 		
 		// Serialize ResizableSpriteComponent
@@ -195,7 +249,7 @@ namespace proton {
 			auto& spritesheet = sprite.GetSpritesheet();
 			const auto& col = component.Color;
 
-			jsonObj["ResizableSprite"] = {
+			out["ResizableSprite"] = {
 				{ "Width",     sprite.m_CellCount.x },
 				{ "Height",    sprite.m_CellCount.y },
 				{ "TileScale", sprite.m_CellScale },
@@ -207,7 +261,7 @@ namespace proton {
 
 			if (spritesheet)
 			{
-				jsonObj["ResizableSprite"]["Spritesheet"] = GetFilepathRelative(s_TexturesPath, spritesheet->GetTexture()->GetPath());
+				out["ResizableSprite"]["Spritesheet"] = GetFilepathRelative(s_TexturesPath, spritesheet->GetTexture()->GetPath());
 			}
 		}
 
@@ -217,7 +271,7 @@ namespace proton {
 			auto& component = entity.GetComponent<CircleRendererComponent>();
 			const auto& col = component.Color;
 
-			jsonObj["CircleRenderer"] = {
+			out["CircleRenderer"] = {
 				{ "Thickness", component.Thickness },
 				{ "Fade",      component.Fade },
 				{ "Color", { col.r, col.g, col.b, col.a } }
@@ -230,7 +284,7 @@ namespace proton {
 			auto& component = entity.GetComponent<TextComponent>();
 			const auto& col = component.Color;
 
-			jsonObj["Text"] = {
+			out["Text"] = {
 				{ "TextString",  component.TextString },
 				{ "Kerning",     component.Kerning },
 				{ "LineSpacing", component.LineSpacing },
@@ -243,7 +297,7 @@ namespace proton {
 		if (entity.HasComponent<RigidbodyComponent>())
 		{
 			auto& rb = entity.GetComponent<RigidbodyComponent>();
-			jsonObj["Rigidbody"] = {
+			out["Rigidbody"] = {
 				{ "Type", rb.Type },
 				{ "LinearDamping", rb.LinearDamping },
 				{ "AngularDamping", rb.AngularDamping },
@@ -258,7 +312,7 @@ namespace proton {
 		if (entity.HasComponent<BoxColliderComponent>())
 		{
 			auto& collider = entity.GetComponent<BoxColliderComponent>();
-			jsonObj["BoxCollider"] = {
+			out["BoxCollider"] = {
 				{ "Size",               { collider.Size.x,   collider.Size.y } },
 				{ "Offset",             { collider.Offset.x, collider.Offset.y } },
 				{ "Friction",             collider.Material.Friction },
@@ -274,7 +328,7 @@ namespace proton {
 		if (entity.HasComponent<CircleColliderComponent>())
 		{
 			auto& collider = entity.GetComponent<CircleColliderComponent>();
-			jsonObj["CircleCollider"] = {
+			out["CircleCollider"] = {
 				{ "Offset",             { collider.Offset.x, collider.Offset.y } },
 				{ "Radius",               collider.Radius },
 				{ "Friction",             collider.Material.Friction },
@@ -290,7 +344,7 @@ namespace proton {
 		if (entity.HasComponent<CameraComponent>())
 		{
 			auto& camera = entity.GetComponent<CameraComponent>();
-			jsonObj["Camera"] = {
+			out["Camera"] = {
 				{ "ZoomLevel", camera.Camera.GetZoomLevel() },
 				{ "PositionOffset", { camera.PositionOffset.x, camera.PositionOffset.y } },
 			};
@@ -365,25 +419,13 @@ namespace proton {
 					}
 					scriptObj["Fields"].push_back(fieldObj);
 				}
-				jsonObj["Scripts"].push_back(scriptObj);
+				out["Scripts"].push_back(scriptObj);
 			}
 		}
 
 		// Serialize child entities
-		auto& relationship = entity.GetComponent<RelationshipComponent>();
-		if (relationship.ChildrenCount)
-		{
-			entt::entity current = relationship.First;
-			while (current != entt::null)
-			{
-				Entity child{ current, entity.m_Scene };
-				auto& rc = child.GetComponent<RelationshipComponent>();
-				jsonObj["Entities"].push_back(SerializeEntity(child));
-				current = rc.Next;
-			}
-		}
-
-		return jsonObj;
+		SerializeChildren(entity, out);
+		return out;
 	}
 
 	std::string SceneSerializer::SerializeEntityToString(Entity entity)
@@ -391,65 +433,127 @@ namespace proton {
 		return SerializeEntity(entity).dump();
 	}
 
+
 	// *****************************************
 	//       Deserialize Entity Function
 	// *****************************************
-
-	Entity SceneSerializer::DeserializeEntity(const json& jsonObj, UUID uuid)
+	
+	void SceneSerializer::DeserializeChildren(Entity entity, const json& data)
 	{
-		Entity entity;
-		bool isPrefab = jsonObj.contains("Prefab");
+		if (!data.contains("Entities"))
+			return;
 
-		if (IsPrefabSerializer) // PrefabManager::Spawn
+		bool restoreValue = m_IsParentPrefab;
+		m_IsParentPrefab |= entity.HasComponent<PrefabComponent>();
+
+		auto& hierarchy = entity.GetComponent<RelationshipComponent>();
+		const json& entities = data["Entities"];
+		
+		if (hierarchy.ChildrenCount == 0)
 		{
-			if (uuid)
-				entity = m_Scene->CreateEntityWithUUID(uuid, jsonObj["Tag"]);
-			else
-				entity = m_Scene->CreateEntity(jsonObj["Tag"]); // New UUID
-		}
-		else
-		{ 
-			if (isPrefab)
+			// Create new child entities
+			for (auto it = entities.rbegin(); it != entities.rend(); it++)
 			{
-				entity = PrefabManager::Spawn(m_Scene, jsonObj["Tag"]);
-				entity.GetComponent<IDComponent>().ID = (uint64_t)jsonObj["UUID"];
-			}
-			else
-			{
-				UUID uuidFromJson;
-				if (jsonObj.contains("UUID"))
-					uuidFromJson = (uint64_t)jsonObj["UUID"];
-				entity = m_Scene->CreateEntityWithUUID(uuidFromJson, jsonObj["Tag"]);
+				const json& data = *it;
+				Entity child = DeserializeEntity(data);
+				entity.AddChildEntity(child, false);
+
+				if (Source == SourceType::PrefabFile)
+				{
+					PT_CORE_VERIFY(data.contains("UUID"));
+					child.GetComponent<IDComponent>().PrefabChildRefID = (uint64_t)data["UUID"];
+				}
 			}
 		}
+		else if (Source == SourceType::PrefabFile)
+		{
+			// Create mapping for existing hierarchy
+			std::unordered_map<UUID, Entity> prefabEntityMap;
+			Entity current(hierarchy.First, entity.GetScene());
+			while (current)
+			{
+				auto& id = current.GetComponent<IDComponent>();
+				prefabEntityMap[id.PrefabChildRefID] = current;
+				auto& h = current.GetComponent<RelationshipComponent>();
+				current = Entity(h.Next, entity.GetScene());
+			}
+
+			// Read Prefab JSON and deserialize to existing entities
+			for (auto it = entities.rbegin(); it != entities.rend(); it++)
+			{
+				const json& entityData = *it;
+				std::string keyName = (Source == SourceType::SceneFile ? "PrefabChildRefUUID" : "UUID");
+
+				PT_CORE_VERIFY(entityData.contains(keyName));
+				UUID PrefabChildRefUUID = (uint64_t)entityData[keyName];
+
+				if (prefabEntityMap.find(PrefabChildRefUUID) == prefabEntityMap.end())
+				{
+					PT_CORE_ERROR("Could not map prefab child uuid {} to entity", PrefabChildRefUUID);
+					continue;
+				}
+
+				Entity target = prefabEntityMap[PrefabChildRefUUID];
+				DeserializeEntity(*it, target);
+			}
+		}
+		m_IsParentPrefab = restoreValue;
+	}
+
+	Entity SceneSerializer::DeserializeEntity(const json& data, Entity entity)
+	{
+		if (!entity) // Create new entity if did not provided existing entity
+		{
+			UUID uuid = (Source == SourceType::SceneFile && data.contains("UUID")) ? (uint64_t)data["UUID"] : UUID();
+			entity = m_Scene->CreateEntityWithUUID(uuid);
+		}
+
+		if (Source == SourceType::SceneFile && data.contains("PrefabChildRefUUID"))
+		{
+			entity.GetComponent<IDComponent>().PrefabChildRefID = (uint64_t)data["PrefabChildRefUUID"];
+		}
+
+		// Deserialize TagComponent
+		entity.GetComponent<TagComponent>().Tag = data["Tag"];
 
 		// Deserialize TransformComponent
-		auto& transform = entity.GetComponent<TransformComponent>();
-		const json& position = jsonObj["Transform"]["Position"];
-		const json& scale    = jsonObj["Transform"]["Scale"];
-		const json& rotation = jsonObj["Transform"]["Rotation"];
-		transform.WorldPosition = { position[0], position[1], position[2] };
-		transform.LocalPosition = { position[0], position[1], position[2] };
-		transform.Scale    = { scale[0], scale[1] };
-		transform.Rotation = rotation;
+		if ((Source == SourceType::SceneFile && (!m_IsParentPrefab)) || (Source == SourceType::PrefabFile && m_IsParentPrefab))
+		{
+			if (data.contains("Transform"))
+			{
+				const json& position = data["Transform"]["Position"];
+				const json& scale = data["Transform"]["Scale"];
+				const json& rotation = data["Transform"]["Rotation"];
+				auto& transform = entity.GetComponent<TransformComponent>();
+
+				transform.WorldPosition = { position[0], position[1], position[2] };
+				transform.LocalPosition = { position[0], position[1], position[2] };
+				transform.Scale = { scale[0], scale[1] };
+				transform.Rotation = rotation;
+			}
+		}
 
 		// Deserialize PrefabComponent
-		if (isPrefab)
+		if (data.contains("PrefabUUID"))
 		{
 			auto& pc = entity.AddOrReplaceComponent<PrefabComponent>();
-			pc.PrefabUUID = (uint64_t)jsonObj["Prefab"]["UUID"];
+			pc.PrefabUUID = (uint64_t)data["PrefabUUID"];
 
-			if (!IsPrefabSerializer)
-				// Other properties deserialized by PrefabManager::Spawn
+			if (Source == SourceType::SceneFile || m_IsParentPrefab)
+			{
+				DeserializeChildren(entity, data);
+				PrefabManager::DeserializePrefab(entity, pc.PrefabUUID);
+
 				return entity;
+			}
 		}
 
 		// Deserialize NetworkComponent
-		if (jsonObj.contains("Network"))
+		if (data.contains("Network"))
 		{
-			auto& net = entity.AddComponent<NetworkComponent>();
+			auto& net = entity.AddOrReplaceComponent<NetworkComponent>();
 			auto& netTransform = net.NetTransform;
-			auto& netJson = jsonObj.at("Network");
+			auto& netJson = data.at("Network");
 
 			if (netJson.contains("SimulateOnClient"))
 				net.SimulateOnClient = netJson["SimulateOnClient"];
@@ -471,10 +575,10 @@ namespace proton {
 		}
 
 		// Deserialize SpriteComponent
-		if (jsonObj.contains("Sprite"))
+		if (data.contains("Sprite"))
 		{
-			const json& sprite = jsonObj["Sprite"];
-			auto& spriteComponent = entity.AddComponent<SpriteComponent>();
+			const json& sprite = data["Sprite"];
+			auto& spriteComponent = entity.AddOrReplaceComponent<SpriteComponent>();
 			
 			if (sprite.contains("Texture"))
 			{
@@ -504,15 +608,15 @@ namespace proton {
 					PT_CORE_ERROR("Texture '{}' does not exist!", sprite["Texture"]);
 			}
 			
-			const json& color = jsonObj["Sprite"]["Color"];
+			const json& color = data["Sprite"]["Color"];
 			spriteComponent.Color = { color[0], color[1], color[2], color[3] };
 		}
 
 		// Deserialize ResizableSpriteComponent
-		if (jsonObj.contains("ResizableSprite"))
+		if (data.contains("ResizableSprite"))
 		{
-			const json& jsonData = jsonObj["ResizableSprite"];
-			auto& component = entity.AddComponent<ResizableSpriteComponent>();
+			const json& jsonData = data["ResizableSprite"];
+			auto& component = entity.AddOrReplaceComponent<ResizableSpriteComponent>();
 			auto& sprite = component.ResizableSprite;
 			sprite.m_EdgesBitset = jsonData["Edges"];
 			sprite.m_CellScale = jsonData["TileScale"];
@@ -526,6 +630,7 @@ namespace proton {
 			if (jsonData.contains("Spritesheet"))
 				sprite.m_Spritesheet = AssetManager::GetSpritesheet(jsonData["Spritesheet"]);
 		
+			auto& transform = entity.GetComponent<TransformComponent>();
 			sprite.Generate(transform.Scale);
 
 			auto& c = jsonData["Color"];
@@ -533,10 +638,10 @@ namespace proton {
 		}
 
 		// Deserialize CircleRendererComponent
-		if (jsonObj.contains("CircleRenderer"))
+		if (data.contains("CircleRenderer"))
 		{
-			const json& jsonData = jsonObj["CircleRenderer"];
-			auto& component = entity.AddComponent<CircleRendererComponent>();
+			const json& jsonData = data["CircleRenderer"];
+			auto& component = entity.AddOrReplaceComponent<CircleRendererComponent>();
 			component.Thickness = jsonData["Thickness"];
 			component.Fade = jsonData["Fade"];
 			auto& c = jsonData["Color"];
@@ -544,19 +649,19 @@ namespace proton {
 		}
 
 		// Deserialize CameraComponent
-		if (jsonObj.contains("Camera"))
+		if (data.contains("Camera"))
 		{
-			auto& camera = entity.AddComponent<CameraComponent>();
-			const json& cameraJson = jsonObj["Camera"];
+			auto& camera = entity.AddOrReplaceComponent<CameraComponent>();
+			const json& cameraJson = data["Camera"];
 			camera.Camera.SetZoomLevel(cameraJson["ZoomLevel"]);
 			camera.PositionOffset = { cameraJson["PositionOffset"][0], cameraJson["PositionOffset"][1] };
 		}
 
 		// Deserialize BoxColliderComponent
-		if (jsonObj.contains("BoxCollider"))
+		if (data.contains("BoxCollider"))
 		{
-			auto& collider = entity.AddComponent<BoxColliderComponent>();
-			const json& boxCollider = jsonObj["BoxCollider"];
+			auto& collider = entity.AddOrReplaceComponent<BoxColliderComponent>();
+			const json& boxCollider = data["BoxCollider"];
 			const json& size = boxCollider["Size"];
 			const json& offset = boxCollider["Offset"];
 
@@ -573,10 +678,10 @@ namespace proton {
 		}
 
 		// Deserialize CircleColliderComponent
-		if (jsonObj.contains("CircleCollider"))
+		if (data.contains("CircleCollider"))
 		{
-			auto& collider = entity.AddComponent<CircleColliderComponent>();
-			const json& circleCollider = jsonObj["CircleCollider"];
+			auto& collider = entity.AddOrReplaceComponent<CircleColliderComponent>();
+			const json& circleCollider = data["CircleCollider"];
 			const json& offset = circleCollider["Offset"];
 
 			collider.Offset = { offset[0], offset[1] };
@@ -592,10 +697,10 @@ namespace proton {
 		}
 
 		// Deserialize TextComponent
-		if (jsonObj.contains("Text"))
+		if (data.contains("Text"))
 		{
-			auto& component = entity.AddComponent<TextComponent>();
-			const json& jsonText = jsonObj["Text"];
+			auto& component = entity.AddOrReplaceComponent<TextComponent>();
+			const json& jsonText = data["Text"];
 			
 			component.TextString = jsonText["TextString"];
 			component.Kerning = jsonText["Kerning"];
@@ -607,10 +712,10 @@ namespace proton {
 		}
 
 		// Deserialize RigidbodyComponent
-		if (jsonObj.contains("Rigidbody"))
+		if (data.contains("Rigidbody"))
 		{
-			auto& rb = entity.AddComponent<RigidbodyComponent>();
-			const json& jsonRb = jsonObj["Rigidbody"];
+			auto& rb = entity.AddOrReplaceComponent<RigidbodyComponent>();
+			const json& jsonRb = data["Rigidbody"];
 			
 			if (jsonRb.contains("Type"))
 				rb.Type = jsonRb["Type"];
@@ -635,9 +740,9 @@ namespace proton {
 		}
 
 		// Deserialize scripts
-		if (jsonObj.contains("Scripts"))
+		if (data.contains("Scripts"))
 		{
-			for (auto& scriptJson : jsonObj["Scripts"])
+			for (auto& scriptJson : data["Scripts"])
 			{
 				std::string scriptClassName = scriptJson["ClassName"];
 				EntityScript* script = ScriptFactory::Get().AddScriptToEntity(entity, scriptClassName);
@@ -698,14 +803,7 @@ namespace proton {
 			}
 		}
 
-		// Deserialize child entities
-		if (jsonObj.contains("Entities"))
-		{
-			const json& entities = jsonObj["Entities"];
-			for (auto it = entities.rbegin(); it != entities.rend(); it++)
-				entity.AddChildEntity(DeserializeEntity(*it), false);
-		}
-
+		DeserializeChildren(entity, data);
 		return entity;
 	}
 

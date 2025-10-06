@@ -1,18 +1,7 @@
 {
-    "UUID": 10348577899559436878,
     "Tag": "GrassPlatform",
-    "Transform": {
-        "Position": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "Rotation": 0.0,
-        "Scale": [
-            3.0,
-            1.0
-        ]
-    },
+    "UUID": 14252616338435259006,
+    "PrefabUUID": 13619582391534006965,
     "ResizableSprite": {
         "Width": 3,
         "Height": 1,
@@ -36,6 +25,10 @@
     },
     "Rigidbody": {
         "Type": 0,
+        "LinearDamping": 0.0,
+        "AngularDamping": 0.0,
+        "GravityScale": 1.0,
+        "IsBullet": false,
         "FixedRotation": false,
         "AttachToParent": false
     },

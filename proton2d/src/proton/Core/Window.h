@@ -24,8 +24,8 @@ namespace proton {
 		virtual void OnUpdate() = 0;
 		virtual void* GetNativeWindow() const = 0;
 
-		virtual uint32_t GetWidth() const { return m_Data.Spec.Width; }
-		virtual uint32_t GetHeight() const { return m_Data.Spec.Height; }
+		uint32_t GetWidth() const { return m_Data.Spec.Width; }
+		uint32_t GetHeight() const { return m_Data.Spec.Height; }
 		inline float GetAspectRatio() const { return (float)GetWidth() / (float)GetHeight(); }
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }

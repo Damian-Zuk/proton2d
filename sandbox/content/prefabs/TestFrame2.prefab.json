@@ -1,21 +1,7 @@
 {
-    "UUID": 15507025740130194731,
     "Tag": "TestFrame2",
-    "Transform": {
-        "Position": [
-            -20.55876,
-            6.22621,
-            0.0
-        ],
-        "Rotation": 0.0,
-        "Scale": [
-            1.0,
-            1.0
-        ]
-    },
-    "Prefab": {
-        "UUID": 5306419330787304281
-    },
+    "UUID": 3070332110585337845,
+    "PrefabUUID": 5306419330787304281,
     "Scripts": [
         {
             "ClassName": "TestFrame2Script",
@@ -29,8 +15,8 @@
     ],
     "Entities": [
         {
-            "UUID": 8736345216724971373,
             "Tag": "BallGroup",
+            "UUID": 8736345216724971373,
             "Transform": {
                 "Position": [
                     0.0,
@@ -45,8 +31,8 @@
             }
         },
         {
-            "UUID": 17493635495663250999,
             "Tag": "BallDespawn",
+            "UUID": 17493635495663250999,
             "Transform": {
                 "Position": [
                     1.34447,
@@ -69,6 +55,10 @@
             },
             "Rigidbody": {
                 "Type": 0,
+                "LinearDamping": 0.0,
+                "AngularDamping": 0.0,
+                "GravityScale": 1.0,
+                "IsBullet": false,
                 "FixedRotation": false,
                 "AttachToParent": false
             },
@@ -90,8 +80,8 @@
             }
         },
         {
-            "UUID": 5549876788439531059,
             "Tag": "BallSpawn",
+            "UUID": 5549876788439531059,
             "Transform": {
                 "Position": [
                     -0.6165,
@@ -114,8 +104,8 @@
             }
         },
         {
-            "UUID": 14361732350806808561,
             "Tag": "Walls",
+            "UUID": 14361732350806808561,
             "Transform": {
                 "Position": [
                     -0.22003,
@@ -130,8 +120,8 @@
             },
             "Entities": [
                 {
-                    "UUID": 9945372516559490408,
                     "Tag": "Wall",
+                    "UUID": 9945372516559490408,
                     "Transform": {
                         "Position": [
                             -0.3994,
@@ -154,6 +144,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -175,8 +169,8 @@
                     }
                 },
                 {
-                    "UUID": 3969303205934835826,
                     "Tag": "Wall",
+                    "UUID": 3969303205934835826,
                     "Transform": {
                         "Position": [
                             1.57158,
@@ -199,6 +193,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -220,8 +218,8 @@
                     }
                 },
                 {
-                    "UUID": 9929685602456655946,
                     "Tag": "Wall",
+                    "UUID": 9929685602456655946,
                     "Transform": {
                         "Position": [
                             0.84786,
@@ -244,6 +242,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -265,8 +267,8 @@
                     }
                 },
                 {
-                    "UUID": 7268780695572175683,
                     "Tag": "Wall",
+                    "UUID": 7268780695572175683,
                     "Transform": {
                         "Position": [
                             0.32121,
@@ -289,6 +291,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -310,8 +316,8 @@
                     }
                 },
                 {
-                    "UUID": 5083264774289584985,
                     "Tag": "Wall",
+                    "UUID": 5083264774289584985,
                     "Transform": {
                         "Position": [
                             -1.65037,
@@ -334,6 +340,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -355,8 +365,8 @@
                     }
                 },
                 {
-                    "UUID": 14491276956146842972,
                     "Tag": "Wall",
+                    "UUID": 14491276956146842972,
                     "Transform": {
                         "Position": [
                             2.81856,
@@ -379,6 +389,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -400,8 +414,8 @@
                     }
                 },
                 {
-                    "UUID": 15320952207932349660,
                     "Tag": "Wall",
+                    "UUID": 15320952207932349660,
                     "Transform": {
                         "Position": [
                             1.83152,
@@ -424,6 +438,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -445,8 +463,8 @@
                     }
                 },
                 {
-                    "UUID": 11880256767427146725,
                     "Tag": "Wall",
+                    "UUID": 11880256767427146725,
                     "Transform": {
                         "Position": [
                             -0.66318,
@@ -469,6 +487,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -490,8 +512,8 @@
                     }
                 },
                 {
-                    "UUID": 9280194414120189764,
                     "Tag": "Wall",
+                    "UUID": 9280194414120189764,
                     "Transform": {
                         "Position": [
                             -0.66406,
@@ -514,6 +536,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -535,8 +561,8 @@
                     }
                 },
                 {
-                    "UUID": 17230023251027205665,
                     "Tag": "Wall",
+                    "UUID": 17230023251027205665,
                     "Transform": {
                         "Position": [
                             1.83211,
@@ -559,6 +585,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -580,8 +610,8 @@
                     }
                 },
                 {
-                    "UUID": 10144356576662526730,
                     "Tag": "Wall",
+                    "UUID": 10144356576662526730,
                     "Transform": {
                         "Position": [
                             1.83358,
@@ -604,6 +634,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
@@ -625,8 +659,8 @@
                     }
                 },
                 {
-                    "UUID": 5022107672066104247,
                     "Tag": "Wall",
+                    "UUID": 5022107672066104247,
                     "Transform": {
                         "Position": [
                             -0.66642,
@@ -649,6 +683,10 @@
                     },
                     "Rigidbody": {
                         "Type": 0,
+                        "LinearDamping": 0.0,
+                        "AngularDamping": 0.0,
+                        "GravityScale": 1.0,
+                        "IsBullet": false,
                         "FixedRotation": false,
                         "AttachToParent": false
                     },

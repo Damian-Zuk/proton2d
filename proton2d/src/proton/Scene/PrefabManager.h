@@ -1,7 +1,10 @@
 #pragma once
 #include "Proton/Scene/Entity.h"
+#include <nlohmann/json.hpp>
 
 namespace proton {
+	
+	using json = nlohmann::ordered_json;
 
 	class Scene;
 
@@ -17,11 +20,18 @@ namespace proton {
 		static bool LoadPrefab(const std::string& prefabPath);
 		static bool DeletePrefab(const std::string& prefabPath);
 
-		static Entity Spawn(Scene* scene, const std::string& prefabPath, UUID uuid = 0);
-		static Entity Spawn(Scene* scene, UUID prefabUUID, UUID uuid = 0);
+		static json* GetPrefabJson(UUID prefabUUID);
+		static json* GetPrefabJson(const std::string& prefabPath);
+
+		static Entity DeserializePrefab(Entity target, UUID prefabUUID);
+		
+		static Entity Spawn(Scene* scene, const std::string& prefabPath, UUID entityUUID = UUID());
+
+		static Entity Spawn(Scene* scene, UUID prefabUUID, UUID entityUUID = UUID());
 
 		static bool Exists(const std::string& prefabPath);
 		static bool Exists(UUID prefabUUID);
+
 		
 	private:
 		inline static PrefabManager* s_Instance = nullptr;

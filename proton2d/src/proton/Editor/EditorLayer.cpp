@@ -20,6 +20,7 @@
 #include "Proton/Events/KeyEvents.h"
 #include "Proton/Events/MouseEvents.h"
 #include "Proton/Scene/SceneManager.h"
+#include "Proton/Scene/SceneSerializer.h"
 #include "Proton/Scripting/GameModeBase.h"
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Network/NetworkManager.h"
@@ -244,9 +245,29 @@ namespace proton {
 		const std::string& filepath = activeScene->m_Filepath;
 
 		// Copy currently active scene to a new game instance
-		sceneManager->AddNewActiveScene(filepath, activeScene->IsSimulated() 
-			? m_SceneSimulationBackup.at(filepath)->CreateSceneCopy(instance)
-			: activeScene->CreateSceneCopy(instance));
+		Scene* sceneCopy;
+
+		if (activeScene->IsSimulated())
+		{
+			auto backup = m_SceneSimulationBackup.at(filepath);
+			//sceneCopy = backup->CreateSceneCopy(instance);
+
+			SceneSerializer serializer(backup.get());
+			std::string sceneJson = serializer.Serialize();
+			sceneCopy = sceneManager->CreateEmptyScene(backup->GetFilepath());
+			serializer.SetScene(sceneCopy);
+			serializer.Deserialize(sceneJson);
+		}
+		else
+		{
+			//sceneCopy = activeScene->CreateSceneCopy(instance);
+			SceneSerializer serializer(activeScene);
+			std::string sceneJson = serializer.Serialize();
+			sceneCopy = sceneManager->CreateEmptyScene(activeScene->GetFilepath());
+			serializer.SetScene(sceneCopy);
+			serializer.Deserialize(sceneJson);
+		}
+		sceneManager->SetActiveScene(sceneCopy);
 
 		return instance;
 	}

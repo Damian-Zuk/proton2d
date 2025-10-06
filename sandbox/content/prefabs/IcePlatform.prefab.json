@@ -1,20 +1,9 @@
 {
-    "UUID": 12477094058039218028,
     "Tag": "IcePlatform",
-    "Transform": {
-        "Position": [
-            27.42861,
-            0.48674,
-            0.0
-        ],
-        "Rotation": 0.0,
-        "Scale": [
-            3.0,
-            1.0
-        ]
-    },
+    "UUID": 8248752178709970648,
+    "PrefabUUID": 4421438384998480410,
     "ResizableSprite": {
-        "Width": 3,
+        "Width": 2,
         "Height": 1,
         "TileScale": 1.0,
         "Edges": 255,
@@ -36,6 +25,10 @@
     },
     "Rigidbody": {
         "Type": 0,
+        "LinearDamping": 0.0,
+        "AngularDamping": 0.0,
+        "GravityScale": 1.0,
+        "IsBullet": false,
         "FixedRotation": false,
         "AttachToParent": false
     },

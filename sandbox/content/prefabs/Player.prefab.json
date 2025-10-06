@@ -1,21 +1,7 @@
 {
-    "UUID": 5271754726611374758,
     "Tag": "Player",
-    "Transform": {
-        "Position": [
-            2.04352,
-            0.42461,
-            0.1
-        ],
-        "Rotation": 0.0,
-        "Scale": [
-            2.5,
-            2.5
-        ]
-    },
-    "Prefab": {
-        "UUID": 9113612734354191392
-    },
+    "UUID": 5643300174297436378,
+    "PrefabUUID": 9113612734354191392,
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Prediction",
@@ -104,8 +90,8 @@
     ],
     "Entities": [
         {
-            "UUID": 16399030847919594413,
             "Tag": "Text_PlayerName",
+            "UUID": 16399030847919594413,
             "Transform": {
                 "Position": [
                     0.05,
@@ -132,8 +118,8 @@
             }
         },
         {
-            "UUID": 18414531370196424098,
             "Tag": "Body",
+            "UUID": 18414531370196424098,
             "Transform": {
                 "Position": [
                     0.0,
@@ -164,8 +150,8 @@
             }
         },
         {
-            "UUID": 10137553383234732480,
             "Tag": "Wheel",
+            "UUID": 10137553383234732480,
             "Transform": {
                 "Position": [
                     0.0,
@@ -202,8 +188,8 @@
             }
         },
         {
-            "UUID": 18429559288023327765,
             "Tag": "Sensor_BottomLeft",
+            "UUID": 18429559288023327765,
             "Transform": {
                 "Position": [
                     -0.185,
@@ -234,8 +220,8 @@
             }
         },
         {
-            "UUID": 2039367051653112588,
             "Tag": "Sensor_BottomRight",
+            "UUID": 2039367051653112588,
             "Transform": {
                 "Position": [
                     0.184,
@@ -266,8 +252,8 @@
             }
         },
         {
-            "UUID": 1315917391761008597,
             "Tag": "Sensor_Bottom",
+            "UUID": 1315917391761008597,
             "Transform": {
                 "Position": [
                     0.0,

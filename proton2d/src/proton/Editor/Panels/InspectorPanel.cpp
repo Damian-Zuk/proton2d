@@ -160,7 +160,21 @@ namespace proton {
 		ImGui::Columns(1);
 
 		ImGui::Dummy({ 1, 0 }); ImGui::SameLine();
-		ImGui::Text("UUID: %s", UintToHex(selectedEntity.GetUUID()).c_str());
+		auto& id = selectedEntity.GetComponent<IDComponent>();
+		std::string idStr = std::to_string(id.ID);
+		char tempBuff1[128];
+		strcpy_s(tempBuff1, idStr.c_str());
+		ImGui::Text("UUID"); ImGui::SameLine();
+		ImGui::InputText("##uuid", tempBuff1, idStr.length(), ImGuiInputTextFlags_ReadOnly);
+		if (id.PrefabChildRefID != 0)
+		{
+			std::string idStr2 = std::to_string(id.PrefabChildRefID);
+			char tempBuff2[128];
+			strcpy_s(tempBuff2, idStr2.c_str());
+			ImGui::Text("PFID"); ImGui::SameLine();
+			ImGui::InputText("##pfid", tempBuff2, idStr2.length(), ImGuiInputTextFlags_ReadOnly);
+		}
+
 
 		ImGui::Dummy({ 0, 5 });
 

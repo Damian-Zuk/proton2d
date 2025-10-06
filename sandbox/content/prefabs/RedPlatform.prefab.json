@@ -1,18 +1,7 @@
 {
-    "UUID": 6366102341864812948,
     "Tag": "RedPlatform",
-    "Transform": {
-        "Position": [
-            21.74343,
-            0.58175,
-            0.0
-        ],
-        "Rotation": 0.0,
-        "Scale": [
-            3.0,
-            1.0
-        ]
-    },
+    "UUID": 1856240387918123704,
+    "PrefabUUID": 2051654451648116511,
     "ResizableSprite": {
         "Width": 3,
         "Height": 1,
@@ -36,6 +25,10 @@
     },
     "Rigidbody": {
         "Type": 0,
+        "LinearDamping": 0.0,
+        "AngularDamping": 0.0,
+        "GravityScale": 1.0,
+        "IsBullet": false,
         "FixedRotation": false,
         "AttachToParent": false
     },
@@ -60,11 +53,11 @@
             "ClassName": "RedPlatform",
             "Fields": [
                 {
-                    "FieldName": "VanishAfter",
+                    "FieldName": "m_VanishAfter",
                     "Value": 0.33000001311302185
                 },
                 {
-                    "FieldName": "VanishTime",
+                    "FieldName": "m_VanishTime",
                     "Value": 1.0
                 }
             ]

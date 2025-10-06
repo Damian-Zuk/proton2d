@@ -28,9 +28,9 @@ namespace proton {
 	{
 		s_Data.PersistentStorage.push_back(MakeShared<json>(entityJson));
 		s_Data.PathToJsonMap[path] = s_Data.PersistentStorage.back().get();
-		if (entityJson.contains("Prefab"))
+		if (entityJson.contains("PrefabUUID"))
 		{
-			uint64_t uuid = (uint64_t)entityJson.at("Prefab").at("UUID");
+			uint64_t uuid = (uint64_t)entityJson.at("PrefabUUID");
 			s_Data.UUIDToJsonMap[uuid] = s_Data.PersistentStorage.back().get();
 		}
 	}
@@ -42,11 +42,11 @@ namespace proton {
 		if (entityJsonIt != s_Data.PathToJsonMap.end())
 		{
 			json* entityJson = entityJsonIt->second;
-			UUID uuid = entityJson->at("Prefab")["UUID"];
+			UUID uuid = entityJson->at("PrefabUUID");
 
 			auto& s = s_Data.PersistentStorage;
 			s.erase(s.begin(), std::find_if(s.begin(), s.end(), [&](const Shared<json>& data) {
-					return (uint64_t)data->at("Prefab")["UUID"] == uuid;
+					return (uint64_t)data->at("PrefabUUID") == uuid;
 				})
 			);
 			s_Data.PathToJsonMap.erase(path);
@@ -89,7 +89,7 @@ namespace proton {
 			entity.AddComponent<PrefabComponent>();
 
 		SceneSerializer serializer(entity.GetScene());
-		serializer.IsPrefabSerializer = true;
+		serializer.Source = SceneSerializer::SourceType::PrefabFile;
 		json jsonData = serializer.SerializeEntity(entity);
 		std::string tag = entity.GetTag();
 		std::ofstream file("content/prefabs/" + tag + ".prefab.json");
@@ -133,39 +133,61 @@ namespace proton {
 		return s_Data.UUIDToJsonMap.find(prefabUUID) != s_Data.UUIDToJsonMap.end();
 	}
 
-	Entity PrefabManager::Spawn(Scene* scene, const std::string& prefabPath, UUID uuid)
-	{
-		if (!Exists(prefabPath))
-		{
-			if (!LoadPrefab(prefabPath))
-			{
-				PT_CORE_ERROR("Prefab '{}' not found", prefabPath);
-				return Entity();
-			}
-		}
-
-		SceneSerializer serializer(scene);
-		serializer.IsPrefabSerializer = true;
-		const json& prefabData = *s_Data.PathToJsonMap.at(prefabPath);
-		Entity entity = serializer.DeserializeEntity(prefabData, uuid);
-		
-		return entity;
-	}
-
-	Entity PrefabManager::Spawn(Scene* scene, UUID prefabUUID, UUID uuid)
+	json* PrefabManager::GetPrefabJson(UUID prefabUUID)
 	{
 		if (!Exists(prefabUUID))
 		{
 			PT_CORE_ERROR("Prefab with uuid='{}' not found", prefabUUID);
-			return Entity();
+			return nullptr;
 		}
-
-		SceneSerializer serializer(scene);
-		serializer.IsPrefabSerializer = true;
-		const json& prefabData = *s_Data.UUIDToJsonMap.at(prefabUUID);
-		Entity entity = serializer.DeserializeEntity(prefabData, uuid);
-
-		return entity;
+		return s_Data.UUIDToJsonMap.at(prefabUUID);
 	}
 
+	json* PrefabManager::GetPrefabJson(const std::string& prefabPath)
+	{
+		if (!Exists(prefabPath))
+		{
+			PT_CORE_ERROR("Prefab with path='{}' not found", prefabPath);
+			return nullptr;
+		}
+		return s_Data.PathToJsonMap.at(prefabPath);
+	}
+
+	Entity PrefabManager::DeserializePrefab(Entity target, UUID prefabUUID)
+	{
+		PT_CORE_VERIFY(target.IsValid());
+		SceneSerializer serializer(target.GetScene());
+		serializer.Source = SceneSerializer::SourceType::PrefabFile;
+		json* prefabJson = GetPrefabJson(prefabUUID);
+		if (prefabJson)
+			return serializer.DeserializeEntity(*prefabJson, target);
+		return target;
+	}
+
+	Entity PrefabManager::Spawn(Scene* scene, UUID prefabUUID, UUID entityUUID)
+	{
+		SceneSerializer serializer(scene);
+		serializer.Source = SceneSerializer::SourceType::PrefabFile;
+		json* prefabJson = GetPrefabJson(prefabUUID);
+
+		if (prefabJson) 
+		{
+			Entity entity = entityUUID ? scene->CreateEntityWithUUID(entityUUID) : Entity();
+			return serializer.DeserializeEntity(*prefabJson, entity);
+		}
+
+		return Entity();
+	}
+
+	Entity PrefabManager::Spawn(Scene* scene, const std::string& prefabPath, UUID entityUUID)
+	{
+		SceneSerializer serializer(scene);
+		serializer.Source = SceneSerializer::SourceType::PrefabFile;
+		json* prefabJson = GetPrefabJson(prefabPath);
+		
+		if (prefabJson)
+			return serializer.DeserializeEntity(*prefabJson);
+		
+		return Entity();
+	}
 }
