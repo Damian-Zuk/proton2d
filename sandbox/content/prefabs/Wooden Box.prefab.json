@@ -1,7 +1,14 @@
 {
     "Tag": "Wooden Box",
-    "UUID": 1646569337246384922,
+    "UUID": 16054286326579814253,
     "PrefabUUID": 15395898022612884793,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            1.5,
+            1.5
+        ]
+    },
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
@@ -18,9 +25,9 @@
             false
         ],
         "Color": [
-            0.92641,
-            0.89214,
-            0.54943,
+            0.96054,
+            0.96537,
+            0.59343,
             1.0
         ]
     },

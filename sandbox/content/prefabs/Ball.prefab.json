@@ -1,7 +1,14 @@
 {
     "Tag": "Ball",
-    "UUID": 3031164253734363671,
+    "UUID": 5213346004890008495,
     "PrefabUUID": 8825705037770810944,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
