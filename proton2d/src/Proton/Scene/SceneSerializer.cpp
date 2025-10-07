@@ -14,9 +14,9 @@ namespace proton {
 
 	static const std::string s_TexturesPath = "content/textures/";
 
-	static std::string GetFilepathRelative(const std::string& parentDir, const std::string& fullFilepath)
+	static std::string GetFilepathRelative(const std::string& dir, const std::string& filepath)
 	{
-		return fullFilepath.substr(parentDir.size(), fullFilepath.size() - parentDir.size());;
+		return filepath.substr(dir.size(), filepath.size() - dir.size());;
 	}
 
 	static inline double round(float f)
@@ -24,107 +24,82 @@ namespace proton {
 		return std::round((double)f * 100000) / 100000;
 	}
 
-	SceneSerializer::SceneSerializer(Scene* scene)
-		: m_Scene(scene)
+	SceneSerializer::SceneSerializer(Scene* scene, FormatType format)
+		: Format(format), m_Scene(scene)
 	{
-	}
-
-	// *****************************************
-	//         Serialize Scene Function
-	// *****************************************
-
-	void SceneSerializer::SetScene(Scene* scene)
-	{
-		m_Scene = scene;
-	}
-
-	bool SceneSerializer::SerializeToFile(const std::string& filepath)
-	{
-		std::ofstream out(filepath);
-		out << Serialize();
-		out.close();
-		return true;
 	}
 
 	std::string SceneSerializer::Serialize()
 	{
-		PT_CORE_ASSERT(m_Scene, "Scene context not set!");
-		const auto& c = m_Scene->m_ClearColor;
-		json jsonObj = {
+		PT_CORE_VERIFY(m_Scene, "Invalid Scene");
+		const auto& col = m_Scene->m_ClearColor;
+
+		// Serialize scene properties
+		json data = {
 			{ "GameModeClass",      m_Scene->m_GameModeClassName },
+			{ "EnableNetworking",   m_Scene->m_EnableNetworking },
 			{ "EnablePhysics",      m_Scene->m_EnablePhysics },
 			{ "GravityForce",       m_Scene->m_PhysicsWorld->m_Gravity },
 			{ "VelocityIterations", m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations },
 			{ "PositionIterations", m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations },
-			{ "ScreenClearColor", { c.r, c.g, c.b, c.a } },
-			{ "EnableNetworking",     m_Scene->m_EnableNetworking }
+			{ "ScreenClearColor", { col.r, col.g, col.b, col.a } }
 		};
 
 		Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity();
 		if (primaryCameraEntity.IsValid())
 		{
 			uint64_t id = m_Scene->GetPrimaryCameraEntity().GetUUID();
-			jsonObj["PrimaryCameraEntity"] = id;
+			data["PrimaryCameraEntity"] = id;
 		}
 
+		// Serialize entities
 		for (Entity entity : m_Scene->m_Root)
 		{
 			m_IsRootEntity = true;
-			jsonObj["Entities"].push_back(SerializeEntity(entity));
+			data["Entities"].push_back(SerializeEntity(entity));
 		}
 
-		return jsonObj.dump(4);
+		return data.dump(4);
 	}
-
-	// *****************************************
-	//       Deserialize Scene Function
-	// *****************************************
 
 	bool SceneSerializer::Deserialize(const std::string& jsonData)
 	{
-		json jsonObj = json::parse(jsonData);
-		m_Scene->m_EnablePhysics = jsonObj["EnablePhysics"];
+		PT_CORE_VERIFY(m_Scene, "Invalid Scene");
+		json data = json::parse(jsonData);
+
+		// Deserialize scene properties
+		m_Scene->SetGameModeByClassName(data["GameModeClass"]);
+		m_Scene->m_EnablePhysics = data["EnablePhysics"];
+		m_Scene->m_EnableNetworking = data["EnableNetworking"];
+		m_Scene->m_PhysicsWorld->m_Gravity = data["GravityForce"];
+		m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = data["VelocityIterations"];
+		m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations = data["PositionIterations"];
 		
-		if (jsonObj.contains("EnableNetworking"))
-			m_Scene->m_EnableNetworking = jsonObj["EnableNetworking"];
+		const json& col = data["ScreenClearColor"];
+		m_Scene->m_ClearColor = { col[0], col[1], col[2], col[3] };
 
-		if (jsonObj.contains("GameModeClass"))
-			m_Scene->SetGameModeByClassName(jsonObj["GameModeClass"]);
-
-		m_Scene->m_PhysicsWorld->m_Gravity = jsonObj["GravityForce"];
-		m_Scene->m_PhysicsWorld->m_PhysicsVelocityIterations = jsonObj["VelocityIterations"];
-		m_Scene->m_PhysicsWorld->m_PhysicsPositionIterations = jsonObj["PositionIterations"];
-		json& c = jsonObj["ScreenClearColor"];
-		m_Scene->m_ClearColor = { c[0], c[1], c[2], c[3] };
-
-		const json& entities = jsonObj["Entities"];
-		for (auto it = entities.rbegin(); it != entities.rend(); it++)
-			DeserializeEntity(*it);
-
-		if (jsonObj.contains("PrimaryCameraEntity"))
+		// Deserialize scene entities
+		const json& entities = data["Entities"];
+		for (auto it = entities.begin(); it != entities.end(); it++)
 		{
-			UUID id{ jsonObj["PrimaryCameraEntity"] };
+			m_IsRootEntity = true;
+			DeserializeEntity(*it);
+		}
+
+		// Set primary camera entity
+		if (data.contains("PrimaryCameraEntity"))
+		{
+			UUID id{ data["PrimaryCameraEntity"] };
 			m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
 		}
+
 		m_Scene->CalculateWorldPositions();
 		return true;
 	}
 
-	bool SceneSerializer::DeserializeFromFile(const std::string& filepath)
-	{
-		std::string jsonData = Utils::ReadFile(filepath);
-		if (jsonData.size())
-			return Deserialize(jsonData);
-		return false;
-	}
-
-	// *****************************************
-	//       Serialize Entity Function
-	// *****************************************
-
 	void SceneSerializer::SerializeChildren(Entity entity, json& out)
 	{
-		bool restoreValue = m_IsParentPrefab;
+		bool prev = m_IsParentPrefab;
 		m_IsParentPrefab |= entity.HasComponent<PrefabComponent>();
 
 		auto& relationship = entity.GetComponent<RelationshipComponent>();
@@ -140,12 +115,17 @@ namespace proton {
 				current = rc.Next;
 			}
 		}
-		m_IsParentPrefab = restoreValue;
+		m_IsParentPrefab = prev;
 	}
 
 	json SceneSerializer::SerializeEntity(Entity entity)
 	{
 		json out;
+
+		/**************************************| Serialize Metadata |**************************************/  
+
+		bool isPrefabEntity = entity.HasComponent<PrefabComponent>();
+		uint64_t prefabUUID = isPrefabEntity ? entity.GetComponent<PrefabComponent>().PrefabUUID : 0;
 
 		// Serialize TagComponent
 		auto& tag = entity.GetTag();
@@ -153,54 +133,56 @@ namespace proton {
 
 		// Serialize IDComponent
 		auto& id = entity.GetComponent<IDComponent>();
-		if (Source == SourceType::SceneFile)
+		if (Format == FormatType::Scene)
 		{
 			out["UUID"] = (uint64_t)id.ID;
-		}
-		else if (Source == SourceType::PrefabFile)
-		{
-			out["UUID"] = (uint64_t)(id.PrefabChildRefID != 0 ? id.PrefabChildRefID : id.ID);
-		}
-
-		if (Source == SourceType::SceneFile && m_IsParentPrefab)
-		{
-			PT_CORE_VERIFY(id.PrefabChildRefID != 0);
-			out["PrefabChildRefUUID"] = (uint64_t)id.PrefabChildRefID;
-		}
-
-		bool isPrefabEntity = entity.HasComponent<PrefabComponent>();
-		if (isPrefabEntity)
-		{
-			// Serialize PrefabComponent
-			auto& pc = entity.GetComponent<PrefabComponent>();
-			out["PrefabUUID"] = (uint64_t)pc.PrefabUUID;
-			//out["Prefab"] = {
-			//	{ "UUID", (uint64_t)pc.PrefabUUID }
-			//};
-		}
-
-		if ((Source == SourceType::SceneFile && (!m_IsParentPrefab)) ||
-			(Source == SourceType::PrefabFile && (m_IsParentPrefab)))
-		{
-			// Serialize TransformComponent
-			auto& transform = entity.GetTransform();
-			auto& position = transform.LocalPosition;
-			out["Transform"] = {
-				{ "Position", { round(position.x), round(position.y), round(position.z) } },
-				{ "Rotation", round(transform.Rotation) },
-				{ "Scale", { round(transform.Scale.x), round(transform.Scale.y) } }
-			};
-		}
-
-		if (isPrefabEntity)
-		{
-			if (Source == SourceType::SceneFile || 
-				(Source == SourceType::PrefabFile && isPrefabEntity && m_IsParentPrefab))
+			if (m_IsParentPrefab)
 			{
-				SerializeChildren(entity, out);
-				return out;
+				out["PrefabChildRefUUID"] = (uint64_t)id.PrefabChildRefID;
 			}
 		}
+		else if (Format == FormatType::Prefab)
+		{
+			if (isPrefabEntity && m_IsRootEntity)
+			{
+				out["UUID"] = prefabUUID;
+			}
+			else 
+				out["UUID"] = (uint64_t)id.PrefabChildRefID;
+		}
+
+		// Serialize PrefabComponent
+		if (isPrefabEntity)
+		{
+			out["PrefabUUID"] = prefabUUID;
+		}
+
+		// Serialize TransformComponent
+		const auto& transform = entity.GetTransform();
+
+		if ((Format == FormatType::Scene && !m_IsParentPrefab) ||
+			(Format == FormatType::Prefab && m_IsParentPrefab))
+		{
+			const auto& position = transform.LocalPosition;
+			out["Transform"]["Position"] = { round(position.x), round(position.y), round(position.z) };
+		}
+
+		if ((Format == FormatType::Scene && !m_IsParentPrefab) ||
+			(Format == FormatType::Prefab && (!m_IsParentPrefab || !isPrefabEntity)))
+		{	
+			out["Transform"]["Rotation"] = round(transform.Rotation);
+			out["Transform"]["Scale"] = { round(transform.Scale.x), round(transform.Scale.y) };
+		}
+
+		// Check if there is need to serialize all entity components for this format
+		if ((Format == FormatType::Scene && (isPrefabEntity || m_IsParentPrefab)) ||
+			(Format == FormatType::Prefab && m_IsParentPrefab && isPrefabEntity))
+		{
+			SerializeChildren(entity, out);
+			return out;
+		}
+
+		/**************************************| Serialize Components |**************************************/
 
 		// Serialize NetworkComponent
 		if (entity.HasComponent<NetworkComponent>())
@@ -428,16 +410,10 @@ namespace proton {
 		return out;
 	}
 
-	std::string SceneSerializer::SerializeEntityToString(Entity entity)
-	{
-		return SerializeEntity(entity).dump();
-	}
-
-
 	// *****************************************
 	//       Deserialize Entity Function
 	// *****************************************
-	
+
 	void SceneSerializer::DeserializeChildren(Entity entity, const json& data)
 	{
 		if (!data.contains("Entities"))
@@ -445,10 +421,11 @@ namespace proton {
 
 		bool restoreValue = m_IsParentPrefab;
 		m_IsParentPrefab |= entity.HasComponent<PrefabComponent>();
+		m_IsRootEntity = false;
 
 		auto& hierarchy = entity.GetComponent<RelationshipComponent>();
 		const json& entities = data["Entities"];
-		
+
 		if (hierarchy.ChildrenCount == 0)
 		{
 			// Create new child entities
@@ -458,14 +435,14 @@ namespace proton {
 				Entity child = DeserializeEntity(data);
 				entity.AddChildEntity(child, false);
 
-				if (Source == SourceType::PrefabFile)
+				if (Format == FormatType::Prefab)
 				{
 					PT_CORE_VERIFY(data.contains("UUID"));
 					child.GetComponent<IDComponent>().PrefabChildRefID = (uint64_t)data["UUID"];
 				}
 			}
 		}
-		else if (Source == SourceType::PrefabFile)
+		else if (Format == FormatType::Prefab)
 		{
 			// Create mapping for existing hierarchy
 			std::unordered_map<UUID, Entity> prefabEntityMap;
@@ -482,7 +459,7 @@ namespace proton {
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)
 			{
 				const json& entityData = *it;
-				std::string keyName = (Source == SourceType::SceneFile ? "PrefabChildRefUUID" : "UUID");
+				std::string keyName = (Format == FormatType::Scene ? "PrefabChildRefUUID" : "UUID");
 
 				PT_CORE_VERIFY(entityData.contains(keyName));
 				UUID PrefabChildRefUUID = (uint64_t)entityData[keyName];
@@ -504,11 +481,11 @@ namespace proton {
 	{
 		if (!entity) // Create new entity if did not provided existing entity
 		{
-			UUID uuid = (Source == SourceType::SceneFile && data.contains("UUID")) ? (uint64_t)data["UUID"] : UUID();
+			UUID uuid = (Format == FormatType::Scene && data.contains("UUID")) ? (uint64_t)data["UUID"] : UUID();
 			entity = m_Scene->CreateEntityWithUUID(uuid);
 		}
 
-		if (Source == SourceType::SceneFile && data.contains("PrefabChildRefUUID"))
+		if (Format == FormatType::Scene && data.contains("PrefabChildRefUUID"))
 		{
 			entity.GetComponent<IDComponent>().PrefabChildRefID = (uint64_t)data["PrefabChildRefUUID"];
 		}
@@ -516,34 +493,38 @@ namespace proton {
 		// Deserialize TagComponent
 		entity.GetComponent<TagComponent>().Tag = data["Tag"];
 
-		// Deserialize TransformComponent
-		if ((Source == SourceType::SceneFile && (!m_IsParentPrefab)) || (Source == SourceType::PrefabFile && m_IsParentPrefab))
-		{
-			if (data.contains("Transform"))
-			{
-				const json& position = data["Transform"]["Position"];
-				const json& scale = data["Transform"]["Scale"];
-				const json& rotation = data["Transform"]["Rotation"];
-				auto& transform = entity.GetComponent<TransformComponent>();
+		bool isPrefabEntity = data.contains("PrefabUUID");
 
-				transform.WorldPosition = { position[0], position[1], position[2] };
-				transform.LocalPosition = { position[0], position[1], position[2] };
-				transform.Scale = { scale[0], scale[1] };
-				transform.Rotation = rotation;
-			}
+		// Deserialize TransformComponent
+		auto& transform = entity.GetComponent<TransformComponent>();
+
+		if ((Format == FormatType::Scene && !m_IsParentPrefab) ||
+			(Format == FormatType::Prefab && m_IsParentPrefab))
+		{
+			const json& position = data["Transform"]["Position"];
+			transform.WorldPosition = { position[0], position[1], position[2] };
+			transform.LocalPosition = { position[0], position[1], position[2] };
+		}
+
+		if ((Format == FormatType::Scene && !m_IsParentPrefab) || 
+			(Format == FormatType::Prefab && (!m_IsParentPrefab || !isPrefabEntity)))
+		{
+			const json& scale = data["Transform"]["Scale"];
+			const json& rotation = data["Transform"]["Rotation"];
+			transform.Scale = { scale[0], scale[1] };
+			transform.Rotation = rotation;
 		}
 
 		// Deserialize PrefabComponent
-		if (data.contains("PrefabUUID"))
+		if (isPrefabEntity)
 		{
 			auto& pc = entity.AddOrReplaceComponent<PrefabComponent>();
 			pc.PrefabUUID = (uint64_t)data["PrefabUUID"];
 
-			if (Source == SourceType::SceneFile || m_IsParentPrefab)
+			if (Format == FormatType::Scene || m_IsParentPrefab)
 			{
 				DeserializeChildren(entity, data);
 				PrefabManager::DeserializePrefab(entity, pc.PrefabUUID);
-
 				return entity;
 			}
 		}
@@ -805,6 +786,37 @@ namespace proton {
 
 		DeserializeChildren(entity, data);
 		return entity;
+	}
+
+	bool SceneSerializer::DeserializeFromFile(const std::string& filepath)
+	{
+		std::string jsonData = Utils::ReadFile(filepath);
+		if (jsonData.size())
+			return Deserialize(jsonData);
+		return false;
+	}
+
+	bool SceneSerializer::SerializeToFile(const std::string& filepath)
+	{
+		std::string output = Serialize();
+		if (output.size() > 0)
+		{
+			std::ofstream out(filepath);
+			out << output;
+			out.close();
+			return true;
+		}
+		return false;
+	}
+
+	std::string SceneSerializer::SerializeEntityToString(Entity entity)
+	{
+		return SerializeEntity(entity).dump();
+	}
+
+	void SceneSerializer::SetScene(Scene* scene)
+	{
+		m_Scene = scene;
 	}
 
 }

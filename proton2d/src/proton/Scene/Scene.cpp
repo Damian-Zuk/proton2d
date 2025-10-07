@@ -137,10 +137,11 @@ namespace proton {
 		// Create entities in new scene
 		for (entt::entity srcEntity : m_Registry.view<IDComponent>())
 		{
-			UUID uuid = m_Registry.get<IDComponent>(srcEntity).ID;
+			const auto& id = m_Registry.get<IDComponent>(srcEntity);
 			const auto& name = m_Registry.get<TagComponent>(srcEntity).Tag;
-			Entity newEntity = newScene->CreateEntityWithUUID(uuid, name, false);
-			enttMap[uuid] = (entt::entity)newEntity;
+			Entity newEntity = newScene->CreateEntityWithUUID(id.ID, name, false);
+			newEntity.GetComponent<IDComponent>().PrefabChildRefID = id.PrefabChildRefID;
+			enttMap[id.ID] = (entt::entity)newEntity;
 		}
 
 		// Set RelationshipComponent in new registry
@@ -297,6 +298,7 @@ namespace proton {
 	Entity Scene::DuplicateEntity(Entity entity, Entity attachTo)
 	{
 		Entity newEntity = CreateEntity(entity.GetTag());
+		newEntity.GetComponent<IDComponent>().PrefabChildRefID = entity.GetComponent<IDComponent>().PrefabChildRefID;
 
 		auto& srcRelation = entity.GetComponent<RelationshipComponent>();
 		auto& dstRelation = newEntity.GetComponent<RelationshipComponent>();

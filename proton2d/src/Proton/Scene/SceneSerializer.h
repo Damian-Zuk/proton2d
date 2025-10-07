@@ -13,30 +13,29 @@ namespace proton {
 	class SceneSerializer
 	{
 	public:
-		enum class SourceType
+		enum class FormatType
 		{
-			SceneFile = 0,
-			PrefabFile,
+			Scene = 0,
+			Prefab = 1,
 		};
-		SourceType Source = SourceType::SceneFile;
+		FormatType Format;
 
 	public:
-		SceneSerializer(Scene* scene);
 		SceneSerializer() = delete;
-		~SceneSerializer() = default;
+		SceneSerializer(Scene* scene, FormatType format = FormatType::Scene);
 
-		void SetScene(Scene* scene);
+		virtual ~SceneSerializer() = default;
 
 		std::string Serialize();
-		bool SerializeToFile(const std::string& filepath);
-
 		bool Deserialize(const std::string& jsonData);
-		bool DeserializeFromFile(const std::string& filepath);
 
 		json SerializeEntity(Entity entity);
-		std::string SerializeEntityToString(Entity entity);
-
 		Entity DeserializeEntity(const json& data, Entity entity = Entity());
+
+		bool SerializeToFile(const std::string& filepath);
+		bool DeserializeFromFile(const std::string& filepath);
+		std::string SerializeEntityToString(Entity entity);
+		void SetScene(Scene* scene);
 		
 	private:
 		void SerializeChildren(Entity entity, json& out);

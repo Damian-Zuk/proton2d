@@ -86,10 +86,13 @@ namespace proton {
 	void PrefabManager::SaveEntityAsPrefab(Entity entity)
 	{
 		if (!entity.HasComponent<PrefabComponent>())
-			entity.AddComponent<PrefabComponent>();
+		{
+			auto& pc = entity.AddComponent<PrefabComponent>();
+			pc.PrefabUUID = entity.GetUUID();
+		}
 
 		SceneSerializer serializer(entity.GetScene());
-		serializer.Source = SceneSerializer::SourceType::PrefabFile;
+		serializer.Format = SceneSerializer::FormatType::Prefab;
 		json jsonData = serializer.SerializeEntity(entity);
 		std::string tag = entity.GetTag();
 		std::ofstream file("content/prefabs/" + tag + ".prefab.json");
@@ -157,7 +160,7 @@ namespace proton {
 	{
 		PT_CORE_VERIFY(target.IsValid());
 		SceneSerializer serializer(target.GetScene());
-		serializer.Source = SceneSerializer::SourceType::PrefabFile;
+		serializer.Format = SceneSerializer::FormatType::Prefab;
 		json* prefabJson = GetPrefabJson(prefabUUID);
 		if (prefabJson)
 			return serializer.DeserializeEntity(*prefabJson, target);
@@ -167,7 +170,7 @@ namespace proton {
 	Entity PrefabManager::Spawn(Scene* scene, UUID prefabUUID, UUID entityUUID)
 	{
 		SceneSerializer serializer(scene);
-		serializer.Source = SceneSerializer::SourceType::PrefabFile;
+		serializer.Format = SceneSerializer::FormatType::Prefab;
 		json* prefabJson = GetPrefabJson(prefabUUID);
 
 		if (prefabJson) 
@@ -182,7 +185,7 @@ namespace proton {
 	Entity PrefabManager::Spawn(Scene* scene, const std::string& prefabPath, UUID entityUUID)
 	{
 		SceneSerializer serializer(scene);
-		serializer.Source = SceneSerializer::SourceType::PrefabFile;
+		serializer.Format = SceneSerializer::FormatType::Prefab;
 		json* prefabJson = GetPrefabJson(prefabPath);
 		
 		if (prefabJson)
