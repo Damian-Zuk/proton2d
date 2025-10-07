@@ -1,7 +1,14 @@
 {
     "Tag": "TestFrame2",
-    "UUID": 3070332110585337845,
+    "UUID": 5306419330787304281,
     "PrefabUUID": 5306419330787304281,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
     "Scripts": [
         {
             "ClassName": "TestFrame2Script",

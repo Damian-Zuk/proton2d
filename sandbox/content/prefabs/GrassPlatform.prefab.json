@@ -1,7 +1,14 @@
 {
     "Tag": "GrassPlatform",
-    "UUID": 14252616338435259006,
+    "UUID": 13619582391534006965,
     "PrefabUUID": 13619582391534006965,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            3.0,
+            1.0
+        ]
+    },
     "ResizableSprite": {
         "Width": 3,
         "Height": 1,

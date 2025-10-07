@@ -1,7 +1,14 @@
 {
     "Tag": "RedPlatform",
-    "UUID": 1856240387918123704,
+    "UUID": 2051654451648116511,
     "PrefabUUID": 2051654451648116511,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            3.0,
+            1.0
+        ]
+    },
     "ResizableSprite": {
         "Width": 3,
         "Height": 1,

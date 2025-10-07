@@ -1,7 +1,14 @@
 {
     "Tag": "Spawn Points",
-    "UUID": 14972496293862712829,
+    "UUID": 14964778866578642001,
     "PrefabUUID": 14964778866578642001,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
     "Entities": [
         {
             "Tag": "PlayerSpawn3",

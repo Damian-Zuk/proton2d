@@ -1,7 +1,14 @@
 {
     "Tag": "TestFrame1",
-    "UUID": 10119112041975194426,
+    "UUID": 1971257877241672137,
     "PrefabUUID": 1971257877241672137,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            1.0,
+            1.0
+        ]
+    },
     "Scripts": [
         {
             "ClassName": "TestFrame1Script",
@@ -37,136 +44,96 @@
                 {
                     "Tag": "Ball",
                     "UUID": 14596149196641209207,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             -2.64655,
                             -1.37074,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 },
                 {
                     "Tag": "Ball",
                     "UUID": 12414504559682079817,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             3.10969,
                             -1.44158,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 },
                 {
                     "Tag": "Ball",
                     "UUID": 5862236366416448600,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             3.05655,
                             1.03802,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 },
                 {
                     "Tag": "Ball",
                     "UUID": 8492849030633898537,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             -3.01222,
                             2.31952,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 },
                 {
                     "Tag": "Ball",
                     "UUID": 5723520203068875079,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             2.06245,
                             2.38123,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 },
                 {
                     "Tag": "Ball",
                     "UUID": 12760988971917993922,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             -0.95729,
                             2.00273,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 },
                 {
                     "Tag": "Ball",
                     "UUID": 16522013339396598283,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             1.16171,
                             0.17784,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 },
                 {
                     "Tag": "Ball",
                     "UUID": 9750081567992004269,
-                    "PrefabUUID": 5573556572364565067,
+                    "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
                             -1.44139,
                             -0.31303,
                             0.101
-                        ],
-                        "Rotation": 0.0,
-                        "Scale": [
-                            1.0,
-                            1.0
                         ]
                     }
                 }

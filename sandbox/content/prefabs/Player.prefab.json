@@ -1,7 +1,14 @@
 {
     "Tag": "Player",
-    "UUID": 5643300174297436378,
+    "UUID": 9113612734354191392,
     "PrefabUUID": 9113612734354191392,
+    "Transform": {
+        "Rotation": 0.0,
+        "Scale": [
+            2.5,
+            2.5
+        ]
+    },
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Prediction",
