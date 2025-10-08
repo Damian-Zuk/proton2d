@@ -26,7 +26,425 @@
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "Entities": [
+                {
+                    "Tag": "Box Pyramid",
+                    "UUID": 11852288882689726611,
+                    "PrefabUUID": 14944450881489412473,
+                    "Transform": {
+                        "Position": [
+                            -128.18619,
+                            -3.74059,
+                            0.0
+                        ]
+                    },
+                    "Entities": [
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 12519278550359084003,
+                            "PrefabChildRefUUID": 4239654012445714095,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 4894341168066824017,
+                            "PrefabChildRefUUID": 16054286326579814253,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 11440943940628710779,
+                            "PrefabChildRefUUID": 18437960779852631115,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 8124338177864275540,
+                            "PrefabChildRefUUID": 9779524196795174423,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 2131706156647895163,
+                            "PrefabChildRefUUID": 5650381520585859007,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 17678067811688768790,
+                            "PrefabChildRefUUID": 14295540283147766439,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 10317980144529441572,
+                            "PrefabChildRefUUID": 15623579572640143797,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 15307433482259760117,
+                            "PrefabChildRefUUID": 2760781907591879848,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 3389609952954701575,
+                            "PrefabChildRefUUID": 4976540522339997349,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 12088441026357829670,
+                            "PrefabChildRefUUID": 10916663800844212727,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 10346361670625033918,
+                            "PrefabChildRefUUID": 2414184178049665446,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 5204978003733753565,
+                            "PrefabChildRefUUID": 3139253117844094557,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 10501583426411370948,
+                            "PrefabChildRefUUID": 936212308706154361,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 10819098843406072121,
+                            "PrefabChildRefUUID": 330300088358430281,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 3835205888972082738,
+                            "PrefabChildRefUUID": 8198116323472517885,
+                            "PrefabUUID": 15395898022612884793
+                        }
+                    ]
+                },
+                {
+                    "Tag": "Box Pyramid",
+                    "UUID": 5163605017500888863,
+                    "PrefabUUID": 14944450881489412473,
+                    "Transform": {
+                        "Position": [
+                            -71.19264,
+                            7.50813,
+                            0.0
+                        ]
+                    },
+                    "Entities": [
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 12350843071153017937,
+                            "PrefabChildRefUUID": 8198116323472517885,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 6489184127373705787,
+                            "PrefabChildRefUUID": 330300088358430281,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 9770146699589572234,
+                            "PrefabChildRefUUID": 936212308706154361,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 8920376875177755817,
+                            "PrefabChildRefUUID": 3139253117844094557,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 3600112848115247461,
+                            "PrefabChildRefUUID": 2414184178049665446,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 8128628479418115421,
+                            "PrefabChildRefUUID": 10916663800844212727,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 10427617846969010086,
+                            "PrefabChildRefUUID": 4976540522339997349,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 11148426866170368156,
+                            "PrefabChildRefUUID": 2760781907591879848,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 7344382892305214746,
+                            "PrefabChildRefUUID": 15623579572640143797,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 16326996760904427108,
+                            "PrefabChildRefUUID": 14295540283147766439,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 5599825120600567781,
+                            "PrefabChildRefUUID": 5650381520585859007,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 4200207184888868289,
+                            "PrefabChildRefUUID": 9779524196795174423,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 11688357253703020007,
+                            "PrefabChildRefUUID": 18437960779852631115,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 2610147168101004486,
+                            "PrefabChildRefUUID": 16054286326579814253,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 8656516132921895198,
+                            "PrefabChildRefUUID": 4239654012445714095,
+                            "PrefabUUID": 15395898022612884793
+                        }
+                    ]
+                },
+                {
+                    "Tag": "Box Pyramid",
+                    "UUID": 2686487430344129101,
+                    "PrefabUUID": 14944450881489412473,
+                    "Transform": {
+                        "Position": [
+                            -43.33153,
+                            -3.84059,
+                            0.0
+                        ]
+                    },
+                    "Entities": [
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 7888032620884762933,
+                            "PrefabChildRefUUID": 4239654012445714095,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 17301317102767401853,
+                            "PrefabChildRefUUID": 16054286326579814253,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 6738650648501793485,
+                            "PrefabChildRefUUID": 18437960779852631115,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 2351155580611930064,
+                            "PrefabChildRefUUID": 9779524196795174423,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 8856424111422254264,
+                            "PrefabChildRefUUID": 5650381520585859007,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 5570281052814646188,
+                            "PrefabChildRefUUID": 14295540283147766439,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 16830945005143675686,
+                            "PrefabChildRefUUID": 15623579572640143797,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 17732250995762894313,
+                            "PrefabChildRefUUID": 2760781907591879848,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 9648570431274429499,
+                            "PrefabChildRefUUID": 4976540522339997349,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 2744426060824551094,
+                            "PrefabChildRefUUID": 10916663800844212727,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 11679998880848273711,
+                            "PrefabChildRefUUID": 2414184178049665446,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 3855389170610265761,
+                            "PrefabChildRefUUID": 3139253117844094557,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 11122497869799441211,
+                            "PrefabChildRefUUID": 936212308706154361,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 13302585652046234202,
+                            "PrefabChildRefUUID": 330300088358430281,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 5762816893022949784,
+                            "PrefabChildRefUUID": 8198116323472517885,
+                            "PrefabUUID": 15395898022612884793
+                        }
+                    ]
+                },
+                {
+                    "Tag": "Box Pyramid",
+                    "UUID": 152654673107664238,
+                    "PrefabUUID": 14944450881489412473,
+                    "Transform": {
+                        "Position": [
+                            -14.53697,
+                            -3.78983,
+                            0.0
+                        ]
+                    },
+                    "Entities": [
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 14975370700984872401,
+                            "PrefabChildRefUUID": 8198116323472517885,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 2848827824363517873,
+                            "PrefabChildRefUUID": 330300088358430281,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 624559937547604025,
+                            "PrefabChildRefUUID": 936212308706154361,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 4992845394522244077,
+                            "PrefabChildRefUUID": 3139253117844094557,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 9561608043267372732,
+                            "PrefabChildRefUUID": 2414184178049665446,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 9702191246899596351,
+                            "PrefabChildRefUUID": 10916663800844212727,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 10829876911321415816,
+                            "PrefabChildRefUUID": 4976540522339997349,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 2943849900486336443,
+                            "PrefabChildRefUUID": 2760781907591879848,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 12203914539670758407,
+                            "PrefabChildRefUUID": 15623579572640143797,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 13583236901203018982,
+                            "PrefabChildRefUUID": 14295540283147766439,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 8037672980813685604,
+                            "PrefabChildRefUUID": 5650381520585859007,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 1523677433059415693,
+                            "PrefabChildRefUUID": 9779524196795174423,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 13631409062557465712,
+                            "PrefabChildRefUUID": 18437960779852631115,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 13810993141008939637,
+                            "PrefabChildRefUUID": 16054286326579814253,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
+                            "UUID": 18271948134637329405,
+                            "PrefabChildRefUUID": 4239654012445714095,
+                            "PrefabUUID": 15395898022612884793
+                        }
+                    ]
+                }
+            ]
         },
         {
             "Tag": "Balls",
@@ -42,7 +460,165 @@
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "Entities": [
+                {
+                    "Tag": "Ball",
+                    "UUID": 12925078290479238733,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -76.12827,
+                            -8.83624,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 10423172896531184870,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -76.12827,
+                            -8.83624,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 5260709206397294722,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -77.23625,
+                            -5.17139,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 313377876609578257,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -75.61691,
+                            -3.21112,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 13346143685205052389,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -78.42947,
+                            -2.01791,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 3303289999861936611,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -77.57717,
+                            0.70943,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 7399834716805132462,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            58.39699,
+                            -11.14863,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 4773089092522413153,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            57.12568,
+                            -8.50008,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 9594149563634945092,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            60.14503,
+                            -7.70551,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 10877502936294982548,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -0.45393,
+                            -2.93811,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 1947374674195284778,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            0.46118,
+                            -0.23013,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 17850045012418360754,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -2.06004,
+                            -1.10789,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "Ball",
+                    "UUID": 980639337095229366,
+                    "PrefabUUID": 8825705037770810944,
+                    "Transform": {
+                        "Position": [
+                            -1.91064,
+                            0.92776,
+                            0.0
+                        ]
+                    }
+                }
+            ]
         },
         {
             "Tag": "Terrain",
@@ -758,7 +1334,105 @@
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "Entities": [
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 16179334520031741483,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            10.52556,
+                            4.36881,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 16714500177107562018,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            6.28651,
+                            3.63519,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 8673458746376781120,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            2.0495,
+                            2.55676,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 15613413959793449680,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            -1.99922,
+                            1.43944,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 13019043679641705379,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            -6.04387,
+                            0.31941,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 3110778952621036794,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            -10.60924,
+                            -0.73509,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 12530644837773684450,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            -15.1369,
+                            -1.8193,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "Tag": "GrassPlatform",
+                    "UUID": 9894218215616310150,
+                    "PrefabUUID": 13619582391534006965,
+                    "Transform": {
+                        "Position": [
+                            -19.93011,
+                            -2.78535,
+                            0.0
+                        ]
+                    }
+                }
+            ]
         },
         {
             "Tag": "Spawn Points",
@@ -791,6 +1465,215 @@
                     "Tag": "PlayerSpawn3",
                     "UUID": 7908438958561631007,
                     "PrefabChildRefUUID": 6669721361522134344
+                }
+            ]
+        },
+        {
+            "Tag": "TestFrame1",
+            "UUID": 16265654493706208478,
+            "PrefabUUID": 1971257877241672137,
+            "Transform": {
+                "Position": [
+                    52.65631,
+                    14.32688,
+                    0.0
+                ]
+            },
+            "Entities": [
+                {
+                    "Tag": "Balls",
+                    "UUID": 4751074794335260806,
+                    "PrefabChildRefUUID": 5521481089688524595,
+                    "Entities": [
+                        {
+                            "Tag": "Ball",
+                            "UUID": 17361958241263728939,
+                            "PrefabChildRefUUID": 14596149196641209207,
+                            "PrefabUUID": 8825705037770810944
+                        },
+                        {
+                            "Tag": "Ball",
+                            "UUID": 17383447967786986993,
+                            "PrefabChildRefUUID": 12414504559682079817,
+                            "PrefabUUID": 8825705037770810944
+                        },
+                        {
+                            "Tag": "Ball",
+                            "UUID": 5478072209636470532,
+                            "PrefabChildRefUUID": 5862236366416448600,
+                            "PrefabUUID": 8825705037770810944
+                        },
+                        {
+                            "Tag": "Ball",
+                            "UUID": 1277239903801178266,
+                            "PrefabChildRefUUID": 8492849030633898537,
+                            "PrefabUUID": 8825705037770810944
+                        },
+                        {
+                            "Tag": "Ball",
+                            "UUID": 835588832419254061,
+                            "PrefabChildRefUUID": 5723520203068875079,
+                            "PrefabUUID": 8825705037770810944
+                        },
+                        {
+                            "Tag": "Ball",
+                            "UUID": 11238636042182716999,
+                            "PrefabChildRefUUID": 12760988971917993922,
+                            "PrefabUUID": 8825705037770810944
+                        },
+                        {
+                            "Tag": "Ball",
+                            "UUID": 7108052334227810243,
+                            "PrefabChildRefUUID": 16522013339396598283,
+                            "PrefabUUID": 8825705037770810944
+                        },
+                        {
+                            "Tag": "Ball",
+                            "UUID": 6185797952646782309,
+                            "PrefabChildRefUUID": 9750081567992004269,
+                            "PrefabUUID": 8825705037770810944
+                        }
+                    ]
+                },
+                {
+                    "Tag": "Walls",
+                    "UUID": 8452169873654995526,
+                    "PrefabChildRefUUID": 5112716431700157367,
+                    "Entities": [
+                        {
+                            "Tag": "Wall",
+                            "UUID": 5404739970060017917,
+                            "PrefabChildRefUUID": 1773608715315505895
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 8583945826593046043,
+                            "PrefabChildRefUUID": 14359885674159140304
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 3275796202961972546,
+                            "PrefabChildRefUUID": 3805326882639377003
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 5024784925605948475,
+                            "PrefabChildRefUUID": 11993108664537601768
+                        }
+                    ]
+                },
+                {
+                    "Tag": "Bouncer",
+                    "UUID": 3932589683131464380,
+                    "PrefabChildRefUUID": 16596457412405440189,
+                    "Entities": [
+                        {
+                            "Tag": "BouncerPart1",
+                            "UUID": 2751855747754401568,
+                            "PrefabChildRefUUID": 15937879237103137291
+                        },
+                        {
+                            "Tag": "BouncerPart2",
+                            "UUID": 10042236835128897388,
+                            "PrefabChildRefUUID": 13383190383099056429
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "Tag": "TestFrame2",
+            "UUID": 9151114516146657282,
+            "PrefabUUID": 5306419330787304281,
+            "Transform": {
+                "Position": [
+                    64.15581,
+                    16.17849,
+                    0.0
+                ]
+            },
+            "Entities": [
+                {
+                    "Tag": "BallGroup",
+                    "UUID": 3489736905971743414,
+                    "PrefabChildRefUUID": 8736345216724971373
+                },
+                {
+                    "Tag": "BallDespawn",
+                    "UUID": 768919926897091648,
+                    "PrefabChildRefUUID": 17493635495663250999
+                },
+                {
+                    "Tag": "BallSpawn",
+                    "UUID": 14147032734371295635,
+                    "PrefabChildRefUUID": 5549876788439531059
+                },
+                {
+                    "Tag": "Walls",
+                    "UUID": 13159248731100727527,
+                    "PrefabChildRefUUID": 14361732350806808561,
+                    "Entities": [
+                        {
+                            "Tag": "Wall",
+                            "UUID": 3112132210960350135,
+                            "PrefabChildRefUUID": 9945372516559490408
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 3544981372987136494,
+                            "PrefabChildRefUUID": 3969303205934835826
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 3964835194428916507,
+                            "PrefabChildRefUUID": 9929685602456655946
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 8813284536367432948,
+                            "PrefabChildRefUUID": 7268780695572175683
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 16696010273455867450,
+                            "PrefabChildRefUUID": 5083264774289584985
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 10580185366473451729,
+                            "PrefabChildRefUUID": 14491276956146842972
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 10072831142365960632,
+                            "PrefabChildRefUUID": 15320952207932349660
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 17642979343121848310,
+                            "PrefabChildRefUUID": 11880256767427146725
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 12378404136827781050,
+                            "PrefabChildRefUUID": 9280194414120189764
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 9327683642209990132,
+                            "PrefabChildRefUUID": 17230023251027205665
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 14598297640122242105,
+                            "PrefabChildRefUUID": 10144356576662526730
+                        },
+                        {
+                            "Tag": "Wall",
+                            "UUID": 17494014025901317264,
+                            "PrefabChildRefUUID": 5022107672066104247
+                        }
+                    ]
                 }
             ]
         }
