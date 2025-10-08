@@ -9,7 +9,7 @@
             2.5
         ]
     },
-    "Network": {
+    "NetworkComponent": {
         "SimulateOnClient": true,
         "SyncMethod": "Prediction",
         "CullDistance": 30.0,
@@ -17,7 +17,7 @@
         "ReconcileThreshold": 0.10000000149011612,
         "ReconcileMaxTime": 0.20000000298023224
     },
-    "Sprite": {
+    "SpriteComponent": {
         "Texture": "character.png",
         "FilterMode": 0,
         "Flip": [
@@ -39,7 +39,14 @@
             1.0
         ]
     },
-    "Rigidbody": {
+    "CameraComponent": {
+        "ZoomLevel": 1.5,
+        "PositionOffset": [
+            0.0,
+            4.0
+        ]
+    },
+    "RigidbodyComponent": {
         "Type": 2,
         "LinearDamping": 50.0,
         "AngularDamping": 0.0,
@@ -48,14 +55,7 @@
         "FixedRotation": true,
         "AttachToParent": false
     },
-    "Camera": {
-        "ZoomLevel": 1.5,
-        "PositionOffset": [
-            0.0,
-            4.0
-        ]
-    },
-    "Scripts": [
+    "ScriptComponent": [
         {
             "ClassName": "Player",
             "Fields": [
@@ -111,7 +111,7 @@
                     0.4
                 ]
             },
-            "Text": {
+            "TextComponent": {
                 "TextString": "Player",
                 "Kerning": 0.0,
                 "LineSpacing": 0.0,
@@ -139,7 +139,7 @@
                     1.25
                 ]
             },
-            "BoxCollider": {
+            "BoxColliderComponent": {
                 "Size": [
                     1.0,
                     1.0
@@ -171,7 +171,7 @@
                     0.41
                 ]
             },
-            "Rigidbody": {
+            "RigidbodyComponent": {
                 "Type": 2,
                 "LinearDamping": 0.0,
                 "AngularDamping": 0.0,
@@ -180,7 +180,7 @@
                 "FixedRotation": false,
                 "AttachToParent": true
             },
-            "CircleCollider": {
+            "CircleColliderComponent": {
                 "Offset": [
                     0.0,
                     0.0
@@ -209,7 +209,7 @@
                     0.1
                 ]
             },
-            "BoxCollider": {
+            "BoxColliderComponent": {
                 "Size": [
                     1.0,
                     1.0
@@ -241,7 +241,7 @@
                     0.1
                 ]
             },
-            "BoxCollider": {
+            "BoxColliderComponent": {
                 "Size": [
                     1.0,
                     1.0
@@ -273,7 +273,7 @@
                     0.1
                 ]
             },
-            "BoxCollider": {
+            "BoxColliderComponent": {
                 "Size": [
                     1.0,
                     1.0

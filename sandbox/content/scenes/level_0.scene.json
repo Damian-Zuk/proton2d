@@ -879,7 +879,7 @@
                             24.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 3,
                         "Height": 24,
                         "TileScale": 1.0,
@@ -900,7 +900,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -909,7 +909,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9760000109672546,
                             0.984000027179718
@@ -941,7 +941,7 @@
                             24.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 3,
                         "Height": 24,
                         "TileScale": 1.0,
@@ -962,7 +962,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -971,7 +971,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9760000109672546,
                             0.9980000257492065
@@ -1003,7 +1003,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 10,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1024,7 +1024,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1033,7 +1033,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9760000109672546,
                             0.8730000257492065
@@ -1065,7 +1065,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 20,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1086,7 +1086,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1095,7 +1095,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9760000109672546,
                             0.8730000257492065
@@ -1127,7 +1127,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 30,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1148,7 +1148,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1157,7 +1157,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9900000095367432,
                             0.8399999737739563
@@ -1189,7 +1189,7 @@
                             2.49
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 5,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1210,7 +1210,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1219,7 +1219,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9900000095367432,
                             0.9100000262260437
@@ -1251,7 +1251,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 3,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1272,7 +1272,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1281,7 +1281,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9399999976158142,
                             0.8999999761581421
@@ -1313,7 +1313,7 @@
                             11.28
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 3,
                         "Height": 12,
                         "TileScale": 1.0,
@@ -1334,7 +1334,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1343,7 +1343,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9399999976158142,
                             0.9599999785423279
@@ -1375,7 +1375,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 16,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1396,7 +1396,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1405,7 +1405,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9769999980926514,
                             0.8700000047683716
@@ -1437,7 +1437,7 @@
                             1.7
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 6,
                         "Height": 2,
                         "TileScale": 1.0,
@@ -1458,7 +1458,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1467,7 +1467,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9399999976158142,
                             0.5600000023841858
@@ -1499,7 +1499,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSprite": {
+                    "ResizableSpriteComponent": {
                         "Width": 200,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1520,7 +1520,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1529,7 +1529,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             0.9980000257492065,
                             0.8270000219345093

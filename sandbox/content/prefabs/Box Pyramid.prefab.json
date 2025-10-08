@@ -9,7 +9,7 @@
             1.0
         ]
     },
-    "Network": {
+    "NetworkComponent": {
         "SimulateOnClient": true,
         "SyncMethod": "None",
         "CullDistance": 30.0,

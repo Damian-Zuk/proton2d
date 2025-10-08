@@ -9,7 +9,7 @@
             1.0
         ]
     },
-    "Network": {
+    "NetworkComponent": {
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
         "CullDistance": 30.0,
@@ -17,7 +17,7 @@
         "ReconcileThreshold": 0.02500000037252903,
         "ReconcileMaxTime": 0.05000000074505806
     },
-    "Sprite": {
+    "SpriteComponent": {
         "Texture": "basketball.png",
         "FilterMode": 1,
         "Flip": [
@@ -31,7 +31,7 @@
             1.0
         ]
     },
-    "Rigidbody": {
+    "RigidbodyComponent": {
         "Type": 2,
         "LinearDamping": 0.0,
         "AngularDamping": 0.0,
@@ -40,7 +40,7 @@
         "FixedRotation": false,
         "AttachToParent": false
     },
-    "CircleCollider": {
+    "CircleColliderComponent": {
         "Offset": [
             0.0,
             0.0
@@ -53,7 +53,7 @@
         "IsSensor": false,
         "AttachToParent": false
     },
-    "Scripts": [
+    "ScriptComponent": [
         {
             "ClassName": "DynamicExtrapolation",
             "Fields": [

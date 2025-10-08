@@ -253,19 +253,19 @@ namespace proton {
 			//sceneCopy = backup->CreateSceneCopy(instance);
 
 			SceneSerializer serializer(backup.get());
-			std::string sceneJson = serializer.Serialize();
+			std::string sceneJson = serializer.SerializeScene();
 			sceneCopy = sceneManager->CreateEmptyScene(backup->GetFilepath());
 			serializer.SetScene(sceneCopy);
-			serializer.Deserialize(sceneJson);
+			serializer.DeserializeScene(sceneJson);
 		}
 		else
 		{
 			//sceneCopy = activeScene->CreateSceneCopy(instance);
 			SceneSerializer serializer(activeScene);
-			std::string sceneJson = serializer.Serialize();
+			std::string sceneJson = serializer.SerializeScene();
 			sceneCopy = sceneManager->CreateEmptyScene(activeScene->GetFilepath());
 			serializer.SetScene(sceneCopy);
-			serializer.Deserialize(sceneJson);
+			serializer.DeserializeScene(sceneJson);
 		}
 		sceneManager->SetActiveScene(sceneCopy);
 

@@ -9,7 +9,7 @@
             1.5
         ]
     },
-    "Network": {
+    "NetworkComponent": {
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
         "CullDistance": 30.0,
@@ -17,7 +17,7 @@
         "ReconcileThreshold": 0.02500000037252903,
         "ReconcileMaxTime": 0.30000001192092896
     },
-    "Sprite": {
+    "SpriteComponent": {
         "Texture": "box.png",
         "FilterMode": 1,
         "Flip": [
@@ -31,7 +31,7 @@
             1.0
         ]
     },
-    "Rigidbody": {
+    "RigidbodyComponent": {
         "Type": 2,
         "LinearDamping": 0.0,
         "AngularDamping": 0.0,
@@ -40,7 +40,7 @@
         "FixedRotation": false,
         "AttachToParent": false
     },
-    "BoxCollider": {
+    "BoxColliderComponent": {
         "Size": [
             1.0,
             1.0
@@ -56,7 +56,7 @@
         "IsSensor": false,
         "AttachToParent": false
     },
-    "Scripts": [
+    "ScriptComponent": [
         {
             "ClassName": "DynamicExtrapolation",
             "Fields": [

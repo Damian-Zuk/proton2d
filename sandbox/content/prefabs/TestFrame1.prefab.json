@@ -9,7 +9,7 @@
             1.0
         ]
     },
-    "Scripts": [
+    "ScriptComponent": [
         {
             "ClassName": "TestFrame1Script",
             "Fields": [
@@ -170,7 +170,7 @@
                             8.0
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -178,7 +178,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -187,7 +187,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -219,7 +219,7 @@
                             8.0
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -227,7 +227,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -236,7 +236,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -268,7 +268,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -276,7 +276,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -285,7 +285,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -317,7 +317,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -325,7 +325,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -334,7 +334,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -368,7 +368,7 @@
                     0.2
                 ]
             },
-            "Network": {
+            "NetworkComponent": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
@@ -376,7 +376,7 @@
                 "ReconcileThreshold": 0.5,
                 "ReconcileMaxTime": 0.5
             },
-            "Rigidbody": {
+            "RigidbodyComponent": {
                 "Type": 2,
                 "LinearDamping": 0.0,
                 "AngularDamping": 0.0,
@@ -401,7 +401,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             0.50588,
                             0.71373,
@@ -409,7 +409,7 @@
                             1.0
                         ]
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -441,7 +441,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             0.50402,
                             0.71429,
@@ -449,7 +449,7 @@
                             1.0
                         ]
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0

@@ -9,7 +9,7 @@
             1.0
         ]
     },
-    "Scripts": [
+    "ScriptComponent": [
         {
             "ClassName": "TestFrame2Script",
             "Fields": [
@@ -52,7 +52,7 @@
                     1.0
                 ]
             },
-            "Sprite": {
+            "SpriteComponent": {
                 "Color": [
                     0.8961,
                     0.3181,
@@ -60,7 +60,7 @@
                     1.0
                 ]
             },
-            "Rigidbody": {
+            "RigidbodyComponent": {
                 "Type": 0,
                 "LinearDamping": 0.0,
                 "AngularDamping": 0.0,
@@ -69,7 +69,7 @@
                 "FixedRotation": false,
                 "AttachToParent": false
             },
-            "BoxCollider": {
+            "BoxColliderComponent": {
                 "Size": [
                     1.0,
                     0.10000000149011612
@@ -101,7 +101,7 @@
                     1.0
                 ]
             },
-            "Sprite": {
+            "SpriteComponent": {
                 "Color": [
                     0.33311,
                     0.8961,
@@ -141,7 +141,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -149,7 +149,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -158,7 +158,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -190,7 +190,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -198,7 +198,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -207,7 +207,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -239,7 +239,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -247,7 +247,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -256,7 +256,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -288,7 +288,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -296,7 +296,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -305,7 +305,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -337,7 +337,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -345,7 +345,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -354,7 +354,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -386,7 +386,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -394,7 +394,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -403,7 +403,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -435,7 +435,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -443,7 +443,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -452,7 +452,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -484,7 +484,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -492,7 +492,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -501,7 +501,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -533,7 +533,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -541,7 +541,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -550,7 +550,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -582,7 +582,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -590,7 +590,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -599,7 +599,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -631,7 +631,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -639,7 +639,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -648,7 +648,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
@@ -680,7 +680,7 @@
                             0.2
                         ]
                     },
-                    "Sprite": {
+                    "SpriteComponent": {
                         "Color": [
                             1.0,
                             1.0,
@@ -688,7 +688,7 @@
                             1.0
                         ]
                     },
-                    "Rigidbody": {
+                    "RigidbodyComponent": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -697,7 +697,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxCollider": {
+                    "BoxColliderComponent": {
                         "Size": [
                             1.0,
                             1.0
