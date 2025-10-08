@@ -85,7 +85,7 @@ namespace proton {
 		scene->m_GameInstance = m_GameInstance;
 
 		std::string filepath = "content/scenes/" + scenePath + ".scene.json";
-		if (!serializer.DeserializeFromFile(filepath))
+		if (!serializer.DeserializeSceneFromFile(filepath))
 		{
 			PT_CORE_ERROR("Loading '{}' failed!", filepath);
 			return nullptr;
@@ -130,7 +130,7 @@ namespace proton {
 		}
 
 		SceneSerializer serializer(GetScene(scenePath));
-		serializer.SerializeToFile("content/scenes/" + newScenePath + ".scene.json");
+		serializer.SerializeSceneToFile("content/scenes/" + newScenePath + ".scene.json");
 	}
 
 	Scene* SceneManager::CreateEmptyScene(const std::string& scenePath)

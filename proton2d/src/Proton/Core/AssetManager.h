@@ -4,8 +4,6 @@
 
 namespace proton {
 
-	using json = nlohmann::ordered_json;
-
 	class AssetManager
 	{
 	public:

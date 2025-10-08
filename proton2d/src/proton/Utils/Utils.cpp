@@ -16,10 +16,10 @@ constexpr const char DIR_SLASH = '/';
 
 namespace proton { namespace Utils {
 
-	std::string ReadFile(const std::string& filepath)
+	std::string ReadFile(std::string_view filepath)
 	{
 		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
+		std::ifstream in(filepath.data(), std::ios::in | std::ios::binary);
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
@@ -38,6 +38,11 @@ namespace proton { namespace Utils {
 			PT_CORE_ERROR("Could not open file '{}'", filepath);
 
 		return result;
+	}
+
+	std::string GetRelativeFilepath(const std::string& dir, const std::string& filepath)
+	{
+		return filepath.substr(dir.size(), filepath.size() - dir.size());
 	}
 
 	namespace Graphics {

@@ -7,8 +7,6 @@
 
 namespace proton {
 
-	using json = nlohmann::json;
-
 	bool ProjectSettings::LoadProjectSettings()
 	{
 		if (!std::filesystem::exists(m_Filepath))

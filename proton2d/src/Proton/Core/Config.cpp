@@ -4,8 +4,6 @@
 
 namespace proton {
 
-	using json = nlohmann::json;
-
 	ApplicationConfig::ApplicationConfig()
 	{
 		LoadConfig();

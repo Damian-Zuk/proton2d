@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <bitset>
+#include <nlohmann/json.hpp>
 
 #ifndef PROTON_DISTRIBUTION
 	#define PT_EDITOR
@@ -18,6 +19,8 @@
 
 namespace proton 
 {
+	using json = nlohmann::ordered_json;
+
 	template <typename T>
 	using Shared = std::shared_ptr<T>;
 
@@ -35,8 +38,6 @@ namespace proton
 	{
 		return std::make_unique<T>(std::forward<Types>(args)...);
 	}
-
-	// Enum flags functions from Flax Engine: https://github.com/FlaxEngine/FlaxEngine
 
 	template<typename T>
 	constexpr bool EnumHasAnyFlags(T value, T flags)

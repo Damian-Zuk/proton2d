@@ -68,10 +68,6 @@ namespace proton {
 	// CopyComponent functions from:
 	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Scene/Scene.cpp
 	// ---------------------------------------------------------------------------------
-	template<typename... Component>
-	struct ComponentGroup
-	{
-	};
 
 	using ComponentsToCopy =
 		ComponentGroup<TransformComponent, PrefabComponent, CameraComponent,

@@ -8,7 +8,9 @@ namespace proton {
 	
 	namespace Utils {
 
-		std::string ReadFile(const std::string& filepath);
+		std::string ReadFile(std::string_view filepath);
+
+		std::string GetRelativeFilepath(const std::string& dir, const std::string& filepath);
 
 		namespace Graphics {
 			glm::vec4 RGBAtoHSV(const glm::vec4& rgba);

@@ -2,8 +2,6 @@
 #include "Proton/Scene/Entity.h"
 
 namespace proton {
-	
-	using json = nlohmann::ordered_json;
 
 	class Scene;
 
