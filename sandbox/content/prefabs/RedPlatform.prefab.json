@@ -9,6 +9,21 @@
             1.0
         ]
     },
+    "ScriptComponent": [
+        {
+            "ClassName": "RedPlatform",
+            "Fields": [
+                {
+                    "FieldName": "m_VanishAfter",
+                    "Value": 0.33000001311302185
+                },
+                {
+                    "FieldName": "m_VanishTime",
+                    "Value": 1.0
+                }
+            ]
+        }
+    ],
     "ResizableSpriteComponent": {
         "Width": 3,
         "Height": 1,
@@ -54,20 +69,5 @@
         "Density": 0.5,
         "IsSensor": false,
         "AttachToParent": false
-    },
-    "ScriptComponent": [
-        {
-            "ClassName": "RedPlatform",
-            "Fields": [
-                {
-                    "FieldName": "m_VanishAfter",
-                    "Value": 0.33000001311302185
-                },
-                {
-                    "FieldName": "m_VanishTime",
-                    "Value": 1.0
-                }
-            ]
-        }
-    ]
+    }
 }

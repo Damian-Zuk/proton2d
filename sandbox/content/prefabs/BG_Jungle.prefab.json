@@ -11,31 +11,17 @@
     },
     "Entities": [
         {
-            "Tag": "bg-5",
-            "UUID": 5505843171098659658,
+            "Tag": "bg-1",
+            "UUID": 12284726750826723804,
             "Transform": {
                 "Position": [
                     0.0,
                     0.0,
-                    -0.1
+                    -0.104
                 ],
                 "Rotation": 0.0,
                 "Scale": [
                     1.77778,
-                    1.0
-                ]
-            },
-            "SpriteComponent": {
-                "Texture": "bg-jungle\\plx-5.png",
-                "FilterMode": 0,
-                "Flip": [
-                    false,
-                    false
-                ],
-                "Color": [
-                    1.0,
-                    1.0,
-                    1.0,
                     1.0
                 ]
             },
@@ -49,29 +35,13 @@
                         },
                         {
                             "FieldName": "m_ParallaxFactor",
-                            "Value": 0.2199999988079071
+                            "Value": 0.0
                         }
                     ]
                 }
-            ]
-        },
-        {
-            "Tag": "bg-4",
-            "UUID": 9694981766443183024,
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    -0.101
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.77778,
-                    1.0
-                ]
-            },
+            ],
             "SpriteComponent": {
-                "Texture": "bg-jungle\\plx-4.png",
+                "Texture": "bg-jungle\\plx-1.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -83,67 +53,7 @@
                     1.0,
                     1.0
                 ]
-            },
-            "ScriptComponent": [
-                {
-                    "ClassName": "ParallaxBackground",
-                    "Fields": [
-                        {
-                            "FieldName": "m_PositionOffset",
-                            "Value": 0.0
-                        },
-                        {
-                            "FieldName": "m_ParallaxFactor",
-                            "Value": 0.17000000178813934
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "Tag": "bg-3",
-            "UUID": 1618581998629472234,
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    -0.102
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.77778,
-                    1.0
-                ]
-            },
-            "SpriteComponent": {
-                "Texture": "bg-jungle\\plx-3.png",
-                "FilterMode": 0,
-                "Flip": [
-                    false,
-                    false
-                ],
-                "Color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "ScriptComponent": [
-                {
-                    "ClassName": "ParallaxBackground",
-                    "Fields": [
-                        {
-                            "FieldName": "m_PositionOffset",
-                            "Value": 0.0
-                        },
-                        {
-                            "FieldName": "m_ParallaxFactor",
-                            "Value": 0.0949999988079071
-                        }
-                    ]
-                }
-            ]
+            }
         },
         {
             "Tag": "bg-2",
@@ -157,20 +67,6 @@
                 "Rotation": 0.0,
                 "Scale": [
                     1.77778,
-                    1.0
-                ]
-            },
-            "SpriteComponent": {
-                "Texture": "bg-jungle\\plx-2.png",
-                "FilterMode": 0,
-                "Flip": [
-                    false,
-                    false
-                ],
-                "Color": [
-                    1.0,
-                    1.0,
-                    1.0,
                     1.0
                 ]
             },
@@ -188,25 +84,9 @@
                         }
                     ]
                 }
-            ]
-        },
-        {
-            "Tag": "bg-1",
-            "UUID": 12284726750826723804,
-            "Transform": {
-                "Position": [
-                    0.0,
-                    0.0,
-                    -0.104
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.77778,
-                    1.0
-                ]
-            },
+            ],
             "SpriteComponent": {
-                "Texture": "bg-jungle\\plx-1.png",
+                "Texture": "bg-jungle\\plx-2.png",
                 "FilterMode": 0,
                 "Flip": [
                     false,
@@ -216,6 +96,22 @@
                     1.0,
                     1.0,
                     1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Tag": "bg-3",
+            "UUID": 1618581998629472234,
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    -0.102
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.77778,
                     1.0
                 ]
             },
@@ -229,11 +125,115 @@
                         },
                         {
                             "FieldName": "m_ParallaxFactor",
-                            "Value": 0.0
+                            "Value": 0.0949999988079071
                         }
                     ]
                 }
-            ]
+            ],
+            "SpriteComponent": {
+                "Texture": "bg-jungle\\plx-3.png",
+                "FilterMode": 0,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Tag": "bg-4",
+            "UUID": 9694981766443183024,
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    -0.101
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.77778,
+                    1.0
+                ]
+            },
+            "ScriptComponent": [
+                {
+                    "ClassName": "ParallaxBackground",
+                    "Fields": [
+                        {
+                            "FieldName": "m_PositionOffset",
+                            "Value": 0.0
+                        },
+                        {
+                            "FieldName": "m_ParallaxFactor",
+                            "Value": 0.17000000178813934
+                        }
+                    ]
+                }
+            ],
+            "SpriteComponent": {
+                "Texture": "bg-jungle\\plx-4.png",
+                "FilterMode": 0,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Tag": "bg-5",
+            "UUID": 5505843171098659658,
+            "Transform": {
+                "Position": [
+                    0.0,
+                    0.0,
+                    -0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.77778,
+                    1.0
+                ]
+            },
+            "ScriptComponent": [
+                {
+                    "ClassName": "ParallaxBackground",
+                    "Fields": [
+                        {
+                            "FieldName": "m_PositionOffset",
+                            "Value": 0.0
+                        },
+                        {
+                            "FieldName": "m_ParallaxFactor",
+                            "Value": 0.2199999988079071
+                        }
+                    ]
+                }
+            ],
+            "SpriteComponent": {
+                "Texture": "bg-jungle\\plx-5.png",
+                "FilterMode": 0,
+                "Flip": [
+                    false,
+                    false
+                ],
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }
