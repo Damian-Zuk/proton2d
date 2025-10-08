@@ -1,14 +1,10 @@
 #pragma once
 #include "Proton/Core/UUID.h"
 #include "Proton/Scene/Entity.h"
-#include <nlohmann/json.hpp>
 
 namespace proton {
 
 	using json = nlohmann::ordered_json;
-
-	class Scene;
-	class Entity;
 
 	class SceneSerializer
 	{
@@ -39,27 +35,34 @@ namespace proton {
 		void SetScene(Scene* scene) { m_Scene = scene; }
 		
 	private:
-		void SerializeChildren(Entity entity, json& out);
-		void DeserializeChildren(Entity entity, const json& data);
+		void ResetState();
+
+		void SerializeChildEntities(Entity entity, json& out);
+		void DeserializeChildEntities(Entity entity, const json& data);
+
+		inline bool AreComponentsSerialized(bool isPrefabEntity) const;
+		inline bool IsPositionSerialized() const;
+		inline bool IsRotationAndScaleSerialized(bool isPrefabEntity) const;
 
 		template<typename TComponent>
-		void TrySerialize(std::string_view key, Entity entity, json& out);
+		void TrySerialize(std::string_view key, Entity entity, json& j);
 
 		template<typename TComponent>
-		void TryDeserialize(std::string_view key, Entity entity, const json& data);
+		void TryDeserialize(std::string_view key, Entity entity, const json& j);
 
 		template<typename TComponent>
-		void Serialize(Entity entity, const TComponent& c, json& out);
+		void Serialize(Entity entity, const TComponent& c, json& j);
 
 		template<typename TComponent>
-		void Deserialize(Entity entity, TComponent& c, const json& data);
+		void Deserialize(Entity entity, TComponent& c, const json& j);
 
 	private:
 		Scene* m_Scene;
 
 		// State
-		bool m_IsRootEntity = true;
-		bool m_IsParentPrefab = false;
+		int32_t m_HierarchyLevel = 0;
+		int32_t m_ParentPrefabLevel = -1;
+		int32_t m_NestedPrefabsCount = 0;
 	};
 
 }

@@ -58,11 +58,11 @@
         "ReconcileMaxTime": 0.20000000298023224
     },
     "CameraComponent": {
-        "ZoomLevel": 1.5,
         "PositionOffset": [
             0.0,
             4.0
-        ]
+        ],
+        "ZoomLevel": 1.5
     },
     "SpriteComponent": {
         "Texture": "character.png",

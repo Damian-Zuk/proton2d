@@ -11,27 +11,11 @@
     },
     "Entities": [
         {
-            "Tag": "PlayerSpawn3",
-            "UUID": 6669721361522134344,
+            "Tag": "PlayerSpawn0",
+            "UUID": 4228852946507038501,
             "Transform": {
                 "Position": [
-                    3.81151,
-                    -0.01933,
-                    0.1
-                ],
-                "Rotation": 0.0,
-                "Scale": [
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "Tag": "PlayerSpawn2",
-            "UUID": 18277456767722596498,
-            "Transform": {
-                "Position": [
-                    1.31151,
+                    -3.68849,
                     -0.01933,
                     0.1
                 ],
@@ -59,11 +43,27 @@
             }
         },
         {
-            "Tag": "PlayerSpawn0",
-            "UUID": 4228852946507038501,
+            "Tag": "PlayerSpawn2",
+            "UUID": 18277456767722596498,
             "Transform": {
                 "Position": [
-                    -3.68849,
+                    1.31151,
+                    -0.01933,
+                    0.1
+                ],
+                "Rotation": 0.0,
+                "Scale": [
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Tag": "PlayerSpawn3",
+            "UUID": 6669721361522134344,
+            "Transform": {
+                "Position": [
+                    3.81151,
                     -0.01933,
                     0.1
                 ],

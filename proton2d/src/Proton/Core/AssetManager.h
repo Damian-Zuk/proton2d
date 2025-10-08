@@ -1,7 +1,6 @@
 #include "Proton/Graphics/Sprite.h"
 
 #include <unordered_map>
-#include <nlohmann/json.hpp>
 
 namespace proton {
 

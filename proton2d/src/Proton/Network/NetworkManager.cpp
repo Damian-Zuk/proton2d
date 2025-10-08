@@ -15,8 +15,6 @@
 #include <steam/steam_api.h>
 #endif
 
-#include <nlohmann/json.hpp>
-
 namespace proton {
 
 	uint32_t NetworkManager::s_GameProtocolVersion = 1;

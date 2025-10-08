@@ -1,6 +1,5 @@
 #pragma once
 #include "Proton/Scene/Entity.h"
-#include <nlohmann/json.hpp>
 
 namespace proton {
 	

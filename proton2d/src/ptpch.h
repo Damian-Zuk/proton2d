@@ -12,6 +12,8 @@
 #include <map>
 #include <unordered_map>
 
+#include <nlohmann/json.hpp>
+
 #if PROTON_PLATFORM_WINDOWS
 #include <Windows.h>
 #endif

@@ -5,8 +5,6 @@
 #include "Proton/Utils/Utils.h"
 #include "Proton/Network/Common.h"
 
-#include <nlohmann/json.hpp>
-
 namespace proton {
 
 	using json = nlohmann::json;
