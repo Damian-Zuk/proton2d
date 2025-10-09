@@ -12,12 +12,9 @@
     "Script": [
         {
             "ClassName": "TestFrame2Script",
-            "Fields": [
-                {
-                    "FieldName": "m_Interval",
-                    "Value": 1.0
-                }
-            ]
+            "Fields": {
+                "m_Interval": 1.0
+            }
         }
     ],
     "Entities": [

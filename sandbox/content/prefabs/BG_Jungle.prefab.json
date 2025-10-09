@@ -28,16 +28,10 @@
             "Script": [
                 {
                     "ClassName": "ParallaxBackground",
-                    "Fields": [
-                        {
-                            "FieldName": "m_PositionOffset",
-                            "Value": 0.0
-                        },
-                        {
-                            "FieldName": "m_ParallaxFactor",
-                            "Value": 0.0
-                        }
-                    ]
+                    "Fields": {
+                        "m_PositionOffset": 0.0,
+                        "m_ParallaxFactor": 0.0
+                    }
                 }
             ],
             "Sprite": {
@@ -73,16 +67,10 @@
             "Script": [
                 {
                     "ClassName": "ParallaxBackground",
-                    "Fields": [
-                        {
-                            "FieldName": "m_PositionOffset",
-                            "Value": 0.0
-                        },
-                        {
-                            "FieldName": "m_ParallaxFactor",
-                            "Value": 0.04500000178813934
-                        }
-                    ]
+                    "Fields": {
+                        "m_PositionOffset": 0.0,
+                        "m_ParallaxFactor": 0.04500000178813934
+                    }
                 }
             ],
             "Sprite": {
@@ -118,16 +106,10 @@
             "Script": [
                 {
                     "ClassName": "ParallaxBackground",
-                    "Fields": [
-                        {
-                            "FieldName": "m_PositionOffset",
-                            "Value": 0.0
-                        },
-                        {
-                            "FieldName": "m_ParallaxFactor",
-                            "Value": 0.0949999988079071
-                        }
-                    ]
+                    "Fields": {
+                        "m_PositionOffset": 0.0,
+                        "m_ParallaxFactor": 0.0949999988079071
+                    }
                 }
             ],
             "Sprite": {
@@ -163,16 +145,10 @@
             "Script": [
                 {
                     "ClassName": "ParallaxBackground",
-                    "Fields": [
-                        {
-                            "FieldName": "m_PositionOffset",
-                            "Value": 0.0
-                        },
-                        {
-                            "FieldName": "m_ParallaxFactor",
-                            "Value": 0.17000000178813934
-                        }
-                    ]
+                    "Fields": {
+                        "m_PositionOffset": 0.0,
+                        "m_ParallaxFactor": 0.17000000178813934
+                    }
                 }
             ],
             "Sprite": {
@@ -208,16 +184,10 @@
             "Script": [
                 {
                     "ClassName": "ParallaxBackground",
-                    "Fields": [
-                        {
-                            "FieldName": "m_PositionOffset",
-                            "Value": 0.0
-                        },
-                        {
-                            "FieldName": "m_ParallaxFactor",
-                            "Value": 0.2199999988079071
-                        }
-                    ]
+                    "Fields": {
+                        "m_PositionOffset": 0.0,
+                        "m_ParallaxFactor": 0.2199999988079071
+                    }
                 }
             ],
             "Sprite": {

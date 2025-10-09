@@ -136,7 +136,7 @@ namespace proton {
 			const auto& id = m_Registry.get<IDComponent>(srcEntity);
 			const auto& name = m_Registry.get<TagComponent>(srcEntity).Tag;
 			Entity newEntity = newScene->CreateEntityWithUUID(id.ID, name, false);
-			newEntity.GetComponent<IDComponent>().PrefabRefID = id.PrefabRefID;
+			newEntity.GetComponent<IDComponent>().RefID = id.RefID;
 			enttMap[id.ID] = (entt::entity)newEntity;
 		}
 
@@ -294,7 +294,7 @@ namespace proton {
 	Entity Scene::DuplicateEntity(Entity entity, Entity attachTo)
 	{
 		Entity newEntity = CreateEntity(entity.GetTag());
-		newEntity.GetComponent<IDComponent>().PrefabRefID = entity.GetComponent<IDComponent>().PrefabRefID;
+		newEntity.GetComponent<IDComponent>().RefID = entity.GetComponent<IDComponent>().RefID;
 
 		auto& srcRelation = entity.GetComponent<RelationshipComponent>();
 		auto& dstRelation = newEntity.GetComponent<RelationshipComponent>();

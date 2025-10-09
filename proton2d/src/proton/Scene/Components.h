@@ -26,7 +26,7 @@ namespace proton {
 		PT_COMPONENT_CLASS(IDComponent)
 
 		UUID ID;
-		UUID PrefabRefID = 0;
+		UUID RefID = 0;
 	};
 
 	struct TagComponent

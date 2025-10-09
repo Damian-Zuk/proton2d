@@ -9,46 +9,6 @@
             2.5
         ]
     },
-    "Script": [
-        {
-            "ClassName": "Player",
-            "Fields": [
-                {
-                    "FieldName": "m_PlayerAcceleration",
-                    "Value": 50.0
-                },
-                {
-                    "FieldName": "m_JumpImpulse",
-                    "Value": 25.0
-                },
-                {
-                    "FieldName": "m_FallModifier",
-                    "Value": 100.0
-                },
-                {
-                    "FieldName": "m_ClientID",
-                    "Value": 0
-                },
-                {
-                    "FieldName": "m_PlayerSpeed",
-                    "Value": 8.0
-                },
-                {
-                    "FieldName": "m_PlayerNick",
-                    "Value": ""
-                },
-                {
-                    "FieldName": "m_PlayerColor",
-                    "Value": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            ]
-        }
-    ],
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Prediction",
@@ -57,6 +17,25 @@
         "ReconcileThreshold": 0.10000000149011612,
         "ReconcileMaxTime": 0.20000000298023224
     },
+    "Script": [
+        {
+            "ClassName": "Player",
+            "Fields": {
+                "m_PlayerAcceleration": 50.0,
+                "m_JumpImpulse": 25.0,
+                "m_FallModifier": 100.0,
+                "m_ClientID": 0,
+                "m_PlayerSpeed": 8.0,
+                "m_PlayerNick": "",
+                "m_PlayerColor": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        }
+    ],
     "Camera": {
         "PositionOffset": [
             0.0,

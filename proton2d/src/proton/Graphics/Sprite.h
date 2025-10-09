@@ -16,9 +16,11 @@ namespace proton {
 		void SetTexture(Shared<Texture> texture);
 		void SetSpritesheet(Shared<Spritesheet> spritesheet);
 
+		void SetTile(glm::uvec2 pos);
 		void SetTile(uint32_t x, uint32_t y);
 		void SetTileX(uint32_t x);
 		void SetTileY(uint32_t y);
+		void SetTileSize(glm::uvec2 size);
 		void SetTileSize(uint32_t tilesWidth, uint32_t tilesHeight);
 
 		const glm::uvec2& GetTileSize() const { return m_TileSize; }

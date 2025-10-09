@@ -19,3 +19,5 @@
 #include "Proton/Core/Base.h"
 #include "Proton/Debug/Assert.h"
 #include "Proton/Debug/Instrumentor.h"
+
+#include "Proton/Serialization/JsonGlmAdapters.h"

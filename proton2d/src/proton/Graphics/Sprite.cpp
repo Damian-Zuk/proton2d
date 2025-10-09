@@ -38,28 +38,38 @@ namespace proton {
 		CalculateTextureCoords();
 	}
 
-	void Sprite::SetTile(uint32_t x, uint32_t y)
+	void Sprite::SetTile(glm::uvec2 pos)
 	{
 		glm::uvec2 count = m_Spritesheet->GetTileCount();
-		x %= count.x; y %= count.y;
-		m_TilePos = { x, y };
+		pos.x %= count.x; pos.y %= count.y;
+		m_TilePos = pos;
 		CalculateTextureCoords();
+	}
+
+	void Sprite::SetTile(uint32_t x, uint32_t y)
+	{
+		SetTile({ x, y });
 	}
 
 	void Sprite::SetTileX(uint32_t x)
 	{
-		SetTile(x, m_TilePos.y);
+		SetTile({ x, m_TilePos.y });
 	}
 
 	void Sprite::SetTileY(uint32_t y)
 	{
-		SetTile(m_TilePos.x, y);
+		SetTile({ m_TilePos.x, y });
+	}
+
+	void Sprite::SetTileSize(glm::uvec2 size)
+	{
+		m_TileSize = size;
+		CalculateTextureCoords();
 	}
 
 	void Sprite::SetTileSize(uint32_t tilesWidth, uint32_t tilesHeight)
 	{
-		m_TileSize = { tilesWidth, tilesHeight };
-		CalculateTextureCoords();
+		SetTileSize({ tilesWidth, tilesHeight });
 	}
 
 	void Sprite::MirrorFlip(bool mirror_x, bool mirror_y)

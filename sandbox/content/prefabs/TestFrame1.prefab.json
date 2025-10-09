@@ -12,16 +12,10 @@
     "Script": [
         {
             "ClassName": "TestFrame1Script",
-            "Fields": [
-                {
-                    "FieldName": "m_BounceForce",
-                    "Value": 15.0
-                },
-                {
-                    "FieldName": "m_Interval",
-                    "Value": 0.699999988079071
-                }
-            ]
+            "Fields": {
+                "m_BounceForce": 15.0,
+                "m_Interval": 0.699999988079071
+            }
         }
     ],
     "Entities": [

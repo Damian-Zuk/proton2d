@@ -9,29 +9,6 @@
             1.5
         ]
     },
-    "Script": [
-        {
-            "ClassName": "DynamicExtrapolation",
-            "Fields": [
-                {
-                    "FieldName": "InterpolationThreshold",
-                    "Value": 0.05000000074505806
-                },
-                {
-                    "FieldName": "SwitchCooldownTime",
-                    "Value": 0.25
-                },
-                {
-                    "FieldName": "Enable",
-                    "Value": true
-                },
-                {
-                    "FieldName": "AlphaVisualize",
-                    "Value": true
-                }
-            ]
-        }
-    ],
     "Network": {
         "SimulateOnClient": true,
         "SyncMethod": "Interpolation",
@@ -40,6 +17,17 @@
         "ReconcileThreshold": 0.02500000037252903,
         "ReconcileMaxTime": 0.30000001192092896
     },
+    "Script": [
+        {
+            "ClassName": "DynamicExtrapolation",
+            "Fields": {
+                "InterpolationThreshold": 0.05000000074505806,
+                "SwitchCooldownTime": 0.25,
+                "Enable": true,
+                "AlphaVisualize": true
+            }
+        }
+    ],
     "Sprite": {
         "Texture": "box.png",
         "FilterMode": 1,
@@ -48,9 +36,9 @@
             false
         ],
         "Color": [
-            0.18620342016220093,
-            0.8961039185523987,
-            0.18620342016220093,
+            0.9523809552192688,
+            0.9472407698631287,
+            0.5565862655639648,
             1.0
         ]
     },

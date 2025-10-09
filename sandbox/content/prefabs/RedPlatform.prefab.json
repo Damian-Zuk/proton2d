@@ -12,21 +12,13 @@
     "Script": [
         {
             "ClassName": "RedPlatform",
-            "Fields": [
-                {
-                    "FieldName": "m_VanishAfter",
-                    "Value": 0.33000001311302185
-                },
-                {
-                    "FieldName": "m_VanishTime",
-                    "Value": 1.0
-                }
-            ]
+            "Fields": {
+                "m_VanishAfter": 0.33000001311302185,
+                "m_VanishTime": 1.0
+            }
         }
     ],
     "ResizableSprite": {
-        "Width": 3,
-        "Height": 1,
         "TileScale": 1.0,
         "Edges": 255,
         "Offset": [

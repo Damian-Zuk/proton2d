@@ -8,6 +8,7 @@
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Utils/Utils.h"
 
+
 namespace proton {
 
 	using MetadataComponents = ComponentGroup<
@@ -36,14 +37,12 @@ namespace proton {
 		j["GameModeClass"] = m_Scene->m_GameModeClassName; 
 		j["EnableNetworking"] = m_Scene->m_EnableNetworking; 
 		j["EnablePhysics"] = m_Scene->m_EnablePhysics; 
+		j["ScreenClearColor"] = m_Scene->m_ClearColor;
 
 		const auto& physicsWorld = m_Scene->m_PhysicsWorld;
 		j["GravityForce"] = physicsWorld->m_Gravity;
 		j["VelocityIterations"] = physicsWorld->m_PhysicsVelocityIterations;
 		j["PositionIterations"] = physicsWorld->m_PhysicsPositionIterations;
-
-		const glm::vec4& col = m_Scene->m_ClearColor;
-		j["ScreenClearColor"] = { col.r, col.g, col.b, col.a };
 
 		if (Entity entity = m_Scene->GetPrimaryCameraEntity())
 		{
@@ -68,14 +67,12 @@ namespace proton {
 		m_Scene->SetGameModeByClassName(j["GameModeClass"]);
 		m_Scene->m_EnablePhysics = j["EnablePhysics"];
 		m_Scene->m_EnableNetworking = j["EnableNetworking"];
+		m_Scene->m_ClearColor = j["ScreenClearColor"];
 
 		auto& physicsWorld = m_Scene->m_PhysicsWorld;
 		physicsWorld->m_Gravity = j["GravityForce"];
 		physicsWorld->m_PhysicsVelocityIterations = j["VelocityIterations"];
 		physicsWorld->m_PhysicsPositionIterations = j["PositionIterations"];
-		
-		const json& col = j["ScreenClearColor"];
-		m_Scene->m_ClearColor = { col[0], col[1], col[2], col[3] };
 
 		const json& entities = j["Entities"];
 		for (auto it = entities.begin(); it != entities.end(); it++)
@@ -221,7 +218,7 @@ namespace proton {
 			while (current)
 			{
 				auto& id = current.GetComponent<IDComponent>();
-				sceneEntityMap[id.PrefabRefID] = current;
+				sceneEntityMap[id.RefID] = current;
 
 				auto& h = current.GetComponent<RelationshipComponent>();
 				current = Entity(h.Next, entity.GetScene());
@@ -242,7 +239,7 @@ namespace proton {
 				{
 					Entity child = DeserializeEntity(data);
 					auto& id = child.GetComponent<IDComponent>();
-					id.PrefabRefID = prefabRefUUID;
+					id.RefID = prefabRefUUID;
 					entity.AddChildEntity(child, false);
 				}
 			}
@@ -263,14 +260,14 @@ namespace proton {
 		{
 			j["UUID"] = c.ID;
 			if (m_State.ParentPrefabLevel != -1)
-				j["PrefabRefUUID"] = c.PrefabRefID;
+				j["RefUUID"] = c.RefID;
 		}
 		else if (Format == FormatType::Prefab)
 		{
 			if (m_State.HierarchyLevel == 0)
 				j["UUID"] = entity.GetPrefabUUID();
 			else
-				j["UUID"] = c.PrefabRefID ? c.PrefabRefID : c.ID;
+				j["UUID"] = c.RefID ? c.RefID : c.ID;
 		}
 	}
 
@@ -278,7 +275,7 @@ namespace proton {
 	void SceneSerializer::Deserialize<IDComponent>(Entity entity, IDComponent& c, const json& j)
 	{
 		if (Format == FormatType::Scene && m_State.ParentPrefabLevel != -1)
-			c.PrefabRefID = j["PrefabRefUUID"];
+			c.RefID = j["RefUUID"];
 	}
 
 	template<>
@@ -310,13 +307,12 @@ namespace proton {
 	{
 		if (IsPositionSerialized())
 		{
-			const glm::vec3& pos = c.LocalPosition;
-			j["Transform"]["Position"] = {pos.x, pos.y, pos.z};
+			j["Transform"]["Position"] = c.LocalPosition;
 		}
 		if (AreDataComponentsSerialized())
 		{
 			j["Transform"]["Rotation"] = c.Rotation;
-			j["Transform"]["Scale"] = { c.Scale.x, c.Scale.y };
+			j["Transform"]["Scale"] = c.Scale;
 		}
 	}
 
@@ -325,44 +321,38 @@ namespace proton {
 	{
 		if (IsPositionSerialized())
 		{
-			const json& pos = j["Transform"]["Position"];
-			c.WorldPosition = { pos[0], pos[1], pos[2] };
-			c.LocalPosition = { pos[0], pos[1], pos[2] };
+			c.WorldPosition = j["Transform"]["Position"];
+			c.LocalPosition = j["Transform"]["Position"];
 		}
 		if (AreDataComponentsSerialized())
 		{
-			const json& scale = j["Transform"]["Scale"];
-			const json& rotation = j["Transform"]["Rotation"];
-			c.Scale = { scale[0], scale[1] };
-			c.Rotation = rotation;
+			c.Scale = j["Transform"]["Scale"];
+			c.Rotation = j["Transform"]["Rotation"];
 		}
 	}
 
 	template<>
 	void SceneSerializer::Serialize<SpriteComponent>(Entity entity, const SpriteComponent& c, json& j)
 	{
-		const auto& sprite = c.Sprite;
-		auto& color = c.Color;
-		if (sprite)
+		if (c.Sprite)
 		{
-			j["Texture"] = Utils::GetRelativeFilepath("content/textures/", sprite.GetTexture()->GetPath());
-			j["FilterMode"] = sprite.GetTexture()->GetFilterMode();
-			j["Flip"] = { sprite.m_MirrorFlip.x, sprite.m_MirrorFlip.y };
+			j["Texture"] = Utils::GetRelativeFilepath("content/textures/", c.Sprite.GetTexture()->GetPath());
+			j["FilterMode"] = c.Sprite.GetTexture()->GetFilterMode();
+			j["Flip"] = c.Sprite.m_MirrorFlip;
 
-			if (sprite.m_Spritesheet)
+			if (c.Sprite.m_Spritesheet)
 			{
-				j["TilePos"] = { sprite.m_TilePos.x, sprite.m_TilePos.y };
-				j["TileSize"] = { sprite.m_TileSize.x, sprite.m_TileSize.y };
+				j["TilePos"] = c.Sprite.m_TilePos;
+				j["TileSize"] = c.Sprite.m_TileSize;
 			}
 		}
-		j["Color"] = { color.r, color.g, color.b, color.a };
+		j["Color"] = c.Color;
 	}
 
 	template<>
 	void SceneSerializer::Deserialize<SpriteComponent>(Entity entity, SpriteComponent& c, const json& j)
 	{
-		const json& col = j["Color"];
-		c.Color = { col[0], col[1], col[2], col[3] };
+		c.Color = j["Color"];
 
 		if (!j.contains("Texture"))
 			return;
@@ -374,8 +364,7 @@ namespace proton {
 
 		texture->m_FilterMode = j["FilterMode"];
 		c.Sprite.SetTexture(texture);
-		c.Sprite.m_MirrorFlip.x = j["Flip"][0];
-		c.Sprite.m_MirrorFlip.y = j["Flip"][1];
+		c.Sprite.m_MirrorFlip = j["Flip"];
 
 		if (!j.contains("TilePos"))
 			return;
@@ -385,8 +374,8 @@ namespace proton {
 			return;
 
 		c.Sprite.SetSpritesheet(spritesheet);
-		c.Sprite.SetTile(j["TilePos"][0], j["TilePos"][1]);
-		c.Sprite.SetTileSize(j["TileSize"][0], j["TileSize"][1]);
+		c.Sprite.SetTile(j["TilePos"]);
+		c.Sprite.SetTileSize(j["TileSize"]);
 	}
 
 	template<>
@@ -394,15 +383,12 @@ namespace proton {
 	{
 		auto& sprite = c.ResizableSprite;
 		auto& spritesheet = sprite.GetSpritesheet();
-		const glm::vec4& col = c.Color;
 
-		j["Width"] = sprite.m_CellCount.x;
-		j["Height"] = sprite.m_CellCount.y;
 		j["TileScale"] = sprite.m_CellScale;
 		j["Edges"] = sprite.GetEdgesBitset();
-		j["Offset"] = { sprite.m_PatternOffset.x, sprite.m_PatternOffset.y };
-		j["PatternSize"] = { sprite.m_PatternSize.x, sprite.m_PatternSize.y };
-		j["Color"] = { col.r, col.g, col.b, col.a };
+		j["Offset"] = sprite.m_PatternOffset;
+		j["PatternSize"] = sprite.m_PatternSize;
+		j["Color"] = c.Color;
 
 		if (spritesheet)
 			j["Spritesheet"] = Utils::GetRelativeFilepath("content/textures/", spritesheet->GetTexture()->GetPath());
@@ -414,73 +400,64 @@ namespace proton {
 		auto& sprite = c.ResizableSprite;
 		sprite.m_EdgesBitset = j["Edges"];
 		sprite.m_CellScale = j["TileScale"];
-		const json& offset = j["Offset"];
-		sprite.m_PatternOffset = { offset[0], offset[1] };
-		const json& patternSize = j["PatternSize"];
-		sprite.m_PatternSize = { patternSize[0], patternSize[1] };
+		sprite.m_PatternOffset = j["Offset"];
+		sprite.m_PatternSize = j["PatternSize"];
+		c.Color = j["Color"];
 
 		if (j.contains("Spritesheet"))
 			sprite.m_Spritesheet = AssetManager::GetSpritesheet(j["Spritesheet"]);
 
 		auto& transform = entity.GetComponent<TransformComponent>();
 		sprite.Generate(transform.Scale);
-
-		const json& col = j["Color"];
-		c.Color = { col[0], col[1], col[2], col[3] };
 	}
 
 	template<>
 	void SceneSerializer::Serialize<CircleRendererComponent>(Entity entity, const CircleRendererComponent& c, json& j)
 	{
-		const glm::vec4& col = c.Color;
 		j["Thickness"] = c.Thickness;
 		j["Fade"] = c.Fade;
-		j["Color"] = { col.r, col.g, col.b, col.a };
+		j["Color"] = c.Color;
 	}
 
 	template<>
 	void SceneSerializer::Deserialize<CircleRendererComponent>(Entity entity, CircleRendererComponent& c, const json& j)
 	{
-		const json& col = j["Color"];
 		c.Thickness = j["Thickness"];
 		c.Fade = j["Fade"];
-		c.Color = { col[0], col[1], col[2], col[3] };
+		c.Color = j["Color"];
 	}
 
 	template<>
 	void SceneSerializer::Serialize<TextComponent>(Entity entity, const TextComponent& c, json& j)
 	{
-		const glm::vec4& col = c.Color;
 		j["TextString"] = c.TextString;
 		j["Kerning"] = c.Kerning;
 		j["LineSpacing"] = c.LineSpacing;
-		j["Color"] = { col.r, col.g, col.b, col.a };
+		j["Color"] = c.Color;
 		j["Hidden"] = c.Hidden;
 	}
 
 	template<>
 	void SceneSerializer::Deserialize<TextComponent>(Entity entity, TextComponent& c, const json& j)
 	{
-		const json& col = j["Color"];
 		c.TextString = j["TextString"];
 		c.Kerning = j["Kerning"];
 		c.LineSpacing = j["LineSpacing"];
 		c.Hidden = j["Hidden"];
-		c.Color = { col[0], col[1], col[2], col[3] };
+		c.Color = j["Color"];
 	}
 
 	template<>
 	void SceneSerializer::Serialize<CameraComponent>(Entity entity, const CameraComponent& c, json& j)
 	{
-		j["PositionOffset"] = { c.PositionOffset.x, c.PositionOffset.y };
+		j["PositionOffset"] = c.PositionOffset;
 		j["ZoomLevel"] = c.Camera.GetZoomLevel();
 	}
 
 	template<>
 	void SceneSerializer::Deserialize<CameraComponent>(Entity entity, CameraComponent& c, const json& j)
 	{
-		const json& offset = j["PositionOffset"];
-		c.PositionOffset = { offset[0], offset[1] };
+		c.PositionOffset = j["PositionOffset"];
 		c.Camera.SetZoomLevel(j["ZoomLevel"]);
 	}
 
@@ -511,8 +488,8 @@ namespace proton {
 	template<>
 	void SceneSerializer::Serialize<BoxColliderComponent>(Entity entity, const BoxColliderComponent& c, json& j)
 	{
-		j["Size"] = { c.Size.x,   c.Size.y };
-		j["Offset"] = { c.Offset.x, c.Offset.y };
+		j["Size"] = c.Size;
+		j["Offset"] = c.Offset;
 		j["Friction"] = c.Material.Friction;
 		j["Restitution"] = c.Material.Restitution;
 		j["RestitutionThreshold"] = c.Material.RestitutionThreshold;
@@ -524,10 +501,8 @@ namespace proton {
 	template<>
 	void SceneSerializer::Deserialize<BoxColliderComponent>(Entity entity, BoxColliderComponent& c, const json& j)
 	{
-		const json& size = j["Size"];
-		const json& offset = j["Offset"];
-		c.Size = { size[0], size[1] };
-		c.Offset = { offset[0], offset[1] };
+		c.Size = j["Size"];
+		c.Offset = j["Offset"];
 		c.Material.Friction = j["Friction"];
 		c.Material.Restitution = j["Restitution"];
 		c.Material.RestitutionThreshold = j["RestitutionThreshold"];
@@ -539,7 +514,7 @@ namespace proton {
 	template<>
 	void SceneSerializer::Serialize<CircleColliderComponent>(Entity entity, const CircleColliderComponent& c, json& j)
 	{
-		j["Offset"] = { c.Offset.x, c.Offset.y };
+		j["Offset"] = c.Offset;
 		j["Radius"] = c.Radius;
 		j["Friction"] = c.Material.Friction;
 		j["Restitution"] = c.Material.Restitution;
@@ -552,8 +527,7 @@ namespace proton {
 	template<>
 	void SceneSerializer::Deserialize<CircleColliderComponent>(Entity entity, CircleColliderComponent& c, const json& j)
 	{
-		const json& offset = j["Offset"];
-		c.Offset = { offset[0], offset[1] };
+		c.Offset = j["Offset"];
 		c.Radius = j["Radius"];
 		c.Material.Friction = j["Friction"];
 		c.Material.Restitution = j["Restitution"];
@@ -590,70 +564,30 @@ namespace proton {
 	{
 		for (auto& [scriptClassName, scriptInstance] : c.Scripts)
 		{
-			json scriptJ;
-			scriptJ["ClassName"] = scriptClassName;
+			json scriptJson;
+			scriptJson["ClassName"] = scriptClassName;
 
 			for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
 			{
-				json fieldJ;
-				fieldJ["FieldName"] = fieldName;
+				json& fieldJson = scriptJson["Fields"][fieldName];
+				void* valuePtr = fieldData.ValuePtr;
 
 				switch (fieldData.Type)
 				{
-				case ScriptFieldType::Float:
-					fieldJ["Value"] = *(float*)fieldData.ValuePtr;
-					break;
-				case ScriptFieldType::Float2:
-				{
-					const glm::vec2& data = *(glm::vec2*)fieldData.ValuePtr;
-					fieldJ["Value"] = { data.x, data.y };
-					break;
+				case ScriptFieldType::Float:  fieldJson = *(float*)valuePtr; break;
+				case ScriptFieldType::Float2: fieldJson = *(glm::vec2*)valuePtr; break;
+				case ScriptFieldType::Float3: fieldJson = *(glm::vec3*)valuePtr; break;
+				case ScriptFieldType::Float4: fieldJson = *(glm::vec4*)valuePtr; break;
+				case ScriptFieldType::Int:    fieldJson = *(int*)valuePtr; break;
+				case ScriptFieldType::Int2:   fieldJson = *(glm::ivec2*)valuePtr; break;
+				case ScriptFieldType::Int3:   fieldJson = *(glm::ivec3*)valuePtr; break;
+				case ScriptFieldType::Int4:   fieldJson = *(glm::ivec4*)valuePtr; break;
+				case ScriptFieldType::Bool:   fieldJson = *(bool*)valuePtr; break;
+				case ScriptFieldType::String: fieldJson = *(std::string*)valuePtr; break;
 				}
-				case ScriptFieldType::Float3:
-				{
-					const glm::vec3& data = *(glm::vec3*)fieldData.ValuePtr;
-					fieldJ["Value"] = { data.x, data.y, data.z };
-					break;
-				}
-				case ScriptFieldType::Float4:
-				{
-					const glm::vec4& data = *(glm::vec4*)fieldData.ValuePtr;
-					fieldJ["Value"] = { data.x, data.y, data.z, data.a };
-					break;
-				}
-				case ScriptFieldType::Int:
-					fieldJ["Value"] = *(int*)fieldData.ValuePtr;
-					break;
-				case ScriptFieldType::Int2:
-				{
-					const glm::ivec2& data = *(glm::ivec2*)fieldData.ValuePtr;
-					fieldJ["Value"] = { data.x, data.y };
-					break;
-				}
-				case ScriptFieldType::Int3:
-				{
-					const glm::ivec3& data = *(glm::ivec3*)fieldData.ValuePtr;
-					fieldJ["Value"] = { data.x, data.y, data.z };
-					break;
-				}
-				case ScriptFieldType::Int4:
-				{
-					const glm::ivec4& data = *(glm::ivec4*)fieldData.ValuePtr;
-					fieldJ["Value"] = { data.x, data.y, data.z, data.a };
-					break;
-				}
-				case ScriptFieldType::Bool:
-					fieldJ["Value"] = *(bool*)fieldData.ValuePtr;
-					break;
-				case ScriptFieldType::String:
-					fieldJ["Value"] = *(std::string*)fieldData.ValuePtr;
-					break;
-				}
-
-				scriptJ["Fields"].push_back(fieldJ);
 			}
 
-			j.push_back(scriptJ);
+			j.push_back(scriptJson);
 		}
 	}
 
@@ -668,47 +602,26 @@ namespace proton {
 			if (script == nullptr || !scriptJson.contains("Fields"))
 				continue;
 
-			for (auto& field : scriptJson["Fields"])
+			for (auto& [fieldName, fieldValue] : scriptJson["Fields"].items())
 			{
-				std::string fieldName = field["FieldName"];
 				if (script->m_ScriptFields.find(fieldName) == script->m_ScriptFields.end())
 					continue;
 
-				ScriptField& scriptField = script->m_ScriptFields[fieldName];
-				const json& value = field["Value"];
+				const ScriptField& scriptField = script->m_ScriptFields[fieldName];
+				void* valuePtr = scriptField.ValuePtr;
 
 				switch (scriptField.Type)
 				{
-				case ScriptFieldType::Float:
-					*(float*)scriptField.ValuePtr = value;
-					break;
-				case ScriptFieldType::Float2:
-					*(glm::vec2*)scriptField.ValuePtr = { value[0], value[1] };
-					break;
-				case ScriptFieldType::Float3:
-					*(glm::vec3*)scriptField.ValuePtr = { value[0], value[1], value[2] };
-					break;
-				case ScriptFieldType::Float4:
-					*(glm::vec4*)scriptField.ValuePtr = { value[0], value[1], value[2], value[3] };
-					break;
-				case ScriptFieldType::Int:
-					*(int*)scriptField.ValuePtr = value;
-					break;
-				case ScriptFieldType::Int2:
-					*(glm::ivec2*)scriptField.ValuePtr = { value[0], value[1] };
-					break;
-				case ScriptFieldType::Int3:
-					*(glm::ivec3*)scriptField.ValuePtr = { value[0], value[1], value[2] };
-					break;
-				case ScriptFieldType::Int4:
-					*(glm::ivec4*)scriptField.ValuePtr = { value[0], value[1], value[2], value[3] };
-					break;
-				case ScriptFieldType::Bool:
-					*(bool*)scriptField.ValuePtr = value;
-					break;
-				case ScriptFieldType::String:
-					*(std::string*)scriptField.ValuePtr = value;
-					break;
+				case ScriptFieldType::Float:  *(float*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Float2: *(glm::vec2*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Float3: *(glm::vec3*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Float4: *(glm::vec4*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Int:    *(int*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Int2:   *(glm::ivec2*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Int3:   *(glm::ivec3*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Int4:   *(glm::ivec4*)valuePtr = fieldValue; break;
+				case ScriptFieldType::Bool:   *(bool*)valuePtr = fieldValue; break;
+				case ScriptFieldType::String: *(std::string*)valuePtr = fieldValue; break;
 				}
 			}
 		}

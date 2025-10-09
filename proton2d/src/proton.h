@@ -31,6 +31,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <nlohmann/json.hpp>
 
+#include "Proton/Serialization/JsonGlmAdapters.h"
+
 #ifdef PT_EDITOR
 #include <imgui/imgui.h>
 #endif
