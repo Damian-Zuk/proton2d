@@ -11,7 +11,7 @@
 namespace proton {
 
 	using MetadataComponents = ComponentGroup<
-		IDComponent, TagComponent, RelationshipComponent, TransformComponent
+		TagComponent, IDComponent, PrefabComponent, TransformComponent
 	>;
 
 	using DataComponents = ComponentGroup<
@@ -27,11 +27,11 @@ namespace proton {
 
 	json SceneSerializer::SerializeScene()
 	{
-		PT_CORE_ASSERT(m_Scene, "Invalid Scene");
-		if (!m_Scene)
-			return json();
+		PT_CORE_ASSERT(m_Scene);
+		if (!m_Scene) return json();
 
 		json j;
+		m_State = HierarchyTraversalState();
 
 		j["GameModeClass"] = m_Scene->m_GameModeClassName; 
 		j["EnableNetworking"] = m_Scene->m_EnableNetworking; 
@@ -45,10 +45,9 @@ namespace proton {
 		const glm::vec4& col = m_Scene->m_ClearColor;
 		j["ScreenClearColor"] = { col.r, col.g, col.b, col.a };
 
-		if (Entity primaryCameraEntity = m_Scene->GetPrimaryCameraEntity())
+		if (Entity entity = m_Scene->GetPrimaryCameraEntity())
 		{
-			uint64_t id = primaryCameraEntity.GetUUID();
-			j["PrimaryCameraEntity"] = id;
+			j["PrimaryCameraEntity"] = entity.GetUUID();
 		}
 
 		for (Entity entity : m_Scene->m_Root)
@@ -56,16 +55,15 @@ namespace proton {
 			json entityJson = SerializeEntity(entity);
 			j["Entities"].push_back(entityJson);
 		}
-
-		ResetHierarchyState();
 		return j;
 	}
 
 	bool SceneSerializer::DeserializeScene(const json& j)
 	{
-		PT_CORE_ASSERT(m_Scene, "Invalid Scene");
-		if (!m_Scene)
-			return false;
+		PT_CORE_ASSERT(m_Scene);
+		if (!m_Scene) return false;
+
+		m_State = HierarchyTraversalState();
 
 		m_Scene->SetGameModeByClassName(j["GameModeClass"]);
 		m_Scene->m_EnablePhysics = j["EnablePhysics"];
@@ -87,60 +85,44 @@ namespace proton {
 
 		if (j.contains("PrimaryCameraEntity"))
 		{
-			UUID id = j["PrimaryCameraEntity"];
-			m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(id));
+			UUID uuid = j["PrimaryCameraEntity"];
+			m_Scene->SetPrimaryCameraEntity(m_Scene->FindByID(uuid));
 		}
 
 		m_Scene->CalculateWorldPositions();
-
-		ResetHierarchyState();
 		return true;
 	}
 
-	void SceneSerializer::ResetHierarchyState()
+	void SceneSerializer::UpdateHierarchyTraversalState()
 	{
-		m_ParentPrefabLevel = None;
-		m_HierarchyLevel = 0;
-		m_NestedPrefabs = 0;
-	}
-
-	void SceneSerializer::UpdateHierarchyState(Entity entity)
-	{
-		if (entity.HasComponent<PrefabComponent>())
+		auto& s = m_State;
+		if (s.IsCurrentPrefab)
 		{
-			if (m_ParentPrefabLevel > 0 && m_HierarchyLevel > m_ParentPrefabLevel)
-				m_NestedPrefabs++;
-			m_ParentPrefabLevel = m_HierarchyLevel;
+			if (s.ParentPrefabLevel > 0 && s.HierarchyLevel > s.ParentPrefabLevel)
+				s.IsNestedPrefab = true;
+			s.ParentPrefabLevel = s.HierarchyLevel;
 		}
-		m_HierarchyLevel++;
+		s.HierarchyLevel++;
 	}
 
-	inline bool SceneSerializer::AreComponentsSerialized(bool isPrefabEntity) const
+	inline bool SceneSerializer::AreDataComponentsSerialized() const
 	{
+		auto& s = m_State;
 		switch (Format)
 		{
-		case FormatType::Scene:  return !isPrefabEntity && m_ParentPrefabLevel == None;
-		case FormatType::Prefab: return !isPrefabEntity || m_ParentPrefabLevel == None;
+		case FormatType::Scene:  return !s.IsCurrentPrefab && s.ParentPrefabLevel == -1;
+		case FormatType::Prefab: return s.HierarchyLevel == 0 || (!s.IsCurrentPrefab && !s.IsNestedPrefab);
 		}
 		return false;
 	}
 
 	inline bool proton::SceneSerializer::IsPositionSerialized() const
 	{
+		auto& s = m_State;
 		switch (Format)
 		{
-		case FormatType::Scene:  return m_HierarchyLevel == 0 || m_ParentPrefabLevel == None;
-		case FormatType::Prefab: return m_HierarchyLevel > 0 && m_NestedPrefabs == 0;
-		}
-		return false;
-	}
-
-	inline bool SceneSerializer::IsRotationAndScaleSerialized(bool isPrefabEntity) const
-	{
-		switch (Format)
-		{
-		case FormatType::Scene:  return !isPrefabEntity && m_ParentPrefabLevel == None;
-		case FormatType::Prefab: return m_HierarchyLevel == 0 || (!isPrefabEntity && m_NestedPrefabs == 0);
+		case FormatType::Scene:  return s.HierarchyLevel == 0 || s.ParentPrefabLevel == -1;
+		case FormatType::Prefab: return s.HierarchyLevel > 0 && !s.IsNestedPrefab;
 		}
 		return false;
 	}
@@ -149,109 +131,66 @@ namespace proton {
 	{
 		json j;
 
-		const auto& id = entity.GetComponent<IDComponent>();
-		const bool isPrefabEntity = entity.HasComponent<PrefabComponent>();
-		UUID prefabUUID = isPrefabEntity ? entity.GetComponent<PrefabComponent>().PrefabUUID : 0;
+		m_State.IsCurrentPrefab = entity.HasComponent<PrefabComponent>();
 
-		j["Tag"] = entity.GetTag();
+		TrySerialize(MetadataComponents{}, entity, j, true);
 
-		if (Format == FormatType::Scene)
+		if (AreDataComponentsSerialized())
 		{
-			j["UUID"] = (uint64_t)id.ID;
-			if (m_ParentPrefabLevel != None)
-			{
-				j["PrefabChildRefUUID"] = (uint64_t)id.PrefabChildRefID;
-			}
-		}
-		else if (Format == FormatType::Prefab)
-		{
-			j["UUID"] = (uint64_t)(m_HierarchyLevel > 0 ? id.PrefabChildRefID : prefabUUID);
+			TrySerialize(DataComponents{}, entity, j);
 		}
 
-		if (isPrefabEntity)
-		{
-			j["PrefabUUID"] = (uint64_t)prefabUUID;
-		}
-
-		TrySerialize<TransformComponent>("Transform", entity, j);
-
-		if (!AreComponentsSerialized(isPrefabEntity))
-		{
-			SerializeChildEntities(entity, j);
-			return j;
-		}
-
-		SerializeComponents(DataComponents{}, entity, j);
 		SerializeChildEntities(entity, j);
+
 		return j;
 	}
 
 	void SceneSerializer::SerializeChildEntities(Entity entity, json& j)
 	{
-		int32_t initialParentLevel = m_ParentPrefabLevel;
-		int32_t initialNestedPrefabs = m_NestedPrefabs;
-		int32_t initialHierarchyLevel = m_HierarchyLevel;
+		const auto savedState = m_State;
+		UpdateHierarchyTraversalState();
 
-		UpdateHierarchyState(entity);
-
-		auto& relationship = entity.GetComponent<RelationshipComponent>();
-		if (relationship.ChildrenCount > 0)
+		auto& hierarchy = entity.GetComponent<RelationshipComponent>();
+		if (hierarchy.ChildrenCount > 0)
 		{
-			entt::entity current = relationship.First;
-			while (current != entt::null)
+			Entity current(hierarchy.First, entity.GetScene());
+			while (current)
 			{
-				Entity child{ current, entity.m_Scene };
-				auto& rc = child.GetComponent<RelationshipComponent>();
-				j["Entities"].push_back(SerializeEntity(child));
-				current = rc.Next;
+				auto& h = current.GetComponent<RelationshipComponent>();
+				j["Entities"].push_back(SerializeEntity(current));
+				current = Entity(h.Next, entity.GetScene());
 			}
 		}
 
-		m_ParentPrefabLevel = initialParentLevel;
-		m_NestedPrefabs = initialNestedPrefabs;
-		m_HierarchyLevel = initialHierarchyLevel;
+		m_State = savedState;
 	}
 
 	Entity SceneSerializer::DeserializeEntity(const json& j, Entity entity)
 	{
-		const bool isPrefabEntity = j.contains("PrefabUUID");
-		const UUID prefabUUID = isPrefabEntity ? (uint64_t)j["PrefabUUID"] : 0;
-
 		if (!entity)
 		{
-			UUID uuid = Format == FormatType::Scene ? (uint64_t)j["UUID"] : UUID();
+			UUID uuid = Format == FormatType::Scene ? j["UUID"] : UUID();
 			entity = m_Scene->CreateEntityWithUUID(uuid);
 		}
 
-		if (Format == FormatType::Scene && m_ParentPrefabLevel != None)
+		m_State.IsCurrentPrefab = j.contains("PrefabUUID");
+
+		TryDeserialize(MetadataComponents{}, entity, j, true);
+
+		if (AreDataComponentsSerialized())
 		{
-			auto& id = entity.GetComponent<IDComponent>();
-			id.PrefabChildRefID = (uint64_t)j["PrefabChildRefUUID"];
-		}
-
-		auto& tag = entity.GetComponent<TagComponent>();
-		tag.Tag = j["Tag"];
-
-		if (isPrefabEntity)
-		{
-			auto& pc = entity.AddOrReplaceComponent<PrefabComponent>();
-			pc.PrefabUUID = prefabUUID;
-		}
-
-		TryDeserialize<TransformComponent>("Transform", entity, j);
-
-		if (!AreComponentsSerialized(isPrefabEntity))
-		{
+			TryDeserialize(DataComponents{}, entity, j);
 			DeserializeChildEntities(entity, j);
-			if (isPrefabEntity)
-			{
-				PrefabManager::DeserializePrefab(entity, prefabUUID);
-			}
+
 			return entity;
 		}
 
-		DeserializeComponents(DataComponents{}, entity, j);
 		DeserializeChildEntities(entity, j);
+		if (m_State.IsCurrentPrefab)
+		{
+			PrefabManager::DeserializePrefab(entity, (UUID)j["PrefabUUID"]);
+		}
+
 		return entity;
 	}
 
@@ -260,14 +199,10 @@ namespace proton {
 		if (!j.contains("Entities"))
 			return;
 
-		int32_t initialParentLevel = m_ParentPrefabLevel;
-		int32_t initialNestedPrefabs = m_NestedPrefabs;
-		int32_t initialHierarchyLevel = m_HierarchyLevel;
-
-		UpdateHierarchyState(entity);
-
-		auto& hierarchy = entity.GetComponent<RelationshipComponent>();
 		const json& entities = j["Entities"];
+
+		const auto savedState = m_State;
+		UpdateHierarchyTraversalState();
 
 		if (Format == FormatType::Scene)
 		{
@@ -279,12 +214,15 @@ namespace proton {
 		}
 		else if (Format == FormatType::Prefab)
 		{
-			std::unordered_map<UUID, Entity> prefabChildToEntityMap;
+			std::unordered_map<UUID, Entity> sceneEntityMap;
+			
+			const auto& hierarchy = entity.GetComponent<RelationshipComponent>();
 			Entity current(hierarchy.First, entity.GetScene());
 			while (current)
 			{
 				auto& id = current.GetComponent<IDComponent>();
-				prefabChildToEntityMap[id.PrefabChildRefID] = current;
+				sceneEntityMap[id.PrefabRefID] = current;
+
 				auto& h = current.GetComponent<RelationshipComponent>();
 				current = Entity(h.Next, entity.GetScene());
 			}
@@ -292,59 +230,103 @@ namespace proton {
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)
 			{
 				const json& data = *it;
-				UUID prefabChildRefUUID = (uint64_t)data["UUID"];
+				UUID prefabRefUUID = data["UUID"];
 
-				if (prefabChildToEntityMap.find(prefabChildRefUUID) != prefabChildToEntityMap.end())
+				if (sceneEntityMap.find(prefabRefUUID) != sceneEntityMap.end())
 				{
-					Entity target = prefabChildToEntityMap[prefabChildRefUUID];
+					Entity target = sceneEntityMap[prefabRefUUID];
 					DeserializeEntity(data, target);
 				}
 				else
 				{
 					Entity child = DeserializeEntity(data);
-					child.GetComponent<IDComponent>().PrefabChildRefID = prefabChildRefUUID;
+					auto& id = child.GetComponent<IDComponent>();
+					id.PrefabRefID = prefabRefUUID;
 					entity.AddChildEntity(child, false);
 				}
 			}
 		}
 
-		m_ParentPrefabLevel = initialParentLevel;
-		m_NestedPrefabs = initialNestedPrefabs;
-		m_HierarchyLevel = initialHierarchyLevel;
+		m_State = savedState;
+	}
+
+	template<>
+	void SceneSerializer::Serialize<IDComponent>(Entity entity, const IDComponent& c, json& j)
+	{
+		if (Format == FormatType::Scene)
+		{
+			j["UUID"] = c.ID;
+			if (m_State.ParentPrefabLevel != -1)
+				j["PrefabRefUUID"] = c.PrefabRefID;
+		}
+		else if (Format == FormatType::Prefab)
+		{
+			if (m_State.HierarchyLevel == 0)
+				j["UUID"] = entity.GetPrefabUUID();
+			else
+				j["UUID"] = c.PrefabRefID;
+		}
+	}
+
+	template<>
+	void SceneSerializer::Deserialize<IDComponent>(Entity entity, IDComponent& c, const json& j)
+	{
+		if (Format == FormatType::Scene && m_State.ParentPrefabLevel != -1)
+			c.PrefabRefID = j["PrefabRefUUID"];
+	}
+
+	template<>
+	void SceneSerializer::Serialize<TagComponent>(Entity entity, const TagComponent& c, json& j)
+	{
+		j["Tag"] = c.Tag;
+	}
+
+	template<>
+	void SceneSerializer::Deserialize<TagComponent>(Entity entity, TagComponent& c, const json& j)
+	{
+		c.Tag = j["Tag"];
+	}
+
+	template<>
+	void SceneSerializer::Serialize<PrefabComponent>(Entity entity, const PrefabComponent& c, json& j)
+	{
+		j["PrefabUUID"] = c.PrefabUUID;
+	}
+
+	template<>
+	void SceneSerializer::Deserialize<PrefabComponent>(Entity entity, PrefabComponent& c, const json& j)
+	{
+		c.PrefabUUID = j["PrefabUUID"];
 	}
 
 	template<>
 	void SceneSerializer::Serialize<TransformComponent>(Entity entity, const TransformComponent& c, json& j)
 	{
-		const bool isPrefabEntity = entity.HasComponent<PrefabComponent>();
-
 		if (IsPositionSerialized())
 		{
 			const glm::vec3& pos = c.LocalPosition;
-			j["Position"] = { pos.x, pos.y, pos.z };
+			j["Transform"]["Position"] = {pos.x, pos.y, pos.z};
 		}
-		if (IsRotationAndScaleSerialized(isPrefabEntity))
+		if (AreDataComponentsSerialized())
 		{
-			j["Rotation"] = c.Rotation;
-			j["Scale"] = { c.Scale.x, c.Scale.y };
+			j["Transform"]["Rotation"] = c.Rotation;
+			j["Transform"]["Scale"] = { c.Scale.x, c.Scale.y };
 		}
 	}
 
 	template<>
 	void SceneSerializer::Deserialize<TransformComponent>(Entity entity, TransformComponent& c, const json& j)
 	{
-		const bool isPrefabEntity = entity.HasComponent<PrefabComponent>();
-
 		if (IsPositionSerialized())
 		{
-			const json& pos = j["Position"];
+			const json& pos = j["Transform"]["Position"];
 			c.WorldPosition = { pos[0], pos[1], pos[2] };
 			c.LocalPosition = { pos[0], pos[1], pos[2] };
 		}
-		if (IsRotationAndScaleSerialized(isPrefabEntity))
+		if (AreDataComponentsSerialized())
 		{
-			const json& scale = j["Scale"];
-			const json& rotation = j["Rotation"];
+			const json& scale = j["Transform"]["Scale"];
+			const json& rotation = j["Transform"]["Rotation"];
 			c.Scale = { scale[0], scale[1] };
 			c.Rotation = rotation;
 		}
@@ -797,69 +779,85 @@ namespace proton {
 		return DeserializeEntityFromString(jsonData);
 	}
 
-	template<typename... TComponent>
-	void SceneSerializer::SerializeComponents(Entity entity, json& j)
-	{
-		([&]() {
-			TrySerialize<TComponent>(TComponent::_ClassName(), entity, j);
-		}(), ...);
-	}
-
-	template<typename ...TComponent>
-	void SceneSerializer::SerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j)
-	{
-		SerializeComponents<TComponent...>(entity, j);
-	}
-
-	template<typename... TComponent>
-	void SceneSerializer::DeserializeComponents(Entity entity, const json& j)
-	{
-		([&]() {
-			TryDeserialize<TComponent>(TComponent::_ClassName(), entity, j);
-		}(), ...);
-	}
-
-	template<typename ...TComponent>
-	void SceneSerializer::DeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j)
-	{
-		DeserializeComponents<TComponent...>(entity, j);
-	}
-
 	template<typename TComponent>
 	void SceneSerializer::Serialize(Entity entity, const TComponent& c, json& j)
 	{
-		static_assert(sizeof(TComponent) == 0); // Missing method definition
+		static_assert(sizeof(TComponent) == 0);
 	}
 
 	template<typename TComponent>
 	void SceneSerializer::Deserialize(Entity entity, TComponent& c, const json& j)
 	{
-		static_assert(sizeof(TComponent) == 0); // Missing method definition
+		static_assert(sizeof(TComponent) == 0);
 	}
 
 	template<typename TComponent>
-	inline void SceneSerializer::TrySerialize(std::string_view key, Entity entity, json& j)
+	inline void SceneSerializer::TrySerialize(std::string_view key, Entity entity, json& j, bool useRootObject)
 	{
 		if (entity.HasComponent<TComponent>())
 		{
 			const auto& component = entity.GetComponent<TComponent>();
-			Serialize<TComponent>(entity, component, j[key]);
 
-			if (j[key].is_null())
-				j.erase(key);
+			if (!useRootObject)
+			{
+				Serialize<TComponent>(entity, component, j[key]);
+				if (j[key].is_null())
+					j.erase(key);
+			}
+			else
+				Serialize<TComponent>(entity, component, j);
 		}
 	}
 
 	template<typename TComponent>
-	inline void SceneSerializer::TryDeserialize(std::string_view key, Entity entity, const json& j)
+	inline void SceneSerializer::TryDeserialize(std::string_view key, Entity entity, const json& j, bool useRootObject)
 	{
-		if (j.contains(key))
+		if (j.contains(key) || useRootObject)
 		{
+			if constexpr (std::is_base_of<PrefabComponent, TComponent>())
+			{
+				if (!j.contains("PrefabUUID"))
+					return;
+			}
+
 			TComponent* component = entity.HasComponent<TComponent>() ?
 				&entity.GetComponent<TComponent>() : &entity.AddComponent<TComponent>();
 
-			Deserialize<TComponent>(entity, *component, j[key]);
+			if (!useRootObject)
+				Deserialize<TComponent>(entity, *component, j[key]);
+			else
+				Deserialize<TComponent>(entity, *component, j);
 		}
+	}
+
+	template<typename... TComponent>
+	void SceneSerializer::TrySerialize(Entity entity, json& j, bool useRootObject)
+	{
+		([&]() 
+		{
+			TrySerialize<TComponent>(TComponent::_ClassName(), entity, j, useRootObject);
+		}(), ...);
+	}
+
+	template<typename... TComponent>
+	void SceneSerializer::TryDeserialize(Entity entity, const json& j, bool useRootObject)
+	{
+		([&]() 
+		{
+			TryDeserialize<TComponent>(TComponent::_ClassName(), entity, j, useRootObject);
+		}(), ...);
+	}
+
+	template<typename ...TComponent>
+	void SceneSerializer::TrySerialize(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject)
+	{
+		TrySerialize<TComponent...>(entity, j, useRootObject);
+	}
+
+	template<typename ...TComponent>
+	void SceneSerializer::TryDeserialize(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject)
+	{
+		TryDeserialize<TComponent...>(entity, j, useRootObject);
 	}
 
 }

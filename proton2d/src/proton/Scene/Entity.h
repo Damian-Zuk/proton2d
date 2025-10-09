@@ -86,7 +86,8 @@ namespace proton {
 
 			auto& component = GetComponent<ScriptComponent>();
 			const std::string& className = TScriptClass::__ScriptClassName;
-			PT_CORE_ASSERT(component.Scripts.find(className) == component.Scripts.end(), "The script is already attached to an Entity!");
+			if (component.Scripts.find(className) != component.Scripts.end())
+				delete component.Scripts[className];
 
 			EntityScript*& scriptInstance = component.Scripts[className];
 			scriptInstance = new TScriptClass();
@@ -138,6 +139,7 @@ namespace proton {
 		Scene* GetScene() const;
 		GameModeBase* GetGameMode() const;
 		UUID GetUUID() const;
+		UUID GetPrefabUUID() const;
 		const std::string& GetTag() const;
 		TransformComponent& GetTransform() const;
 		Sprite& GetSprite() const;

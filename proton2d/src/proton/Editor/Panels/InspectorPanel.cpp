@@ -166,9 +166,9 @@ namespace proton {
 		strcpy_s(tempBuff1, idStr.c_str());
 		ImGui::Text("UUID"); ImGui::SameLine();
 		ImGui::InputText("##uuid", tempBuff1, idStr.length(), ImGuiInputTextFlags_ReadOnly);
-		if (id.PrefabChildRefID != 0)
+		if (id.PrefabRefID != 0)
 		{
-			std::string idStr2 = std::to_string(id.PrefabChildRefID);
+			std::string idStr2 = std::to_string(id.PrefabRefID);
 			char tempBuff2[128];
 			strcpy_s(tempBuff2, idStr2.c_str());
 			ImGui::Text("PFID"); ImGui::SameLine();

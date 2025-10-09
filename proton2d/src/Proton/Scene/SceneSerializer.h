@@ -39,44 +39,45 @@ namespace proton {
 		void SetScene(Scene* scene) { m_Scene = scene; }
 		
 	private:
-		void ResetHierarchyState();
-		void UpdateHierarchyState(Entity entity);
+		void UpdateHierarchyTraversalState();
 
-		inline bool AreComponentsSerialized(bool isPrefabEntity) const;
-		inline bool IsPositionSerialized() const;
-		inline bool IsRotationAndScaleSerialized(bool isPrefabEntity) const;
+		bool AreDataComponentsSerialized() const;
+		bool IsPositionSerialized() const;
 
 		void SerializeChildEntities(Entity entity, json& j);
 		void DeserializeChildEntities(Entity entity, const json& j);
-
-		template<typename... TComponent>
-		void DeserializeComponents(Entity entity, const json& j);
-		template<typename... TComponent>
-		void DeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j);
-
-		template<typename... TComponent>
-		void SerializeComponents(Entity entity, json& j);
-		template<typename... TComponent>
-		void SerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j);
-
-		template<typename TComponent>
-		void TrySerialize(std::string_view key, Entity entity, json& j);
-		template<typename TComponent>
-		void TryDeserialize(std::string_view key, Entity entity, const json& j);
 
 		template<typename TComponent>
 		void Serialize(Entity entity, const TComponent& c, json& j);
 		template<typename TComponent>
 		void Deserialize(Entity entity, TComponent& c, const json& j);
 
+		template<typename TComponent>
+		void TrySerialize(std::string_view key, Entity entity, json& j, bool useRootObject = false);
+		template<typename TComponent>
+		void TryDeserialize(std::string_view key, Entity entity, const json& j, bool useRootObject = false);
+
+		template<typename... TComponent>
+		void TrySerialize(Entity entity, json& j, bool useRootObject = false);
+		template<typename... TComponent>
+		void TryDeserialize(Entity entity, const json& j, bool useRootObject = false);
+
+		template<typename... TComponent>
+		void TrySerialize(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject = false);
+		template<typename... TComponent>
+		void TryDeserialize(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject = false);
+
 	private:
 		Scene* m_Scene;
 
-		// State for hierarchy traversal tracking
-		enum { None = -1 };
-		int32_t m_ParentPrefabLevel = None;
-		int32_t m_HierarchyLevel = 0;
-		int32_t m_NestedPrefabs = 0;
+		struct HierarchyTraversalState
+		{
+			int32_t HierarchyLevel = 0;
+			int32_t ParentPrefabLevel = -1;
+			bool IsCurrentPrefab = false;
+			bool IsNestedPrefab = false;
+
+		} m_State;
 	};
 
 }

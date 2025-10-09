@@ -10,6 +10,8 @@ namespace proton {
 		UUID(const UUID&) = default;
 
 		operator uint64_t() const { return m_UUID; }
+		operator json() const { return (uint64_t)m_UUID; }
+		UUID operator=(const json& j) { m_UUID = (uint64_t)j; return m_UUID; }
 	private:
 		uint64_t m_UUID;
 	};

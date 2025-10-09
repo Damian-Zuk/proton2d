@@ -184,6 +184,11 @@ namespace proton
 		return GetComponent<IDComponent>().ID;
 	}
 
+	UUID Entity::GetPrefabUUID() const
+	{
+		return GetComponent<PrefabComponent>().PrefabUUID;
+	}
+
 	const std::string& Entity::GetTag() const
 	{
 		return GetComponent<TagComponent>().Tag;
