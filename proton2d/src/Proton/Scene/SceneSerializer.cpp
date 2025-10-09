@@ -236,6 +236,7 @@ namespace proton {
 				{
 					Entity target = sceneEntityMap[prefabRefUUID];
 					DeserializeEntity(data, target);
+					sceneEntityMap.erase(prefabRefUUID);
 				}
 				else
 				{
@@ -244,6 +245,11 @@ namespace proton {
 					id.PrefabRefID = prefabRefUUID;
 					entity.AddChildEntity(child, false);
 				}
+			}
+
+			for (const auto& [refUUID, entity] : sceneEntityMap)
+			{
+				m_Scene->DestroyEntity(entity);
 			}
 		}
 

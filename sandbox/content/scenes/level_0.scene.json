@@ -354,6 +354,12 @@
                     "Entities": [
                         {
                             "Tag": "Wooden Box",
+                            "UUID": 16775143149203862629,
+                            "PrefabRefUUID": 4239654012445714095,
+                            "PrefabUUID": 15395898022612884793
+                        },
+                        {
+                            "Tag": "Wooden Box",
                             "UUID": 14975370700984872401,
                             "PrefabRefUUID": 8198116323472517885,
                             "PrefabUUID": 15395898022612884793

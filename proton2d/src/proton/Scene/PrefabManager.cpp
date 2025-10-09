@@ -100,6 +100,18 @@ namespace proton {
 		file.close();
 		
 		AddPrefabToStorage(jsonData, tag);
+
+		Scene* scene = entity.GetScene();
+		auto view = scene->GetAllEntitiesWith<PrefabComponent>();
+		for (entt::entity e : view)
+		{
+			const auto& prefab = view.get<PrefabComponent>(e);
+			if (prefab.PrefabUUID == entity.GetPrefabUUID())
+			{
+				DeserializePrefab(Entity(e, scene), prefab.PrefabUUID);
+			}
+		}
+
 	}
 
 	bool PrefabManager::LoadPrefab(const std::string& prefabPath)

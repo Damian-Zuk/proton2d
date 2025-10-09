@@ -24,7 +24,7 @@ namespace proton {
 		bool DeserializeScene(const json& j);
 
 		json SerializeEntity(Entity entity);
-		Entity DeserializeEntity(const json& data, Entity entity = Entity());
+		Entity DeserializeEntity(const json& j, Entity entity = Entity());
 
 		std::string SerializeSceneToString();
 		bool SerializeSceneToFile(std::string_view filepath);
