@@ -9,7 +9,7 @@
             1.0
         ]
     },
-    "ResizableSpriteComponent": {
+    "ResizableSprite": {
         "Width": 3,
         "Height": 1,
         "TileScale": 1.0,
@@ -30,7 +30,7 @@
         ],
         "Spritesheet": "level-sheet.png"
     },
-    "RigidbodyComponent": {
+    "Rigidbody": {
         "Type": 0,
         "LinearDamping": 0.0,
         "AngularDamping": 0.0,
@@ -39,7 +39,7 @@
         "FixedRotation": false,
         "AttachToParent": false
     },
-    "BoxColliderComponent": {
+    "BoxCollider": {
         "Size": [
             0.9399999976158142,
             0.30000001192092896

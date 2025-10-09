@@ -30,422 +30,26 @@
             "Entities": [
                 {
                     "Tag": "Box Pyramid",
-                    "UUID": 11852288882689726611,
+                    "UUID": 4535124196161850221,
                     "PrefabUUID": 14944450881489412473,
                     "Transform": {
                         "Position": [
-                            -128.18618774414063,
-                            -3.7405900955200195,
+                            -21.095401763916016,
+                            -4.380776405334473,
                             0.0
                         ]
                     },
                     "Entities": [
                         {
                             "Tag": "Wooden Box",
-                            "UUID": 12519278550359084003,
-                            "PrefabRefUUID": 4239654012445714095,
+                            "UUID": 13129301704904321549,
+                            "PrefabRefUUID": 12039725075916828850,
                             "PrefabUUID": 15395898022612884793
                         },
                         {
                             "Tag": "Wooden Box",
-                            "UUID": 4894341168066824017,
-                            "PrefabRefUUID": 16054286326579814253,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 11440943940628710779,
-                            "PrefabRefUUID": 18437960779852631115,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 8124338177864275540,
-                            "PrefabRefUUID": 9779524196795174423,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 2131706156647895163,
-                            "PrefabRefUUID": 5650381520585859007,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 17678067811688768790,
-                            "PrefabRefUUID": 14295540283147766439,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 10317980144529441572,
-                            "PrefabRefUUID": 15623579572640143797,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 15307433482259760117,
-                            "PrefabRefUUID": 2760781907591879848,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 3389609952954701575,
-                            "PrefabRefUUID": 4976540522339997349,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 12088441026357829670,
-                            "PrefabRefUUID": 10916663800844212727,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 10346361670625033918,
-                            "PrefabRefUUID": 2414184178049665446,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 5204978003733753565,
-                            "PrefabRefUUID": 3139253117844094557,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 10501583426411370948,
-                            "PrefabRefUUID": 936212308706154361,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 10819098843406072121,
-                            "PrefabRefUUID": 330300088358430281,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 3835205888972082738,
-                            "PrefabRefUUID": 8198116323472517885,
-                            "PrefabUUID": 15395898022612884793
-                        }
-                    ]
-                },
-                {
-                    "Tag": "Box Pyramid",
-                    "UUID": 5163605017500888863,
-                    "PrefabUUID": 14944450881489412473,
-                    "Transform": {
-                        "Position": [
-                            -71.19264221191406,
-                            7.508130073547363,
-                            0.0
-                        ]
-                    },
-                    "Entities": [
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 12350843071153017937,
-                            "PrefabRefUUID": 8198116323472517885,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 6489184127373705787,
-                            "PrefabRefUUID": 330300088358430281,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 9770146699589572234,
-                            "PrefabRefUUID": 936212308706154361,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 8920376875177755817,
-                            "PrefabRefUUID": 3139253117844094557,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 3600112848115247461,
-                            "PrefabRefUUID": 2414184178049665446,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 8128628479418115421,
-                            "PrefabRefUUID": 10916663800844212727,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 10427617846969010086,
-                            "PrefabRefUUID": 4976540522339997349,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 11148426866170368156,
-                            "PrefabRefUUID": 2760781907591879848,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 7344382892305214746,
-                            "PrefabRefUUID": 15623579572640143797,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 16326996760904427108,
-                            "PrefabRefUUID": 14295540283147766439,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 5599825120600567781,
-                            "PrefabRefUUID": 5650381520585859007,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 4200207184888868289,
-                            "PrefabRefUUID": 9779524196795174423,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 11688357253703020007,
-                            "PrefabRefUUID": 18437960779852631115,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 2610147168101004486,
-                            "PrefabRefUUID": 16054286326579814253,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 8656516132921895198,
-                            "PrefabRefUUID": 4239654012445714095,
-                            "PrefabUUID": 15395898022612884793
-                        }
-                    ]
-                },
-                {
-                    "Tag": "Box Pyramid",
-                    "UUID": 2686487430344129101,
-                    "PrefabUUID": 14944450881489412473,
-                    "Transform": {
-                        "Position": [
-                            -43.3315315246582,
-                            -3.840590000152588,
-                            0.0
-                        ]
-                    },
-                    "Entities": [
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 7888032620884762933,
-                            "PrefabRefUUID": 4239654012445714095,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 17301317102767401853,
-                            "PrefabRefUUID": 16054286326579814253,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 6738650648501793485,
-                            "PrefabRefUUID": 18437960779852631115,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 2351155580611930064,
-                            "PrefabRefUUID": 9779524196795174423,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 8856424111422254264,
-                            "PrefabRefUUID": 5650381520585859007,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 5570281052814646188,
-                            "PrefabRefUUID": 14295540283147766439,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 16830945005143675686,
-                            "PrefabRefUUID": 15623579572640143797,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 17732250995762894313,
-                            "PrefabRefUUID": 2760781907591879848,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 9648570431274429499,
-                            "PrefabRefUUID": 4976540522339997349,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 2744426060824551094,
-                            "PrefabRefUUID": 10916663800844212727,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 11679998880848273711,
-                            "PrefabRefUUID": 2414184178049665446,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 3855389170610265761,
-                            "PrefabRefUUID": 3139253117844094557,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 11122497869799441211,
-                            "PrefabRefUUID": 936212308706154361,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 13302585652046234202,
-                            "PrefabRefUUID": 330300088358430281,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 5762816893022949784,
-                            "PrefabRefUUID": 8198116323472517885,
-                            "PrefabUUID": 15395898022612884793
-                        }
-                    ]
-                },
-                {
-                    "Tag": "Box Pyramid",
-                    "UUID": 152654673107664238,
-                    "PrefabUUID": 14944450881489412473,
-                    "Transform": {
-                        "Position": [
-                            -14.536970138549805,
-                            -3.789829969406128,
-                            0.0
-                        ]
-                    },
-                    "Entities": [
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 16775143149203862629,
-                            "PrefabRefUUID": 4239654012445714095,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 14975370700984872401,
-                            "PrefabRefUUID": 8198116323472517885,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 2848827824363517873,
-                            "PrefabRefUUID": 330300088358430281,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 624559937547604025,
-                            "PrefabRefUUID": 936212308706154361,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 4992845394522244077,
-                            "PrefabRefUUID": 3139253117844094557,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 9561608043267372732,
-                            "PrefabRefUUID": 2414184178049665446,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 9702191246899596351,
-                            "PrefabRefUUID": 10916663800844212727,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 10829876911321415816,
-                            "PrefabRefUUID": 4976540522339997349,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 2943849900486336443,
-                            "PrefabRefUUID": 2760781907591879848,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 12203914539670758407,
-                            "PrefabRefUUID": 15623579572640143797,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 13583236901203018982,
-                            "PrefabRefUUID": 14295540283147766439,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 8037672980813685604,
-                            "PrefabRefUUID": 5650381520585859007,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 1523677433059415693,
-                            "PrefabRefUUID": 9779524196795174423,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 13631409062557465712,
-                            "PrefabRefUUID": 18437960779852631115,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 13810993141008939637,
-                            "PrefabRefUUID": 16054286326579814253,
-                            "PrefabUUID": 15395898022612884793
-                        },
-                        {
-                            "Tag": "Wooden Box",
-                            "UUID": 18271948134637329405,
-                            "PrefabRefUUID": 4239654012445714095,
+                            "UUID": 14809283300236919447,
+                            "PrefabRefUUID": 15005085239837095270,
                             "PrefabUUID": 15395898022612884793
                         }
                     ]
@@ -657,7 +261,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 200,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -678,7 +282,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -687,7 +291,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9980000257492065,
                             0.8270000219345093
@@ -719,7 +323,7 @@
                             1.7000000476837158
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 6,
                         "Height": 2,
                         "TileScale": 1.0,
@@ -740,7 +344,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -749,7 +353,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9399999976158142,
                             0.5600000023841858
@@ -781,7 +385,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 16,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -802,7 +406,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -811,7 +415,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9769999980926514,
                             0.8700000047683716
@@ -843,7 +447,7 @@
                             11.279999732971191
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 3,
                         "Height": 12,
                         "TileScale": 1.0,
@@ -864,7 +468,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -873,7 +477,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9399999976158142,
                             0.9599999785423279
@@ -905,7 +509,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 3,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -926,7 +530,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -935,7 +539,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9399999976158142,
                             0.8999999761581421
@@ -967,7 +571,7 @@
                             2.490000009536743
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 5,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -988,7 +592,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -997,7 +601,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9900000095367432,
                             0.9100000262260437
@@ -1029,7 +633,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 30,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1050,7 +654,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1059,7 +663,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9900000095367432,
                             0.8399999737739563
@@ -1091,7 +695,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 20,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1112,7 +716,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1121,7 +725,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9760000109672546,
                             0.8730000257492065
@@ -1153,7 +757,7 @@
                             3.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 10,
                         "Height": 3,
                         "TileScale": 1.0,
@@ -1174,7 +778,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1183,7 +787,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9760000109672546,
                             0.8730000257492065
@@ -1215,7 +819,7 @@
                             24.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 3,
                         "Height": 24,
                         "TileScale": 1.0,
@@ -1236,7 +840,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1245,7 +849,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9760000109672546,
                             0.9980000257492065
@@ -1277,7 +881,7 @@
                             24.0
                         ]
                     },
-                    "ResizableSpriteComponent": {
+                    "ResizableSprite": {
                         "Width": 3,
                         "Height": 24,
                         "TileScale": 1.0,
@@ -1298,7 +902,7 @@
                         ],
                         "Spritesheet": "level-sheet.png"
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -1307,7 +911,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             0.9760000109672546,
                             0.984000027179718
@@ -1680,6 +1284,107 @@
                             "PrefabRefUUID": 5022107672066104247
                         }
                     ]
+                }
+            ]
+        },
+        {
+            "Tag": "BG_Jungle",
+            "UUID": 16826734924695373314,
+            "PrefabUUID": 6383938310703728781,
+            "Transform": {
+                "Position": [
+                    -87.13275909423828,
+                    10.153159141540527,
+                    0.0
+                ]
+            },
+            "Entities": [
+                {
+                    "Tag": "bg-1",
+                    "UUID": 15883407872246795584,
+                    "PrefabRefUUID": 12284726750826723804
+                },
+                {
+                    "Tag": "bg-2",
+                    "UUID": 10873320795328089607,
+                    "PrefabRefUUID": 1781000163515116299
+                },
+                {
+                    "Tag": "bg-3",
+                    "UUID": 12391724300195897188,
+                    "PrefabRefUUID": 1618581998629472234
+                },
+                {
+                    "Tag": "bg-4",
+                    "UUID": 216268638164520611,
+                    "PrefabRefUUID": 9694981766443183024
+                },
+                {
+                    "Tag": "bg-5",
+                    "UUID": 12357652536886396948,
+                    "PrefabRefUUID": 5505843171098659658
+                }
+            ]
+        },
+        {
+            "Tag": "RedPlatform",
+            "UUID": 2588730086177098894,
+            "PrefabUUID": 2051654451648116511,
+            "Transform": {
+                "Position": [
+                    -85.0578842163086,
+                    6.784058094024658,
+                    0.0
+                ]
+            }
+        },
+        {
+            "Tag": "IcePlatform",
+            "UUID": 13486597126615491766,
+            "PrefabUUID": 4421438384998480410,
+            "Transform": {
+                "Position": [
+                    5.825994491577148,
+                    1.9188661575317383,
+                    0.0
+                ]
+            }
+        },
+        {
+            "Tag": "Wooden Box",
+            "UUID": 9369979484740560721,
+            "PrefabUUID": 15395898022612884793,
+            "Transform": {
+                "Position": [
+                    12.76776123046875,
+                    4.468103408813477,
+                    0.0
+                ]
+            }
+        },
+        {
+            "Tag": "Box Pyramid",
+            "UUID": 3767146653861746111,
+            "PrefabUUID": 14944450881489412473,
+            "Transform": {
+                "Position": [
+                    5.982870101928711,
+                    6.389834403991699,
+                    0.0
+                ]
+            },
+            "Entities": [
+                {
+                    "Tag": "Wooden Box",
+                    "UUID": 11999706992845691245,
+                    "PrefabRefUUID": 12039725075916828850,
+                    "PrefabUUID": 15395898022612884793
+                },
+                {
+                    "Tag": "Wooden Box",
+                    "UUID": 10165338245576285378,
+                    "PrefabRefUUID": 15005085239837095270,
+                    "PrefabUUID": 15395898022612884793
                 }
             ]
         }

@@ -19,7 +19,7 @@
 namespace proton {
 
 	#define PT_COMPONENT_CLASS(TComponent) \
-		static std::string_view _ClassName() { return #TComponent; }
+		static constexpr std::string_view _ClassName() { return #TComponent; }
 
 	struct IDComponent
 	{

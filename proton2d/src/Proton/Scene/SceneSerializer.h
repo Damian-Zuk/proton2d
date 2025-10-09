@@ -53,19 +53,22 @@ namespace proton {
 		void Deserialize(Entity entity, TComponent& c, const json& j);
 
 		template<typename TComponent>
-		void TrySerialize(std::string_view key, Entity entity, json& j, bool useRootObject = false);
-		template<typename TComponent>
-		void TryDeserialize(std::string_view key, Entity entity, const json& j, bool useRootObject = false);
+		static constexpr std::string_view GetComponentName();
 
-		template<typename... TComponent>
+		template<typename TComponent>
 		void TrySerialize(Entity entity, json& j, bool useRootObject = false);
-		template<typename... TComponent>
+		template<typename TComponent>
 		void TryDeserialize(Entity entity, const json& j, bool useRootObject = false);
 
 		template<typename... TComponent>
-		void TrySerialize(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject = false);
+		void TrySerializeComponents(Entity entity, json& j, bool useRootObject = false);
 		template<typename... TComponent>
-		void TryDeserialize(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject = false);
+		void TryDeserializeComponents(Entity entity, const json& j, bool useRootObject = false);
+
+		template<typename... TComponent>
+		void TrySerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject = false);
+		template<typename... TComponent>
+		void TryDeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject = false);
 
 	private:
 		Scene* m_Scene;

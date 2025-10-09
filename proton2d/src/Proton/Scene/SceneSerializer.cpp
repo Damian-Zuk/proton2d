@@ -15,7 +15,7 @@ namespace proton {
 	>;
 
 	using DataComponents = ComponentGroup<
-		ScriptComponent, NetworkComponent, CameraComponent, SpriteComponent,
+		NetworkComponent, ScriptComponent, CameraComponent, SpriteComponent,
 		ResizableSpriteComponent, CircleRendererComponent, TextComponent,
 		RigidbodyComponent, BoxColliderComponent, CircleColliderComponent
 	>;
@@ -133,11 +133,11 @@ namespace proton {
 
 		m_State.IsCurrentPrefab = entity.HasComponent<PrefabComponent>();
 
-		TrySerialize(MetadataComponents{}, entity, j, true);
+		TrySerializeComponents(MetadataComponents{}, entity, j, true);
 
 		if (AreDataComponentsSerialized())
 		{
-			TrySerialize(DataComponents{}, entity, j);
+			TrySerializeComponents(DataComponents{}, entity, j);
 		}
 
 		SerializeChildEntities(entity, j);
@@ -175,11 +175,11 @@ namespace proton {
 
 		m_State.IsCurrentPrefab = j.contains("PrefabUUID");
 
-		TryDeserialize(MetadataComponents{}, entity, j, true);
+		TryDeserializeComponents(MetadataComponents{}, entity, j, true);
 
 		if (AreDataComponentsSerialized())
 		{
-			TryDeserialize(DataComponents{}, entity, j);
+			TryDeserializeComponents(DataComponents{}, entity, j);
 			DeserializeChildEntities(entity, j);
 
 			return entity;
@@ -270,7 +270,7 @@ namespace proton {
 			if (m_State.HierarchyLevel == 0)
 				j["UUID"] = entity.GetPrefabUUID();
 			else
-				j["UUID"] = c.PrefabRefID;
+				j["UUID"] = c.PrefabRefID ? c.PrefabRefID : c.ID;
 		}
 	}
 
@@ -798,8 +798,20 @@ namespace proton {
 	}
 
 	template<typename TComponent>
-	inline void SceneSerializer::TrySerialize(std::string_view key, Entity entity, json& j, bool useRootObject)
+	static constexpr std::string_view SceneSerializer::GetComponentName()
 	{
+		std::string_view className = TComponent::_ClassName();
+		size_t len = className.find("Component");
+		if (len)
+			return className.substr(0, len);
+		return className;
+	}
+
+	template<typename TComponent>
+	inline void SceneSerializer::TrySerialize(Entity entity, json& j, bool useRootObject)
+	{
+		constexpr std::string_view key = GetComponentName<TComponent>();
+
 		if (entity.HasComponent<TComponent>())
 		{
 			const auto& component = entity.GetComponent<TComponent>();
@@ -816,8 +828,10 @@ namespace proton {
 	}
 
 	template<typename TComponent>
-	inline void SceneSerializer::TryDeserialize(std::string_view key, Entity entity, const json& j, bool useRootObject)
+	inline void SceneSerializer::TryDeserialize(Entity entity, const json& j, bool useRootObject)
 	{
+		constexpr std::string_view key = GetComponentName<TComponent>();
+
 		if (j.contains(key) || useRootObject)
 		{
 			if constexpr (std::is_base_of<PrefabComponent, TComponent>())
@@ -837,33 +851,33 @@ namespace proton {
 	}
 
 	template<typename... TComponent>
-	void SceneSerializer::TrySerialize(Entity entity, json& j, bool useRootObject)
+	void SceneSerializer::TrySerializeComponents(Entity entity, json& j, bool useRootObject)
 	{
 		([&]() 
 		{
-			TrySerialize<TComponent>(TComponent::_ClassName(), entity, j, useRootObject);
+			TrySerialize<TComponent>(entity, j, useRootObject);
 		}(), ...);
 	}
 
 	template<typename... TComponent>
-	void SceneSerializer::TryDeserialize(Entity entity, const json& j, bool useRootObject)
+	void SceneSerializer::TryDeserializeComponents(Entity entity, const json& j, bool useRootObject)
 	{
 		([&]() 
 		{
-			TryDeserialize<TComponent>(TComponent::_ClassName(), entity, j, useRootObject);
+			TryDeserialize<TComponent>(entity, j, useRootObject);
 		}(), ...);
 	}
 
 	template<typename ...TComponent>
-	void SceneSerializer::TrySerialize(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject)
+	void SceneSerializer::TrySerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject)
 	{
-		TrySerialize<TComponent...>(entity, j, useRootObject);
+		TrySerializeComponents<TComponent...>(entity, j, useRootObject);
 	}
 
 	template<typename ...TComponent>
-	void SceneSerializer::TryDeserialize(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject)
+	void SceneSerializer::TryDeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject)
 	{
-		TryDeserialize<TComponent...>(entity, j, useRootObject);
+		TryDeserializeComponents<TComponent...>(entity, j, useRootObject);
 	}
 
 }

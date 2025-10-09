@@ -17,15 +17,15 @@
                 "Position": [
                     0.0,
                     0.0,
-                    -0.104
+                    -0.10400000214576721
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.77778,
+                    1.7777800559997559,
                     1.0
                 ]
             },
-            "ScriptComponent": [
+            "Script": [
                 {
                     "ClassName": "ParallaxBackground",
                     "Fields": [
@@ -40,7 +40,7 @@
                     ]
                 }
             ],
-            "SpriteComponent": {
+            "Sprite": {
                 "Texture": "bg-jungle\\plx-1.png",
                 "FilterMode": 0,
                 "Flip": [
@@ -62,15 +62,15 @@
                 "Position": [
                     0.0,
                     0.0,
-                    -0.103
+                    -0.10300000011920929
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.77778,
+                    1.7777800559997559,
                     1.0
                 ]
             },
-            "ScriptComponent": [
+            "Script": [
                 {
                     "ClassName": "ParallaxBackground",
                     "Fields": [
@@ -85,7 +85,7 @@
                     ]
                 }
             ],
-            "SpriteComponent": {
+            "Sprite": {
                 "Texture": "bg-jungle\\plx-2.png",
                 "FilterMode": 0,
                 "Flip": [
@@ -107,15 +107,15 @@
                 "Position": [
                     0.0,
                     0.0,
-                    -0.102
+                    -0.10199999809265137
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.77778,
+                    1.7777800559997559,
                     1.0
                 ]
             },
-            "ScriptComponent": [
+            "Script": [
                 {
                     "ClassName": "ParallaxBackground",
                     "Fields": [
@@ -130,7 +130,7 @@
                     ]
                 }
             ],
-            "SpriteComponent": {
+            "Sprite": {
                 "Texture": "bg-jungle\\plx-3.png",
                 "FilterMode": 0,
                 "Flip": [
@@ -152,15 +152,15 @@
                 "Position": [
                     0.0,
                     0.0,
-                    -0.101
+                    -0.10100000351667404
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.77778,
+                    1.7777800559997559,
                     1.0
                 ]
             },
-            "ScriptComponent": [
+            "Script": [
                 {
                     "ClassName": "ParallaxBackground",
                     "Fields": [
@@ -175,7 +175,7 @@
                     ]
                 }
             ],
-            "SpriteComponent": {
+            "Sprite": {
                 "Texture": "bg-jungle\\plx-4.png",
                 "FilterMode": 0,
                 "Flip": [
@@ -197,15 +197,15 @@
                 "Position": [
                     0.0,
                     0.0,
-                    -0.1
+                    -0.10000000149011612
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    1.77778,
+                    1.7777800559997559,
                     1.0
                 ]
             },
-            "ScriptComponent": [
+            "Script": [
                 {
                     "ClassName": "ParallaxBackground",
                     "Fields": [
@@ -220,7 +220,7 @@
                     ]
                 }
             ],
-            "SpriteComponent": {
+            "Sprite": {
                 "Texture": "bg-jungle\\plx-5.png",
                 "FilterMode": 0,
                 "Flip": [

@@ -9,7 +9,7 @@
             1.0
         ]
     },
-    "ScriptComponent": [
+    "Script": [
         {
             "ClassName": "TestFrame1Script",
             "Fields": [
@@ -47,9 +47,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            -2.64655,
-                            -1.37074,
-                            0.101
+                            -2.646549940109253,
+                            -1.3707400560379028,
+                            0.10100000351667404
                         ]
                     }
                 },
@@ -59,9 +59,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            3.10969,
-                            -1.44158,
-                            0.101
+                            3.109689950942993,
+                            -1.441580057144165,
+                            0.10100000351667404
                         ]
                     }
                 },
@@ -71,9 +71,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            3.05655,
-                            1.03802,
-                            0.101
+                            3.0565500259399414,
+                            1.0380200147628784,
+                            0.10100000351667404
                         ]
                     }
                 },
@@ -83,9 +83,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            -3.01222,
-                            2.31952,
-                            0.101
+                            -3.0122199058532715,
+                            2.3195199966430664,
+                            0.10100000351667404
                         ]
                     }
                 },
@@ -95,9 +95,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            2.06245,
-                            2.38123,
-                            0.101
+                            2.0624499320983887,
+                            2.381230115890503,
+                            0.10100000351667404
                         ]
                     }
                 },
@@ -107,9 +107,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            -0.95729,
-                            2.00273,
-                            0.101
+                            -0.95728999376297,
+                            2.002729892730713,
+                            0.10100000351667404
                         ]
                     }
                 },
@@ -119,9 +119,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            1.16171,
-                            0.17784,
-                            0.101
+                            1.1617100238800049,
+                            0.177839994430542,
+                            0.10100000351667404
                         ]
                     }
                 },
@@ -131,9 +131,9 @@
                     "PrefabUUID": 8825705037770810944,
                     "Transform": {
                         "Position": [
-                            -1.44139,
-                            -0.31303,
-                            0.101
+                            -1.441390037536621,
+                            -0.3130300045013428,
+                            0.10100000351667404
                         ]
                     }
                 }
@@ -160,17 +160,17 @@
                     "UUID": 1773608715315505895,
                     "Transform": {
                         "Position": [
-                            4.28027,
-                            -0.10884,
+                            4.280270099639893,
+                            -0.10884000360965729,
                             0.0
                         ],
                         "Rotation": -5.0,
                         "Scale": [
-                            0.2,
+                            0.20000000298023224,
                             8.0
                         ]
                     },
-                    "SpriteComponent": {
+                    "Sprite": {
                         "Color": [
                             1.0,
                             1.0,
@@ -178,7 +178,7 @@
                             1.0
                         ]
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -187,7 +187,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             1.0,
                             1.0
@@ -209,17 +209,17 @@
                     "UUID": 14359885674159140304,
                     "Transform": {
                         "Position": [
-                            -4.2863,
-                            -0.10957,
+                            -4.286300182342529,
+                            -0.10956999659538269,
                             0.0
                         ],
                         "Rotation": 5.0,
                         "Scale": [
-                            0.2,
+                            0.20000000298023224,
                             8.0
                         ]
                     },
-                    "SpriteComponent": {
+                    "Sprite": {
                         "Color": [
                             1.0,
                             1.0,
@@ -227,7 +227,7 @@
                             1.0
                         ]
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -236,7 +236,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             1.0,
                             1.0
@@ -259,16 +259,16 @@
                     "Transform": {
                         "Position": [
                             0.0,
-                            3.785,
+                            3.7850000858306885,
                             0.0
                         ],
                         "Rotation": 0.0,
                         "Scale": [
-                            9.2,
-                            0.2
+                            9.199999809265137,
+                            0.20000000298023224
                         ]
                     },
-                    "SpriteComponent": {
+                    "Sprite": {
                         "Color": [
                             1.0,
                             1.0,
@@ -276,7 +276,7 @@
                             1.0
                         ]
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -285,7 +285,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             1.0,
                             1.0
@@ -314,10 +314,10 @@
                         "Rotation": 0.0,
                         "Scale": [
                             8.0,
-                            0.2
+                            0.20000000298023224
                         ]
                     },
-                    "SpriteComponent": {
+                    "Sprite": {
                         "Color": [
                             1.0,
                             1.0,
@@ -325,7 +325,7 @@
                             1.0
                         ]
                     },
-                    "RigidbodyComponent": {
+                    "Rigidbody": {
                         "Type": 0,
                         "LinearDamping": 0.0,
                         "AngularDamping": 0.0,
@@ -334,7 +334,7 @@
                         "FixedRotation": false,
                         "AttachToParent": false
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             1.0,
                             1.0
@@ -364,11 +364,11 @@
                 ],
                 "Rotation": 0.0,
                 "Scale": [
-                    7.7,
-                    0.2
+                    7.699999809265137,
+                    0.20000000298023224
                 ]
             },
-            "NetworkComponent": {
+            "Network": {
                 "SimulateOnClient": true,
                 "SyncMethod": "Interpolation",
                 "CullDistance": 20.0,
@@ -376,7 +376,7 @@
                 "ReconcileThreshold": 0.5,
                 "ReconcileMaxTime": 0.5
             },
-            "RigidbodyComponent": {
+            "Rigidbody": {
                 "Type": 2,
                 "LinearDamping": 0.0,
                 "AngularDamping": 0.0,
@@ -391,25 +391,25 @@
                     "UUID": 15937879237103137291,
                     "Transform": {
                         "Position": [
-                            -1.906,
+                            -1.906000018119812,
                             0.0,
                             0.0
                         ],
                         "Rotation": 15.0,
                         "Scale": [
                             4.0,
-                            0.2
+                            0.20000000298023224
                         ]
                     },
-                    "SpriteComponent": {
+                    "Sprite": {
                         "Color": [
-                            0.50588,
-                            0.71373,
-                            0.53725,
+                            0.5058799982070923,
+                            0.713729977607727,
+                            0.5372499823570251,
                             1.0
                         ]
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             1.0,
                             1.0
@@ -431,25 +431,25 @@
                     "UUID": 13383190383099056429,
                     "Transform": {
                         "Position": [
-                            1.906,
+                            1.906000018119812,
                             0.0,
                             0.0
                         ],
                         "Rotation": -15.0,
                         "Scale": [
                             4.0,
-                            0.2
+                            0.20000000298023224
                         ]
                     },
-                    "SpriteComponent": {
+                    "Sprite": {
                         "Color": [
-                            0.50402,
-                            0.71429,
-                            0.53679,
+                            0.5040199756622314,
+                            0.7142900228500366,
+                            0.5367900133132935,
                             1.0
                         ]
                     },
-                    "BoxColliderComponent": {
+                    "BoxCollider": {
                         "Size": [
                             1.0,
                             1.0
