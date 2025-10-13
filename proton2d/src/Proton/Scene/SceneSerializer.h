@@ -61,14 +61,14 @@ namespace proton {
 		void TryDeserialize(Entity entity, const json& j, bool useRootObject = false);
 
 		template<typename... TComponent>
-		void TrySerializeComponents(Entity entity, json& j, bool useRootObject = false);
+		void SerializeComponents(Entity entity, json& j, bool useRootObject = false);
 		template<typename... TComponent>
-		void TryDeserializeComponents(Entity entity, const json& j, bool useRootObject = false);
+		void DeserializeComponents(Entity entity, const json& j, bool useRootObject = false);
 
 		template<typename... TComponent>
-		void TrySerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject = false);
+		void SerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject = false);
 		template<typename... TComponent>
-		void TryDeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject = false);
+		void DeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject = false);
 
 	private:
 		Scene* m_Scene;

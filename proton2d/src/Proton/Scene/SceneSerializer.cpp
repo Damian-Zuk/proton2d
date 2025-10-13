@@ -102,7 +102,7 @@ namespace proton {
 		s.HierarchyLevel++;
 	}
 
-	inline bool SceneSerializer::AreDataComponentsSerialized() const
+	bool SceneSerializer::AreDataComponentsSerialized() const
 	{
 		auto& s = m_State;
 		switch (Format)
@@ -113,7 +113,7 @@ namespace proton {
 		return false;
 	}
 
-	inline bool proton::SceneSerializer::IsPositionSerialized() const
+	bool SceneSerializer::IsPositionSerialized() const
 	{
 		auto& s = m_State;
 		switch (Format)
@@ -130,11 +130,11 @@ namespace proton {
 
 		m_State.IsCurrentPrefab = entity.HasComponent<PrefabComponent>();
 
-		TrySerializeComponents(MetadataComponents{}, entity, j, true);
+		SerializeComponents(MetadataComponents{}, entity, j, true);
 
 		if (AreDataComponentsSerialized())
 		{
-			TrySerializeComponents(DataComponents{}, entity, j);
+			SerializeComponents(DataComponents{}, entity, j);
 		}
 
 		SerializeChildEntities(entity, j);
@@ -148,15 +148,12 @@ namespace proton {
 		UpdateHierarchyTraversalState();
 
 		auto& hierarchy = entity.GetComponent<RelationshipComponent>();
-		if (hierarchy.ChildrenCount > 0)
+		Entity current(hierarchy.First, m_Scene);
+		while (current)
 		{
-			Entity current(hierarchy.First, entity.GetScene());
-			while (current)
-			{
-				auto& h = current.GetComponent<RelationshipComponent>();
-				j["Entities"].push_back(SerializeEntity(current));
-				current = Entity(h.Next, entity.GetScene());
-			}
+			auto& h = current.GetComponent<RelationshipComponent>();
+			j["Entities"].push_back(SerializeEntity(current));
+			current = Entity(h.Next, m_Scene);
 		}
 
 		m_State = savedState;
@@ -172,11 +169,11 @@ namespace proton {
 
 		m_State.IsCurrentPrefab = j.contains("PrefabUUID");
 
-		TryDeserializeComponents(MetadataComponents{}, entity, j, true);
+		DeserializeComponents(MetadataComponents{}, entity, j, true);
 
 		if (AreDataComponentsSerialized())
 		{
-			TryDeserializeComponents(DataComponents{}, entity, j);
+			DeserializeComponents(DataComponents{}, entity, j);
 			DeserializeChildEntities(entity, j);
 
 			return entity;
@@ -214,14 +211,14 @@ namespace proton {
 			std::unordered_map<UUID, Entity> sceneEntityMap;
 			
 			const auto& hierarchy = entity.GetComponent<RelationshipComponent>();
-			Entity current(hierarchy.First, entity.GetScene());
+			Entity current(hierarchy.First, m_Scene);
 			while (current)
 			{
 				auto& id = current.GetComponent<IDComponent>();
 				sceneEntityMap[id.RefID] = current;
 
 				auto& h = current.GetComponent<RelationshipComponent>();
-				current = Entity(h.Next, entity.GetScene());
+				current = Entity(h.Next, m_Scene);
 			}
 			
 			for (auto it = entities.rbegin(); it != entities.rend(); it++)
@@ -229,25 +226,23 @@ namespace proton {
 				const json& data = *it;
 				UUID prefabRefUUID = data["UUID"];
 
-				if (sceneEntityMap.find(prefabRefUUID) != sceneEntityMap.end())
-				{
-					Entity target = sceneEntityMap[prefabRefUUID];
-					DeserializeEntity(data, target);
-					sceneEntityMap.erase(prefabRefUUID);
-				}
-				else
+				if (sceneEntityMap.find(prefabRefUUID) == sceneEntityMap.end())
 				{
 					Entity child = DeserializeEntity(data);
 					auto& id = child.GetComponent<IDComponent>();
 					id.RefID = prefabRefUUID;
 					entity.AddChildEntity(child, false);
 				}
+				else
+				{
+					Entity target = sceneEntityMap[prefabRefUUID];
+					DeserializeEntity(data, target);
+					sceneEntityMap.erase(prefabRefUUID);
+				}
 			}
 
 			for (const auto& [refUUID, entity] : sceneEntityMap)
-			{
 				m_Scene->DestroyEntity(entity);
-			}
 		}
 
 		m_State = savedState;
@@ -334,19 +329,20 @@ namespace proton {
 	template<>
 	void SceneSerializer::Serialize<SpriteComponent>(Entity entity, const SpriteComponent& c, json& j)
 	{
-		if (c.Sprite)
-		{
-			j["Texture"] = Utils::GetRelativeFilepath("content/textures/", c.Sprite.GetTexture()->GetPath());
-			j["FilterMode"] = c.Sprite.GetTexture()->GetFilterMode();
-			j["Flip"] = c.Sprite.m_MirrorFlip;
-
-			if (c.Sprite.m_Spritesheet)
-			{
-				j["TilePos"] = c.Sprite.m_TilePos;
-				j["TileSize"] = c.Sprite.m_TileSize;
-			}
-		}
 		j["Color"] = c.Color;
+
+		if (!c.Sprite)
+			return;
+
+		j["Texture"] = Utils::GetRelativeFilepath("content/textures/", c.Sprite.GetTexture()->GetPath());
+		j["FilterMode"] = c.Sprite.GetTexture()->GetFilterMode();
+		j["Flip"] = c.Sprite.m_MirrorFlip;
+
+		if (!c.Sprite.m_Spritesheet)
+			return;
+
+		j["TilePos"] = c.Sprite.m_TilePos;
+		j["TileSize"] = c.Sprite.m_TileSize;
 	}
 
 	template<>
@@ -357,19 +353,18 @@ namespace proton {
 		if (!j.contains("Texture"))
 			return;
 
-		std::string texturePath = j["Texture"];
-		const auto& texture = AssetManager::GetTexture(texturePath);
+		const auto& texture = AssetManager::GetTexture(j["Texture"]);
 		if (!texture)
 			return;
 
-		texture->m_FilterMode = j["FilterMode"];
+		texture->SetFilterMode(j["FilterMode"]);
 		c.Sprite.SetTexture(texture);
 		c.Sprite.m_MirrorFlip = j["Flip"];
 
 		if (!j.contains("TilePos"))
 			return;
 
-		const auto& spritesheet = AssetManager::GetSpritesheet(texturePath);
+		const auto& spritesheet = AssetManager::GetSpritesheet(j["Texture"]);
 		if (!spritesheet)
 			return;
 
@@ -714,9 +709,8 @@ namespace proton {
 	static constexpr std::string_view SceneSerializer::GetComponentName()
 	{
 		std::string_view className = TComponent::_ClassName();
-		size_t len = className.find("Component");
-		if (len)
-			return className.substr(0, len);
+		size_t pos = className.find("Component");
+		if (pos) return className.substr(0, pos);
 		return className;
 	}
 
@@ -752,7 +746,7 @@ namespace proton {
 				if (!j.contains("PrefabUUID"))
 					return;
 			}
-
+			
 			TComponent* component = entity.HasComponent<TComponent>() ?
 				&entity.GetComponent<TComponent>() : &entity.AddComponent<TComponent>();
 
@@ -764,7 +758,7 @@ namespace proton {
 	}
 
 	template<typename... TComponent>
-	void SceneSerializer::TrySerializeComponents(Entity entity, json& j, bool useRootObject)
+	void SceneSerializer::SerializeComponents(Entity entity, json& j, bool useRootObject)
 	{
 		([&]() 
 		{
@@ -773,7 +767,7 @@ namespace proton {
 	}
 
 	template<typename... TComponent>
-	void SceneSerializer::TryDeserializeComponents(Entity entity, const json& j, bool useRootObject)
+	void SceneSerializer::DeserializeComponents(Entity entity, const json& j, bool useRootObject)
 	{
 		([&]() 
 		{
@@ -782,15 +776,15 @@ namespace proton {
 	}
 
 	template<typename ...TComponent>
-	void SceneSerializer::TrySerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject)
+	void SceneSerializer::SerializeComponents(ComponentGroup<TComponent...>, Entity entity, json& j, bool useRootObject)
 	{
-		TrySerializeComponents<TComponent...>(entity, j, useRootObject);
+		SerializeComponents<TComponent...>(entity, j, useRootObject);
 	}
 
 	template<typename ...TComponent>
-	void SceneSerializer::TryDeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject)
+	void SceneSerializer::DeserializeComponents(ComponentGroup<TComponent...>, Entity entity, const json& j, bool useRootObject)
 	{
-		TryDeserializeComponents<TComponent...>(entity, j, useRootObject);
+		DeserializeComponents<TComponent...>(entity, j, useRootObject);
 	}
 
 }
