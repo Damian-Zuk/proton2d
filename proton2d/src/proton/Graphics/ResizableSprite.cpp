@@ -20,28 +20,28 @@ namespace proton {
 		};
 
 		m_PixelSize = {
-			m_TransformScale.x * m_CellScale * m_Spritesheet->m_TileSize.x,
-			m_TransformScale.y * m_CellScale * m_Spritesheet->m_TileSize.y
+			m_TransformScale.x * m_CellScale * m_TextureAtlas->m_TileSizePx.x,
+			m_TransformScale.y * m_CellScale * m_TextureAtlas->m_TileSizePx.y
 		};
 
-		auto spritesheetIndexes = CalculateSpritesheetCellIndexPositions();
-		CalculateCellTransforms(spritesheetIndexes);
+		auto textureAtlasIndexes = CalculateTextureAtlasCellIndexPositions();
+		CalculateCellTransforms(textureAtlasIndexes);
 	}
 
 	void ResizableSprite::Render(const glm::mat4& transform, const glm::vec4& color)
 	{
-		if (!m_Spritesheet || m_PixelSize.x == 0 || m_PixelSize.y == 0)
+		if (!m_TextureAtlas || m_PixelSize.x == 0 || m_PixelSize.y == 0)
 			return;
 
 		for (const auto& tile : m_CellTransforms)
 		{
-			Renderer::DrawQuad(transform * tile.LocalTransform, m_Spritesheet->GetTexture(), tile.TextureCoords, color);
+			Renderer::DrawQuad(transform * tile.LocalTransform, m_TextureAtlas->GetTexture(), tile.TextureCoords, color);
 		}
 	}
 
-	void ResizableSprite::SetSpritesheet(const Shared<Spritesheet>& spritesheet)
+	void ResizableSprite::SetTextureAtlas(const Shared<TextureAtlas>& textureAtlas)
 	{
-		m_Spritesheet = spritesheet;
+		m_TextureAtlas = textureAtlas;
 		Generate(m_TransformScale);
 	}
 
@@ -69,7 +69,7 @@ namespace proton {
 		}
 	}
 
-	std::vector<glm::uvec2> ResizableSprite::CalculateSpritesheetCellIndexPositions()
+	std::vector<glm::uvec2> ResizableSprite::CalculateTextureAtlasCellIndexPositions()
 	{
 		std::vector<glm::uvec2> cells;
 
@@ -186,7 +186,7 @@ namespace proton {
 		return cells;
 	}
 
-	void ResizableSprite::CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes)
+	void ResizableSprite::CalculateCellTransforms(const std::vector<glm::uvec2>& textureAtlasIndexes)
 	{
 		auto& cells = m_CellTransforms;
 		cells.resize(m_CellCount.x * m_CellCount.y);
@@ -232,17 +232,17 @@ namespace proton {
 
 		// Calculate offset for texture coords
 		glm::vec2 coordOffset = {
-			m_Spritesheet->m_TileScale.x * offset.x,
-			m_Spritesheet->m_TileScale.x * offset.y
+			m_TextureAtlas->m_TileScale.x * offset.x,
+			m_TextureAtlas->m_TileScale.x * offset.y
 		};
 
 		for (uint32_t y = 0; y < m_CellCount.y; y++)
 		{
 			for (uint32_t x = 0; x < m_CellCount.x; x++)
 			{
-				const glm::uvec2& tp = spritesheetIndexes.at(x + y * m_CellCount.x);
+				const glm::uvec2& tp = textureAtlasIndexes.at(x + y * m_CellCount.x);
 				TextureCoords& textureCoords = cells.at(x + y * m_CellCount.x).TextureCoords;
-				textureCoords = m_Spritesheet->GetTextureCoords(tp.x, tp.y);
+				textureCoords = m_TextureAtlas->GetTextureCoords(tp.x, tp.y);
 
 				// Default position, scale, coords values
 				glm::vec2 scale = { m_CellScale, m_CellScale };

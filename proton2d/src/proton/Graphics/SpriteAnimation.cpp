@@ -20,7 +20,7 @@ namespace proton {
                 return;
 
             auto& sprite = m_OwningEntity->GetSprite();
-            sprite.SetTile(startFrame, index);
+            sprite.SetTileIndex(startFrame, index);
 
             m_CurrentAnimationIndex = index;
             m_CurrentAnimation = &m_Animations[index];
@@ -31,14 +31,14 @@ namespace proton {
     void SpriteAnimation::SetAnimationFrame(uint16_t frame)
     {
         auto& sprite = m_OwningEntity->GetSprite();
-        sprite.SetTile(frame, m_CurrentAnimationIndex);
+        sprite.SetTileIndex(frame, m_CurrentAnimationIndex);
         m_CurrentFrame = frame;
     }
 
     void SpriteAnimation::SetMirrorFlip(bool mirror_x, bool mirror_y)
     {
         auto& sprite = m_OwningEntity->GetSprite();
-        sprite.MirrorFlip(mirror_x, mirror_y);
+        sprite.SetMirrorFlip(mirror_x, mirror_y);
     }
 
     void SpriteAnimation::Replay()
@@ -69,14 +69,14 @@ namespace proton {
             if (m_CurrentAnimation->PlayMode == AnimationPlayMode::REPEAT)
             {
                 m_CurrentFrame %= m_CurrentAnimation->FrameCount;
-                sprite.SetTile(m_CurrentFrame, sprite.GetTilePos().y);
+                sprite.SetTileIndex(m_CurrentFrame, sprite.GetTileIndex().y);
             }
             else // if (m_PlayMode == AnimationPlayMode::PLAY_ONCE)
             {
                 if (m_CurrentFrame < m_CurrentAnimation->FrameCount)
-                    sprite.SetTile(m_CurrentFrame, sprite.GetTilePos().y);
+                    sprite.SetTileIndex(m_CurrentFrame, sprite.GetTileIndex().y);
                 else
-                    sprite.SetTile(0, sprite.GetTilePos().y);
+                    sprite.SetTileIndex(0, sprite.GetTileIndex().y);
             }
 
             m_ElapsedTime = 0.0f;

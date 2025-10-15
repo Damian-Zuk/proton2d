@@ -29,22 +29,22 @@ namespace proton {
 		return texture;
 	}
 
-	Shared<Spritesheet> AssetManager::LoadSpritesheet(const std::string& filepath)
+	Shared<TextureAtlas> AssetManager::LoadTextureAtlas(const std::string& filepath)
 	{
 		auto texture = GetTexture(filepath);
 		if (!texture)
 			return nullptr;
 		
-		auto& spritesheetList = s_Instance->m_SpritesheetList;
-		if (spritesheetList.find(filepath) == spritesheetList.end())
+		auto& textureAtlasList = s_Instance->m_TextureAtlasList;
+		if (textureAtlasList.find(filepath) == textureAtlasList.end())
 		{
-			PT_CORE_ERROR("Spritesheet not found in 'content/spritesheet.json'");
+			PT_CORE_ERROR("TextureAtlas not found in 'content/textureAtlas.json'");
 			return nullptr;
 		}
 
-		const auto& size = spritesheetList.at(filepath);
+		const auto& size = textureAtlasList.at(filepath);
 		//PT_CORE_INFO("file='{}' tile_size=({},{})", filepath, size.x, size.y);
-		return MakeShared<Spritesheet>(texture, size.x, size.y);
+		return MakeShared<TextureAtlas>(texture, size.x, size.y);
 	}
 
 	bool AssetManager::IsTextureLoaded(const std::string& filepath)
@@ -52,9 +52,9 @@ namespace proton {
 		return s_Instance->m_Textures.find(filepath) != s_Instance->m_Textures.end();
 	}
 
-	bool AssetManager::IsSpritesheetLoaded(const std::string& filepath)
+	bool AssetManager::IsTextureAtlasLoaded(const std::string& filepath)
 	{
-		return s_Instance->m_Spritesheets.find(filepath) != s_Instance->m_Spritesheets.end();
+		return s_Instance->m_TextureAtlases.find(filepath) != s_Instance->m_TextureAtlases.end();
 	}
 
 	Shared<Texture> AssetManager::GetTexture(const std::string& filepath)
@@ -71,20 +71,20 @@ namespace proton {
 		return s_Instance->m_Textures.at(filepath);
 	}
 
-	Shared<Spritesheet> AssetManager::GetSpritesheet(const std::string& filepath)
+	Shared<TextureAtlas> AssetManager::GetTextureAtlas(const std::string& filepath)
 	{
-		if (!IsSpritesheetLoaded(filepath))
+		if (!IsTextureAtlasLoaded(filepath))
 		{
-			auto spritesheet = LoadSpritesheet(filepath);
-			if (!spritesheet)
+			auto textureAtlas = LoadTextureAtlas(filepath);
+			if (!textureAtlas)
 			{
-				PT_CORE_ERROR("Spritesheet not found '{}'", filepath);
+				PT_CORE_ERROR("TextureAtlas not found '{}'", filepath);
 				return nullptr;
 			}
-			s_Instance->m_Spritesheets[filepath] = spritesheet;
+			s_Instance->m_TextureAtlases[filepath] = textureAtlas;
 		}
 
-		return s_Instance->m_Spritesheets.at(filepath);
+		return s_Instance->m_TextureAtlases.at(filepath);
 	}
 
 	bool AssetManager::UnloadTexture(const std::string& filepath)
@@ -96,22 +96,22 @@ namespace proton {
 		return true;
 	}
 
-	bool AssetManager::UnloadSpritesheet(const std::string& filepath)
+	bool AssetManager::UnloadTextureAtlas(const std::string& filepath)
 	{
-		if (!IsSpritesheetLoaded(filepath))
+		if (!IsTextureAtlasLoaded(filepath))
 			return false;
 
-		s_Instance->m_Spritesheets.erase(filepath);
+		s_Instance->m_TextureAtlases.erase(filepath);
 		return true;
 	}
 
 	void AssetManager::ReloadAssetsList()
 	{
 		auto& textureList = s_Instance->m_TexturesFilepathList;
-		auto& spritesheetList = s_Instance->m_SpritesheetList;
+		auto& textureAtlasList = s_Instance->m_TextureAtlasList;
 
 		textureList.clear();
-		spritesheetList.clear();
+		textureAtlasList.clear();
 
 		static std::vector<std::string> extensions = { ".bmp", ".png", ".jpg", ".jpeg", ".tga", ".hdr", ".pic", ".psd" };
 
@@ -138,7 +138,7 @@ namespace proton {
 		{
 			std::string filepath = s["file_path"];
 			uint32_t width = s["tile_width"], height = s["tile_height"];
-			spritesheetList[filepath] = glm::uvec2{ width, height };
+			textureAtlasList[filepath] = glm::uvec2{ width, height };
 			textureList.erase(
 				std::remove(textureList.begin(), textureList.end(), filepath),
 				textureList.end()

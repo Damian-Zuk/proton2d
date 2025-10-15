@@ -32,13 +32,13 @@ namespace proton {
 		void Generate(const glm::vec2& transformScale);
 		void Render(const glm::mat4& transform, const glm::vec4& color);
 
-		void SetSpritesheet(const Shared<Spritesheet>& spritesheet);
-		Shared<Spritesheet> GetSpritesheet() const { return m_Spritesheet; }
+		void SetTextureAtlas(const Shared<TextureAtlas>& textureAtlas);
+		Shared<TextureAtlas> GetTextureAtlas() const { return m_TextureAtlas; }
 
 		void SetCellScale(float tileScale);
 		float GetSetScale() const { return m_CellScale; }
 
-		// Set pattern offset position in a source spritesheet
+		// Set pattern offset position in a source textureAtlas
 		// Relative to Bottom Left corner: (0, 0) 
 		void SetPositionOffset(const glm::uvec2& position);
 		const glm::uvec2& GetPositionOffset() const { return m_PatternOffset; };
@@ -48,11 +48,11 @@ namespace proton {
 		uint8_t GetEdgesBitset() const { return m_EdgesBitset; }
 
 	private:
-		std::vector<glm::uvec2> CalculateSpritesheetCellIndexPositions();
-		void CalculateCellTransforms(const std::vector<glm::uvec2>& spritesheetIndexes);
+		std::vector<glm::uvec2> CalculateTextureAtlasCellIndexPositions();
+		void CalculateCellTransforms(const std::vector<glm::uvec2>& textureAtlasIndexes);
 
 	private:
-		Shared<Spritesheet> m_Spritesheet = nullptr;
+		Shared<TextureAtlas> m_TextureAtlas = nullptr;
 
 		float m_CellScale = 1.0f;
 		glm::uvec2 m_PatternSize = { 3, 3 };

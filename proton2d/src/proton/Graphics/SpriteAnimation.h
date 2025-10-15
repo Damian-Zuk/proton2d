@@ -17,9 +17,9 @@ namespace proton {
 	public:
 		SpriteAnimation() = default;
 
-		// index - spritesheet Y tile pos (from image bottom)
+		// index - textureAtlas Y tile pos (from image bottom)
 		void Add(uint16_t index, uint16_t frameCount, AnimationPlayMode playmode = AnimationPlayMode::REPEAT);
-		// index - spritesheet Y tile pos (from image bottom)
+		// index - textureAtlas Y tile pos (from image bottom)
 		void Play(uint16_t index, uint16_t startFrame = 0);
 		
 		void SetAnimationFrame(uint16_t frame);

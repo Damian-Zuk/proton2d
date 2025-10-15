@@ -343,17 +343,17 @@ namespace proton {
 					if (ImGui::Selectable("Fill Color"))
 						sprite.SetTexture(nullptr);
 
-					// Spritesheets
-					for (auto& kv : AssetManager::s_Instance->m_SpritesheetList)
+					// TextureAtlases
+					for (auto& kv : AssetManager::s_Instance->m_TextureAtlasList)
 					{
 						bool isSelected = kv.first == textureFilename;
 						ImGui::PushStyleColor(ImGuiCol_Text, { 0.0f, 0.9f, 0.3f, 1.0f });
 						if (ImGui::Selectable(kv.first.c_str(), isSelected))
 						{
-							auto& spritesheet = AssetManager::GetSpritesheet(kv.first);
-							if (spritesheet)
+							auto& textureAtlas = AssetManager::GetTextureAtlas(kv.first);
+							if (textureAtlas)
 							{
-								sprite = Sprite(spritesheet);
+								sprite = Sprite(textureAtlas);
 								auto& scale = selectedEntity.GetTransform().Scale;
 								float ratio = sprite.GetAspectRatio();
 								if (scale.x / scale.y != ratio)
@@ -430,26 +430,26 @@ namespace proton {
 					ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f);
 				}
 
-				// Check if texture is spritesheet
-				if (sprite && sprite.m_Spritesheet)
+				// Check if texture is textureAtlas
+				if (sprite && sprite.m_TextureAtlas)
 				{
 					ImGui::Dummy({ 0, 5 });
 					ImGui::Separator();
-					ImGui::Text("Spritesheet");
+					ImGui::Text("TextureAtlas");
 					ImGui::Dummy({ 0, 3 });
 
-					glm::ivec2 tilePos = (glm::ivec2)sprite.m_TilePos;
+					glm::ivec2 tilePos = (glm::ivec2)sprite.m_TileIndex;
 					if (ImGui::DragInt2("Tile Coords", glm::value_ptr(tilePos), 1, 0))
 					{
 						if (tilePos.x >= 0 && tilePos.y >= 0)
-							sprite.SetTile(tilePos.x, tilePos.y);
+							sprite.SetTileIndex(tilePos.x, tilePos.y);
 					}
 
 					glm::ivec2 tileSize = (glm::ivec2)sprite.m_TileSize;
 					if (ImGui::DragInt2("Size", glm::value_ptr(tileSize), 0.2f, 1))
 					{
 						if (tileSize.x > 0 && tileSize.y > 0)
-							sprite.SetTileSize((uint32_t)tileSize.x, (uint32_t)tileSize.y);
+							sprite.SetTileCount(tileSize);
 					}
 				}
 			});
@@ -462,23 +462,23 @@ namespace proton {
 		{
 			DrawComponentUI<ResizableSpriteComponent>("ResizableSprite", [&](auto& component)
 				{
-					auto& spritesheet = component.ResizableSprite.m_Spritesheet;
+					auto& textureAtlas = component.ResizableSprite.m_TextureAtlas;
 					auto& sprite = component.ResizableSprite;
-					std::string filename = spritesheet 
-						? GetFilepathRelative(s_TexturesPath, spritesheet->GetTexture()->GetPath())
+					std::string filename = textureAtlas 
+						? GetFilepathRelative(s_TexturesPath, textureAtlas->GetTexture()->GetPath())
 						: "Select...";
 
-					// Select spritesheet
-					if (ImGui::BeginCombo("Spritesheet", filename.c_str()))
+					// Select textureAtlas
+					if (ImGui::BeginCombo("TextureAtlas", filename.c_str()))
 					{
-						for (auto& kv : AssetManager::s_Instance->m_SpritesheetList)
+						for (auto& kv : AssetManager::s_Instance->m_TextureAtlasList)
 						{
 							bool isSelected = filename == kv.first;
 
 							if (ImGui::Selectable(kv.first.c_str(), isSelected))
 							{
-								spritesheet = AssetManager::GetSpritesheet(kv.first);
-								sprite.SetSpritesheet(spritesheet);
+								textureAtlas = AssetManager::GetTextureAtlas(kv.first);
+								sprite.SetTextureAtlas(textureAtlas);
 							}
 
 							if (isSelected)

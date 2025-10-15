@@ -338,10 +338,10 @@ namespace proton {
 		j["FilterMode"] = c.Sprite.GetTexture()->GetFilterMode();
 		j["Flip"] = c.Sprite.m_MirrorFlip;
 
-		if (!c.Sprite.m_Spritesheet)
+		if (!c.Sprite.m_TextureAtlas)
 			return;
 
-		j["TilePos"] = c.Sprite.m_TilePos;
+		j["TilePos"] = c.Sprite.m_TileIndex;
 		j["TileSize"] = c.Sprite.m_TileSize;
 	}
 
@@ -364,20 +364,20 @@ namespace proton {
 		if (!j.contains("TilePos"))
 			return;
 
-		const auto& spritesheet = AssetManager::GetSpritesheet(j["Texture"]);
-		if (!spritesheet)
+		const auto& textureAtlas = AssetManager::GetTextureAtlas(j["Texture"]);
+		if (!textureAtlas)
 			return;
 
-		c.Sprite.SetSpritesheet(spritesheet);
-		c.Sprite.SetTile(j["TilePos"]);
-		c.Sprite.SetTileSize(j["TileSize"]);
+		c.Sprite.SetTextureAtlas(textureAtlas);
+		c.Sprite.SetTileIndex(j["TilePos"]);
+		c.Sprite.SetTileCount(j["TileSize"]);
 	}
 
 	template<>
 	void SceneSerializer::Serialize<ResizableSpriteComponent>(Entity entity, const ResizableSpriteComponent& c, json& j)
 	{
 		auto& sprite = c.ResizableSprite;
-		auto& spritesheet = sprite.GetSpritesheet();
+		auto& textureAtlas = sprite.GetTextureAtlas();
 
 		j["TileScale"] = sprite.m_CellScale;
 		j["Edges"] = sprite.GetEdgesBitset();
@@ -385,8 +385,8 @@ namespace proton {
 		j["PatternSize"] = sprite.m_PatternSize;
 		j["Color"] = c.Color;
 
-		if (spritesheet)
-			j["Spritesheet"] = Utils::GetRelativeFilepath("content/textures/", spritesheet->GetTexture()->GetPath());
+		if (textureAtlas)
+			j["Spritesheet"] = Utils::GetRelativeFilepath("content/textures/", textureAtlas->GetTexture()->GetPath());
 	}
 
 	template<>
@@ -400,9 +400,9 @@ namespace proton {
 		c.Color = j["Color"];
 
 		if (j.contains("Spritesheet"))
-			sprite.m_Spritesheet = AssetManager::GetSpritesheet(j["Spritesheet"]);
+			sprite.m_TextureAtlas = AssetManager::GetTextureAtlas(j["Spritesheet"]);
 
-		auto& transform = entity.GetComponent<TransformComponent>();
+		const auto& transform = entity.GetComponent<TransformComponent>();
 		sprite.Generate(transform.Scale);
 	}
 
@@ -567,18 +567,21 @@ namespace proton {
 				json& fieldJson = scriptJson["Fields"][fieldName];
 				void* valuePtr = fieldData.ValuePtr;
 
+				#define WRITE_FIELD_DATA(EnumType, Type) \
+					case ScriptFieldType::EnumType: fieldJson = *(Type*)valuePtr; break
+
 				switch (fieldData.Type)
 				{
-				case ScriptFieldType::Float:  fieldJson = *(float*)valuePtr; break;
-				case ScriptFieldType::Float2: fieldJson = *(glm::vec2*)valuePtr; break;
-				case ScriptFieldType::Float3: fieldJson = *(glm::vec3*)valuePtr; break;
-				case ScriptFieldType::Float4: fieldJson = *(glm::vec4*)valuePtr; break;
-				case ScriptFieldType::Int:    fieldJson = *(int*)valuePtr; break;
-				case ScriptFieldType::Int2:   fieldJson = *(glm::ivec2*)valuePtr; break;
-				case ScriptFieldType::Int3:   fieldJson = *(glm::ivec3*)valuePtr; break;
-				case ScriptFieldType::Int4:   fieldJson = *(glm::ivec4*)valuePtr; break;
-				case ScriptFieldType::Bool:   fieldJson = *(bool*)valuePtr; break;
-				case ScriptFieldType::String: fieldJson = *(std::string*)valuePtr; break;
+					WRITE_FIELD_DATA(Float, float);
+					WRITE_FIELD_DATA(Float2, glm::vec2);
+					WRITE_FIELD_DATA(Float3, glm::vec3);
+					WRITE_FIELD_DATA(Float4, glm::vec4);
+					WRITE_FIELD_DATA(Int, int);
+					WRITE_FIELD_DATA(Int2, glm::ivec2);
+					WRITE_FIELD_DATA(Int3, glm::ivec3);
+					WRITE_FIELD_DATA(Int4, glm::ivec4);
+					WRITE_FIELD_DATA(Bool, bool);
+					WRITE_FIELD_DATA(String, std::string);
 				}
 			}
 
@@ -605,18 +608,21 @@ namespace proton {
 				const ScriptField& scriptField = script->m_ScriptFields[fieldName];
 				void* valuePtr = scriptField.ValuePtr;
 
+				#define READ_FIELD_DATA(EnumType, Type) \
+					case ScriptFieldType::EnumType: *(Type*)valuePtr = fieldValue; break
+
 				switch (scriptField.Type)
 				{
-				case ScriptFieldType::Float:  *(float*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Float2: *(glm::vec2*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Float3: *(glm::vec3*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Float4: *(glm::vec4*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Int:    *(int*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Int2:   *(glm::ivec2*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Int3:   *(glm::ivec3*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Int4:   *(glm::ivec4*)valuePtr = fieldValue; break;
-				case ScriptFieldType::Bool:   *(bool*)valuePtr = fieldValue; break;
-				case ScriptFieldType::String: *(std::string*)valuePtr = fieldValue; break;
+				READ_FIELD_DATA(Float, float);
+				READ_FIELD_DATA(Float2, glm::vec2);
+				READ_FIELD_DATA(Float3, glm::vec3);
+				READ_FIELD_DATA(Float4, glm::vec4);
+				READ_FIELD_DATA(Int, int);
+				READ_FIELD_DATA(Int2, glm::ivec2);
+				READ_FIELD_DATA(Int3, glm::ivec3);
+				READ_FIELD_DATA(Int4, glm::ivec4);
+				READ_FIELD_DATA(Bool, bool);
+				READ_FIELD_DATA(String, std::string);
 				}
 			}
 		}

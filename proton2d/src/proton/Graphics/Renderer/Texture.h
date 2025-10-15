@@ -15,12 +15,15 @@ namespace proton {
 
 	enum class TextureFilterMode
 	{
-		Nearest, Linear
+		Nearest = 0,
+		Linear
 	};
 
 	enum class TextureWrapMode
 	{
-		Repeat, ClampToBorder, ClampToEdge
+		Repeat = 0,
+		ClampToBorder,
+		ClampToEdge
 	};
 
 	enum class ImageFormat
@@ -50,7 +53,6 @@ namespace proton {
 		virtual ~Texture();
 
 		uint32_t GetOpenGL_ID() const { return m_Object_ID; }
-
 		uint32_t GetWidth() const { return m_Width;  }
 		uint32_t GetHeight() const { return m_Height; }
 		const std::string& GetPath() const { return m_Path; }

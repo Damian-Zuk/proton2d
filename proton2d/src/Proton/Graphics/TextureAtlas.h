@@ -6,37 +6,34 @@
 namespace proton {
 
 	// Source texture coordinates
+	// Range: 0.0 - 1.0
 	// [0] - bottom left (0,0)
 	// [1] - bottom right (1,0)
 	// [2] - top right (1,1)
 	// [3] - top left (0,1)
 	using TextureCoords = std::array<glm::vec2, 4>;
 
-	class Spritesheet
+	class TextureAtlas
 	{
 	public:
-		Spritesheet(Shared<Texture> texture, uint32_t tileWidth, uint32_t tileHeight);
+		TextureAtlas(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight);
 
 		const Shared<Texture>& GetTexture() { return m_Texture; }
-
-		// Get sheet size in pixels
-		const glm::uvec2& GetSheetSize() const { return m_SheetSize; }
-		// Get tile size in pixels
-		const glm::uvec2& GetTileSize() const { return m_TileSize; }
-		// Get max tiles count that can fit into spritesheet
+		const glm::uvec2& GetAtlasSizePx() const { return m_AtlasSizePx; }
+		const glm::uvec2& GetTileSizePx() const { return m_TileSizePx; }
 		const glm::uvec2& GetTileCount() const { return m_TileCount; }
-
-	private:
+		const glm::vec2& GetTileScale() const { return m_TileScale; }
 		const TextureCoords& GetTextureCoords(uint32_t x, uint32_t y) const;
 
-	private:
-		std::vector<std::vector<TextureCoords>> m_TextureCoords;
-		Shared<Texture> m_Texture;
+		operator bool() const { return m_Texture != nullptr; }
 
-		glm::uvec2 m_SheetSize = { 0, 0 }; // pixels
-		glm::uvec2 m_TileSize = { 0, 0 }; // pixels
-		glm::uvec2 m_TileCount = { 0, 0 }; // sheet size / tile size
-		glm::vec2 m_TileScale = { 0, 0 }; // 0.0f - 1.0f
+	private:
+		Shared<Texture> m_Texture;
+		std::vector<TextureCoords> m_TextureCoords;
+		glm::uvec2 m_AtlasSizePx = { 0, 0 };
+		glm::uvec2 m_TileSizePx = { 0, 0 }; 
+		glm::uvec2 m_TileCount = { 0, 0 };
+		glm::vec2 m_TileScale = { 0, 0 };
 
 		friend class Sprite;
 		friend class ResizableSprite;
