@@ -64,11 +64,6 @@ namespace proton {
 		}
 	}
 
-	// ---------------------------------------------------------------------------------
-	// CopyComponent functions from:
-	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Scene/Scene.cpp
-	// ---------------------------------------------------------------------------------
-
 	using ComponentsToCopy =
 		ComponentGroup<TransformComponent, PrefabComponent, CameraComponent,
 		SpriteComponent, CircleRendererComponent, ResizableSpriteComponent, TextComponent,
@@ -716,18 +711,17 @@ namespace proton {
 			{
 				auto [transform, sprite] = renderableSprite.get<TransformComponent, SpriteComponent>(e);
 				
-				float cosRotation = std::abs(glm::cos(transform.Rotation));
-				float sinRotation = std::abs(glm::sin(transform.Rotation));
+				float cosRotation = glm::abs(glm::cos(transform.Rotation));
+				float sinRotation = glm::abs(glm::sin(transform.Rotation));
 
-				float halfWidth = transform.Scale.x / 2.0f;
-				float halfHeight = transform.Scale.y / 2.0f;
-				float rotatedHalfWidth = halfWidth * cosRotation + halfHeight * sinRotation;
-				float rotatedHalfHeight = halfHeight * cosRotation + halfWidth * sinRotation;
+				const auto& scale = transform.Scale;
+				float rotatedWidth = (scale.x * cosRotation + scale.y * sinRotation) * 2.0f;
+				float rotatedHeight = (scale.y * cosRotation + scale.x * sinRotation) * 2.0f;
 
-				float spriteLeft = transform.WorldPosition.x - rotatedHalfWidth;
-				float spriteRight = transform.WorldPosition.x + rotatedHalfWidth;
-				float spriteBottom = transform.WorldPosition.y - rotatedHalfHeight;
-				float spriteTop = transform.WorldPosition.y + rotatedHalfHeight;
+				float spriteLeft = transform.WorldPosition.x - rotatedWidth;
+				float spriteRight = transform.WorldPosition.x + rotatedWidth;
+				float spriteBottom = transform.WorldPosition.y - rotatedHeight;
+				float spriteTop = transform.WorldPosition.y + rotatedHeight;
 
 				if (spriteRight < cameraLeft || spriteLeft > cameraRight ||
 					spriteTop < cameraBottom || spriteBottom > cameraTop)
@@ -736,12 +730,12 @@ namespace proton {
 				}
 
 				// Sprite mirror flip
-				glm::vec3 scale = {
+				glm::vec3 spriteScale = {
 					transform.Scale.x * (sprite.Sprite.m_MirrorFlip.x ? -1.0f : 1.0f),
 					transform.Scale.y * (sprite.Sprite.m_MirrorFlip.y ? -1.0f : 1.0f), 1.0f
 				};
 
-				glm::mat4 transformMatrix = Math::GetTransform(transform.WorldPosition, scale, transform.Rotation);
+				glm::mat4 transformMatrix = Math::GetTransform(transform.WorldPosition, spriteScale, transform.Rotation);
 
 				if (sprite.Sprite)
 					Renderer::DrawQuad(transformMatrix, sprite.Sprite, sprite.Color, sprite.TilingFactor);
@@ -762,15 +756,14 @@ namespace proton {
 				float cosRotation = std::abs(glm::cos(transform.Rotation));
 				float sinRotation = std::abs(glm::sin(transform.Rotation));
 
-				float halfWidth = transform.Scale.x / 2.0f;
-				float halfHeight = transform.Scale.y / 2.0f;
-				float rotatedHalfWidth = halfWidth * cosRotation + halfHeight * sinRotation;
-				float rotatedHalfHeight = halfHeight * cosRotation + halfWidth * sinRotation;
+				const auto& scale = transform.Scale;
+				float rotatedWidth = (scale.x * cosRotation + scale.y * sinRotation) * 2.0f;
+				float rotatedHeight = (scale.y * cosRotation + scale.x * sinRotation) * 2.0f;
 
-				float spriteLeft = transform.WorldPosition.x - rotatedHalfWidth;
-				float spriteRight = transform.WorldPosition.x + rotatedHalfWidth;
-				float spriteBottom = transform.WorldPosition.y - rotatedHalfHeight;
-				float spriteTop = transform.WorldPosition.y + rotatedHalfHeight;
+				float spriteLeft = transform.WorldPosition.x - rotatedWidth;
+				float spriteRight = transform.WorldPosition.x + rotatedWidth;
+				float spriteBottom = transform.WorldPosition.y - rotatedHeight;
+				float spriteTop = transform.WorldPosition.y + rotatedHeight;
 
 				if (spriteRight < cameraLeft || spriteLeft > cameraRight ||
 					spriteTop < cameraBottom || spriteBottom > cameraTop)

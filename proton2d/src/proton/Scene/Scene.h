@@ -22,13 +22,9 @@ namespace proton {
 		Stop, Play, Paused
 	};
 
-	////////////////////////////////////////////////////////////////////////////////////////
-	// Scene class (wrapper around entt:registry with functionalities to manage entities) 
-	////////////////////////////////////////////////////////////////////////////////////////
 	class Scene
 	{
 	public:
-		Scene() = delete;
 		Scene(const std::string& filepath = "", const std::string& gameModeClass = "");
 
 		virtual ~Scene();
