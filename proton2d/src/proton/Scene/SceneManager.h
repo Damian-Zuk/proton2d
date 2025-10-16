@@ -5,11 +5,6 @@ namespace proton {
 	class Scene;
 	class GameInstance;
 
-	/*
-	* SceneManager class methods use scene filepaths - "scenePath" 
-	* (realative to "scenes" directory) without ".scene.json" extension
-	* as scene identifiers (keys in map storage)
-	*/
 	class SceneManager
 	{
 	public:
@@ -18,13 +13,10 @@ namespace proton {
 
 		void OnUpdate(float ts);
 
-		Scene* GetScene(const std::string& scenePath);
 		Scene* GetActiveScene();
 		Scene* SetActiveScene(const std::string& scenePath);
 		Scene* SetActiveScene(Scene* scene);
-
-		void Add(const std::string& scenePath, const Shared<Scene> scene);
-		void AddNewActiveScene(const std::string& scenePath, const Shared<Scene> scene);
+		Scene* GetScene(const std::string& scenePath);
 
 		Scene* Load(const std::string& scenePath);
 		void Unload(const std::string& scenePath);
@@ -34,7 +26,7 @@ namespace proton {
 		Scene* CreateEmptyScene(const std::string& scenePath = "<Unsaved scene>");
 
 	private:
-		GameInstance* m_GameInstance = nullptr;
+		GameInstance* m_GameInstance;
 
 		Scene* m_ActiveScene = nullptr;
 		std::map<std::string, Shared<Scene>> m_Scenes;

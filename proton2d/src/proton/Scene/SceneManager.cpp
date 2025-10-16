@@ -66,17 +66,6 @@ namespace proton {
 		return scene;
 	}
 
-	void SceneManager::Add(const std::string& scenePath, const Shared<Scene> scene)
-	{
-		m_Scenes[scenePath] = scene;
-	}
-
-	void SceneManager::AddNewActiveScene(const std::string& scenePath, const Shared<Scene> scene)
-	{
-		m_Scenes[scenePath] = scene;
-		SetActiveScene(scene.get());
-	}
-
 	Scene* SceneManager::Load(const std::string& scenePath)
 	{
 		//PT_CORE_INFO("file='{}.scene.json'", scenePath);
