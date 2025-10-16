@@ -334,7 +334,7 @@ namespace proton {
 			{
 				Sprite& sprite = component.Sprite;
 				std::string textureFilename = sprite 
-					? GetFilepathRelative(s_TexturesPath, sprite.GetTexture()->GetPath())
+					? GetFilepathRelative(s_TexturesPath, sprite.GetTexture()->GetFilepath())
 					: "Fill color";
 
 				// Select texture
@@ -343,7 +343,7 @@ namespace proton {
 					if (ImGui::Selectable("Fill Color"))
 						sprite.SetTexture(nullptr);
 
-					// TextureAtlases
+					// Texture Atlases
 					for (auto& kv : AssetManager::s_Instance->m_TextureAtlasList)
 					{
 						bool isSelected = kv.first == textureFilename;
@@ -435,7 +435,7 @@ namespace proton {
 				{
 					ImGui::Dummy({ 0, 5 });
 					ImGui::Separator();
-					ImGui::Text("TextureAtlas");
+					ImGui::Text("Texture Atlas");
 					ImGui::Dummy({ 0, 3 });
 
 					glm::ivec2 tilePos = (glm::ivec2)sprite.m_TileIndex;
@@ -445,8 +445,8 @@ namespace proton {
 							sprite.SetTileIndex(tilePos.x, tilePos.y);
 					}
 
-					glm::ivec2 tileSize = (glm::ivec2)sprite.m_TileSize;
-					if (ImGui::DragInt2("Size", glm::value_ptr(tileSize), 0.2f, 1))
+					glm::ivec2 tileSize = (glm::ivec2)sprite.m_TileCount;
+					if (ImGui::DragInt2("Tile Count", glm::value_ptr(tileSize), 0.2f, 1))
 					{
 						if (tileSize.x > 0 && tileSize.y > 0)
 							sprite.SetTileCount(tileSize);
@@ -465,7 +465,7 @@ namespace proton {
 					auto& textureAtlas = component.ResizableSprite.m_TextureAtlas;
 					auto& sprite = component.ResizableSprite;
 					std::string filename = textureAtlas 
-						? GetFilepathRelative(s_TexturesPath, textureAtlas->GetTexture()->GetPath())
+						? GetFilepathRelative(s_TexturesPath, textureAtlas->GetFilepath())
 						: "Select...";
 
 					// Select textureAtlas
@@ -524,9 +524,6 @@ namespace proton {
 
 					// Tint color control
 					ImGui::ColorEdit4("Color", glm::value_ptr(component.Color), ImGuiColorEditFlags_AlphaBar);
-					
-					//if (ImGui::Button("Regenerate"))
-					//	sprite.Generate(selectedEntity.GetTransform().Scale);
 			});
 		}
 

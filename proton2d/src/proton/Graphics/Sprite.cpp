@@ -4,58 +4,47 @@
 
 namespace proton {
 
-	constexpr TextureCoords DEFAULT_TEXTURE_COORDS = { {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} };
-
-	Sprite::Sprite(Shared<Texture> texture)
-		: m_Texture(texture), m_PixelSize({ texture->GetWidth(), texture->GetHeight() }),
-		m_TextureCoords(DEFAULT_TEXTURE_COORDS)
+	Sprite::Sprite(const Shared<Texture>& texture)
+		: m_Type(SpriteType::FullTexture), m_Texture(texture),
+		m_PixelSize({ texture->GetWidth(), texture->GetHeight() })
 	{
 		CalculateTextureCoords();
 	}
 
-	Sprite::Sprite(Shared<TextureAtlas> textureAtlas)
-		: m_TextureAtlas(textureAtlas), m_Texture(textureAtlas->GetTexture()),
-		m_PixelSize(textureAtlas->m_TileSizePx), m_TextureCoords(DEFAULT_TEXTURE_COORDS)
+	Sprite::Sprite(const Shared<TextureAtlas>& textureAtlas)
+		: m_Type(SpriteType::TextureAtlas), m_TextureAtlas(textureAtlas),
+		m_Texture(textureAtlas), m_PixelSize({ textureAtlas->GetWidth(), textureAtlas->GetHeight() })
 	{
 		CalculateTextureCoords();
 	}
 
 	void Sprite::CalculateTextureCoords()
 	{
-		// No textureAtlas = full texture coords
 		if (!m_TextureAtlas)
 		{
-			m_TextureCoords = { {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} };
+			m_TextureCoords = FULL_TEXTURE_COORDS;
 			return;
 		}
 
-		// Single tile (1x1) coords
-		if (m_TileSize.x == 1 && m_TileSize.y == 1)
+		// 1x1 Tile
+		if (m_TileCount.x == 1 && m_TileCount.y == 1)
 		{
 			m_TextureCoords = m_TextureAtlas->GetTextureCoords(m_TileIndex.x, m_TileIndex.y);;
 			return;
 		}
 
-		// NxN (tiles) size texture coords
-		glm::uvec2 s = m_TileIndex + m_TileSize; // top right tile position index
-		// Cap index to prevent going out of bounds
+		// NxN Tiles
+		glm::uvec2 s = m_TileIndex + m_TileCount;
 		s.x = glm::min(s.x - 1, m_TextureAtlas->m_TileCount.x - 1);
 		s.y = glm::min(s.y - 1, m_TextureAtlas->m_TileCount.y - 1);
 
 		m_TextureCoords = m_TextureAtlas->GetTextureCoords(m_TileIndex.x, m_TileIndex.y); // bottom left
 		const TextureCoords& topRightCoords = m_TextureAtlas->GetTextureCoords(s.x, s.y); // top right
 
-		// Change bottom right x 
+		// Extend coords
 		m_TextureCoords[1].x = topRightCoords[1].x;
-		// Change top right x and y 
 		m_TextureCoords[2] = topRightCoords[2];
-		// Change top left y 
 		m_TextureCoords[3].y = topRightCoords[3].y;
-	}
-
-	const TextureCoords& Sprite::GetTextureCoords() const
-	{
-		return m_TextureCoords;
 	}
 
 	void Sprite::SetTextureFromPath(const std::string& filepath)
@@ -63,19 +52,21 @@ namespace proton {
 		SetTexture(AssetManager::GetTexture(filepath));
 	}
 
-	void Sprite::SetTexture(Shared<Texture> texture)
+	void Sprite::SetTexture(const Shared<Texture>& texture)
 	{
+		m_Type = SpriteType::FullTexture;
 		m_Texture = texture;
 		m_TextureAtlas = nullptr;
 		m_PixelSize = { texture->GetWidth(), texture->GetHeight() };
 		CalculateTextureCoords();
 	}
 
-	void Sprite::SetTextureAtlas(Shared<TextureAtlas> textureAtlas)
+	void Sprite::SetTextureAtlas(const Shared<TextureAtlas>& textureAtlas)
 	{
+		m_Type = SpriteType::TextureAtlas;
 		m_TextureAtlas = textureAtlas;
-		m_Texture = textureAtlas->GetTexture();
-		m_PixelSize = m_TileSize * textureAtlas->m_TileSizePx;
+		m_Texture = textureAtlas;
+		m_PixelSize = m_TileCount * textureAtlas->m_TileSizePx;
 		CalculateTextureCoords();
 	}
 
@@ -104,7 +95,7 @@ namespace proton {
 
 	void Sprite::SetTileCount(glm::uvec2 size)
 	{
-		m_TileSize = size;
+		m_TileCount = size;
 		CalculateTextureCoords();
 	}
 
@@ -115,18 +106,17 @@ namespace proton {
 
 	void Sprite::SetTileCountX(uint32_t width)
 	{
-		SetTileCount({ width, m_TileSize.y });
+		SetTileCount({ width, m_TileCount.y });
 	}
 
 	void Sprite::SetTileCountY(uint32_t height)
 	{
-		SetTileCount({ m_TileSize.x, height });
+		SetTileCount({ m_TileCount.x, height });
 	}
 
 	void Sprite::SetMirrorFlip(glm::bvec2 flip)
 	{
-		m_MirrorFlip.x = flip.x;
-		m_MirrorFlip.y = flip.y;
+		m_MirrorFlip = flip;
 	}
 
 	void Sprite::SetMirrorFlip(bool flip_x, bool flip_y)

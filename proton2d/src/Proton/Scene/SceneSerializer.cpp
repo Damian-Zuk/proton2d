@@ -334,7 +334,7 @@ namespace proton {
 		if (!c.Sprite)
 			return;
 
-		j["Texture"] = Utils::GetRelativeFilepath("content/textures/", c.Sprite.GetTexture()->GetPath());
+		j["Texture"] = Utils::GetRelativeFilepath("content/textures/", c.Sprite.GetTexture()->GetFilepath());
 		j["FilterMode"] = c.Sprite.GetTexture()->GetFilterMode();
 		j["Flip"] = c.Sprite.m_MirrorFlip;
 
@@ -342,7 +342,7 @@ namespace proton {
 			return;
 
 		j["TilePos"] = c.Sprite.m_TileIndex;
-		j["TileSize"] = c.Sprite.m_TileSize;
+		j["TileSize"] = c.Sprite.m_TileCount;
 	}
 
 	template<>
@@ -386,7 +386,7 @@ namespace proton {
 		j["Color"] = c.Color;
 
 		if (textureAtlas)
-			j["Spritesheet"] = Utils::GetRelativeFilepath("content/textures/", textureAtlas->GetTexture()->GetPath());
+			j["Spritesheet"] = Utils::GetRelativeFilepath("content/textures/", textureAtlas->GetFilepath());
 	}
 
 	template<>

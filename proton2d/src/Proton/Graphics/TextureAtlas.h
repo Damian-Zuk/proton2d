@@ -13,27 +13,25 @@ namespace proton {
 	// [3] - top left (0,1)
 	using TextureCoords = std::array<glm::vec2, 4>;
 
-	class TextureAtlas
+	constexpr TextureCoords FULL_TEXTURE_COORDS = { {{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }} };
+
+	class TextureAtlas : public Texture
 	{
 	public:
-		TextureAtlas(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight);
+		TextureAtlas() = delete;
+		TextureAtlas(const std::string& filepath, uint32_t tileWidth, uint32_t tileHeight);
+		virtual ~TextureAtlas() = default;
 
-		const Shared<Texture>& GetTexture() { return m_Texture; }
-		const glm::uvec2& GetAtlasSizePx() const { return m_AtlasSizePx; }
-		const glm::uvec2& GetTileSizePx() const { return m_TileSizePx; }
-		const glm::uvec2& GetTileCount() const { return m_TileCount; }
-		const glm::vec2& GetTileScale() const { return m_TileScale; }
 		const TextureCoords& GetTextureCoords(uint32_t x, uint32_t y) const;
-
-		operator bool() const { return m_Texture != nullptr; }
+		glm::uvec2 GetTileSizePx() const { return m_TileSizePx; }
+		glm::uvec2 GetTileCount() const { return m_TileCount; }
+		glm::vec2 GetTileScale() const { return m_TileScale; }
 
 	private:
-		Shared<Texture> m_Texture;
 		std::vector<TextureCoords> m_TextureCoords;
-		glm::uvec2 m_AtlasSizePx = { 0, 0 };
 		glm::uvec2 m_TileSizePx = { 0, 0 }; 
 		glm::uvec2 m_TileCount = { 0, 0 };
-		glm::vec2 m_TileScale = { 0, 0 };
+		glm::vec2 m_TileScale = { 0.0f, 0.0f };
 
 		friend class Sprite;
 		friend class ResizableSprite;

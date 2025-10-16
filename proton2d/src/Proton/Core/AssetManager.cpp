@@ -44,7 +44,7 @@ namespace proton {
 
 		const auto& size = textureAtlasList.at(filepath);
 		//PT_CORE_INFO("file='{}' tile_size=({},{})", filepath, size.x, size.y);
-		return MakeShared<TextureAtlas>(texture, size.x, size.y);
+		return MakeShared<TextureAtlas>("content/textures/" + filepath, size.x, size.y);
 	}
 
 	bool AssetManager::IsTextureLoaded(const std::string& filepath)
@@ -137,7 +137,8 @@ namespace proton {
 		for (auto& s : json::parse(Utils::ReadFile("content/meta.json")))
 		{
 			std::string filepath = s["file_path"];
-			uint32_t width = s["tile_width"], height = s["tile_height"];
+			uint32_t width = s["tile_width"];
+			uint32_t height = s["tile_height"];
 			textureAtlasList[filepath] = glm::uvec2{ width, height };
 			textureList.erase(
 				std::remove(textureList.begin(), textureList.end(), filepath),

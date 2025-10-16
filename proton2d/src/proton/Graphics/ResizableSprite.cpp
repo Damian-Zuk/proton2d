@@ -35,7 +35,7 @@ namespace proton {
 
 		for (const auto& tile : m_CellTransforms)
 		{
-			Renderer::DrawQuad(transform * tile.LocalTransform, m_TextureAtlas->GetTexture(), tile.TextureCoords, color);
+			Renderer::DrawQuad(transform * tile.LocalTransform, m_TextureAtlas, tile.TextureCoords, color);
 		}
 	}
 

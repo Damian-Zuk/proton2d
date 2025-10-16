@@ -8,7 +8,6 @@ namespace proton {
 	{
 	public:
 		static void Init();
-
 		static void ReloadAssetsList();
 
 		static Shared<Texture> LoadTexture(const std::string& filepath);

@@ -1,8 +1,3 @@
-//
-// This file provides functionalities for managing OpenGL textures.
-// Adapted from Hazel Engine Renderer OpenGL API:
-// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLTexture.cpp
-//
 #include "ptpch.h"
 #include "Proton/Graphics/Renderer/Texture.h"
 
@@ -84,7 +79,7 @@ namespace proton {
 	}
 
 	Texture::Texture(const std::string& path)
-		: m_Path(path)
+		: m_Filepath(path)
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
@@ -167,9 +162,9 @@ namespace proton {
 
 	void Texture::SetWrapMode(TextureWrapMode xMode, TextureWrapMode yMode)
 	{
-		m_WrapModeX = xMode; m_WrapModeY = yMode;
-		GLenum sWrap = ProtonWrapModeToOpenGL(xMode);
-		GLenum tWrap = ProtonWrapModeToOpenGL(yMode);
+		m_WrapMode.x = xMode; m_WrapMode.y = yMode;
+		GLenum sWrap = ProtonWrapModeToOpenGL(m_WrapMode.x);
+		GLenum tWrap = ProtonWrapModeToOpenGL(m_WrapMode.y);
 		glTextureParameteri(m_Object_ID, GL_TEXTURE_WRAP_S, sWrap);
 		glTextureParameteri(m_Object_ID, GL_TEXTURE_WRAP_T, tWrap);
 	}

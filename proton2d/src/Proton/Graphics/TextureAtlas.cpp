@@ -3,12 +3,13 @@
 
 namespace proton {
 
-	TextureAtlas::TextureAtlas(const Shared<Texture>& texture, uint32_t tileWidth, uint32_t tileHeight)
-		: m_AtlasSizePx({ texture->GetWidth(), texture->GetHeight() }),
-		m_TileSizePx(tileWidth, tileHeight), m_Texture(texture)
+	TextureAtlas::TextureAtlas(const std::string& filepath, uint32_t tileWidth, uint32_t tileHeight)
+		: Texture(filepath), m_TileSizePx(tileWidth, tileHeight)
 	{
-		m_TileCount = m_AtlasSizePx / m_TileSizePx;
+		m_IsTextureAtlas = true;
+		m_TileCount = glm::uvec2{ m_Width, m_Height } / m_TileSizePx;
 		m_TileScale = glm::vec2{ 1.0f } / (glm::vec2)m_TileCount;
+		
 		const size_t tileCount = m_TileCount.x * m_TileCount.y;
 		m_TextureCoords.resize(tileCount);
 
