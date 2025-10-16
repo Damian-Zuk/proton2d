@@ -59,6 +59,13 @@ namespace proton {
 
 	} static s_Fonts;
 
+	EditorLayer::EditorLayer()
+	{
+		PT_CORE_ASSERT(!s_Instance, "EditorLayer already exists!");
+		s_Instance = this;
+		m_Config.LoadConfig();
+	}
+
 	EditorLayer* EditorLayer::Get()
 	{
 		return s_Instance;
@@ -73,7 +80,6 @@ namespace proton {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 
-		m_Config.LoadConfig();
 		m_MenuBar = MakeUnique<EditorMenuBar>();
 
 		SetupFonts();

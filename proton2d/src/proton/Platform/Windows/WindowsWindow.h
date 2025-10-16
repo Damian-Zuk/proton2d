@@ -19,7 +19,7 @@ namespace proton {
 		virtual void SetFullscreen(bool fullscreen = true) override;
 
 	private:
-		virtual void Shutdown();
+		void Shutdown();
 
 	private:
 		GLFWwindow* m_Window;

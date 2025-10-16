@@ -1,6 +1,6 @@
 #pragma once
 #ifdef PT_EDITOR
-#include "Proton/Core/AppLayer.h"
+#include "Proton/Core/Layer.h"
 #include "Proton/Editor/EditorConfig.h"
 #include "Proton/Scene/Entity.h"
 
@@ -21,10 +21,10 @@ namespace proton {
 		uint32_t ID;
 	};
 
-	class EditorLayer : private AppLayer
+	class EditorLayer : public Layer
 	{
 	public:
-		EditorLayer() = default;
+		EditorLayer();
 		virtual ~EditorLayer() = default;
 
 		static EditorLayer* Get();

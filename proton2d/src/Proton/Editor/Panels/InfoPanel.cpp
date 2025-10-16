@@ -20,7 +20,7 @@ namespace proton {
 
 	void InfoPanel::OnImGuiRender()
 	{
-		m_FrameTime = Application::GetLastFrameTime() * 1000.0f;
+		m_FrameTime = Application::Get().GetLastFrameTime() * 1000.0f;
 
 		if (m_RefreshStatsTimer <= 0.0f)
 		{

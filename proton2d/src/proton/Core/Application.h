@@ -2,7 +2,7 @@
 
 #include "Proton/Core/Base.h"
 #include "Proton/Core/AppConfig.h"
-#include "Proton/Core/AppLayer.h"
+#include "Proton/Core/LayerStack.h"
 #include "Proton/Core/Window.h"
 
 namespace proton {
@@ -19,13 +19,11 @@ namespace proton {
 		static Application& Get() { return *s_Instance; }
 
 		void Run();
-		void PushLayer(AppLayer* layer);
-		void PushOverlay(AppLayer* layer);
 		void Exit();
 
 		float GetTimeScale() const { return m_TimeScale; };
-		static float GetLastFrameTime() { return s_Instance->m_FrameTime; }
-		static float GetTotalTimeElapsed();
+		float GetLastFrameTime() { return s_Instance->m_FrameTime; }
+		float GetTotalTimeElapsed();
 
 		Window& GetWindow() { return *m_Window; }
 		const Window& GetWindow() const { return *m_Window; }
@@ -40,10 +38,10 @@ namespace proton {
 		static Application* s_Instance;
 
 		Shared<GameInstance> m_GameInstance;
+		Unique<Window> m_Window;
 
 		AppConfig m_AppConfig;
-		std::vector<AppLayer*> m_AppLayers;
-		Unique<Window> m_Window;
+		LayerStack m_LayerStack;
 
 		bool m_IsRunning = false;
 		bool m_WindowMinimized = false;

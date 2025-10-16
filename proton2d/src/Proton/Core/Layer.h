@@ -8,10 +8,11 @@ namespace proton {
 	class SceneManager;
 	class GameInstance;
 
-	class AppLayer
+	class Layer
 	{
 	public:
-		virtual ~AppLayer() = default;
+		Layer(const std::string& name = "Layer");
+		virtual ~Layer() = default;
 
 		virtual void OnCreate() {}
 		virtual void OnDestroy() {}
@@ -19,7 +20,10 @@ namespace proton {
 		virtual void OnEvent(Event& event) {}
 		virtual void OnImGuiRender() {}
 
+		const std::string& GetName() const { return m_DebugName; }
 		friend class Application;
+	protected:
+		std::string m_DebugName;
 	};
 
 }

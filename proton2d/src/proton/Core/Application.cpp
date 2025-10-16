@@ -52,12 +52,6 @@ namespace proton {
 
 	Application::~Application()
 	{
-		for (AppLayer* layer : m_AppLayers)
-		{
-			layer->OnDestroy();
-			delete layer;
-		}
-		Renderer::Shutdown();
 	}
 
 	void Application::Run()
@@ -69,12 +63,11 @@ namespace proton {
 		}
 
 		AssetManager::Init();
-		Renderer::Init();
 		PrefabManager::Init();
+		Renderer::Init();
 
 	#ifdef PT_EDITOR
-		EditorLayer::s_Instance = new EditorLayer();
-		PushOverlay(EditorLayer::s_Instance); // EditorLayer::OnCreate()
+		EditorLayer* editorLayer = m_LayerStack.PushOverlay<EditorLayer>();
 	#endif
 
 		if (!OnCreate())
@@ -93,7 +86,7 @@ namespace proton {
 		PROFILE_BEGIN_SESSION("Proton-Runtime");
 		PROFILE_SCOPE("app_game_loop");
 
-		// Application loop
+		// Main loop
 		while (m_IsRunning) 
 		{
 			Timer timer;
@@ -102,7 +95,7 @@ namespace proton {
 			{
 			{
 				PROFILE_SCOPE("app_layers_update");
-				for (AppLayer* layer : m_AppLayers)
+				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnUpdate(m_FrameTime * m_TimeScale);
 				}
@@ -111,10 +104,8 @@ namespace proton {
 			#ifdef PT_EDITOR
 			{
 				PROFILE_SCOPE("imgui_render");
-				EditorLayer* editorLayer = EditorLayer::Get();
-
 				editorLayer->BeginImGuiRender();
-				for (AppLayer* layer : m_AppLayers)
+				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnImGuiRender();
 				}
@@ -125,11 +116,11 @@ namespace proton {
 			#endif
 			}
 
-			// Update window
 			m_Window->OnUpdate();
 			m_FrameTime = timer.Elapsed();
 		}
 
+		Renderer::Shutdown();
 		PROFILE_END_SESSION();
 	}
 
@@ -138,25 +129,12 @@ namespace proton {
 		return s_Instance->m_GameInstance;
 	}
 
-	void Application::PushLayer(AppLayer* layer)
-	{
-		m_AppLayers.emplace_back(layer);
-		layer->OnCreate();
-	}
-
-	void Application::PushOverlay(AppLayer* layer)
-	{
-		m_AppLayers.insert(m_AppLayers.begin(), layer);
-		layer->OnCreate();
-	}
-
 	void Application::Exit()
 	{
 		m_IsRunning = false;
 	}
 
 	static Timer s_AppTimer;
-
 	float Application::GetTotalTimeElapsed()
 	{
 		return s_AppTimer.Elapsed();
@@ -176,7 +154,7 @@ namespace proton {
 
 		dispatcher.Dispatch<WindowCloseEvent>([&](WindowCloseEvent& e)
 		{
-			m_IsRunning = false;
+			Exit();
 			return true;
 		});
 
@@ -199,7 +177,7 @@ namespace proton {
 		});
 	#endif
 
-		for (AppLayer* layer : m_AppLayers)
+		for (Layer* layer : m_LayerStack)
 		{
 			if (event.Handled)
 				return;
