@@ -69,8 +69,7 @@ namespace proton {
 	bool EntityScript::IsKeyPressed(KeyCode key) const
 	{
 	#ifdef PT_EDITOR
-		GameInstance* focusedInstance = EditorLayer::Get()->GetFocusedGameInstance();
-		if (GetScene() != focusedInstance->GetActiveScene())
+		if (GetScene() != EditorLayer::Get()->GetFocusedGameInstance()->GetActiveScene())
 			return false;
 		
 		const auto& io = ImGui::GetIO();
@@ -83,8 +82,7 @@ namespace proton {
 	bool EntityScript::IsMouseButtonPressed(MouseCode button) const
 	{
 	#ifdef PT_EDITOR
-		GameInstance* focusedInstance = EditorLayer::Get()->GetFocusedGameInstance();
-		if (GetScene() != focusedInstance->GetActiveScene())
+		if (GetScene() != EditorLayer::Get()->GetFocusedGameInstance()->GetActiveScene())
 			return false;
 
 		const auto& io = ImGui::GetIO();

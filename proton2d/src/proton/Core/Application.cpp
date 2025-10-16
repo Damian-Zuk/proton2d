@@ -47,10 +47,7 @@ namespace proton {
 	#endif
 
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
-
-	#ifdef PROTON_DISTRIBUTION
-		m_GameInstance = MakeUnique<GameInstance>();
-	#endif
+		m_GameInstance = MakeShared<GameInstance>();
 	}
 
 	Application::~Application()
@@ -123,7 +120,7 @@ namespace proton {
 				}
 				editorLayer->EndImGuiRender();
 			}
-			#else // PROTON_DISTRIBUTION
+			#else
 				m_GameInstance->OnUpdate(m_FrameTime * m_TimeScale);
 			#endif
 			}
@@ -136,13 +133,9 @@ namespace proton {
 		PROFILE_END_SESSION();
 	}
 
-	GameInstance* Application::GetGameInstance()
+	Shared<GameInstance> Application::GetGameInstance()
 	{
-#ifdef PT_EDITOR
-		return EditorLayer::GetMainGameInstance();
-#else // PROTON_DISTRIBUTION
-		return s_Instance->m_GameInstance.get();
-#endif
+		return s_Instance->m_GameInstance;
 	}
 
 	void Application::PushLayer(AppLayer* layer)
@@ -213,16 +206,13 @@ namespace proton {
 			layer->OnEvent(event);
 		}
 
-	#ifdef PROTON_DISTRIBUTION
-		if (!event.Handled)
+		if (event.Handled)
+			return;
+		if (Scene* scene = m_GameInstance->GetActiveScene())
 		{
-			if (Scene* scene = m_GameInstance->GetActiveScene())
-			{
-				if (scene->IsSimulated())
-					scene->GetGameMode()->OnEvent(event);
-			}
+			if (scene->IsSimulated())
+				scene->GetGameMode()->OnEvent(event);
 		}
-	#endif
 	}
 
 }

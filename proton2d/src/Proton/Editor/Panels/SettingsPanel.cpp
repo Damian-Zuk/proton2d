@@ -25,7 +25,7 @@ namespace proton {
 		ImGui::Begin("Settings");
 		
 		// Get selected game instance
-		SceneViewportPanel* viewportPanel = EditorLayer::GetFocusedViewportPanel();
+		auto viewportPanel = EditorLayer::GetFocusedViewportPanel();
 		Scene* scene = GetActiveScene();
 
 		if (scene && ImGui::TreeNodeEx("Network", ImGuiTreeNodeFlags_DefaultOpen))

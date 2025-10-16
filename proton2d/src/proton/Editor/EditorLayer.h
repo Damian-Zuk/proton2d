@@ -16,8 +16,8 @@ namespace proton {
 
 	struct EditorGameInstance
 	{
-		Unique<GameInstance> Instance;
-		Unique<SceneViewportPanel> Viewport;
+		Shared<GameInstance> Instance;
+		Shared<SceneViewportPanel> Viewport;
 		uint32_t ID;
 	};
 
@@ -41,13 +41,14 @@ namespace proton {
 		static Entity GetSelectedEntity(bool targetMainInstance = false);
 		static Scene* GetActiveScene(bool targetMainInstance = false);
 
-		static GameInstance* GetMainGameInstance();
-		static GameInstance* GetFocusedGameInstance();
+		static Shared<GameInstance> GetMainGameInstance();
+		static Shared<GameInstance> GetFocusedGameInstance();
 
-		static SceneViewportPanel* GetMainViewportPanel();
-		static SceneViewportPanel* GetFocusedViewportPanel();
-		static SceneViewportPanel* GetSceneViewportPanel(GameInstance* gameInstance);
-		static SceneViewportPanel* GetSceneViewportPanel(Scene* scene);
+		static Shared<SceneViewportPanel> GetMainViewportPanel();
+		static Shared<SceneViewportPanel> GetFocusedViewportPanel();
+		static Shared<SceneViewportPanel> GetSceneViewportPanel(GameInstance* gameInstance);
+		static Shared<SceneViewportPanel> GetSceneViewportPanel(const Shared<GameInstance>& gameInstance);
+		static Shared<SceneViewportPanel> GetSceneViewportPanel(Scene* scene);
 		
 		static SceneHierarchyPanel* GetSceneHierarchyPanel();
 		static InspectorPanel* GetInspectorPanel();
@@ -67,7 +68,7 @@ namespace proton {
 		void EndImGuiRender();
 
 		// Running additional game instances
-		GameInstance* LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName);
+		Shared<GameInstance> LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName);
 		void CloseGameInstance(uint32_t id);
 		void HandleGameInstanceCloseEvent();
 
@@ -87,10 +88,11 @@ namespace proton {
 
 		std::vector<EditorPanel*> m_EditorPanels; // pointers to all panels except scene viewport
 
-		EditorGameInstance m_MainGameInstance; // main viewport (cannot be closed)
-		EditorGameInstance* m_GameInstanceContext; // pointer to focused game instance viewport
+		Shared<EditorGameInstance> m_MainGameInstance; // main viewport (cannot be closed)
+		Shared<EditorGameInstance> m_GameInstanceContext; // pointer to focused game instance viewport
 		std::vector<Shared<EditorGameInstance>> m_GameInstances;
 		std::vector<uint32_t> m_GameInstancesToClose;
+
 		uint32_t m_CurrentInstanceID = 0;
 
 		// Automatically launch client instance when server starts

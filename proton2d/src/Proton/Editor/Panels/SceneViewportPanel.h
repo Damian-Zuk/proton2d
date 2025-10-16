@@ -36,14 +36,14 @@ namespace proton {
 		void HandleImGuiDragAndDrop();
 
 	private:
-		EditorGameInstance* m_EditorGameInstance = nullptr;
+		Shared<EditorGameInstance> m_EditorGameInstance;
 		std::string m_ImGuiWindowName = "Viewport";
 
 		bool m_IsMainViewport = true;
 		bool m_IsViewportFocused = false;
 		bool m_IsViewportHovered = false;
 
-		GameInstance* m_GameInstance = nullptr;
+		Shared<GameInstance> m_GameInstance;
 		Entity m_SelectedEntity;
 
 		Unique<EditorCamera> m_Camera;

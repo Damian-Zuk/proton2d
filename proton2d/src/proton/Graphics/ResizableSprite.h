@@ -22,8 +22,8 @@ namespace proton {
 		TextureCoords TextureCoords;
 	};
 
-	// TODO: This need to optimized by creating GLSL shader
-	// instead of rendering on the CPU
+	// 9-slice scaled sprite
+	// TODO: Render tiles in shader instead
 	class ResizableSprite
 	{
 	public:

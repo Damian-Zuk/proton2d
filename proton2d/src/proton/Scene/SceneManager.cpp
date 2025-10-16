@@ -55,7 +55,7 @@ namespace proton {
 		m_ActiveScene = scene;
 
 	#ifdef PT_EDITOR
-		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
+		auto viewport = m_GameInstance->m_EditorGameInstance->Viewport;
 		viewport->SetActiveScene(scene, true);
 	#endif
 

@@ -82,14 +82,15 @@ namespace proton {
 		InitImGuiForGLFW();
 
 		// Initialize main game instance
- 		m_MainGameInstance.Instance = MakeUnique<GameInstance>();
-		m_MainGameInstance.Viewport = MakeUnique<SceneViewportPanel>();
-		m_MainGameInstance.ID = 0;
-		m_MainGameInstance.Instance->m_EditorGameInstance = &m_MainGameInstance;
-		m_MainGameInstance.Viewport->m_EditorGameInstance = &m_MainGameInstance;
+		m_MainGameInstance = MakeShared<EditorGameInstance>();
+		m_MainGameInstance->Instance = Application::GetGameInstance();
+		m_MainGameInstance->Viewport = MakeShared<SceneViewportPanel>();
+		m_MainGameInstance->ID = 0;
+		m_MainGameInstance->Instance->m_EditorGameInstance = m_MainGameInstance;
+		m_MainGameInstance->Viewport->m_EditorGameInstance = m_MainGameInstance;
 
-		m_GameInstanceContext = &m_MainGameInstance;
-		m_MainGameInstance.Instance->Init();
+		m_GameInstanceContext = m_MainGameInstance;
+		m_MainGameInstance->Instance->Init();
 
 		m_MenuBar->OnCreate();
 
@@ -104,7 +105,7 @@ namespace proton {
 		for (EditorPanel* panel : m_EditorPanels)
 			panel->OnCreate();
 
-		m_MainGameInstance.Viewport->OnCreate();
+		m_MainGameInstance->Viewport->OnCreate();
 	}
 
 	void EditorLayer::OnDestroy()
@@ -119,7 +120,7 @@ namespace proton {
 		for (auto& panel : m_EditorPanels)
 			panel->OnUpdate(ts);
 		
-		m_MainGameInstance.Viewport->OnUpdate(ts);
+		m_MainGameInstance->Viewport->OnUpdate(ts);
 
 		for (auto& game : m_GameInstances)
 			game->Viewport->OnUpdate(ts);
@@ -159,7 +160,7 @@ namespace proton {
 		for (auto& panel : m_EditorPanels)
 			panel->OnImGuiRender();
 
-		m_MainGameInstance.Viewport->OnImGuiRender();
+		m_MainGameInstance->Viewport->OnImGuiRender();
 
 		for (auto& game : m_GameInstances)
 			game->Viewport->OnImGuiRender();
@@ -206,25 +207,25 @@ namespace proton {
 		}
 	}
 
-	GameInstance* EditorLayer::LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
+	Shared<GameInstance> EditorLayer::LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
 	{
 		uint32_t id = ++m_CurrentInstanceID;
 		m_GameInstances.push_back(MakeShared<EditorGameInstance>());
 
-		auto game = m_GameInstances.back().get();
-		game->Instance = MakeUnique<GameInstance>();
-		game->Viewport = MakeUnique<SceneViewportPanel>();
+		auto game = m_GameInstances.back();
+		game->Instance = MakeShared<GameInstance>();
+		game->Viewport = MakeShared<SceneViewportPanel>();
 		game->ID = id;
 
-		auto instance = game->Instance.get();
-		auto viewport = game->Viewport.get();
+		auto instance = game->Instance;
+		auto viewport = game->Viewport;
 
 		instance->m_EditorGameInstance = game;
 		instance->m_IsMainInstance = false;
 
 		NetworkManager* netManager = instance->GetNetworkManager();
 		netManager->SetNetMode(netMode);
-		netManager->SetTickRate(m_MainGameInstance.Instance->GetNetworkManager()->GetTickrate());
+		netManager->SetTickRate(m_MainGameInstance->Instance->GetNetworkManager()->GetTickrate());
 		netManager->SetLocalClientName(GenerateRandomNickname());
 
 		viewport->m_EditorGameInstance = game;
@@ -294,8 +295,9 @@ namespace proton {
 				return false;
 			}
 		));
+
 		m_GameInstancesToClose.clear();
-		m_GameInstanceContext = &m_MainGameInstance;
+		m_GameInstanceContext = m_MainGameInstance;
 	}
 
 	void EditorLayer::OnStartSimulationButton()
@@ -305,7 +307,7 @@ namespace proton {
 		if (scene->GetSceneState() != SceneState::Stop)
 			return;
 
-		if (m_AutostartClient && m_MainGameInstance.Instance->GetNetMode() == NetMode::ListenServer)
+		if (m_AutostartClient && m_MainGameInstance->Instance->GetNetMode() == NetMode::ListenServer)
 		{
 			auto instance = LaunchNewGameInstance(NetMode::Client, false, "Client " + std::to_string(m_CurrentInstanceID + 1));
 			instance->GetActiveScene()->BeginPlay();
@@ -322,7 +324,7 @@ namespace proton {
 			return;
 		}
 
-		if (m_MainGameInstance.Instance->GetNetMode() == NetMode::ListenServer)
+		if (m_MainGameInstance->Instance->GetNetMode() == NetMode::ListenServer)
 		{
 			m_GameInstances.clear();
 			m_CurrentInstanceID = 0;
@@ -396,7 +398,7 @@ namespace proton {
 		{
 			return s_Instance->m_GameInstanceContext->Viewport->GetSelectedEntity();
 		}
-		return s_Instance->m_MainGameInstance.Viewport->GetSelectedEntity();
+		return s_Instance->m_MainGameInstance->Viewport->GetSelectedEntity();
 	}
 
 	Scene* EditorLayer::GetActiveScene(bool targetMainInstance)
@@ -405,35 +407,40 @@ namespace proton {
 		{
 			return s_Instance->m_GameInstanceContext->Instance->GetActiveScene();
 		}
-		return s_Instance->m_MainGameInstance.Instance->GetActiveScene();
+		return s_Instance->m_MainGameInstance->Instance->GetActiveScene();
 	}
 
-	GameInstance* EditorLayer::GetMainGameInstance()
+	Shared<GameInstance> EditorLayer::GetMainGameInstance()
 	{
-		return s_Instance->m_MainGameInstance.Instance.get();
+		return s_Instance->m_MainGameInstance->Instance;
 	}
 
-	GameInstance* EditorLayer::GetFocusedGameInstance()
+	Shared<GameInstance> EditorLayer::GetFocusedGameInstance()
 	{
-		return s_Instance->m_GameInstanceContext->Instance.get();
+		return s_Instance->m_GameInstanceContext->Instance;
 	}
 
-	SceneViewportPanel* EditorLayer::GetMainViewportPanel()
+	Shared<SceneViewportPanel> EditorLayer::GetMainViewportPanel()
 	{
-		return s_Instance->m_MainGameInstance.Viewport.get();
+		return s_Instance->m_MainGameInstance->Viewport;
 	}
 
-	SceneViewportPanel* EditorLayer::GetFocusedViewportPanel()
+	Shared<SceneViewportPanel> EditorLayer::GetFocusedViewportPanel()
 	{
-		return s_Instance->m_GameInstanceContext->Viewport.get();
+		return s_Instance->m_GameInstanceContext->Viewport;
 	}
 
-	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
+	Shared<SceneViewportPanel> EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
 	{
-		return gameInstance->m_EditorGameInstance->Viewport.get();
+		return gameInstance->m_EditorGameInstance->Viewport;
 	}
 
-	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(Scene* scene)
+	Shared<SceneViewportPanel> EditorLayer::GetSceneViewportPanel(const Shared<GameInstance>& gameInstance)
+	{
+		return gameInstance->m_EditorGameInstance->Viewport;
+	}
+
+	Shared<SceneViewportPanel> EditorLayer::GetSceneViewportPanel(Scene* scene)
 	{
 		return GetSceneViewportPanel(scene->m_GameInstance);
 	}

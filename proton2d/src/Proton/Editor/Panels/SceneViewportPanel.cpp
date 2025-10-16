@@ -30,9 +30,9 @@ namespace proton {
 			return;
 	
 		EditorLayer* editorLayer = EditorLayer::Get();
-		if (editorLayer->GetFocusedViewportPanel() == this)
+		if (editorLayer->GetFocusedViewportPanel().get() == this)
 		{
-			editorLayer->m_GameInstanceContext = &editorLayer->m_MainGameInstance;
+			editorLayer->m_GameInstanceContext = editorLayer->m_MainGameInstance;
 		}
 	}
 
@@ -45,7 +45,7 @@ namespace proton {
 
 		m_Framebuffer = MakeUnique<Framebuffer>(fbSpec);
 		m_Camera = MakeUnique<EditorCamera>(this);
-		m_GameInstance = m_EditorGameInstance->Instance.get();
+		m_GameInstance = m_EditorGameInstance->Instance;
 	}
 
 	void SceneViewportPanel::SetActiveScene(Scene* scene, bool sceneManagerCall) const

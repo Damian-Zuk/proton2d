@@ -28,6 +28,7 @@ namespace proton {
 	class Scene
 	{
 	public:
+		Scene() = delete;
 		Scene(const std::string& filepath = "", const std::string& gameModeClass = "");
 
 		virtual ~Scene();
