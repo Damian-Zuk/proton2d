@@ -6,15 +6,15 @@
 
 namespace proton {
 
-	GameInstance::GameInstance() : 
-		m_SceneManager(MakeUnique<SceneManager>(this)),
+	GameInstance::GameInstance() 
+		: m_SceneManager(MakeUnique<SceneManager>(this)),
 		m_NetworkManager(MakeUnique<NetworkManager>(this))
 	{
 	}
 
 	void GameInstance::Init(bool loadStartScene)
 	{
-		if (!m_ProjectSettings.LoadProjectSettings())
+		if (!m_ProjectConfig.LoadConfig())
 		{
 			PT_CORE_ERROR("Project settings loading failed!");
 		}
@@ -23,7 +23,7 @@ namespace proton {
 			if (m_IsMainInstance)
 				m_NetworkManager->ReadConfig();
 
-			Scene* scene = m_SceneManager->Load(m_ProjectSettings.m_StartScene);
+			Scene* scene = m_SceneManager->Load(m_ProjectConfig.StartScene);
 			m_SceneManager->SetActiveScene(scene);
 
 		#ifdef PROTON_DISTRIBUTION

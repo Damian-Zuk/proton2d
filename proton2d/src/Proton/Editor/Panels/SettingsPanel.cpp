@@ -8,7 +8,7 @@
 
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
-#include "Proton/Core/ProjectSettings.h"
+#include "Proton/Core/ProjectConfig.h"
 #include "Proton/Utils/NickGenerator.h"
 
 #include "Proton/Network/NetworkManager.h"

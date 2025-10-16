@@ -1,13 +1,13 @@
 #pragma once
 #ifdef PT_EDITOR
 #include "Proton/Core/AppLayer.h"
+#include "Proton/Editor/EditorConfig.h"
 #include "Proton/Scene/Entity.h"
 
 struct ImFont; // forward declaration
 
 namespace proton {
 
-	class EditorConfig;
 	class EditorMenuBar;
 	class EditorPanel;
 	class SceneViewportPanel;
@@ -21,7 +21,7 @@ namespace proton {
 		uint32_t ID;
 	};
 
-	class EditorLayer : AppLayer
+	class EditorLayer : private AppLayer
 	{
 	public:
 		EditorLayer() = default;
@@ -82,7 +82,7 @@ namespace proton {
 	private:
 		static EditorLayer* s_Instance;
 
-		Unique<EditorConfig> m_Config;
+		EditorConfig m_Config;
 		Unique<EditorMenuBar> m_MenuBar;
 
 		std::vector<EditorPanel*> m_EditorPanels; // pointers to all panels except scene viewport

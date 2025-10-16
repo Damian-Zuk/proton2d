@@ -1,10 +1,10 @@
 {
-    "client_name": "TomatoTwist64",
-    "debug_fake_lag": 50.0,
-    "max_server_connections": 100,
-    "net_mode": "ListenServer",
-    "port": 8192,
-    "server_ip": "127.0.0.1",
-    "tickrate": 64,
-    "use_physics_tickrate": true
+    "ClientName": "TomatoTwist64",
+    "DebugFakeLag": 50.0,
+    "MaxServerConnections": 100,
+    "NetMode": "ListenServer",
+    "Port": 8192,
+    "ServerIp": "127.0.0.1",
+    "Tickrate": 64,
+    "UsePhysicsTickrate": true
 }

@@ -15,7 +15,7 @@ namespace proton {
 		Camera();
 		virtual ~Camera() = default;
 
-		void SetViewportSize(const glm::vec2& viewportSize);
+		void SetViewportSize(glm::vec2 viewportSize);
 		void SetZoomLevel(float zoomLevel);
 
 		float GetZoomLevel() const { return m_ZoomLevel; }

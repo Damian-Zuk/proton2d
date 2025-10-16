@@ -147,23 +147,23 @@ namespace proton {
 
 		if (ImGui::BeginPopupModal("Project Proporties", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			ProjectSettings& project = EditorLayer::GetMainGameInstance()->m_ProjectSettings;
+			ProjectConfig& project = EditorLayer::GetMainGameInstance()->m_ProjectConfig;
 
 			char buffer[256];
-			strcpy_s(buffer, project.m_StartScene.c_str());
+			strcpy_s(buffer, project.StartScene.c_str());
 
 			ImGui::Dummy({ 0, 5 });
 			ImGui::PushItemWidth(150.0f);
 			if (ImGui::InputText("Startup scene", buffer, 256))
 			{
-				project.m_StartScene = buffer;
+				project.StartScene = buffer;
 			}
 			ImGui::PopItemWidth();
 			ImGui::Dummy({ 0, 5 });
 
 			if (ImGui::Button("Save", {150, 0}))
 			{
-				project.WriteProjectSettings();
+				project.WriteConfig();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SetItemDefaultFocus();

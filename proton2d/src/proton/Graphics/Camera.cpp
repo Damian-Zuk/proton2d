@@ -14,7 +14,7 @@ namespace proton {
 		RecalculateProjection();
 	}
 
-	void Camera::SetViewportSize(const glm::vec2& viewportSize)
+	void Camera::SetViewportSize(glm::vec2 viewportSize)
 	{
 		if (m_ViewportSize != viewportSize)
 		{

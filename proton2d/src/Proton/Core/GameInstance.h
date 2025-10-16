@@ -1,5 +1,5 @@
 #pragma once
-#include "Proton/Core/ProjectSettings.h"
+#include "Proton/Core/ProjectConfig.h"
 #include "Proton/Network/Common.h"
 
 namespace proton {
@@ -39,7 +39,7 @@ namespace proton {
 		Unique<SceneManager> m_SceneManager;
 		Unique<NetworkManager> m_NetworkManager;
 
-		ProjectSettings m_ProjectSettings;
+		ProjectConfig m_ProjectConfig;
 		uint32_t m_SimulatedScenesCount = 0;
 
 		bool m_IsMainInstance = true;

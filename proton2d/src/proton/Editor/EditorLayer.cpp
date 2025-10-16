@@ -14,7 +14,6 @@
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Window.h"
-#include "Proton/Core/Config.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Graphics/Renderer/Framebuffer.h"
 #include "Proton/Events/KeyEvents.h"
@@ -74,7 +73,7 @@ namespace proton {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 
-		m_Config = MakeUnique<EditorConfig>();
+		m_Config.LoadConfig();
 		m_MenuBar = MakeUnique<EditorMenuBar>();
 
 		SetupFonts();
@@ -465,7 +464,7 @@ namespace proton {
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		// Main font
-		const auto& font = m_Config->EditorFonts["FiraCode"];
+		const auto& font = m_Config.EditorFonts["FiraCode"];
 		io.Fonts->AddFontFromFileTTF(font.FontFilepath.c_str(), font.FontSize);
 
 		// Small font

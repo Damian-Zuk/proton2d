@@ -29,9 +29,9 @@ namespace proton {
 
 	private:
 		std::vector<TextureCoords> m_TextureCoords;
-		glm::uvec2 m_TileSizePx = { 0, 0 }; 
-		glm::uvec2 m_TileCount = { 0, 0 };
-		glm::vec2 m_TileScale = { 0.0f, 0.0f };
+		glm::uvec2 m_TileSizePx; 
+		glm::uvec2 m_TileCount;
+		glm::vec2 m_TileScale;
 
 		friend class Sprite;
 		friend class ResizableSprite;

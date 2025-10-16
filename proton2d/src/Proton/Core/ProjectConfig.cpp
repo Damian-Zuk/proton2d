@@ -1,5 +1,5 @@
 #include "ptpch.h"
-#include "Proton/Core/ProjectSettings.h"
+#include "Proton/Core/ProjectConfig.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Utils/Utils.h"
@@ -7,7 +7,7 @@
 
 namespace proton {
 
-	bool ProjectSettings::LoadProjectSettings()
+	bool ProjectConfig::LoadConfig()
 	{
 		if (!std::filesystem::exists(m_Filepath))
 		{
@@ -16,21 +16,21 @@ namespace proton {
 		}
 
 		json jsonObj = jsonObj.parse(Utils::ReadFile(m_Filepath));
-		if (!jsonObj.contains("start_scene"))
+		if (!jsonObj.contains("StartScene"))
 		{
-			PT_CORE_ERROR("'start_scene' missing in '{}'!", m_Filepath);
+			PT_CORE_ERROR("'StartScene' missing in '{}'!", m_Filepath);
 			return false;
 		}
 
-		m_StartScene = jsonObj.at("start_scene");
+		StartScene = jsonObj["StartScene"];
 
 		return true;
 	}
 
-	void ProjectSettings::WriteProjectSettings()
+	void ProjectConfig::WriteConfig()
 	{
 		json jsonObj;
-		jsonObj["start_scene"] = m_StartScene;
+		jsonObj["StartScene"] = StartScene;
 		std::ofstream configFile(m_Filepath);
 		configFile << jsonObj.dump(4);
 		configFile.close();

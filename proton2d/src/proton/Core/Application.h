@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Proton/Core/Base.h"
+#include "Proton/Core/AppConfig.h"
 #include "Proton/Core/AppLayer.h"
 #include "Proton/Core/Window.h"
-#include "Proton/Core/Config.h"
 
 namespace proton {
 
@@ -16,6 +16,8 @@ namespace proton {
 		Application();
 		virtual ~Application();
 
+		static Application& Get() { return *s_Instance; }
+
 		void Run();
 		void PushLayer(AppLayer* layer);
 		void PushOverlay(AppLayer* layer);
@@ -26,7 +28,7 @@ namespace proton {
 		static float GetTotalTimeElapsed();
 
 		Window& GetWindow() { return *m_Window; }
-		static Application& Get() { return *s_Instance; }
+		const Window& GetWindow() const { return *m_Window; }
 		static GameInstance* GetGameInstance();
 
 	protected:
@@ -41,7 +43,7 @@ namespace proton {
 		Unique<GameInstance> m_GameInstance;
 	#endif
 
-		ApplicationConfig m_AppConfig;
+		AppConfig m_AppConfig;
 		std::vector<AppLayer*> m_AppLayers;
 		Unique<Window> m_Window;
 

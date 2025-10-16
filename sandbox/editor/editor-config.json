@@ -1,8 +1,8 @@
 {
-    "fonts": {
+    "Fonts": {
         "FiraCode": {
-            "font_filepath": "editor/content/font/FiraCode-Regular.ttf",
-            "font_size": 18.0
+            "FontFilepath": "editor/content/font/FiraCode-Regular.ttf",
+            "FontSize": 18.0
         }
     }
 }

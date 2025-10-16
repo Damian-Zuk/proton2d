@@ -33,6 +33,8 @@ namespace proton {
 		PT_CORE_ASSERT(!s_Instance, "Application already exists!");
 		Application::s_Instance = this;
 
+		m_AppConfig.LoadConfig();
+
 		WindowSpecification windowSpec;
 		windowSpec.Title = m_AppConfig.WindowTitle;
 		windowSpec.Width = m_AppConfig.WindowWidth;

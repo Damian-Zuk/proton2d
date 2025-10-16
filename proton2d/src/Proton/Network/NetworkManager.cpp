@@ -41,14 +41,14 @@ namespace proton {
 	{
 		nlohmann::json jsonObj;
 		std::ofstream configFile("content/network.json");
-		jsonObj["client_name"] = m_ClientName;
-		jsonObj["net_mode"] = NetModeToString(m_NetMode);
-		jsonObj["server_ip"] = m_IpAddress;
-		jsonObj["port"] = m_Port;
-		jsonObj["tickrate"] = m_Tickrate;
-		jsonObj["use_physics_tickrate"] = m_UsePhysicsTickrate;
-		jsonObj["max_server_connections"] = m_MaxServerConnections;
-		jsonObj["debug_fake_lag"] = Server::s_FakeServerLag;
+		jsonObj["ClientName"] = m_ClientName;
+		jsonObj["NetMode"] = NetModeToString(m_NetMode);
+		jsonObj["ServerIp"] = m_IpAddress;
+		jsonObj["Port"] = m_Port;
+		jsonObj["Tickrate"] = m_Tickrate;
+		jsonObj["UsePhysicsTickrate"] = m_UsePhysicsTickrate;
+		jsonObj["MaxServerConnections"] = m_MaxServerConnections;
+		jsonObj["DebugFakeLag"] = Server::s_FakeServerLag;
 		configFile << jsonObj.dump(4);
 		configFile.close();
 	}
@@ -57,29 +57,29 @@ namespace proton {
 	{
 		nlohmann::json jsonObj = jsonObj.parse(Utils::ReadFile("content/network.json"));
 
-		if (jsonObj.contains("client_name"))
-			m_ClientName = jsonObj["client_name"];
+		if (jsonObj.contains("ClientName"))
+			m_ClientName = jsonObj["ClientName"];
 
-		if (jsonObj.contains("net_mode"))
-			m_NetMode = StringToNetMode(jsonObj["net_mode"]);
+		if (jsonObj.contains("NetMode"))
+			m_NetMode = StringToNetMode(jsonObj["NetMode"]);
 
-		if (jsonObj.contains("server_ip"))
-			m_IpAddress = jsonObj["server_ip"];
+		if (jsonObj.contains("ServerIp"))
+			m_IpAddress = jsonObj["ServerIp"];
 
-		if (jsonObj.contains("port"))
-			m_Port = jsonObj["port"];
+		if (jsonObj.contains("Port"))
+			m_Port = jsonObj["Port"];
 
-		if (jsonObj.contains("tickrate"))
-			m_Tickrate = jsonObj["tickrate"];
+		if (jsonObj.contains("Tickrate"))
+			m_Tickrate = jsonObj["Tickrate"];
 
-		if (jsonObj.contains("use_physics_tickrate"))
-			m_UsePhysicsTickrate = jsonObj["use_physics_tickrate"];
+		if (jsonObj.contains("UsePhysicsTickrate"))
+			m_UsePhysicsTickrate = jsonObj["UsePhysicsTickrate"];
 
-		if (jsonObj.contains("max_server_connections"))
-			m_MaxServerConnections = jsonObj["max_server_connections"];
+		if (jsonObj.contains("MaxServerConnections"))
+			m_MaxServerConnections = jsonObj["MaxServerConnections"];
 
-		if (jsonObj.contains("debug_fake_lag"))
-			Server::s_FakeServerLag = jsonObj["debug_fake_lag"];
+		if (jsonObj.contains("DebugFakeLag"))
+			Server::s_FakeServerLag = jsonObj["DebugFakeLag"];
 	}
 
 	void NetworkManager::OnUpdate(float ts)

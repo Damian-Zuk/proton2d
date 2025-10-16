@@ -20,7 +20,6 @@ namespace proton {
 		static bool UnloadTextureAtlas(const std::string& filepath);
 		static bool IsTextureAtlasLoaded(const std::string& filepath);
 
-
 	private:
 		static AssetManager* s_Instance;
 
