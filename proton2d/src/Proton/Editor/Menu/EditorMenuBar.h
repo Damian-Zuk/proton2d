@@ -1,22 +1,23 @@
 #pragma once
 #ifdef PT_EDITOR
+#include "Proton/Editor/Panels/EditorPanel.h"
 
 namespace proton {
 
 	class SceneManager;
 
-	class EditorMenuBar
+	class EditorMenuBar : public EditorPanel
 	{
 	public:
-		void OnCreate();
-		void OnImGuiRender();
+		virtual void OnCreate() override;
+		virtual void OnImGuiRender() override;
 
+	private:
 		void NewScene();
 		void OpenScene();
 		void SaveScene();
 		void SaveSceneAs();
 
-	private:
 		void HandleProjectProportiesPopup();
 
 	private:

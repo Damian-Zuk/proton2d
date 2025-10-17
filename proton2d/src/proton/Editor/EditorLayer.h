@@ -83,11 +83,11 @@ namespace proton {
 		static EditorLayer* s_Instance;
 
 		EditorConfig m_Config;
-		Unique<EditorMenuBar> m_MenuBar;
 
 		EditorGameInstance* m_GameInstanceContext; // pointer to focused game viewport
 		Unique<EditorGameInstance> m_MainGameInstance; // main viewport
 		std::vector<Unique<EditorGameInstance>> m_GameInstances; // e.g. client instance
+
 		std::unordered_set<uint32_t> m_GameInstancesToClose;
 		uint32_t m_CurrentInstanceID = 0;
 

@@ -43,6 +43,7 @@ namespace proton {
 
 	struct EditorPanels
 	{
+		EditorMenuBar MenuBar;
 		SettingsPanel Settings;
 		InfoPanel Info;
 		InspectorPanel Inspector;
@@ -53,7 +54,7 @@ namespace proton {
 	} static s_Panels;
 	
 	static std::vector<EditorPanel*> s_EditorPanels = {
-		&s_Panels.Settings, &s_Panels.Info, &s_Panels.Inspector,
+		&s_Panels.MenuBar, &s_Panels.Settings, &s_Panels.Info, &s_Panels.Inspector,
 		&s_Panels.SceneHiearchy, &s_Panels.Toolbar, &s_Panels.ContentBrowser
 	};
 
@@ -86,8 +87,6 @@ namespace proton {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
 
-		m_MenuBar = MakeUnique<EditorMenuBar>();
-
 		SetupFonts();
 		SetupImGuiViewports();
 		SetupThemeStyle();
@@ -103,8 +102,6 @@ namespace proton {
 
 		m_GameInstanceContext = m_MainGameInstance.get();
 		m_MainGameInstance->Instance->Init();
-
-		m_MenuBar->OnCreate();
 
 		for (EditorPanel* panel : s_EditorPanels)
 			panel->OnCreate();
@@ -157,9 +154,6 @@ namespace proton {
 			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
 			ImGui::DockSpace(dockspace_id);
 		}
-
-		// Draw menu bar and editor panels
-		m_MenuBar->OnImGuiRender();
 
 		for (EditorPanel* panel : s_EditorPanels)
 			panel->OnImGuiRender();
@@ -251,6 +245,7 @@ namespace proton {
 		// Copy currently active scene to a new game instance
 		Scene* sceneCopy;
 
+		// JSON serialization testing
 		if (activeScene->IsSimulated())
 		{
 			auto backup = m_SceneSimulationBackup.at(filepath);
