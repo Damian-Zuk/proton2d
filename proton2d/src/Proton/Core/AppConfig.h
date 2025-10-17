@@ -5,7 +5,6 @@ namespace proton {
 	class AppConfig
 	{
 	public:
-		std::string WindowTitle;
 		int WindowWidth = 1280;
 		int WindowHeight = 720;
 		bool Fullscreen = false;

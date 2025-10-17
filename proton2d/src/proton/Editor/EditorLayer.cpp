@@ -183,7 +183,7 @@ namespace proton {
 		}
 
 		// Propagate event to other panels
-		for (auto& panel : s_EditorPanels)
+		for (EditorPanel* panel : s_EditorPanels)
 		{
 			panel->OnEvent(event);
 			if (event.Handled)
@@ -207,18 +207,17 @@ namespace proton {
 
 	GameInstance* EditorLayer::LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
 	{
-		uint32_t id = ++m_CurrentInstanceID;
 		m_GameInstances.push_back(MakeUnique<EditorGameInstance>());
 
-		EditorGameInstance* game = m_GameInstances.back().get();
-		game->Instance = MakeUnique<GameInstance>();
-		game->Viewport = MakeUnique<SceneViewportPanel>();
-		game->ID = id;
+		EditorGameInstance* editorInstance = m_GameInstances.back().get();
+		editorInstance->Instance = MakeUnique<GameInstance>();
+		editorInstance->Viewport = MakeUnique<SceneViewportPanel>();
+		editorInstance->ID = ++m_CurrentInstanceID;
 
-		GameInstance* instance = game->Instance.get();
-		SceneViewportPanel* viewport = game->Viewport.get();
+		GameInstance* instance = editorInstance->Instance.get();
+		SceneViewportPanel* viewport = editorInstance->Viewport.get();
 
-		instance->m_EditorGameInstance = game;
+		instance->m_EditorGameInstance = editorInstance;
 		instance->m_IsMainInstance = false;
 
 		NetworkManager* netManager = instance->GetNetworkManager();
@@ -226,7 +225,7 @@ namespace proton {
 		netManager->SetTickRate(m_MainGameInstance->Instance->GetNetworkManager()->GetTickrate());
 		netManager->SetLocalClientName(GenerateRandomNickname());
 
-		viewport->m_EditorGameInstance = game;
+		viewport->m_EditorGameInstance = editorInstance;
 		viewport->m_IsMainViewport = false;
 		viewport->m_ImGuiWindowName = windowName;
 		viewport->OnCreate();

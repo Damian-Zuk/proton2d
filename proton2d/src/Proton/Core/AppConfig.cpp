@@ -9,13 +9,11 @@ namespace proton {
 		if (!std::filesystem::exists(m_Filepath))
 		{
 			PT_CORE_WARN("'{}' file not found! Creating with default values.", m_Filepath);
-			WindowTitle = "Proton2D Engine";
 			WriteConfig();
 			return;
 		}
 		
 		json jsonObj = jsonObj.parse(Utils::ReadFile(m_Filepath));
-		WindowTitle = jsonObj["WindowTitle"];
 		WindowWidth = jsonObj["WindowWidth"];
 		WindowHeight = jsonObj["WindowHeight"];
 		Fullscreen = jsonObj["Fullscreen"];
@@ -26,7 +24,6 @@ namespace proton {
 	void AppConfig::WriteConfig()
 	{
 		json jsonObj;
-		jsonObj["WindowTitle"] = WindowTitle;;
 		jsonObj["WindowWidth"] = WindowWidth;
 		jsonObj["WindowHeight"] = WindowHeight;
 		jsonObj["Fullscreen"] = Fullscreen;
