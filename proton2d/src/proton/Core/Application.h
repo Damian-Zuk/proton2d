@@ -58,15 +58,16 @@ namespace proton {
 
 		Window& GetWindow() { return *m_Window; }
 		const Window& GetWindow() const { return *m_Window; }
-		static Shared<GameInstance> GetGameInstance();
+		static GameInstance* GetGameInstance();
 
 	protected:
 		void OnEvent(Event& event);
 
 	private:
 		static Application* s_Instance;
-
-		Shared<GameInstance> m_GameInstance;
+#ifndef PT_EDITOR
+		Unique<GameInstance> m_GameInstance;
+#endif
 		Unique<Window> m_Window;
 
 		ApplicationSpecification m_Specification;

@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/EditorPanel.h"
 
@@ -36,14 +36,14 @@ namespace proton {
 		void HandleImGuiDragAndDrop();
 
 	private:
-		Shared<EditorGameInstance> m_EditorGameInstance;
+		EditorGameInstance* m_EditorGameInstance = nullptr;
 		std::string m_ImGuiWindowName = "Viewport";
 
 		bool m_IsMainViewport = true;
 		bool m_IsViewportFocused = false;
 		bool m_IsViewportHovered = false;
 
-		Shared<GameInstance> m_GameInstance;
+		GameInstance* m_GameInstance;
 		Entity m_SelectedEntity;
 
 		Unique<EditorCamera> m_Camera;

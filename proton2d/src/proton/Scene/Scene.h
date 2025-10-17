@@ -154,7 +154,7 @@ namespace proton {
 		std::string m_Filepath = "<Unsaved scene>";
 		glm::vec4 m_ClearColor;
 
-		// ECS
+		// EnTT
 		entt::registry m_Registry;
 		std::unordered_map<UUID, Entity> m_EntityMap;
 		std::vector<Entity> m_Root;

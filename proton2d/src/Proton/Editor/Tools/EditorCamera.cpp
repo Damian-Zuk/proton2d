@@ -59,7 +59,7 @@ namespace proton {
 			return;
 
 		auto focusedGameInstasnce = EditorLayer::GetFocusedGameInstance();
-		if (m_ViewportPanel->m_GameInstance.get() != focusedGameInstasnce.get())
+		if (m_ViewportPanel->m_GameInstance != focusedGameInstasnce)
 			return;
 
 		if (scene->m_State == SceneState::Stop || m_UseInRuntime)

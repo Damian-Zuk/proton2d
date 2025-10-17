@@ -33,7 +33,7 @@ namespace proton {
 
 	private:
 	#ifdef PT_EDITOR
-		Shared<EditorGameInstance> m_EditorGameInstance;
+		EditorGameInstance* m_EditorGameInstance = nullptr;
 	#endif
 
 		Unique<SceneManager> m_SceneManager;

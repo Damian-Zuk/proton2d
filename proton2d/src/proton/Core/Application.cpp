@@ -49,9 +49,7 @@ namespace proton {
 	#ifdef PROTON_PLATFORM_WINDOWS
 		m_Window = MakeUnique<WindowsWindow>(windowSpec);
 	#endif
-
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
-		m_GameInstance = MakeShared<GameInstance>();
 
 		AssetManager::Init();
 		PrefabManager::Init();
@@ -70,9 +68,8 @@ namespace proton {
 
 	#ifdef PT_EDITOR
 		EditorLayer* editorLayer = m_LayerStack.PushOverlay<EditorLayer>();
-	#endif
-
-	#ifdef PROTON_DISTRIBUTION
+	#else
+		m_GameInstance = MakeUnique<GameInstance>();
 		m_GameInstance->Init();
 		Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
 	#endif
@@ -118,9 +115,13 @@ namespace proton {
 		PROFILE_END_SESSION();
 	}
 
-	Shared<GameInstance> Application::GetGameInstance()
+	GameInstance* Application::GetGameInstance()
 	{
-		return s_Instance->m_GameInstance;
+#ifdef PT_EDITOR
+		return EditorLayer::GetMainGameInstance();
+#else
+		return m_GameInstance.get();
+#endif
 	}
 
 	void Application::Exit()
@@ -175,16 +176,21 @@ namespace proton {
 		{
 			if (event.Handled)
 				return;
+
 			layer->OnEvent(event);
 		}
 
 		if (event.Handled)
 			return;
-		if (Scene* scene = m_GameInstance->GetActiveScene())
-		{
-			if (scene->IsSimulated())
-				scene->GetGameMode()->OnEvent(event);
-		}
+
+	#ifdef PT_EDITOR
+		Scene* scene = EditorLayer::GetFocusedGameInstance()->GetActiveScene();
+	#else
+		Scene* scene = m_GameInstance->GetActiveScene();
+	#endif 
+
+		if (scene && scene->IsSimulated())
+			scene->GetGameMode()->OnEvent(event);
 	}
 
 }

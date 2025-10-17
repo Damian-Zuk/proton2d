@@ -39,7 +39,7 @@ namespace proton {
 
 	EditorLayer* EditorLayer::s_Instance = nullptr;
 
-	static const bool s_EnableViewports = false;
+	static constexpr bool s_EnableViewports = false;
 
 	struct EditorPanels
 	{
@@ -51,6 +51,11 @@ namespace proton {
 		ContentBrowserPanel ContentBrowser;
 
 	} static s_Panels;
+	
+	static std::vector<EditorPanel*> s_EditorPanels = {
+		&s_Panels.Settings, &s_Panels.Info, &s_Panels.Inspector,
+		&s_Panels.SceneHiearchy, &s_Panels.Toolbar, &s_Panels.ContentBrowser
+	};
 
 	struct EditorFonts
 	{
@@ -60,6 +65,7 @@ namespace proton {
 	} static s_Fonts;
 
 	EditorLayer::EditorLayer()
+		: m_GameInstanceContext(nullptr)
 	{
 		PT_CORE_ASSERT(!s_Instance, "EditorLayer already exists!");
 		s_Instance = this;
@@ -88,27 +94,19 @@ namespace proton {
 		InitImGuiForGLFW();
 
 		// Initialize main game instance
-		m_MainGameInstance = MakeShared<EditorGameInstance>();
-		m_MainGameInstance->Instance = Application::GetGameInstance();
-		m_MainGameInstance->Viewport = MakeShared<SceneViewportPanel>();
+		m_MainGameInstance = MakeUnique<EditorGameInstance>();
+		m_MainGameInstance->Instance = MakeUnique<GameInstance>();
+		m_MainGameInstance->Viewport = MakeUnique<SceneViewportPanel>();
 		m_MainGameInstance->ID = 0;
-		m_MainGameInstance->Instance->m_EditorGameInstance = m_MainGameInstance;
-		m_MainGameInstance->Viewport->m_EditorGameInstance = m_MainGameInstance;
+		m_MainGameInstance->Instance->m_EditorGameInstance = m_MainGameInstance.get();
+		m_MainGameInstance->Viewport->m_EditorGameInstance = m_MainGameInstance.get();
 
-		m_GameInstanceContext = m_MainGameInstance;
+		m_GameInstanceContext = m_MainGameInstance.get();
 		m_MainGameInstance->Instance->Init();
 
 		m_MenuBar->OnCreate();
 
-		// Initialize editor panels
-		m_EditorPanels.push_back(&s_Panels.Settings);
-		m_EditorPanels.push_back(&s_Panels.Info);
-		m_EditorPanels.push_back(&s_Panels.Inspector);
-		m_EditorPanels.push_back(&s_Panels.SceneHiearchy);
-		m_EditorPanels.push_back(&s_Panels.Toolbar);
-		m_EditorPanels.push_back(&s_Panels.ContentBrowser);
-
-		for (EditorPanel* panel : m_EditorPanels)
+		for (EditorPanel* panel : s_EditorPanels)
 			panel->OnCreate();
 
 		m_MainGameInstance->Viewport->OnCreate();
@@ -123,12 +121,12 @@ namespace proton {
 
 	void EditorLayer::OnUpdate(float ts)
 	{
-		for (auto& panel : m_EditorPanels)
+		for (EditorPanel* panel : s_EditorPanels)
 			panel->OnUpdate(ts);
 		
 		m_MainGameInstance->Viewport->OnUpdate(ts);
 
-		for (auto& game : m_GameInstances)
+		for (const auto& game : m_GameInstances)
 			game->Viewport->OnUpdate(ts);
 
 		HandleGameInstanceCloseEvent();
@@ -163,12 +161,12 @@ namespace proton {
 		// Draw menu bar and editor panels
 		m_MenuBar->OnImGuiRender();
 
-		for (auto& panel : m_EditorPanels)
+		for (EditorPanel* panel : s_EditorPanels)
 			panel->OnImGuiRender();
 
 		m_MainGameInstance->Viewport->OnImGuiRender();
 
-		for (auto& game : m_GameInstances)
+		for (const auto& game : m_GameInstances)
 			game->Viewport->OnImGuiRender();
 
 		ImGui::End();
@@ -191,7 +189,7 @@ namespace proton {
 		}
 
 		// Propagate event to other panels
-		for (auto& panel : m_EditorPanels)
+		for (auto& panel : s_EditorPanels)
 		{
 			panel->OnEvent(event);
 			if (event.Handled)
@@ -213,18 +211,18 @@ namespace proton {
 		}
 	}
 
-	Shared<GameInstance> EditorLayer::LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
+	GameInstance* EditorLayer::LaunchNewGameInstance(NetMode netMode, bool loadStartupScene, const std::string& windowName)
 	{
 		uint32_t id = ++m_CurrentInstanceID;
-		m_GameInstances.push_back(MakeShared<EditorGameInstance>());
+		m_GameInstances.push_back(MakeUnique<EditorGameInstance>());
 
-		auto game = m_GameInstances.back();
-		game->Instance = MakeShared<GameInstance>();
-		game->Viewport = MakeShared<SceneViewportPanel>();
+		EditorGameInstance* game = m_GameInstances.back().get();
+		game->Instance = MakeUnique<GameInstance>();
+		game->Viewport = MakeUnique<SceneViewportPanel>();
 		game->ID = id;
 
-		auto instance = game->Instance;
-		auto viewport = game->Viewport;
+		GameInstance* instance = game->Instance.get();
+		SceneViewportPanel* viewport = game->Viewport.get();
 
 		instance->m_EditorGameInstance = game;
 		instance->m_IsMainInstance = false;
@@ -280,7 +278,7 @@ namespace proton {
 
 	void EditorLayer::CloseGameInstance(uint32_t instanceID)
 	{
-		m_GameInstancesToClose.push_back(instanceID);
+		m_GameInstancesToClose.insert(instanceID);
 
 		if (m_GameInstances.size() == 1)
 			m_CurrentInstanceID = 0;
@@ -292,18 +290,14 @@ namespace proton {
 			return;
 
 		m_GameInstances.erase(std::remove_if(m_GameInstances.begin(), m_GameInstances.end(),
-			[this](const Shared<EditorGameInstance>& instance) {
-				for (uint32_t id : m_GameInstancesToClose)
-				{
-					if (instance->ID == id)
-						return true;
-				}
-				return false;
+			[this](const Unique<EditorGameInstance>& instance) {
+				auto it = m_GameInstancesToClose.find(instance->ID);
+				return it != m_GameInstancesToClose.end();
 			}
 		));
 
 		m_GameInstancesToClose.clear();
-		m_GameInstanceContext = m_MainGameInstance;
+		m_GameInstanceContext = m_MainGameInstance.get();
 	}
 
 	void EditorLayer::OnStartSimulationButton()
@@ -416,37 +410,32 @@ namespace proton {
 		return s_Instance->m_MainGameInstance->Instance->GetActiveScene();
 	}
 
-	Shared<GameInstance> EditorLayer::GetMainGameInstance()
+	GameInstance* EditorLayer::GetMainGameInstance()
 	{
-		return s_Instance->m_MainGameInstance->Instance;
+		return s_Instance->m_MainGameInstance->Instance.get();
 	}
 
-	Shared<GameInstance> EditorLayer::GetFocusedGameInstance()
+	GameInstance* EditorLayer::GetFocusedGameInstance()
 	{
-		return s_Instance->m_GameInstanceContext->Instance;
+		return s_Instance->m_GameInstanceContext->Instance.get();
 	}
 
-	Shared<SceneViewportPanel> EditorLayer::GetMainViewportPanel()
+	SceneViewportPanel* EditorLayer::GetMainViewportPanel()
 	{
-		return s_Instance->m_MainGameInstance->Viewport;
+		return s_Instance->m_MainGameInstance->Viewport.get();
 	}
 
-	Shared<SceneViewportPanel> EditorLayer::GetFocusedViewportPanel()
+	SceneViewportPanel* EditorLayer::GetFocusedViewportPanel()
 	{
-		return s_Instance->m_GameInstanceContext->Viewport;
+		return s_Instance->m_GameInstanceContext->Viewport.get();
 	}
 
-	Shared<SceneViewportPanel> EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(GameInstance* gameInstance)
 	{
-		return gameInstance->m_EditorGameInstance->Viewport;
+		return gameInstance->m_EditorGameInstance->Viewport.get();
 	}
 
-	Shared<SceneViewportPanel> EditorLayer::GetSceneViewportPanel(const Shared<GameInstance>& gameInstance)
-	{
-		return gameInstance->m_EditorGameInstance->Viewport;
-	}
-
-	Shared<SceneViewportPanel> EditorLayer::GetSceneViewportPanel(Scene* scene)
+	SceneViewportPanel* EditorLayer::GetSceneViewportPanel(Scene* scene)
 	{
 		return GetSceneViewportPanel(scene->m_GameInstance);
 	}
