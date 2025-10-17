@@ -60,4 +60,4 @@
 #endif
 
 #define PT_THROW_ERROR(...) \
-	PT_CORE_ASSERT(false); PT_CORE_ERROR(__VA_ARGS__);
+	PT_CORE_ERROR(__VA_ARGS__); //PT_CORE_ASSERT(false);

@@ -85,13 +85,12 @@ namespace proton {
 		std::lock_guard<std::mutex> lock(m_QueueMutex);
 		Scene* scene = m_GameInstance->GetActiveScene();
 
-		while (!m_MessageQueue.empty())
+		for (ISteamNetworkingMessage* message : m_MessageQueue)
 		{
-			ISteamNetworkingMessage* message = m_MessageQueue.front();
 			OnNetworkMessage(message);
 			message->Release();
-			m_MessageQueue.pop();
 		}
+		m_MessageQueue.clear();
 	}
 
 	void Client::SendHandshake()
@@ -114,6 +113,8 @@ namespace proton {
 		MessageType packetType;
 		stream.ReadRaw(packetType);
 		stream.SetStreamPosition(0);
+
+		//PT_CORE_TRACE("{}", MessageTypeToString(packetType));
 
 		switch (packetType)
 		{
@@ -256,7 +257,7 @@ namespace proton {
 			}
 
 			std::lock_guard<std::mutex> lock(m_QueueMutex);
-			m_MessageQueue.push(incomingMessage);
+			m_MessageQueue.push_back(incomingMessage);
 		}
 	}
 

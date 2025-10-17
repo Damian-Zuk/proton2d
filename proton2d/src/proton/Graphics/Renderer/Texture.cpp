@@ -35,7 +35,7 @@ namespace proton {
 	}
 
 	Texture::Texture(const TextureSpecification& specification)
-		: m_Specification(specification), m_Width(m_Specification.Width), m_Height(m_Specification.Height)
+		: m_Specification(specification), m_Width(specification.Width), m_Height(specification.Height)
 	{
 		m_InternalFormat = Utils::ProtonImageFormatToGLInternalFormat(m_Specification.Format);
 		m_DataFormat = Utils::ProtonImageFormatToGLDataFormat(m_Specification.Format);

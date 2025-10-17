@@ -86,7 +86,7 @@ namespace proton {
 		Buffer m_ScratchBuffer;
 
 		// Queue for message processing
-		std::queue<ISteamNetworkingMessage*> m_MessageQueue;
+		std::vector<ISteamNetworkingMessage*> m_MessageQueue;
 		std::mutex m_QueueMutex;
 
 		friend class NetworkManager;

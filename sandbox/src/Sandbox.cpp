@@ -1,15 +1,20 @@
 #include <Proton.h>
-
-#define GAME_NET_PROTOCOL_VERSION 1
+#include <Proton/Core/EntryPoint.h>
 
 class Sandbox : public proton::Application
 {
 public:
-	virtual bool OnCreate() override 
+	Sandbox(proton::ApplicationSpecification& spec) 
+		: proton::Application(spec)
 	{
-		proton::NetworkManager::SetGameProtocolVersion(GAME_NET_PROTOCOL_VERSION);
-		return true;
 	}
 };
 
-PROTON_APPLICATION_ENTRY_POINT(Sandbox);
+proton::Application* proton::CreateApplication(proton::ApplicationCommandLineArgs args)
+{
+	proton::ApplicationSpecification spec;
+	spec.Name = "Proton2D: Sandbox App";
+	spec.CommandLineArgs = args;
+
+	return new Sandbox(spec);
+}

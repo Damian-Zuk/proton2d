@@ -28,15 +28,19 @@ namespace proton {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application()
+	Application::Application(const ApplicationSpecification& specification)
+		: m_Specification(specification)
 	{
 		PT_CORE_ASSERT(!s_Instance, "Application already exists!");
 		Application::s_Instance = this;
 
+		if (!m_Specification.WorkingDirectory.empty())
+			std::filesystem::current_path(m_Specification.WorkingDirectory);
+
 		m_AppConfig.LoadConfig();
 
 		WindowSpecification windowSpec;
-		windowSpec.Title = m_AppConfig.WindowTitle;
+		windowSpec.Title = m_Specification.Name;
 		windowSpec.Width = m_AppConfig.WindowWidth;
 		windowSpec.Height = m_AppConfig.WindowHeight;
 		windowSpec.Fullscreen = m_AppConfig.Fullscreen;
@@ -48,10 +52,10 @@ namespace proton {
 
 		m_Window->SetEventCallback(PT_BIND_FUNCTION(Application::OnEvent));
 		m_GameInstance = MakeShared<GameInstance>();
-	}
 
-	Application::~Application()
-	{
+		AssetManager::Init();
+		PrefabManager::Init();
+		Renderer::Init();
 	}
 
 	void Application::Run()
@@ -62,21 +66,11 @@ namespace proton {
 			return;
 		}
 
-		AssetManager::Init();
-		PrefabManager::Init();
-		Renderer::Init();
+		m_IsRunning = true;
 
 	#ifdef PT_EDITOR
 		EditorLayer* editorLayer = m_LayerStack.PushOverlay<EditorLayer>();
 	#endif
-
-		if (!OnCreate())
-		{
-			PT_CORE_ERROR("Application initialization failed! Exiting.");
-			return;
-		}
-
-		m_IsRunning = true;
 
 	#ifdef PROTON_DISTRIBUTION
 		m_GameInstance->Init();

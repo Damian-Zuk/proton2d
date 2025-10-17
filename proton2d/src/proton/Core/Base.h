@@ -15,7 +15,7 @@
 #define PT_EXPAND_MACRO(x) x
 #define PT_STRINGIFY_MACRO(x) #x
 
-#define PT_BIND_FUNCTION(x) std::bind(&x, this, std::placeholders::_1)
+#define PT_BIND_FUNCTION(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 namespace proton 
 {

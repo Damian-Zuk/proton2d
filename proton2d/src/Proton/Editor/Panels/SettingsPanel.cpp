@@ -126,7 +126,7 @@ namespace proton {
 			// Editor network settings
 			if (netMode == NetMode::ListenServer || netMode == NetMode::DedicatedServer)
 			{
-				ImGui::Checkbox("Autostart Client", &EditorLayer::Get()->m_AutostartClient);
+				ImGui::Checkbox("Autostart Client Instance", &EditorLayer::Get()->m_AutostartClient);
 			}
 
 			if (netMode == NetMode::Client)

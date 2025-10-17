@@ -52,7 +52,6 @@ namespace proton {
 			s_Data.PathToJsonMap.erase(path);
 			s_Data.UUIDToJsonMap.erase(uuid);
 		}
-
 	}
 
 	void PrefabManager::Init()

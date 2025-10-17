@@ -5,16 +5,47 @@
 #include "Proton/Core/LayerStack.h"
 #include "Proton/Core/Window.h"
 
+#ifdef PROTON_PLATFORM_WINDOWS
+
+#ifdef PROTON_DISTRIBUTION
+	int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow);
+#else
+	int main(int argc, char** argv);
+#endif
+#else
+	int main(int argc, char** argv);
+#endif
+
+
 namespace proton {
 
 	// Forward declaration
 	class GameInstance;
 
+	struct ApplicationCommandLineArgs
+	{
+		int Count = 0;
+		char** Args = nullptr;
+
+		const char* operator[](int index) const
+		{
+			PT_CORE_ASSERT(index < Count);
+			return Args[index];
+		}
+	};
+
+	struct ApplicationSpecification
+	{
+		std::string Name = "Proton Engine";
+		std::string WorkingDirectory;
+		ApplicationCommandLineArgs CommandLineArgs;
+	};
+
 	class Application
 	{
 	public:
-		Application();
-		virtual ~Application();
+		Application(const ApplicationSpecification& specification);
+		virtual ~Application() = default;
 
 		static Application& Get() { return *s_Instance; }
 
@@ -30,8 +61,6 @@ namespace proton {
 		static Shared<GameInstance> GetGameInstance();
 
 	protected:
-		virtual bool OnCreate() = 0; // To be defined by client
-
 		void OnEvent(Event& event);
 
 	private:
@@ -40,6 +69,7 @@ namespace proton {
 		Shared<GameInstance> m_GameInstance;
 		Unique<Window> m_Window;
 
+		ApplicationSpecification m_Specification;
 		AppConfig m_AppConfig;
 		LayerStack m_LayerStack;
 
@@ -52,31 +82,7 @@ namespace proton {
 		friend class InfoPanel;
 	};
 
+	// To be defined in CLIENT
+	Application* CreateApplication(ApplicationCommandLineArgs args);
+
 }
-
-// Application Entry Point
-#ifdef PROTON_DISTRIBUTION
-
-	#ifdef PROTON_PLATFORM_WINDOWS
-
-		#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass)\
-		int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)\
-		{\
-			proton::Logger::Init();\
-			ApplcationClass app;\
-			app.Run();\
-		}
-
-	#endif
-
-#else
-
-	#define PROTON_APPLICATION_ENTRY_POINT(ApplcationClass)\
-	int main(int argc, char** argv)\
-	{\
-		proton::Logger::Init();\
-		ApplcationClass app;\
-		app.Run();\
-	}
-
-#endif
