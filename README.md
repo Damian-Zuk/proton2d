@@ -107,8 +107,5 @@ The approach of native scripting has the disadvantage of requiring a recompilati
 ## Sandbox Project
 The `sandbox` is the project in which the game is developed. It contains an example game made in Proton2D. Window properties can be changed by modifing the `sandbox/app-config.json` config file. A proper script for creating new game projects from the template will be added soon.
 
-## The Plans
-The current goal of the project is to have networking implemented and a basic game UI system. Other features will be added, and editor improvements will be made. Loaded scenes will be displayed as tabs above the viewport. The prefabs system and UI will be reworked.
-
 ## License
 &copy; Licensed under the MIT License.
