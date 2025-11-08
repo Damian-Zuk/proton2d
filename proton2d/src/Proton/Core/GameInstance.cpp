@@ -36,7 +36,7 @@ namespace proton {
 		if (m_AppScript->OnCreate())
 			m_AppScript->m_Status = ScriptStatus::Initialized;
 		else
-			m_AppScript->m_Status = ScriptStatus::FailedToInitialize;
+			m_AppScript->m_Status = ScriptStatus::Failure;
 
 		if (loadStartScene)
 		{

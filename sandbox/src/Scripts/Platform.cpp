@@ -3,7 +3,7 @@ using namespace proton;
 
 #include "Platform.h"
 
-void RedPlatform::OnRegisterFields()
+void RedPlatform::OnPreInit()
 {
 	REGISTER_FIELD(Float, m_VanishAfter);
 	REGISTER_FIELD(Float, m_VanishTime);

@@ -6,12 +6,11 @@
 #include "Proton/Core/Window.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
-
-#ifdef PROTON_DISTRIBUTION
-	int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow);
-#else
-	int main(int argc, char** argv);
-#endif
+	#ifdef PROTON_DISTRIBUTION
+		int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow);
+	#else
+		int main(int argc, char** argv);
+	#endif
 #else
 	int main(int argc, char** argv);
 #endif

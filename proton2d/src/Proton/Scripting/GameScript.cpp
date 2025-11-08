@@ -9,6 +9,7 @@
 namespace proton {
 
 	GameScript::GameScript()
+        : Script(ScriptType::GameScript)
 	{
         m_ScriptType = ScriptType::GameScript;
 	}

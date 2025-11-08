@@ -4,8 +4,8 @@
 namespace proton {
 
 	EntityScript::EntityScript()
+		: Script(ScriptType::EntityScript)
 	{
-		m_ScriptType = ScriptType::EntityScript;
 	}
 
 	void EntityScript::SetPhysicsSensor(uint32_t sensorType, const std::string& childEntityTagName)

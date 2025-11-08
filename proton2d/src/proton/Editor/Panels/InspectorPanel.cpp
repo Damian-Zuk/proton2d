@@ -2,6 +2,7 @@
 #ifdef PT_EDITOR
 #include "Proton/Editor/Panels/InspectorPanel.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Widget/ScriptEditWidget.h"
 #include "Proton/Editor/EditorLayer.h"
 
 #include "Proton/Core/Application.h"
@@ -259,60 +260,7 @@ namespace proton {
 				if (opened)
 				{
 					ImGui::Dummy({ 0.0f, 3.0f });
-					for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
-					{
-						if (!scriptInstance->m_ScriptFields.at(fieldName).ShowInEditor)
-							continue;
-
-						switch (fieldData.Type)
-						{
-						case ScriptFieldType::Float:
-							ImGui::DragFloat(fieldName.c_str(), (float*)fieldData.ValuePtr, 0.01f);
-							break;
-						case ScriptFieldType::Float2:
-							ImGui::DragFloat2(fieldName.c_str(), (float*)fieldData.ValuePtr, 0.01f);
-							break;
-						case ScriptFieldType::Float3:
-							ImGui::DragFloat3(fieldName.c_str(), (float*)fieldData.ValuePtr, 0.01f);
-							break;
-						case ScriptFieldType::Float4:
-							if (fieldName.find("Color") != fieldName.npos || fieldName.find("color") != fieldName.npos)
-								ImGui::ColorEdit4(fieldName.c_str(), (float*)fieldData.ValuePtr);
-							else
-								ImGui::DragFloat4(fieldName.c_str(), (float*)fieldData.ValuePtr, 0.01f);
-							break;
-
-						case ScriptFieldType::Int:
-							ImGui::DragInt(fieldName.c_str(), (int*)fieldData.ValuePtr);
-							break;
-						case ScriptFieldType::Int2:
-							ImGui::DragInt2(fieldName.c_str(), (int*)fieldData.ValuePtr);
-							break;
-						case ScriptFieldType::Int3:
-							ImGui::DragInt3(fieldName.c_str(), (int*)fieldData.ValuePtr);
-							break;
-						case ScriptFieldType::Int4:
-							ImGui::DragInt4(fieldName.c_str(), (int*)fieldData.ValuePtr);
-							break;
-
-						case ScriptFieldType::Bool:
-							ImGui::Checkbox(fieldName.c_str(), (bool*)fieldData.ValuePtr);
-							break;
-
-						case ScriptFieldType::String:
-						{
-							static char buffer[1024];
-							strcpy_s(buffer, ((std::string*)fieldData.ValuePtr)->c_str());
-							if (ImGui::InputText(fieldName.c_str(), buffer, 1024))
-							{
-								std::string& strRef = *(std::string*)fieldData.ValuePtr;
-								strRef = buffer;
-							}
-							break;
-						}
-						}
-					}
-					scriptInstance->OnImGuiRender();
+					ScriptEditWidget::DrawFieldEdit(scriptInstance);
 					ImGui::TreePop();
 				}
 
@@ -811,7 +759,7 @@ namespace proton {
 			ImGui::Dummy({ 0, 2 });
 			const std::string& selectedGameScript = scene->m_GameScript->GetScriptClassName();
 			ImGui::PushItemWidth(210.0f);
-			if (ImGui::BeginCombo("Game Script Class", selectedGameScript.c_str()))
+			if (ImGui::BeginCombo("GameScript Class", selectedGameScript.c_str()))
 			{
 				for (auto& [className, instanciateFunc] : ScriptFactory::Get().m_GameFuncRegistry)
 				{
@@ -826,8 +774,7 @@ namespace proton {
 			ImGui::PopItemWidth();
 			ImGui::Dummy({ 0.0f, 5.0f });
 
-			// Custom render
-			scene->GetGameScript()->OnImGuiRender();
+			ScriptEditWidget::DrawFieldEdit(scene->GetGameScript());
 
 			ImGui::TreePop();
 		}

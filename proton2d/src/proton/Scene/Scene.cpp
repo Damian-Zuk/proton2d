@@ -33,15 +33,7 @@ namespace proton {
 	Scene::Scene(GameInstance* gameInstance, const std::string& filepath, const std::string& gameScriptClass)
 		:  m_GameInstance(gameInstance), m_Filepath(filepath), m_ClearColor(DEFAULT_SCENE_SCREEN_CLEAR_COLOR)
 	{
-		if (gameScriptClass.length())
-		{
-			ScriptFactory::Get().AddScriptToScene(this, gameScriptClass);
-		}
-		else
-		{
-			ScriptFactory::Get().AddScriptToScene(this, "GameScriptDefault");
-		}
-
+		SetGameScript(gameScriptClass);
 		m_PhysicsWorld = MakeUnique<PhysicsWorld>(this);
 	}
 
@@ -225,11 +217,10 @@ namespace proton {
 		if (m_GameScript->OnCreate())
 			m_GameScript->m_Status = ScriptStatus::Initialized;
 		else
-			m_GameScript->m_Status = ScriptStatus::FailedToInitialize;
+			m_GameScript->m_Status = ScriptStatus::Failure;
 
 		m_PhysicsTimeAccumulator = 0.0f;
 	}
-
 
 	void Scene::BuildPhysicsWorld()
 	{
@@ -626,7 +617,7 @@ namespace proton {
 					else
 					{
 						PT_CORE_ERROR("Failed to initialize script {} for an entity {}", script.first, Entity(entity, this).GetUUID());
-						instance->m_Status = ScriptStatus::FailedToInitialize;
+						instance->m_Status = ScriptStatus::Failure;
 					}
 				}
 				

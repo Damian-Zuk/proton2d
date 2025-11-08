@@ -5,7 +5,7 @@ class DynamicExtrapolation : public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(DynamicExtrapolation)
 
-	virtual void OnRegisterFields() override;
+	virtual void OnPreInit() override;
 	virtual bool OnCreate() override;
 	virtual void OnFixedUpdate(float ts) override;
 

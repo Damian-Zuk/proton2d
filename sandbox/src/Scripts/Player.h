@@ -32,7 +32,7 @@ class Player : public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(Player)
 
-	virtual void OnRegisterFields() override;
+	virtual void OnPreInit() override;
 	virtual bool OnCreate() override;
 	virtual void OnUpdate(float ts) override;
 	virtual void OnFixedUpdate(float ts) override;

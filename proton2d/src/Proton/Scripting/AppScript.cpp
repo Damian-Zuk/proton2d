@@ -4,8 +4,8 @@
 namespace proton {
 
 	AppScript::AppScript()
+		: Script(ScriptType::AppScript)
 	{
-		m_ScriptType = ScriptType::AppScript;
 	}
 
 }

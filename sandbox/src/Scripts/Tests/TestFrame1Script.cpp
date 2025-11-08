@@ -3,7 +3,7 @@ using namespace proton;
 
 #include "TestFrame1Script.h"
 
-void TestFrame1Script::OnRegisterFields()
+void TestFrame1Script::OnPreInit()
 {
 	REGISTER_FIELD(Float, m_BounceForce);
 	REGISTER_FIELD(Float, m_Interval);

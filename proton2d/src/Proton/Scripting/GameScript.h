@@ -9,11 +9,11 @@ namespace proton {
 		GameScript();
 		virtual ~GameScript() = default;
 
+		virtual void OnPreInit() override {};
 		virtual bool OnCreate() override { return true; }
 		virtual void OnDestroy() override {};
 		virtual void OnUpdate(float ts) {} ;
 		virtual void OnFixedUpdate(float ts) override {};
-		virtual void OnRegisterFields() override {};
 		virtual void OnEvent(Event& event) override {};
 		virtual void OnImGuiRender() override {};
 

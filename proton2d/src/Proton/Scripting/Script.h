@@ -22,21 +22,21 @@ namespace proton {
 	{
 		Uninitalized = 0,
 		Initialized,
-		FailedToInitialize
+		Failure
 	};
 
 	// Native Script base class
 	class Script
 	{
 	public:
-		Script() = default;
+		Script(ScriptType type);
 		virtual ~Script() = default;
 
+		virtual void OnPreInit() = 0;
 		virtual bool OnCreate() = 0;
 		virtual void OnDestroy() = 0;
 		virtual void OnUpdate(float ts) = 0;
 		virtual void OnFixedUpdate(float ts) = 0;
-		virtual void OnRegisterFields() = 0;
 		virtual void OnEvent(Event& event) = 0;
 		virtual void OnImGuiRender() = 0;
 
@@ -46,11 +46,11 @@ namespace proton {
 			return dynamic_cast<TScript*>(this);
 		}
 
-		void RegisterField(ScriptFieldType type, const std::string& name, void* valuePtr, size_t size, bool showInEditor = true);
-
 		SceneManager* GetSceneManager() const;
 		NetworkManager* GetNetworkManager() const;
-		
+
+		void RegisterField(ScriptFieldType type, const std::string& name, void* valuePtr, size_t size, bool showInEditor = true);
+
 		// Input
 		bool IsKeyPressed(KeyCode key) const;
 		bool IsMouseButtonPressed(MouseCode button) const;
@@ -86,35 +86,14 @@ namespace proton {
 		friend class GameInstance;
 		friend class Scene;
 		friend class Entity;
+		friend class ScriptSerializer;
+		friend class SceneSerializer;
 
 		friend class InspectorPanel;
-		friend class SceneSerializer;
+		friend class ScriptEditWidget;
 	};
 
 }
-
-
-#define _SCRIPT_GENERATED_BODY(scriptClass) \
-	static inline const std::string __ScriptClassName = #scriptClass; \
-	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; } \
-
-#define ENTITY_SCRIPT_CLASS(scriptClass) _SCRIPT_GENERATED_BODY(scriptClass) \
-	static inline const bool __FactoryRegistered = \
-		proton::ScriptFactory::Get().RegisterEntityScript(__ScriptClassName, \
-			[&](proton::Entity entity){ return entity.AddScript<scriptClass>(); } \
-		); \
-
-#define GAME_SCRIPT_CLASS(scriptClass) _SCRIPT_GENERATED_BODY(scriptClass) \
-	static inline const bool __FactoryRegistered = \
-		proton::ScriptFactory::Get().RegisterGameScript(__ScriptClassName, \
-			[&](proton::Scene* scene){ return scene->SetGameScript<scriptClass>(); } \
-		); \
-
-#define APP_SCRIPT_CLASS(scriptClass) _SCRIPT_GENERATED_BODY(scriptClass) \
-	static inline const bool __FactoryRegistered = \
-		proton::ScriptFactory::Get().RegisterAppScript(__ScriptClassName, \
-			[&](proton::GameInstance* instance){ return instance->SetAppScript<scriptClass>(); } \
-		); \
 
 #define REGISTER_FIELD(type, field) \
 	RegisterField(proton::ScriptFieldType::type, #field, &field, sizeof(field), true);

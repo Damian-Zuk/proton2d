@@ -34,6 +34,28 @@ namespace proton {
 		std::unordered_map<std::string, AddAppScriptFn> m_AppFuncRegistry;
 
 		friend class InspectorPanel;
+		friend class EditorMenuBar;
 	};
 }
 
+#define _SCRIPT_GENERATED_BODY(scriptClass) \
+	static inline const std::string __ScriptClassName = #scriptClass; \
+	virtual const std::string& GetScriptClassName() override { return __ScriptClassName; } \
+
+#define ENTITY_SCRIPT_CLASS(scriptClass) _SCRIPT_GENERATED_BODY(scriptClass) \
+	static inline const bool __FactoryRegistered = \
+		proton::ScriptFactory::Get().RegisterEntityScript(__ScriptClassName, \
+			[&](proton::Entity entity){ return entity.AddScript<scriptClass>(); } \
+		); \
+
+#define GAME_SCRIPT_CLASS(scriptClass) _SCRIPT_GENERATED_BODY(scriptClass) \
+	static inline const bool __FactoryRegistered = \
+		proton::ScriptFactory::Get().RegisterGameScript(__ScriptClassName, \
+			[&](proton::Scene* scene){ return scene->SetGameScript<scriptClass>(); } \
+		); \
+
+#define APP_SCRIPT_CLASS(scriptClass) _SCRIPT_GENERATED_BODY(scriptClass) \
+	static inline const bool __FactoryRegistered = \
+		proton::ScriptFactory::Get().RegisterAppScript(__ScriptClassName, \
+			[&](proton::GameInstance* instance){ return instance->SetAppScript<scriptClass>(); } \
+		); \

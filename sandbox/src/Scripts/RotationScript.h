@@ -6,7 +6,7 @@ class RotationScript : public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(RotationScript)
 
-	virtual void OnRegisterFields() override 
+	virtual void OnPreInit() override 
 	{
 		REGISTER_FIELD(Float, m_RotationSpeed);
 	}

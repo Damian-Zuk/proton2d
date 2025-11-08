@@ -92,7 +92,7 @@ namespace proton {
 			script->m_GameInstance = m_Scene->m_GameInstance;
 			script->m_Scene = m_Scene;
 			script->m_Handle = m_Handle;
-			script->OnRegisterFields();
+			script->OnPreInit();
 
 			return script;
 		}

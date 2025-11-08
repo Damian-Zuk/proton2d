@@ -4,9 +4,12 @@
 #include "Proton/Editor/EditorLayer.h"
 #include "Proton/Editor/Tools/EditorCamera.h"
 #include "Proton/Editor/Panels/SceneViewportPanel.h"
+#include "Proton/Editor/Widget/ScriptEditWidget.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
+#include "Proton/Scripting/AppScript.h"
+#include "Proton/Scripting/ScriptFactory.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
 
@@ -159,7 +162,31 @@ namespace proton {
 				project.StartScene = buffer;
 			}
 			ImGui::PopItemWidth();
+
 			ImGui::Dummy({ 0, 5 });
+			ImGui::Text("App Script");
+			ImGui::Dummy({ 0.0f, 5.0f });
+			GameInstance* gameInstance = Application::GetGameInstance();
+			const std::string& selectedGameScript = gameInstance->m_AppScript->GetScriptClassName();
+			ImGui::PushItemWidth(210.0f);
+			if (ImGui::BeginCombo("AppScript Class", selectedGameScript.c_str()))
+			{
+				for (auto& [className, instanciateFunc] : ScriptFactory::Get().m_AppFuncRegistry)
+				{
+					bool selected = selectedGameScript == className;
+					if (ImGui::Selectable(className.c_str(), selected))
+					{
+						gameInstance->SetAppScript(className);
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+			ImGui::Dummy({ 0.0f, 5.0f });
+
+			ScriptEditWidget::DrawFieldEdit(gameInstance->m_AppScript);
+
+			ImGui::Dummy({ 0, 10 });
 
 			if (ImGui::Button("Save", {150, 0}))
 			{
@@ -174,7 +201,6 @@ namespace proton {
 			m_OpenProjectProporties = false;
 		}
 	}
-
 }
 
 #endif // PT_EDITOR

@@ -5,7 +5,7 @@ class ColorHueAnimation : public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(ColorHueAnimation)
 
-	virtual void OnRegisterFields() override
+	virtual void OnPreInit() override
 	{
 		REGISTER_FIELD(Bool, m_BackAndForth);
 		REGISTER_FIELD(Float, m_Speed);

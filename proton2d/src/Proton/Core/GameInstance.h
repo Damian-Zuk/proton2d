@@ -25,12 +25,13 @@ namespace proton {
 		template<typename TAppScript>
 		AppScript* SetAppScript()
 		{
-			//static_assert(std::is_base_of_v(AppScript, TAppScript)::value);
+			static_assert(std::is_base_of<AppScript, TAppScript>::value);
 			if (m_AppScript && m_AppScript->m_Status == ScriptStatus::Initialized)
 				m_AppScript->OnDestroy();
 			delete m_AppScript;
 			m_AppScript = new TAppScript();
 			m_AppScript->m_GameInstance = this;
+			m_AppScript->OnPreInit();
 			return m_AppScript;
 		}
 

@@ -28,17 +28,17 @@ namespace proton {
 		Scene(GameInstance* gameInstance, const std::string& filepath = "", const std::string& gameScriptClass = "GameScriptDefault");
 		virtual ~Scene();
 
-
 		template<typename TGameScript>
 		GameScript* SetGameScript()
 		{
-			//static_assert(std::is_base_of(GameScript, TGameScript)::value);
+			static_assert(std::is_base_of<GameScript, TGameScript>::value);
 			if (m_GameScript && m_GameScript->m_Status == ScriptStatus::Initialized)
 				m_GameScript->OnDestroy();
 			delete m_GameScript;
 			m_GameScript = new TGameScript();
 			m_GameScript->m_GameInstance = m_GameInstance;
 			m_GameScript->m_Scene = this;
+			m_GameScript->OnPreInit();
 			return m_GameScript;
 		}
 

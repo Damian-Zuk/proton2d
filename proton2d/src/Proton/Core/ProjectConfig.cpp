@@ -4,6 +4,8 @@
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Utils/Utils.h"
 #include "Proton/Network/Common.h"
+#include "Proton/Scripting/ScriptSerializer.h"
+#include "Proton/Scripting/ScriptFactory.h"
 
 namespace proton {
 
@@ -15,14 +17,16 @@ namespace proton {
 			return false;
 		}
 
-		json jsonObj = jsonObj.parse(Utils::ReadFile(m_Filepath));
-		if (!jsonObj.contains("StartScene"))
+		json j = j.parse(Utils::ReadFile(m_Filepath));
+		if (!j.contains("StartScene"))
 		{
 			PT_CORE_ERROR("'StartScene' missing in '{}'!", m_Filepath);
 			return false;
 		}
 
-		StartScene = jsonObj["StartScene"];
+		StartScene = j["StartScene"];
+		AppScript* script = ScriptFactory::Get().AddScriptToGameInstance(Application::GetGameInstance(), j["AppScript"]["ClassName"]);
+		ScriptSerializer::DeserializeScript((Script*)script, j);
 
 		return true;
 	}
@@ -31,6 +35,8 @@ namespace proton {
 	{
 		json jsonObj;
 		jsonObj["StartScene"] = StartScene;
+		jsonObj["AppScript"] = ScriptSerializer::SerializeScript((Script*)Application::GetGameInstance()->GetAppScript());
+
 		std::ofstream configFile(m_Filepath);
 		configFile << jsonObj.dump(4);
 		configFile.close();

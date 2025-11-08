@@ -5,7 +5,7 @@ class RedPlatform : public EntityScript
 public:
 	ENTITY_SCRIPT_CLASS(RedPlatform)
 
-	void OnRegisterFields() override;
+	void OnPreInit() override;
 	bool OnCreate() override;
 	void OnUpdate(float ts) override;
 

@@ -15,7 +15,7 @@ enum SensorType : uint32_t
 	Sensor_Bottom,
 };
 
-void Player::OnRegisterFields()
+void Player::OnPreInit()
 {
 	REGISTER_FIELD(Float, m_JumpImpulse);
 	REGISTER_FIELD(Float, m_FallModifier);

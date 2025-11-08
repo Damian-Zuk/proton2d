@@ -4,7 +4,7 @@ using namespace proton;
 
 #include "DynamicExtrapolation.h"
 
-void DynamicExtrapolation::OnRegisterFields()
+void DynamicExtrapolation::OnPreInit()
 {
 	REGISTER_FIELD(Float, InterpolationThreshold);
 	REGISTER_FIELD(Float, SwitchCooldownTime);

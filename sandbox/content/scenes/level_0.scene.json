@@ -11,6 +11,9 @@
     "GravityForce": 9.800000190734863,
     "VelocityIterations": 2,
     "PositionIterations": 6,
+    "GameScript": {
+        "ClassName": "MyGameMode"
+    },
     "Entities": [
         {
             "Tag": "Boxes",

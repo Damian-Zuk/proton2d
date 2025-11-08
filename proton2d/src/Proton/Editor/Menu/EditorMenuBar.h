@@ -24,6 +24,7 @@ namespace proton {
 		SceneManager* m_SceneManager;
 		
 		bool m_OpenProjectProporties = false;
+		bool m_OpenAppProporties = false;
 
 	};
 

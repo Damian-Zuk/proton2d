@@ -5,6 +5,7 @@
 #include "Proton/Core/AssetManager.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Scripting/ScriptFactory.h"
+#include "Proton/Scripting/ScriptSerializer.h"
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Utils/Utils.h"
 
@@ -34,7 +35,6 @@ namespace proton {
 		json j;
 		m_State = HierarchyTraversalState();
 
-		j["GameModeClass"] = m_Scene->m_GameScript->GetScriptClassName(); 
 		j["EnableNetworking"] = m_Scene->m_EnableNetworking; 
 		j["EnablePhysics"] = m_Scene->m_EnablePhysics; 
 		j["ScreenClearColor"] = m_Scene->m_ClearColor;
@@ -48,6 +48,8 @@ namespace proton {
 		{
 			j["PrimaryCameraEntity"] = entity.GetUUID();
 		}
+
+		j["GameScript"] = ScriptSerializer::SerializeScript(m_Scene->m_GameScript);
 
 		for (Entity entity : m_Scene->m_Root)
 		{
@@ -64,7 +66,6 @@ namespace proton {
 
 		m_State = HierarchyTraversalState();
 
-		m_Scene->SetGameScript(j["GameModeClass"]);
 		m_Scene->m_EnablePhysics = j["EnablePhysics"];
 		m_Scene->m_EnableNetworking = j["EnableNetworking"];
 		m_Scene->m_ClearColor = j["ScreenClearColor"];
@@ -73,6 +74,9 @@ namespace proton {
 		physicsWorld->m_Gravity = j["GravityForce"];
 		physicsWorld->m_PhysicsVelocityIterations = j["VelocityIterations"];
 		physicsWorld->m_PhysicsPositionIterations = j["PositionIterations"];
+
+		ScriptFactory::Get().AddScriptToScene(m_Scene, j["GameScript"]["ClassName"]);
+		ScriptSerializer::DeserializeScript(m_Scene->m_GameScript, j["GameScript"]);
 
 		const json& entities = j["Entities"];
 		for (auto it = entities.begin(); it != entities.end(); it++)
@@ -559,33 +563,7 @@ namespace proton {
 	{
 		for (auto& [scriptClassName, scriptInstance] : c.Scripts)
 		{
-			json scriptJson;
-			scriptJson["ClassName"] = scriptClassName;
-
-			for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
-			{
-				json& fieldJson = scriptJson["Fields"][fieldName];
-				void* valuePtr = fieldData.ValuePtr;
-
-				#define WRITE_FIELD_DATA(EnumType, Type) \
-					case ScriptFieldType::EnumType: fieldJson = *(Type*)valuePtr; break
-
-				switch (fieldData.Type)
-				{
-					WRITE_FIELD_DATA(Float, float);
-					WRITE_FIELD_DATA(Float2, glm::vec2);
-					WRITE_FIELD_DATA(Float3, glm::vec3);
-					WRITE_FIELD_DATA(Float4, glm::vec4);
-					WRITE_FIELD_DATA(Int, int);
-					WRITE_FIELD_DATA(Int2, glm::ivec2);
-					WRITE_FIELD_DATA(Int3, glm::ivec3);
-					WRITE_FIELD_DATA(Int4, glm::ivec4);
-					WRITE_FIELD_DATA(Bool, bool);
-					WRITE_FIELD_DATA(String, std::string);
-				}
-			}
-
-			j.push_back(scriptJson);
+			j.push_back(ScriptSerializer::SerializeScript(scriptInstance));
 		}
 	}
 
@@ -597,34 +575,11 @@ namespace proton {
 			std::string className = scriptJson["ClassName"];
 			EntityScript* script = ScriptFactory::Get().AddScriptToEntity(entity, className);
 
-			if (script == nullptr || !scriptJson.contains("Fields"))
-				continue;
-
-			for (auto& [fieldName, fieldValue] : scriptJson["Fields"].items())
+			if (script)
 			{
-				if (script->m_ScriptFields.find(fieldName) == script->m_ScriptFields.end())
-					continue;
-
-				const ScriptField& scriptField = script->m_ScriptFields[fieldName];
-				void* valuePtr = scriptField.ValuePtr;
-
-				#define READ_FIELD_DATA(EnumType, Type) \
-					case ScriptFieldType::EnumType: *(Type*)valuePtr = fieldValue; break
-
-				switch (scriptField.Type)
-				{
-				READ_FIELD_DATA(Float, float);
-				READ_FIELD_DATA(Float2, glm::vec2);
-				READ_FIELD_DATA(Float3, glm::vec3);
-				READ_FIELD_DATA(Float4, glm::vec4);
-				READ_FIELD_DATA(Int, int);
-				READ_FIELD_DATA(Int2, glm::ivec2);
-				READ_FIELD_DATA(Int3, glm::ivec3);
-				READ_FIELD_DATA(Int4, glm::ivec4);
-				READ_FIELD_DATA(Bool, bool);
-				READ_FIELD_DATA(String, std::string);
-				}
+				ScriptSerializer::DeserializeScript(script, scriptJson);
 			}
+
 		}
 	}
 

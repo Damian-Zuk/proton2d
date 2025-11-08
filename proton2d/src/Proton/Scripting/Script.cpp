@@ -12,10 +12,10 @@
 
 namespace proton {
 
-	//Script::Script(ScriptType type)
-	//	: m_ScriptType(type)
-	//{
-	//}
+	Script::Script(ScriptType type)
+		: m_ScriptType(type)
+	{
+	}
 
 	void Script::RegisterField(ScriptFieldType type, const std::string& name, void* valuePtr, size_t size, bool showInEditor)
 	{

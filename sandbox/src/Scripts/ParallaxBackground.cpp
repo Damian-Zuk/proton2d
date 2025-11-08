@@ -4,7 +4,7 @@ using namespace proton;
 #include "ParallaxBackground.h"
 
 
-void ParallaxBackground::OnRegisterFields()
+void ParallaxBackground::OnPreInit()
 {
 	REGISTER_FIELD(Float, m_ParallaxFactor);
 	REGISTER_FIELD(Float, m_PositionOffset);

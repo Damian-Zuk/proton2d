@@ -4,6 +4,7 @@
 
 namespace proton {
 
+	// TODO: Rework
 	class AssetManager
 	{
 	public:

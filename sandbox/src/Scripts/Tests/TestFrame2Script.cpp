@@ -3,7 +3,7 @@ using namespace proton;
 
 #include "TestFrame2Script.h"
 
-void TestFrame2Script::OnRegisterFields()
+void TestFrame2Script::OnPreInit()
 {
 	REGISTER_FIELD(Float, m_Interval);
 }

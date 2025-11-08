@@ -1,3 +1,6 @@
 {
-    "StartScene": "level_0"
+    "StartScene": "level_0",
+    "AppScript": {
+        "ClassName": "AppScriptDefault"
+    }
 }
