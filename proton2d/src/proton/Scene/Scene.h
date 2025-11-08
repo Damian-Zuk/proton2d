@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Proton/Core/UUID.h"
 #include "Proton/Graphics/Camera.h"
 #include "Proton/Events/Event.h"
-#include "Proton/Core/UUID.h"
 
 #include <entt/entt.hpp>
 
@@ -15,7 +15,7 @@ namespace proton {
 	class PhysicsWorld;
 	class GameInstance;
 	class NetworkManager;
-	class GameModeBase;
+	class GameScript;
 
 	enum class SceneState
 	{
@@ -25,9 +25,25 @@ namespace proton {
 	class Scene
 	{
 	public:
-		Scene(const std::string& filepath = "", const std::string& gameModeClass = "");
-
+		Scene(GameInstance* gameInstance, const std::string& filepath = "", const std::string& gameScriptClass = "GameScriptDefault");
 		virtual ~Scene();
+
+
+		template<typename TGameScript>
+		GameScript* SetGameScript()
+		{
+			//static_assert(std::is_base_of(GameScript, TGameScript)::value);
+			if (m_GameScript && m_GameScript->m_Status == ScriptStatus::Initialized)
+				m_GameScript->OnDestroy();
+			delete m_GameScript;
+			m_GameScript = new TGameScript();
+			m_GameScript->m_GameInstance = m_GameInstance;
+			m_GameScript->m_Scene = this;
+			return m_GameScript;
+		}
+
+		GameScript* SetGameScript(const std::string& className);
+		GameScript* GetGameScript() { return m_GameScript; }
 
 		Shared<Scene> CreateSceneCopy(GameInstance* gameInstance = nullptr);
 
@@ -50,14 +66,12 @@ namespace proton {
 		std::vector<Entity> FindAllByTag(const std::string& tag);
 		std::vector<Entity> FindAllWithScript(const std::string& className);
 
-		// TODO: Add UUID to script class and search by it instead of class name
 		template<typename TScriptClass>
 		std::vector<Entity> FindAllWithScript()
 		{
 			return FindAllWithScript(TScriptClass::__ScriptClassName);
 		}
 
-		// TODO: Add UUID to script class and search by it instead of class name
 		template<typename TScriptClass>
 		std::vector<TScriptClass*> FindAllScripts()
 		{
@@ -110,19 +124,6 @@ namespace proton {
 		GameInstance* GetGameInstance() const { return m_GameInstance; }
 		NetworkManager* GetNetworkManager() const;
 
-		template<typename TGameMode>
-		GameModeBase* SetGameMode()
-		{
-			ReleaseGameMode();
-			m_GameModeClassName = TGameMode::__ClassName;
-			m_GameMode = new TGameMode();
-			m_GameMode->m_Scene = this;
-			return m_GameMode;
-		}
-
-		void SetGameModeByClassName(const std::string& gameModeClassName);
-		GameModeBase* GetGameMode() const { return m_GameMode; }
-
 	private:
 		void OnUpdate(float ts);
 		void ScriptsFixedUpdate(float ts);
@@ -130,7 +131,6 @@ namespace proton {
 		void RenderScene(const Camera& camera);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
-		void ReleaseGameMode();
 
 		void CachePositions();
 		void CachePrimaryCameraPosition();
@@ -146,9 +146,7 @@ namespace proton {
 	private:
 		SceneState m_State = SceneState::Stop;
 		GameInstance* m_GameInstance = nullptr;
-		
-		GameModeBase* m_GameMode = nullptr;
-		std::string m_GameModeClassName = "GameModeBase";
+		GameScript* m_GameScript = nullptr;
 
 		// General
 		std::string m_Filepath = "<Unsaved scene>";
@@ -191,7 +189,6 @@ namespace proton {
 		friend class PrefabManager;
 		friend class PhysicsWorld;
 		friend class GameInstance;
-		friend class GameModeBase;
 		friend class NetworkManager;
 		friend class NetTransformSystem;
 		friend class Server;

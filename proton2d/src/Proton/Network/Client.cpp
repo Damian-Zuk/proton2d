@@ -10,7 +10,7 @@
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/Entity.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameScript.h"
 
 namespace proton {
 
@@ -128,7 +128,7 @@ namespace proton {
 			m_NetworkManager->m_LocalClientID = m_LocalClientID;
 			m_ConnectionStatus = ConnectionStatus::Connected;
 			PT_CORE_INFO("Connected to server");
-			// GameModeBase::Client_OnConnected is called after first replication update
+			// GameScript::Client_OnConnected is called after first replication update
 			break;
 		}
 		///////////////////////////////////////////////////////////////////////////////////////
@@ -142,8 +142,8 @@ namespace proton {
 			{
 				// First replication update
 				scene->m_NetworkInitialized = true;
-				GameModeBase* gameMode = scene->GetGameMode();
-				gameMode->Client_OnConnected();
+				GameScript* gameScript = scene->GetGameScript();
+				gameScript->Client_OnConnected();
 			}
 			break;
 		}
@@ -164,8 +164,8 @@ namespace proton {
 		{
 			stream.SkipBytes(sizeof(MessageType::CustomMessage));
 			Scene* scene = m_GameInstance->GetActiveScene();
-			GameModeBase* gameMode = scene->GetGameMode();
-			gameMode->Client_OnCustomMessage(stream);
+			GameScript* gameScript = scene->GetGameScript();
+			gameScript->Client_OnCustomMessage(stream);
 			break;
 		}
 		///////////////////////////////////////////////////////////////////////////////////////

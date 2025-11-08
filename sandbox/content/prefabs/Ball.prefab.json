@@ -24,22 +24,22 @@
                 "InterpolationThreshold": 0.10000000149011612,
                 "SwitchCooldownTime": 0.25,
                 "Enable": true,
-                "AlphaVisualize": true
+                "AlphaVisualize": false
             }
         }
     ],
     "Sprite": {
-        "Texture": "basketball.png",
-        "FilterMode": 1,
-        "Flip": [
-            false,
-            false
-        ],
         "Color": [
             1.0,
             1.0,
             1.0,
             1.0
+        ],
+        "Texture": "basketball.png",
+        "FilterMode": 1,
+        "Flip": [
+            false,
+            false
         ]
     },
     "Rigidbody": {

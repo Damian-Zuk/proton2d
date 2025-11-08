@@ -116,7 +116,7 @@ namespace proton {
 		friend class Application;
 		friend class GameInstance;
 		friend class Scene;
-		friend class GameModeBase;
+		friend class GameScript;
 
 		friend class Client;
 		friend class Server;

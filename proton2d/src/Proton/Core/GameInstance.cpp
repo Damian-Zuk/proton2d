@@ -2,14 +2,24 @@
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Scene.h"
+#include "Proton/Scripting/AppScript.h"
+#include "Proton/Scripting/ScriptFactory.h"
 #include "Proton/Network/NetworkManager.h"
 
 namespace proton {
 
-	GameInstance::GameInstance() 
+	GameInstance::GameInstance(const std::string& appScriptClassName)
 		: m_SceneManager(MakeUnique<SceneManager>(this)),
 		m_NetworkManager(MakeUnique<NetworkManager>(this))
 	{
+		SetAppScript(appScriptClassName);
+	}
+
+	GameInstance::~GameInstance()
+	{
+		if (m_AppScript && m_AppScript->m_Status == ScriptStatus::Initialized)
+			m_AppScript->OnDestroy();
+		delete m_AppScript;
 	}
 
 	void GameInstance::Init(bool loadStartScene)
@@ -17,12 +27,19 @@ namespace proton {
 		if (!m_ProjectConfig.LoadConfig())
 		{
 			PT_CORE_ERROR("Project settings loading failed!");
+			return;
 		}
-		else if (loadStartScene)
-		{
-			if (m_IsMainInstance)
-				m_NetworkManager->ReadConfig();
 
+		if (m_IsMainInstance)
+			m_NetworkManager->ReadConfig();
+
+		if (m_AppScript->OnCreate())
+			m_AppScript->m_Status = ScriptStatus::Initialized;
+		else
+			m_AppScript->m_Status = ScriptStatus::FailedToInitialize;
+
+		if (loadStartScene)
+		{
 			Scene* scene = m_SceneManager->Load(m_ProjectConfig.StartScene);
 			m_SceneManager->SetActiveScene(scene);
 
@@ -46,8 +63,14 @@ namespace proton {
 
 	void GameInstance::OnUpdate(float ts)
 	{
+		m_AppScript->OnUpdate(ts);
 		m_SceneManager->OnUpdate(ts);
 		m_NetworkManager->OnUpdate(ts);
+	}
+
+	AppScript* GameInstance::SetAppScript(const std::string& className)
+	{
+		return ScriptFactory::Get().AddScriptToGameInstance(this, className);
 	}
 
 	Scene* GameInstance::GetActiveScene()

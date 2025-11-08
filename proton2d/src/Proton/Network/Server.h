@@ -122,7 +122,8 @@ namespace proton {
 		friend class NetReplicator;
 		friend class NetStatistics;
 		friend class NetTransformSystem;
-		friend class GameModeBase;
+		friend class AppScript;
+		friend class GameScript;
 		friend class Scene;
 	
 		friend class SettingsPanel;

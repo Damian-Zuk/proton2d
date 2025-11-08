@@ -24,7 +24,9 @@
 #include "Proton/Scene/PrefabManager.h"
 
 #include "Proton/Scripting/EntityScript.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/AppScript.h"
+#include "Proton/Scripting/GameScript.h"
+#include "Proton/Scripting/ScriptFactory.h"
 
 #include "Proton/Network/NetworkManager.h"
 

@@ -7,13 +7,14 @@ namespace proton {
 	class Scene;
 	class SceneManager;
 	class NetworkManager;
+	class AppScript;
 	struct EditorGameInstance;
 
 	class GameInstance
 	{
 	public:
-		GameInstance();
-		virtual ~GameInstance() = default;
+		GameInstance(const std::string& appScriptClassName = "AppScriptDefault");
+		virtual ~GameInstance();
 
 		void Init(bool loadStartScene = true);
 		void OnUpdate(float ts);
@@ -21,10 +22,26 @@ namespace proton {
 		void OnSceneSimulationStart(Scene* scene);
 		void OnSceneSimulationStop(Scene* scene);
 
-		Scene* GetActiveScene();
-		SceneManager* GetSceneManager();
+		template<typename TAppScript>
+		AppScript* SetAppScript()
+		{
+			//static_assert(std::is_base_of_v(AppScript, TAppScript)::value);
+			if (m_AppScript && m_AppScript->m_Status == ScriptStatus::Initialized)
+				m_AppScript->OnDestroy();
+			delete m_AppScript;
+			m_AppScript = new TAppScript();
+			m_AppScript->m_GameInstance = this;
+			return m_AppScript;
+		}
 
+		AppScript* SetAppScript(const std::string& className);
+		AppScript* GetAppScript() { return m_AppScript; }
+
+		Scene* GetActiveScene();
+
+		SceneManager* GetSceneManager();
 		NetworkManager* GetNetworkManager();
+
 		void SetNetMode(NetMode mode);
 		NetMode GetNetMode() const;
 
@@ -39,13 +56,15 @@ namespace proton {
 		Unique<SceneManager> m_SceneManager;
 		Unique<NetworkManager> m_NetworkManager;
 
+		bool m_IsMainInstance = true;
 		ProjectConfig m_ProjectConfig;
 		uint32_t m_SimulatedScenesCount = 0;
 
-		bool m_IsMainInstance = true;
+		AppScript* m_AppScript = nullptr;
 
 		friend class Application;
 		friend class SceneManager;
+		friend class ScriptFactory;
 		friend class Scene;
 		friend class Client;
 		friend class Server;

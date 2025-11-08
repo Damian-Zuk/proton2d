@@ -93,7 +93,6 @@ namespace proton {
 		friend class NetReplicator;
 		friend class NetTransformSystem;
 		friend class Scene;
-		friend class GameModeBase;
 	};
 
 }

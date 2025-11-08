@@ -12,7 +12,7 @@
 #include "Proton/Scene/Scene.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/Entity.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameScript.h"
 #include "Proton/Scripting/EntityScript.h"
 
 #ifdef PT_EDITOR
@@ -142,8 +142,8 @@ namespace proton {
 		{
 			stream.SkipBytes(sizeof(MessageType::CustomMessage));
 			Scene* scene = GetClientEntity(clientID).GetScene();
-			GameModeBase* gameMode = scene->GetGameMode();
-			gameMode->Server_OnCustomMessage(clientID, stream);
+			GameScript* gameScript = scene->GetGameScript();
+			gameScript->Server_OnCustomMessage(clientID, stream);
 			break;
 		}
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,8 +202,8 @@ namespace proton {
 		m_NetStatistics->AllocateNetworkStatsBuffer(clientID);
 		m_NetReplicator->Server_OnClientConnected(clientID);
 
-		GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
-		gameMode->Server_OnClientConnected(clientID);
+		GameScript* gameScript = m_GameInstance->GetActiveScene()->GetGameScript();
+		gameScript->Server_OnClientConnected(clientID);
 	}
 
 	void Server::OnClientDisconnected(ClientID clientID)
@@ -211,8 +211,8 @@ namespace proton {
 		PT_CORE_INFO("Client id={} disconnected", clientID);
 		m_NetStatistics->ReleaseNetworkStatsBuffer(clientID);
 
-		GameModeBase* gameMode = m_GameInstance->GetActiveScene()->GetGameMode();
-		gameMode->Server_OnClientDisconnected(clientID);
+		GameScript* gameScript = m_GameInstance->GetActiveScene()->GetGameScript();
+		gameScript->Server_OnClientDisconnected(clientID);
 	}
 
 	uint32_t Server::GetConnectedClientsCount() const

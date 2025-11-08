@@ -18,6 +18,7 @@ namespace proton {
 		if (it != m_Layers.begin() + m_LayerInsertIndex)
 		{
 			layer->OnDestroy();
+			delete layer;
 			m_Layers.erase(it);
 			m_LayerInsertIndex--;
 		}
@@ -29,6 +30,7 @@ namespace proton {
 		if (it != m_Layers.end())
 		{
 			overlay->OnDestroy();
+			delete overlay;
 			m_Layers.erase(it);
 		}
 	}

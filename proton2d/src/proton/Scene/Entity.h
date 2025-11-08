@@ -6,8 +6,6 @@
 
 namespace proton {
 
-	class GameModeBase;
-
 	// Entity class wrapper for the EnTT ECS
 	class Entity
 	{
@@ -89,13 +87,14 @@ namespace proton {
 			if (component.Scripts.find(className) != component.Scripts.end())
 				delete component.Scripts[className];
 
-			EntityScript*& scriptInstance = component.Scripts[className];
-			scriptInstance = new TScriptClass();
-			scriptInstance->m_Handle = m_Handle;
-			scriptInstance->m_Scene = m_Scene;
-			scriptInstance->OnRegisterFields();
+			EntityScript*& script = component.Scripts[className];
+			script = new TScriptClass();
+			script->m_GameInstance = m_Scene->m_GameInstance;
+			script->m_Scene = m_Scene;
+			script->m_Handle = m_Handle;
+			script->OnRegisterFields();
 
-			return scriptInstance;
+			return script;
 		}
 
 		void RemoveScript(const std::string& scriptClassName);
@@ -108,18 +107,18 @@ namespace proton {
 			return HasScript(TScriptClass::__ScriptClassName);
 		}
 		
-		template<typename TScriptClass>
-		TScriptClass* As()
+		template<typename TEntityScript>
+		TEntityScript* As()
 		{
 			auto& component = GetComponent<ScriptComponent>();
-			EntityScript* base = component.Scripts.at(TScriptClass::__ScriptClassName);
-			return dynamic_cast<TScriptClass*>(base);
+			Script* script = component.Scripts.at(TEntityScript::__ScriptClassName);
+			return script->As<TEntityScript>();
 		}
 
-		template<typename TGameMode>
-		TGameMode* GetGameMode()
+		template<typename TGameScript>
+		TGameScript* GetGameScript()
 		{
-			return m_Scene->GetGameMode()->As<TGameMode>();
+			return m_Scene->GetGameScript()->As<TGameScript>();
 		}
 
 		// Entity lifetime
@@ -137,7 +136,6 @@ namespace proton {
 
 		// Component getters
 		Scene* GetScene() const;
-		GameModeBase* GetGameMode() const;
 		UUID GetUUID() const;
 		UUID GetPrefabUUID() const;
 		const std::string& GetTag() const;

@@ -13,9 +13,9 @@ namespace proton {
 
     void SpriteAnimation::Play(uint16_t index, uint16_t startFrame)
     {
-        PT_CORE_ASSERT(m_Animations.find(index) != m_Animations.end(), "Animation not found");
         if (index != m_CurrentAnimationIndex)
         {
+            PT_CORE_ASSERT(m_Animations.find(index) != m_Animations.end(), "Animation not found");
             if (m_CurrentAnimationIndex != -1 && m_AnimationSwtichTimer.Elapsed() < m_AnimationSwitchTimeThreshold)
                 return;
 

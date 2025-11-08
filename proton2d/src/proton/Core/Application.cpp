@@ -12,7 +12,7 @@
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameScript.h"
 
 #ifdef PROTON_PLATFORM_WINDOWS
 #include "Proton/Platform/Windows/WindowsWindow.h"
@@ -190,7 +190,7 @@ namespace proton {
 	#endif 
 
 		if (scene && scene->IsSimulated())
-			scene->GetGameMode()->OnEvent(event);
+			scene->GetGameScript()->OnEvent(event);
 	}
 
 }

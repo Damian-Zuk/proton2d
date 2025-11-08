@@ -174,11 +174,6 @@ namespace proton
 		return m_Scene;
 	}
 
-	GameModeBase* Entity::GetGameMode() const
-	{
-		return m_Scene->GetGameMode();
-	}
-
 	UUID Entity::GetUUID() const
 	{
 		return GetComponent<IDComponent>().ID;
@@ -369,7 +364,7 @@ namespace proton
 		auto& component = GetComponent<ScriptComponent>();
 		for (auto& [scriptName, scriptInstance] : component.Scripts)
 		{
-			if (m_Scene->m_State != SceneState::Stop)
+			if (scriptInstance->m_Status == ScriptStatus::Initialized)
 				scriptInstance->OnDestroy();
 
 			delete scriptInstance;

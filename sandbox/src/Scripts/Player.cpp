@@ -21,7 +21,7 @@ void Player::OnRegisterFields()
 	REGISTER_FIELD(Float, m_FallModifier);
 	REGISTER_FIELD(Float, m_PlayerSpeed);
 	REGISTER_FIELD(Float, m_PlayerAcceleration);
-	REGISTER_FIELD_NO_EDIT(Float4, m_PlayerColor);
+	REGISTER_FIELD(Float4, m_PlayerColor);
 	REGISTER_FIELD(String, m_PlayerNick);
 	REGISTER_FIELD(Int, m_ClientID);
 	
@@ -37,14 +37,14 @@ void Player::OnRegisterFields()
 bool Player::OnCreate()
 {
 	// Networking setup
-	NetworkManager* networkManager = GetNetworkManager();
-	m_IsLocalPlayer = m_ClientID == networkManager->GetLocalClientID();
+	NetworkManager* net = GetNetworkManager();
+	m_IsLocalPlayer = m_ClientID == net->GetLocalClientID();
 	
 	if (m_IsLocalPlayer)
 	{
-		GetGameMode<MyGameMode>()->m_LocalPlayer = this;
-		GetScene()->SetPrimaryCameraEntity(*this);
-		networkManager->SetLocalPlayerEntity(*this);
+		GetGameScript<MyGameMode>()->m_LocalPlayer = this;
+		Entity::GetScene()->SetPrimaryCameraEntity(*this);
+		net->SetLocalPlayerEntity(*this);
 	}
 	else
 	{

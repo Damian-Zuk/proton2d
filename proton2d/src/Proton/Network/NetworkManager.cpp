@@ -6,7 +6,7 @@
 
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Scene/Scene.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameScript.h"
 #include "Proton/Utils/Utils.h"
 
 #include <steam/steamnetworkingsockets.h>
@@ -194,8 +194,8 @@ namespace proton {
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 		Scene* scene = m_GameInstance->GetActiveScene();
-		GameModeBase* gameMode = scene->GetGameMode();
-		gameMode->Client_OnDisconnected(m_Client->m_ConnectionEndCode);
+		GameScript* script = scene->GetGameScript();
+		script->Client_OnDisconnected(m_Client->m_ConnectionEndCode);
 
 		m_Client.reset();
 		s_NetworkServicesRunning--;

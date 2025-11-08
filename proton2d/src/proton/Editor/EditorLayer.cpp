@@ -20,7 +20,7 @@
 #include "Proton/Events/MouseEvents.h"
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/SceneSerializer.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameScript.h"
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Network/NetworkManager.h"
 #include "Proton/Utils/Utils.h"
@@ -199,8 +199,8 @@ namespace proton {
 		{
 			if (scene->IsSimulated())
 			{
-				GameModeBase* gameMode = scene->GetGameMode();
-				gameMode->OnEvent(event);
+				GameScript* gameScript = scene->GetGameScript();
+				gameScript->OnEvent(event);
 			}
 		}
 	}

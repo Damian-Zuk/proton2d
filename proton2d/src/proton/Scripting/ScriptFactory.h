@@ -4,26 +4,36 @@
 namespace proton {
 
 	class EntityScript;
-	using AddScriptFunction = std::function<EntityScript*(Entity entity)>;
-	using AddGameModeFunction = std::function<GameModeBase* (Scene* scene)>;
+	class GameScript;
+	class AppScript;
 
+	using AddEntityScriptFn = std::function<EntityScript*(Entity)>;
+	using AddGameScriptFn = std::function<GameScript*(Scene*)>;
+	using AddAppScriptFn = std::function<AppScript*(GameInstance*)>;
+
+	// Native Script Factory
 	class ScriptFactory
 	{
 	public:
-		ScriptFactory();
-		
-		static ScriptFactory& Get(); // Get singleton instance
+		static ScriptFactory& Get();
+
+		ScriptFactory() = default;
+		virtual ~ScriptFactory() = default;
+
+		bool RegisterEntityScript(const std::string& className, const AddEntityScriptFn& addFunction);
+		bool RegisterGameScript(const std::string& className, const AddGameScriptFn& addFunction);
+		bool RegisterAppScript(const std::string& className, const AddAppScriptFn& addFunction);
 
 		EntityScript* AddScriptToEntity(Entity entity, const std::string& className);
-		bool RegisterScript(const AddScriptFunction& addFunction, const std::string& className);
-
-		GameModeBase* InstantiateGameMode(Scene* scene, const std::string& className);
-		bool RegisterGameMode(const AddGameModeFunction& function, const std::string& className);
+		GameScript* AddScriptToScene(Scene* scene, const std::string& className);
+		AppScript* AddScriptToGameInstance(GameInstance* game, const std::string& className);
 
 	private:
-		std::unordered_map<std::string, AddScriptFunction> m_ScriptRegistry;
-		std::unordered_map<std::string, AddGameModeFunction> m_GameModeRegistry;
+		std::unordered_map<std::string, AddEntityScriptFn> m_EntityFuncRegistry;
+		std::unordered_map<std::string, AddGameScriptFn> m_GameFuncRegistry;
+		std::unordered_map<std::string, AddAppScriptFn> m_AppFuncRegistry;
 
 		friend class InspectorPanel;
 	};
 }
+

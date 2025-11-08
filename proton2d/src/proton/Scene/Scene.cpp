@@ -3,7 +3,8 @@
 #include "Proton/Scene/Entity.h"
 #include "Proton/Graphics/Renderer/Renderer.h"
 #include "Proton/Scripting/EntityScript.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameScript.h"
+#include "Proton/Scripting/ScriptFactory.h"
 #include "Proton/Core/Application.h"
 #include "Proton/Core/GameInstance.h"
 #include "Proton/Core/Input.h"
@@ -29,17 +30,16 @@ namespace proton {
 
 	constexpr glm::vec4 DEFAULT_SCENE_SCREEN_CLEAR_COLOR = { 0.24f, 0.37f, 0.67f, 1.0f };
 
-	Scene::Scene(const std::string& filepath, const std::string& gameModeClass)
-		:  m_Filepath(filepath), m_ClearColor(DEFAULT_SCENE_SCREEN_CLEAR_COLOR)
+	Scene::Scene(GameInstance* gameInstance, const std::string& filepath, const std::string& gameScriptClass)
+		:  m_GameInstance(gameInstance), m_Filepath(filepath), m_ClearColor(DEFAULT_SCENE_SCREEN_CLEAR_COLOR)
 	{
-		if (gameModeClass.size() && gameModeClass != "GameModeBase")
+		if (gameScriptClass.length())
 		{
-			m_GameModeClassName = gameModeClass;
-			ScriptFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
+			ScriptFactory::Get().AddScriptToScene(this, gameScriptClass);
 		}
 		else
 		{
-			m_GameMode = new GameModeBase();
+			ScriptFactory::Get().AddScriptToScene(this, "GameScriptDefault");
 		}
 
 		m_PhysicsWorld = MakeUnique<PhysicsWorld>(this);
@@ -50,8 +50,9 @@ namespace proton {
 		if (m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->DestroyWorld();
 
-		if (m_GameMode)
-			delete m_GameMode;
+		if (m_GameScript && m_GameScript->m_Status == ScriptStatus::Initialized)
+			m_GameScript->OnDestroy();
+		delete m_GameScript;
 
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view)
@@ -108,21 +109,22 @@ namespace proton {
 	}
 	// ---------------------------------------------------------------------------------
 
+	GameScript* Scene::SetGameScript(const std::string& className)
+	{
+		return ScriptFactory::Get().AddScriptToScene(this, className);
+	}
+
 	Shared<Scene> Scene::CreateSceneCopy(GameInstance* gameInstance)
 	{
-		Shared<Scene> newScene = MakeShared<Scene>(m_Filepath, m_GameModeClassName);
+		gameInstance = gameInstance ? gameInstance : m_GameInstance;
+		Shared<Scene> newScene = MakeShared<Scene>(gameInstance, m_Filepath, m_GameScript->GetScriptClassName());
+
 		newScene->m_ClearColor = m_ClearColor;
+		newScene->m_EnableNetworking = m_EnableNetworking;
 		newScene->m_EnablePhysics = m_EnablePhysics;
 		newScene->SetPhysicsTickrate(m_PhysicsTickrate);
 
-		newScene->m_EnableNetworking = m_EnableNetworking;
-
-		if (gameInstance)
-			newScene->m_GameInstance = gameInstance;
-		else	
-			newScene->m_GameInstance = m_GameInstance;
-
-		auto& dstSceneRegistry = newScene->m_Registry;
+		auto& dstRegistry = newScene->m_Registry;
 		std::unordered_map<UUID, entt::entity> enttMap;
 
 		// Create entities in new scene
@@ -140,7 +142,7 @@ namespace proton {
 		{
 			entt::entity dstEntity = enttMap.at(m_Registry.get<IDComponent>(srcEntity).ID);
 			auto& srcComponent = m_Registry.get<RelationshipComponent>(srcEntity);
-			auto& dstComponent = dstSceneRegistry.get<RelationshipComponent>(dstEntity);
+			auto& dstComponent = dstRegistry.get<RelationshipComponent>(dstEntity);
 			dstComponent.ChildrenCount = srcComponent.ChildrenCount;
 
 			// Set handles to destination registry entities
@@ -165,10 +167,10 @@ namespace proton {
 
 		// Copy all components except:
 		// IDComponent, TagComponent, RelationshipComponent, ScriptComponent, SpriteAnimationComponent
-		CopyComponent(ComponentsToCopy{}, dstSceneRegistry, m_Registry, enttMap);
+		CopyComponent(ComponentsToCopy{}, dstRegistry, m_Registry, enttMap);
 
 		// Clear Script Replication Info in NetworkComponent
-		auto& netView = dstSceneRegistry.view<NetworkComponent>();
+		auto& netView = dstRegistry.view<NetworkComponent>();
 		for (entt::entity entity : netView)
 		{
 			auto& net = netView.get<NetworkComponent>(entity);
@@ -179,7 +181,7 @@ namespace proton {
 		for (entt::entity srcEntity : m_Registry.view<ScriptComponent>())
 		{
 			entt::entity dstEntity = enttMap.at(m_Registry.get<IDComponent>(srcEntity).ID);
-			dstSceneRegistry.emplace<ScriptComponent>(dstEntity);
+			dstRegistry.emplace<ScriptComponent>(dstEntity);
 			
 			// Create script copy
 			for (auto& it : m_Registry.get<ScriptComponent>(srcEntity).Scripts)
@@ -208,9 +210,9 @@ namespace proton {
 		if (m_State == SceneState::Play || m_State == SceneState::Paused)
 			return; 
 
-	#ifdef PT_EDITOR
+		#ifdef PT_EDITOR
 		EditorLayer::Get()->OnBeginSceneSimulation(this);
-	#endif
+		#endif
 
 		m_State = SceneState::Play;
 		m_GameInstance->OnSceneSimulationStart(this);
@@ -220,8 +222,10 @@ namespace proton {
 		if (m_EnablePhysics)
 			BuildPhysicsWorld();
 
-		if (m_GameMode)
-			m_GameMode->OnCreate();
+		if (m_GameScript->OnCreate())
+			m_GameScript->m_Status = ScriptStatus::Initialized;
+		else
+			m_GameScript->m_Status = ScriptStatus::FailedToInitialize;
 
 		m_PhysicsTimeAccumulator = 0.0f;
 	}
@@ -249,15 +253,14 @@ namespace proton {
 		if (m_PhysicsWorld->IsInitialized())
 			m_PhysicsWorld->DestroyWorld();
 
-		m_GameMode->OnDestroy();
-		m_GameMode = ScriptFactory::Get().InstantiateGameMode(this, m_GameModeClassName);
-
+		// Reset game script instance
+		m_GameScript = ScriptFactory::Get().AddScriptToScene(this, m_GameScript->GetScriptClassName());
 		m_State = SceneState::Stop;
 		m_GameInstance->OnSceneSimulationStop(this);
 
-	#ifdef PT_EDITOR
+		#ifdef PT_EDITOR
 		EditorLayer::Get()->OnStopSceneSimulation(this);
-	#endif
+		#endif
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -340,11 +343,11 @@ namespace proton {
 	{
 		if (!entity.IsValid()) return;
 
-	#ifdef PT_EDITOR
+		#ifdef PT_EDITOR
 		auto viewport = EditorLayer::GetSceneViewportPanel(this);
 		if (entity == viewport->GetSelectedEntity())
 			viewport->SetSelectedEntity(Entity{});
-	#endif
+		#endif
 
 		// If server is running and entity has NetworkComponent
 		// inform clients that entity has been destroyed.
@@ -517,11 +520,6 @@ namespace proton {
 			CalculateEntityWorldPosition(entity, recalculateLocal);
 	}
 
-	void Scene::SetGameModeByClassName(const std::string& gameModeClassName)
-	{
-		ScriptFactory::Get().InstantiateGameMode(this, gameModeClassName);
-	}
-
 	void Scene::CachePositions()
 	{
 		CalculateWorldPositions();
@@ -552,6 +550,7 @@ namespace proton {
 			m_PhysicsWorld->ProcessCreatedEntities();
 			m_PhysicsTimeAccumulator += ts;
 			m_IsPhysicsTick = false;
+			// m_PhysicsTicks = 0;
 			
 			while (m_PhysicsTimeAccumulator >= m_PhysicsTimestep)
 			{
@@ -560,6 +559,7 @@ namespace proton {
 
 				m_PhysicsTimeAccumulator -= m_PhysicsTimestep;
 				m_IsPhysicsTick = true;
+				// m_PhysicsTicks++;
 			}
 		}
 
@@ -574,9 +574,7 @@ namespace proton {
 				client->m_NetTransformSystem->Client_OnUpdate(this, ts);
 			}
 
-			if (m_GameMode)
-				m_GameMode->OnUpdate(ts);
-
+			m_GameScript->OnUpdate(ts);
 			ScriptsUpdate(ts);
 
 			auto view = m_Registry.view<SpriteAnimationComponent>();
@@ -611,7 +609,7 @@ namespace proton {
 			{
 				EntityScript* instance = script.second;
 
-				if (!instance->m_Initialized)
+				if (instance->m_Status == ScriptStatus::Uninitalized)
 				{
 					bool isNetworked = m_Registry.any_of<NetworkComponent>(entity);
 					if (isNetworked && m_GameInstance->GetNetworkManager()->IsNetModeClient())
@@ -621,15 +619,18 @@ namespace proton {
 							continue; // wait with script initialization 
 					}
 
-					instance->m_Initialized = true;
-					if (!instance->OnCreate())
+					if (instance->OnCreate())
+					{
+						instance->m_Status = ScriptStatus::Initialized;
+					}
+					else
 					{
 						PT_CORE_ERROR("Failed to initialize script {} for an entity {}", script.first, Entity(entity, this).GetUUID());
-						instance->m_FailedToInitialize = true;
+						instance->m_Status = ScriptStatus::FailedToInitialize;
 					}
 				}
 				
-				if (instance->m_FailedToInitialize)
+				if (instance->m_Status != ScriptStatus::Initialized)
 					continue;
 
 				if (fixedUpdate)
@@ -723,6 +724,7 @@ namespace proton {
 				float spriteBottom = transform.WorldPosition.y - rotatedHeight;
 				float spriteTop = transform.WorldPosition.y + rotatedHeight;
 
+				// Frustum Culling
 				if (spriteRight < cameraLeft || spriteLeft > cameraRight ||
 					spriteTop < cameraBottom || spriteBottom > cameraTop)
 				{
@@ -765,6 +767,7 @@ namespace proton {
 				float spriteBottom = transform.WorldPosition.y - rotatedHeight;
 				float spriteTop = transform.WorldPosition.y + rotatedHeight;
 
+				// Frustum Culling
 				if (spriteRight < cameraLeft || spriteLeft > cameraRight ||
 					spriteTop < cameraBottom || spriteBottom > cameraTop)
 				{
@@ -808,36 +811,27 @@ namespace proton {
 		m_DefaultCamera.SetViewportSize(m_ViewportSize);
 	}
 
-	void Scene::ReleaseGameMode()
-	{
-		if (m_GameMode)
-		{
-			delete m_GameMode;
-			m_GameMode = nullptr;
-		}
-	}
-
 	Camera& Scene::GetPrimaryCamera()
 	{
-	#ifdef PT_EDITOR
+		#ifdef PT_EDITOR
 		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
 
 		if (m_State == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
 			return viewport->m_Camera->GetBaseCamera();
-	#endif
+		#endif
 		return m_PrimaryCamera ? *m_PrimaryCamera : m_DefaultCamera;
 	}
 
 	void Scene::CachePrimaryCameraPosition()
 	{
-	#ifdef PT_EDITOR
+		#ifdef PT_EDITOR
 		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
 		if (m_State == SceneState::Stop || viewport->m_Camera->m_UseInRuntime)
 		{
 			m_PrimaryCameraPosition = viewport->GetCamera()->GetPosition();
 			return;
 		}
-	#endif
+		#endif
 		if (m_PrimaryCameraEntity == entt::null) 
 		{
 			m_PrimaryCameraPosition = glm::vec3{ 0.0f };
@@ -852,17 +846,17 @@ namespace proton {
 
 	void Scene::CacheCursorWorldPosition()
 	{
-	#ifdef PT_EDITOR
+		#ifdef PT_EDITOR
 		auto viewport = EditorLayer::GetSceneViewportPanel(m_GameInstance);
 		const uint32_t width = (uint32_t)viewport->m_ViewportSize.x;
 		const uint32_t height = (uint32_t)viewport->m_ViewportSize.y;
 		const glm::vec2& mouse = viewport->m_MousePos;
-	#else
+		#else
 		Window& window = Application::Get().GetWindow();
 		const uint32_t width = window.GetWidth();
 		const uint32_t height = window.GetHeight();
 		const glm::vec2 mouse = Input::GetMousePosition();
-	#endif
+		#endif
 		OrthoProjection ortho = GetPrimaryCamera().GetOrthoProjection();
 		auto& camera = GetPrimaryCameraPosition();
 		m_CursorWorldPosition[0] = mouse.x / (float)width * ortho.Right * 2.0f + camera.x + ortho.Left;

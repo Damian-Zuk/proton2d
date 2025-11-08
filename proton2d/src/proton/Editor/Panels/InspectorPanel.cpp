@@ -11,7 +11,7 @@
 #include "Proton/Scene/SceneManager.h"
 #include "Proton/Scene/PrefabManager.h"
 #include "Proton/Scripting/ScriptFactory.h"
-#include "Proton/Scripting/GameModeBase.h"
+#include "Proton/Scripting/GameScript.h"
 #include "Proton/Scripting/EntityScript.h"
 #include "Proton/Physics/PhysicsWorld.h"
 #include "Proton/Utils/Utils.h"
@@ -109,7 +109,7 @@ namespace proton {
 			ImGui::Separator();
 			if (ImGui::BeginMenu("Script"))
 			{
-				for (auto& [scriptName, addScriptFunction] : ScriptFactory::Get().m_ScriptRegistry)
+				for (auto& [scriptName, addScriptFunction] : ScriptFactory::Get().m_EntityFuncRegistry)
 				{
 					if (selectedEntity.HasComponent<ScriptComponent>())
 					{
@@ -261,7 +261,7 @@ namespace proton {
 					ImGui::Dummy({ 0.0f, 3.0f });
 					for (auto& [fieldName, fieldData] : scriptInstance->m_ScriptFields)
 					{
-						if (!scriptInstance->m_EditorScriptField[fieldName].ShowInEditor)
+						if (!scriptInstance->m_ScriptFields.at(fieldName).ShowInEditor)
 							continue;
 
 						switch (fieldData.Type)
@@ -806,19 +806,19 @@ namespace proton {
 		ImGui::Separator();
 		ImGui::Dummy({ 0.0f, 5.0f });
 
-		if (ImGui::TreeNodeEx("GameMode", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::TreeNodeEx("Game Script", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Dummy({ 0, 2 });
-			const std::string& selectedGameMode = scene->m_GameModeClassName;
+			const std::string& selectedGameScript = scene->m_GameScript->GetScriptClassName();
 			ImGui::PushItemWidth(210.0f);
-			if (ImGui::BeginCombo("GameMode Class", selectedGameMode.c_str()))
+			if (ImGui::BeginCombo("Game Script Class", selectedGameScript.c_str()))
 			{
-				for (auto& [className, instanciateFunc] : ScriptFactory::Get().m_GameModeRegistry)
+				for (auto& [className, instanciateFunc] : ScriptFactory::Get().m_GameFuncRegistry)
 				{
-					bool selected = selectedGameMode == className;
+					bool selected = selectedGameScript == className;
 					if (ImGui::Selectable(className.c_str(), selected))
 					{
-						scene->SetGameModeByClassName(className);
+						scene->SetGameScript(className);
 					}
 				}
 				ImGui::EndCombo();
@@ -827,7 +827,7 @@ namespace proton {
 			ImGui::Dummy({ 0.0f, 5.0f });
 
 			// Custom render
-			scene->GetGameMode()->OnImGuiRender();
+			scene->GetGameScript()->OnImGuiRender();
 
 			ImGui::TreePop();
 		}

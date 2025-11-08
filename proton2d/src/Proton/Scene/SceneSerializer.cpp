@@ -34,7 +34,7 @@ namespace proton {
 		json j;
 		m_State = HierarchyTraversalState();
 
-		j["GameModeClass"] = m_Scene->m_GameModeClassName; 
+		j["GameModeClass"] = m_Scene->m_GameScript->GetScriptClassName(); 
 		j["EnableNetworking"] = m_Scene->m_EnableNetworking; 
 		j["EnablePhysics"] = m_Scene->m_EnablePhysics; 
 		j["ScreenClearColor"] = m_Scene->m_ClearColor;
@@ -64,7 +64,7 @@ namespace proton {
 
 		m_State = HierarchyTraversalState();
 
-		m_Scene->SetGameModeByClassName(j["GameModeClass"]);
+		m_Scene->SetGameScript(j["GameModeClass"]);
 		m_Scene->m_EnablePhysics = j["EnablePhysics"];
 		m_Scene->m_EnableNetworking = j["EnableNetworking"];
 		m_Scene->m_ClearColor = j["ScreenClearColor"];
